@@ -3930,7 +3930,8 @@
       "paths": [
         "src/lego/parameter-plan.mjs",
         "src/lego/parameter-graph.mjs",
-        "src/lego/parameter-validate.mjs"
+        "src/lego/parameter-validate.mjs",
+        "src/lego/parameter-discover.mjs"
       ],
       "public": [],
       "dependsOn": [
@@ -3949,7 +3950,8 @@
         "tests": [
           "test/lego-parameter-plan.test.mjs",
           "test/lego-parameter-graph.test.mjs",
-          "test/lego-parameter-validate.test.mjs"
+          "test/lego-parameter-validate.test.mjs",
+          "test/lego-parameter-discover.test.mjs"
         ]
       },
       "capabilities": [
@@ -3990,7 +3992,7 @@
           "resources": "low"
         }
       ],
-      "notes": "P7-S01 ships the ParameterPlan compiler (src/lego/parameter-plan.mjs, pure, no I/O). P7-S02 adds the RESOLVE stage (src/lego/parameter-graph.mjs, pure, no I/O): the n8n displayParameter visibility port, the parameter dependency graph and the incremental ResolutionSession. P7-S03 adds the VALIDATE stage (src/lego/parameter-validate.mjs, pure, no I/O): explicit normalization, the compact validation vocabulary with structured errors, the closed failure vocabulary, and the compact immutable execution-ready snapshot (canonical vs derived). The REST surface /rest/dynamic-node-parameters still answers 501 via the compatibility capability registry until P7-S04 mounts it.",
+      "notes": "P7-S01 ships the ParameterPlan compiler (src/lego/parameter-plan.mjs, pure, no I/O). P7-S02 adds the RESOLVE stage (src/lego/parameter-graph.mjs, pure, no I/O): the n8n displayParameter visibility port, the parameter dependency graph and the incremental ResolutionSession. P7-S03 adds the VALIDATE stage (src/lego/parameter-validate.mjs, pure, no I/O): explicit normalization, the compact validation vocabulary with structured errors, the closed failure vocabulary, and the compact immutable execution-ready snapshot (canonical vs derived). P7-S04 adds the DISCOVER stage (src/lego/parameter-discover.mjs, pure, no I/O; the only stage that may cross a provider boundary): an explicit replaceable provider, bounded classed dynamic cache with stale-while-revalidate, dependent-field race protection (generation), request coalescing, and provider backpressure/resource budgets. The REST surface /rest/dynamic-node-parameters still answers 501 via the compatibility capability registry until the DISCOVER stage is mounted on it.",
       "tier": "domain",
       "dataOwner": "none",
       "stateOwner": "cache",
