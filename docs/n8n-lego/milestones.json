@@ -3977,10 +3977,12 @@
               "title": "Negative/security matrix & determinism: malformed/oversized/missing inputs, circular/invalid dependencies, sensitive-value handling; idempotent, pure, no side effects (#223 \u00a741, \u00a744)",
               "purpose": "The local validation/normalization is a pure, idempotent, bounded local operation that fails safely on malformed input and never leaks sensitive values.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "The stage is pure and deterministic: idempotent (two calls -> identical normalized values and digest), the input is never mutated or frozen, absent/missing containers fail safely (no throw, no false success), oversized forms are bounded (changed capped at 4096), and sensitive (password) values are validated by shape only and never echoed into issues. Pinned by 4 unit tests. See docs/n8n-lego/evidence/P7-S03-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:13:57Z"
             }
           ],
-          "updatedAt": "2026-09-26T19:13:53Z",
+          "updatedAt": "2026-09-26T19:13:57Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
