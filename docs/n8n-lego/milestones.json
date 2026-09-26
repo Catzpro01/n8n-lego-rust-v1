@@ -3941,7 +3941,9 @@
               "title": "Canonical value model & normalization semantics: raw -> canonicalization -> type normalization -> canonical value, explicit and testable, no heuristic normalization that changes observable n8n behavior (#223 \u00a721)",
               "purpose": "One deterministic normalization per parameter kind (string/number/boolean/options/collection/fixedCollection/resourceLocator) with explicit, documented, testable semantics that preserve observable n8n behavior.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "normalizeValue performs only the two safe canonicalizations (finite numeric string -> number, 'true'/'false' -> boolean); every other value passes through unchanged, so observable n8n behavior is preserved (#223 \u00a721). Pinned by the 4 normalization tests in test/lego-parameter-validate.test.mjs. See docs/n8n-lego/evidence/P7-S03-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:13:45Z"
             },
             {
               "id": "CP-02",
@@ -3972,7 +3974,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:03:59Z",
+          "updatedAt": "2026-09-26T19:13:45Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
