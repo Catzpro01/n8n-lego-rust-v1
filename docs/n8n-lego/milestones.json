@@ -4115,6 +4115,44 @@
           "title": "Credential-Aware Resolution: credential/security composition through scoped SecretRefs and security-sensitive dynamic values that never leak into caches, snapshots or logs (#223 §18, §28, §42 P7.6)",
           "kind": "slice",
           "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Scoped SecretRef: a request-bound, opaque credential reference that never holds plaintext",
+              "purpose": "A SecretRef is the only handle a dynamic lookup may carry for a credential (#223 \u00a718): a request-bound, opaque reference bound to a capability scope (principal, tenant, capability, action, resource) + credentialId + nonce. It must NEVER contain raw credential material \u2014 passing plaintext (secret/password/token/value fields) is rejected (CREDENTIAL_LEAK). The SecretRef is immutable and safe to log (only its scope fields).",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Credential composition pipeline: authorization -> SecretRef -> Secret Broker -> narrowly scoped provider operation -> normalized result",
+              "purpose": "The \u00a718 composition is modelled and enforced: an explicit, injectable Secret Broker (P2.27) resolves a SecretRef to in-memory credential material ONLY; a narrowly scoped provider operation receives the material in-memory and returns a normalized result. P7 never stores raw credential material \u2014 the material lives only for the duration of the operation and is never persisted, cached, or logged. The broker and provider are explicit, replaceable objects.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Capability boundary: the principal -> tenant -> capability -> action -> resource -> SecretRef -> provider chain is enforced before the provider call",
+              "purpose": "Before any provider call the full capability chain is checked (#223 \u00a719) via an injectable P5 authorization decision. Option visibility does NOT grant permission to execute the resulting action (a visible option still requires the capability). Provider-returned metadata cannot grant itself new authority (authority-elevation fields in a provider result are ignored; the resolved authority is the original scope). A denied capability is a marked CAPABILITY_DENIED / AUTH_REJECTED and the provider is never called.",
+              "weight": 15,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "No-leak guarantee: credential plaintext never appears in ParameterPlan, cache, parameter history, logs, telemetry, error payloads, or schema snapshots",
+              "purpose": "The no-leak invariant (\u00a718) is enforced structurally and by redaction: the cache key is over the SecretRef scope (never the material); the cache stores only the normalized result (never the material); a scrub() redactor strips any secret material from results, error payloads, and log/telemetry strings (a provider that echoes the credential back is scrubbed to [REDACTED]). Pinned by leak-detection tests: the material is absent from the cached value, the returned result, and any error message.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Security-sensitive dynamic values: authoritative values require revalidation; cached UI option never becomes authority",
+              "purpose": "Security-sensitive / execution-authoritative values (valid resource IDs, allowed accounts, permission-bound resources) are marked revalidation-required (#223 \u00a728): an informational option may use bounded stale metadata, but an authoritative resolution must revalidate against current authority before execution. The resolver never treats a cached UI option as authority \u2014 a cached option served for an authoritative request is refused (REVALIDATION_REQUIRED), preventing the cached-UI-option -> assumed-authority -> unauthorized-execution path.",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-26T19:59:52Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
