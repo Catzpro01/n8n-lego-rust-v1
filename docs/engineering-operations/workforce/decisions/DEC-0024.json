@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "objectType": "Decision",
+  "objectId": "DEC-0024",
+  "revision": 1,
+  "createdAt": "2026-09-26T02:55:00Z",
+  "updatedAt": "2026-09-26T02:55:00Z",
+  "events": [],
+  "state": "ACTIVE",
+  "category": "MILESTONE",
+  "title": "P7 is authorized: the eight-slice ladder of #223 §42 is delivered back to back without waiting for self-hosted runners",
+  "problem": "P7 (Dynamic Parameters / Schema Runtime) held one placeholder slice, P7-S01, marked 'not authorized; requires a Manager Master Prompt', and #223 is planning only. The owner asked in chat on 2026-09-26 to work P7 as a marathon without the self-hosted runners. The ladder needs canonical slice ids, a feature-to-slice mapping and an explicit statement of how the runner instruction relates to DEC-0015.",
+  "options": [
+    {
+      "id": "A-eight-slices",
+      "summary": "Split P7 into P7-S01..P7-S08, one slice per #223 §42 rung (P7.1..P7.8 become Pn-Snn ids; no new P numbers). Map the 29 P7 features onto them. Deliver them back to back, one delivery PR per slice (DEC-0014). Merge on GitHub-hosted green with self-hosted checks green or WAITING_RUNNER (DEC-0015 model B), never waiting on the self-hosted fleet; a slice whose self-hosted checks have not passed stays in-progress (VERIFYING) and only becomes implemented when DEC-0015 holds."
+    },
+    {
+      "id": "B-one-slice",
+      "summary": "Deliver all of P7 as one slice P7-S01."
+    },
+    {
+      "id": "C-treat-hosted-as-complete",
+      "summary": "Count hosted-green merges as implemented without self-hosted verification."
+    }
+  ],
+  "selectedOption": "A-eight-slices",
+  "rationale": "Owner instruction in chat on 2026-09-26: 'kerjakan p7 maraton tanpa Runner selfhosted' (work P7 as a marathon without the self-hosted runners). Option A follows the ladder #223 already proposes and keeps each slice reviewable. B would be one unreviewable PR and breaks the per-rung acceptance of #223. C would contradict DEC-0015 and rule 12 (WAITING_RUNNER is never PASS), which this decision does not change: 'without the self-hosted runners' means delivery never waits for them, not that their verification is presumed. P7 keeps its #223 §43 hard boundaries: it is not a workflow engine, expression rewrite, credential manager, storage engine, node runtime or plugin admission system. No CI workflow, runner or compiler configuration is touched (owner runner/CI mandate).",
+  "scope": {
+    "programs": [
+      "GOVERNANCE",
+      "P7"
+    ],
+    "slices": [
+      "P7-S01",
+      "P7-S02",
+      "P7-S03",
+      "P7-S04",
+      "P7-S05",
+      "P7-S06",
+      "P7-S07",
+      "P7-S08"
+    ],
+    "domains": [
+      "dynamic-parameters"
+    ],
+    "surfaces": [
+      "/rest/dynamic-node-parameters"
+    ]
+  },
+  "authority": {
+    "decidedBy": "OWNER",
+    "managerOnly": false,
+    "humanEscalation": true,
+    "proposedBy": "MANAGER-01"
+  },
+  "evidence": [],
+  "evidenceRefs": [
+    "https://github.com/Catzpro01/n8n-rust-v.4/issues/223 (§42 ladder, §43 hard boundaries)",
+    "docs/n8n-lego/milestones.json (P7 program, P7-S01..S08, P7-F-PARAM-001..029)"
+  ],
+  "sources": {
+    "issues": [
+      223,
+      90
+    ],
+    "prs": [],
+    "commits": [
+      "d3c35c734f59311f08ede19500a4a1b72a881fa1"
+    ],
+    "requests": []
+  },
+  "supersedes": null,
+  "supersededBy": null,
+  "promotion": {
+    "canonical": false,
+    "mainPath": "docs/engineering-operations/workforce/decisions/DEC-0024.json",
+    "mainCommitSha": null,
+    "promotedAt": null,
+    "promotedBy": null
+  },
+  "reason": null
+}

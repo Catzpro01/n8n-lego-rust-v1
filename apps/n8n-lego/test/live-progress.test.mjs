@@ -63,6 +63,8 @@ function reopened() {
   const inFlight = [...REGISTER.programs, ...REGISTER.futurePrograms]
     .flatMap((entity) => entity.slices)
     .filter((slice) => slice.status === 'in-progress' && slice.id !== 'P5-M08')
+    // A verifying slice is in-progress too, but the pointer already lists it under verifyingSlices.
+    .filter((slice) => !(REGISTER.executionPointer.verifyingSlices ?? []).some((entry) => entry.id === slice.id))
     .map((slice) => slice.id);
   register.executionPointer.activeSlices = ['P5-M08', ...inFlight];
   assert.deepEqual(validateGovernanceRegister(register), []);
@@ -551,7 +553,10 @@ test('the live state is readable from the register alone: status, checkpoint, ev
     + ` (PR #${latest.pr}, merge ` + '`' + latest.mergeSha.slice(0, 8) + '`' + `)`;
   assert.ok(rendered.includes(expected), `the delivery record must be readable from the register alone: ${expected}`);
   assert.match(rendered, /CP-05 DEC-0015 self-hosted runner verification on main[^\n]*\(completed, 30\)/);
-  assert.match(rendered, /_No verifying slice\._/);
+  // An implemented slice never renders a verifying block; the placeholder appears only when
+  // nothing else is verifying (derived from the register, never pinned).
+  assert.ok(!rendered.includes('### 🟠 P5-M08 — '), 'P5-M08 has no verifying block');
+  if ((REGISTER.executionPointer.verifyingSlices ?? []).length === 0) assert.match(rendered, /_No verifying slice\._/);
   // The checkpoint evidence the resolver derived, with the runners and run IDs, is on the register.
   assert.match(String(slice.checkpoints[4].evidence), /Level 0 \(Check & Format\) on MDMTEST-n8n-wsl-2 \(run 36166949165\)/);
   assert.match(String(slice.checkpoints[4].evidence), /Post-Merge Verification & Branch Cleanup on MDMTEST-n8n-wsl-3 \(run 36167178324\)/);

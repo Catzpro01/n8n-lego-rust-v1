@@ -15,7 +15,7 @@
 | `workflow` | `agent-2` | domain | partial | — | 3 |
 | `execution` | `agent-2` | domain | partial | — | 5 |
 | `node-registry` | `agent-4` | domain | partial | `node.portability` v1.0.0 | 3 |
-| `dynamic-parameters` | `agent-4` | domain | planned | — | 0 |
+| `dynamic-parameters` | `agent-4` | domain | partial | — | 0 |
 | `webhook` | `agent-2` | domain | planned | — | 0 |
 | `storage` | `agent-5` | domain | partial | — | 9 |
 | `worker` | `agent-6` | domain | planned | — | 0 |

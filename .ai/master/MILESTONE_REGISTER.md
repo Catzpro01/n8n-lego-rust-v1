@@ -7,9 +7,9 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 ## Delivery progress (same two metrics as README.md)
 
-**Realtime Delivery Progress 91.1%** — 13300/14600 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 13 current-delivery slice(s) have no checkpoint model and contribute 0.
+**Realtime Delivery Progress 86.9%** — 13300/15300 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 20 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 91.1%** — 133/146 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 86.9%** — 133/153 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
@@ -20,7 +20,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | P4 | 100.0% | 100.0% | 10/10 | complete |
 | P5 | 72.2% | 72.2% | 13/18 | complete |
 | P6 | 94.3% | 94.3% | 33/35 | complete |
-| P7 | 0.0% | 0.0% | 0/1 | planned |
+| P7 | 0.0% | 0.0% | 0/8 | in-progress |
 | P8 | 0.0% | 0.0% | 0/1 | planned |
 | P9 | 100.0% | 100.0% | 23/23 | complete |
 | P10 | 0.0% | 0.0% | 0/1 | planned |
@@ -31,13 +31,13 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | | |
 | --- | --- |
 | Latest completed slice | `P6-S02` — Production WASM node/plugin sandbox engine (PR #330, merge `d3c35c73`) |
-| Active slices | — (none) |
-| Verifying (merged, post-merge verification pending) | — (none) |
-| Planned queue (in order; planned ≠ authorized) | `P2-S02`, `P2-S03` |
+| Active slices | `P7-S03` — Local Validation & Normalization |
+| Verifying (merged, post-merge verification pending) | `P7-S01` — Parameter Contract & Compiler (PR #334, merge `8aedbfa2`): DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)<br>`P7-S02` — Visibility & Dependency Graph (PR #336, merge `d58dfaeb`): DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0) |
+| Planned queue (in order; planned ≠ authorized) | `P7-S04`, `P7-S05`, `P7-S06`, `P7-S07`, `P7-S08`, `P2-S02`, `P2-S03` |
 | Blocked | `P5-M02` — blocked by P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145)<br>`P5-M05` — blocked by P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs<br>`P5-M06` — blocked by a mail-transport architecture decision (a dependency, or an injected transport contract); Node has no built-in SMTP<br>`P5-M10` — blocked by backing models this product does not have: projects/sharing, security audit, source control, data tables, workflow versions, a retry execution path, execution annotation tags (see P5-M08-EVIDENCE.md §1) |
 | Not authorized | planned is not authorized: the Manager starts a queued slice by moving it to in-progress in a PR on main. P5-M04 is planned and measure-first. P7-S01, P8-S01, P10-S01 and P11-S01 are placeholders that need a Manager Master Prompt before any work. |
 | Historical P2 ladder pointer | `P2.27` (history, not active work) |
-| Last verified main | `d3c35c73` |
+| Last verified main | `d58dfaeb` |
 
 ## Programs P0–P11 (top level)
 
@@ -50,7 +50,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
 | **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 13/18 | 20 | `P5-M04` (planned) |
 | **P6** | Node Registry / Node Runtime | **COMPLETE** | 33/35 | 67 | — |
-| **P7** | Dynamic Parameters / Schema Runtime | **PLANNED** | 0/1 | 29 | `P7-S01` (planned) |
+| **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 0/8 | 29 | `P7-S01` (in-progress) |
 | **P8** | Storage / Data Layer | **PLANNED** | 0/1 | 5 | `P8-S01` (planned) |
 | **P9** | Observability / Diagnostics / Operations | **COMPLETE** | 23/23 | 23 | — |
 | **P10** | Multi-Tenant / Isolation / Quota | **PLANNED** | 0/1 | 5 | `P10-S01` (planned) |
@@ -532,17 +532,24 @@ Node registry, lifecycle, installation/admission, runtime selection, official/co
 
 </details>
 
-### P7 — Dynamic Parameters / Schema Runtime (planned)
+### P7 — Dynamic Parameters / Schema Runtime (in-progress)
 
 Dynamic parameter schemas, option discovery, schema validation, caching, provider-backed lookup, parameter plugin boundaries (#90, #223).
 
 **Source issues:** #223
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (8)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
-| `P7-S01` | P7 implementation ladder per #223 §42 (not authorized; requires a Manager Master Prompt) | planned | — | — | #223 |
+| `P7-S01` | Parameter Contract & Compiler: canonical n8n parameter definitions compiled once into an immutable ParameterPlan with stable parameter identity and plan versioning (#223 §4-6, §31, §42 P7.1) | in-progress | #334 | — | #223 |
+| `P7-S02` | Visibility & Dependency Graph: displayOptions visibility engine, parameter dependency graph, incremental recomputation of only affected fields, expression boundary (#223 §7-10, §42 P7.2) | in-progress | #336 | — | #223 |
+| `P7-S03` | Local Validation & Normalization: schema validation, normalization, failure vocabulary and the immutable execution-ready parameter snapshot with canonical vs derived representation (#223 §20-21, §27, §29-30, §42 P7.3) | in-progress | — | — | #223 |
+| `P7-S04` | Dynamic Options Runtime: /rest/dynamic-node-parameters options, bounded dynamic cache classes with stale-while-revalidate, dependent-field race protection, request coalescing, provider backpressure and resource budgets (#223 §11, §14-16, §23-26, §34, §42 P7.4) | planned | — | — | #223 |
+| `P7-S05` | Resource Locator & Search: resourceLocator modes, list search with pagination and search (#223 §12-13, §42 P7.5) | planned | — | — | #223 |
+| `P7-S06` | Credential-Aware Resolution: credential/security composition through scoped SecretRefs and security-sensitive dynamic values that never leak into caches, snapshots or logs (#223 §18, §28, §42 P7.6) | planned | — | — | #223 |
+| `P7-S07` | Plugin/Provider Runtime Boundary: provider boundary, capability boundary, provider-backed schema, community node compatibility, plugin, storage and observability boundaries (#223 §17, §19, §22, §32-33, §35-36, §42 P7.7) | planned | — | — | #223 |
+| `P7-S08` | Differential Certification: differential oracle against pinned n8n-workflow 2.9.1, negative/security test matrix and the low-resource performance target (#223 §37-38, §40-41, §42 P7.8) | planned | — | — | #223 |
 
 </details>
 
@@ -552,33 +559,33 @@ Dynamic parameter schemas, option discovery, schema validation, caching, provide
 | --- | --- | --- | --- | --- | --- | --- |
 | `P7-F-PARAM-001` | ParameterPlan (five-stage architecture) | planned | active | `P7-S01` | #223 | — |
 | `P7-F-PARAM-002` | Stable parameter identity | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-003` | Parameter dependency graph | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-004` | Incremental recomputation | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-005` | Visibility engine | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-006` | Expression boundary | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-007` | Dynamic options | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-008` | Resource Locator | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-009` | Pagination + search | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-010` | Dynamic cache: classes + stale-while-revalidate | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-011` | Provider boundary | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-012` | Credential/security composition | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-013` | Capability boundary | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-014` | Schema validation + normalization | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-015` | Provider-backed schema | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-016` | Dependent dynamic fields + race protection | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-017` | Request coalescing + provider backpressure | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-018` | Failure vocabulary | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-019` | Security-sensitive dynamic values | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-020` | Parameter snapshot + canonical vs derived representation | planned | active | `P7-S01` | #223 | — |
+| `P7-F-PARAM-003` | Parameter dependency graph | planned | active | `P7-S02` | #223 | — |
+| `P7-F-PARAM-004` | Incremental recomputation | planned | active | `P7-S02` | #223 | — |
+| `P7-F-PARAM-005` | Visibility engine | planned | active | `P7-S02` | #223 | — |
+| `P7-F-PARAM-006` | Expression boundary | planned | active | `P7-S02` | #223 | — |
+| `P7-F-PARAM-007` | Dynamic options | planned | active | `P7-S04` | #223 | — |
+| `P7-F-PARAM-008` | Resource Locator | planned | active | `P7-S05` | #223 | — |
+| `P7-F-PARAM-009` | Pagination + search | planned | active | `P7-S05` | #223 | — |
+| `P7-F-PARAM-010` | Dynamic cache: classes + stale-while-revalidate | planned | active | `P7-S04` | #223 | — |
+| `P7-F-PARAM-011` | Provider boundary | planned | active | `P7-S07` | #223 | — |
+| `P7-F-PARAM-012` | Credential/security composition | planned | active | `P7-S06` | #223 | — |
+| `P7-F-PARAM-013` | Capability boundary | planned | active | `P7-S07` | #223 | — |
+| `P7-F-PARAM-014` | Schema validation + normalization | planned | active | `P7-S03` | #223 | — |
+| `P7-F-PARAM-015` | Provider-backed schema | planned | active | `P7-S07` | #223 | — |
+| `P7-F-PARAM-016` | Dependent dynamic fields + race protection | planned | active | `P7-S04` | #223 | — |
+| `P7-F-PARAM-017` | Request coalescing + provider backpressure | planned | active | `P7-S04` | #223 | — |
+| `P7-F-PARAM-018` | Failure vocabulary | planned | active | `P7-S03` | #223 | — |
+| `P7-F-PARAM-019` | Security-sensitive dynamic values | planned | active | `P7-S06` | #223 | — |
+| `P7-F-PARAM-020` | Parameter snapshot + canonical vs derived representation | planned | active | `P7-S03` | #223 | — |
 | `P7-F-PARAM-021` | Versioning | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-022` | Community node compatibility | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-023` | Plugin boundary | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-024` | Resource budgets | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-025` | Storage boundary | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-026` | Observability | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-027` | Low-resource target + performance strategy | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-028` | Differential oracle | planned | active | `P7-S01` | #223 | — |
-| `P7-F-PARAM-029` | Negative/security test matrix | planned | active | `P7-S01` | #223 | — |
+| `P7-F-PARAM-022` | Community node compatibility | planned | active | `P7-S07` | #223 | — |
+| `P7-F-PARAM-023` | Plugin boundary | planned | active | `P7-S07` | #223 | — |
+| `P7-F-PARAM-024` | Resource budgets | planned | active | `P7-S04` | #223 | — |
+| `P7-F-PARAM-025` | Storage boundary | planned | active | `P7-S07` | #223 | — |
+| `P7-F-PARAM-026` | Observability | planned | active | `P7-S07` | #223 | — |
+| `P7-F-PARAM-027` | Low-resource target + performance strategy | planned | active | `P7-S08` | #223 | — |
+| `P7-F-PARAM-028` | Differential oracle | planned | active | `P7-S08` | #223 | — |
+| `P7-F-PARAM-029` | Negative/security test matrix | planned | active | `P7-S08` | #223 | — |
 
 </details>
 

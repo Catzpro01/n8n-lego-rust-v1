@@ -3924,10 +3924,13 @@
       "title": "Dynamic node parameters",
       "owner": "agent-4",
       "kind": "domain",
-      "status": "planned",
+      "status": "partial",
       "phase": "P7",
       "errorNamespace": "dynamic-parameters",
-      "paths": [],
+      "paths": [
+        "src/lego/parameter-plan.mjs",
+        "src/lego/parameter-graph.mjs"
+      ],
       "public": [],
       "dependsOn": [
         "platform-kernel",
@@ -3941,8 +3944,11 @@
         "storage"
       ],
       "contract": {
-        "version": "0.0.0",
-        "tests": []
+        "version": "0.2.0",
+        "tests": [
+          "test/lego-parameter-plan.test.mjs",
+          "test/lego-parameter-graph.test.mjs"
+        ]
       },
       "capabilities": [
         {
@@ -3982,7 +3988,7 @@
           "resources": "low"
         }
       ],
-      "notes": "Answers 501 today via the compatibility capability registry.",
+      "notes": "P7-S01 ships the ParameterPlan compiler (src/lego/parameter-plan.mjs, pure, no I/O). P7-S02 adds the RESOLVE stage (src/lego/parameter-graph.mjs, pure, no I/O): the n8n displayParameter visibility port, the parameter dependency graph and the incremental ResolutionSession. The REST surface /rest/dynamic-node-parameters still answers 501 via the compatibility capability registry until P7-S04 mounts it.",
       "tier": "domain",
       "dataOwner": "none",
       "stateOwner": "cache",
