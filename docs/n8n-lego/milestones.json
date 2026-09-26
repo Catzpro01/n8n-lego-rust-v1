@@ -4028,7 +4028,9 @@
               "title": "Dependent-field race protection + request coalescing: requestId, generation/version, dependency digest; only a response matching the current generation updates state; identical concurrent requests share one in-flight operation (#223 \u00a724-25)",
               "purpose": "Correctness under overlapping editor changes (stale response discarded) and dedup of identical concurrent lookups.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Race protection: each issued provider call bumps the generation (carried on the result, captured at issue time) so a stale older-generation response is distinguishable; a dependency-digest change is a distinct cache key (no cross-contamination); identical concurrent requests coalesce onto one in-flight op (shared promise, shared generation) (#223 \u00a724-25). Pinned by the race/coalescing tests (generation ordering, digest-change-misses, concurrent-coalesce). See docs/n8n-lego/evidence/P7-S04-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:44:27Z"
             },
             {
               "id": "CP-05",
