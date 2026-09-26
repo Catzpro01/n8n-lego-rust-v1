@@ -35,11 +35,11 @@ Status is not progress. Both percentages below are generated from [`docs/n8n-leg
 
 ### Realtime Delivery Progress
 
-**89.6%**
+**89.7%**
 
-`██████████████████░░ 89.6%`
+`██████████████████░░ 89.7%`
 
-Checkpoint-weighted earned points / current-delivery points: 13885 / 15500. Denominator: programs P0–P11 only (155 active slices). Future programs are excluded. 12 slice(s) declare checkpoints. 127 implemented slice(s) have no checkpoint list and contribute 100 each. 16 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
+Checkpoint-weighted earned points / current-delivery points: 13900 / 15500. Denominator: programs P0–P11 only (155 active slices). Future programs are excluded. 12 slice(s) declare checkpoints. 127 implemented slice(s) have no checkpoint list and contribute 100 each. 16 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
 
 ### Slice Completion
 
@@ -69,7 +69,7 @@ P3   realtime ████████████████████ 100.0
 P4   realtime ████████████████████ 100.0%  completion 100.0%  10/10  status complete
 P5   realtime ██████████████░░░░░░  72.2%  completion  72.2%  13/18  status complete
 P6   realtime ███████████████████░  94.3%  completion  94.3%  33/35  status complete
-P7   realtime ███████░░░░░░░░░░░░░  35.6%  completion  25.0%  2/8  status in-progress
+P7   realtime ████████░░░░░░░░░░░░  37.5%  completion  25.0%  2/8  status in-progress
 P8   realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
 P9   realtime ████████████████████ 100.0%  completion 100.0%  23/23  status complete
 P10  realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
@@ -87,7 +87,7 @@ P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0
 | P4 | Trigger / Webhook / Ingress | 100.0% | 100.0% | 10/10 | complete |
 | P5 | Identity / Authentication / Authorization / Credentials (Security) | 72.2% | 72.2% | 13/18 | complete |
 | P6 | Node Registry / Node Runtime | 94.3% | 94.3% | 33/35 | complete |
-| P7 | Dynamic Parameters / Schema Runtime | 35.6% | 25.0% | 2/8 | in-progress |
+| P7 | Dynamic Parameters / Schema Runtime | 37.5% | 25.0% | 2/8 | in-progress |
 | P8 | Storage / Data Layer | 0.0% | 0.0% | 0/1 | planned |
 | P9 | Observability / Diagnostics / Operations | 100.0% | 100.0% | 23/23 | complete |
 | P10 | Multi-Tenant / Isolation / Quota | 0.0% | 0.0% | 0/1 | planned |
@@ -104,7 +104,7 @@ The queue is `executionPointer` only. Historical `P2.27` is not the next slice, 
 ```text
  1. `P7-S01` verifying; realtime 0.0%; completion contribution 0.0%
  2. `P7-S02` verifying; realtime 0.0%; completion contribution 0.0%
- 3. `P7-S05` planned; realtime 85.0%; completion contribution 0.0%; updated 2026-09-26T19:54:31Z
+ 3. `P7-S05` planned; realtime 100.0%; completion contribution 0.0%; updated 2026-09-26T19:54:32Z
  4. `P7-S06` planned; realtime 0.0%; completion contribution 0.0%
  5. `P7-S07` planned; realtime 0.0%; completion contribution 0.0%
  6. `P7-S08` planned; realtime 0.0%; completion contribution 0.0%
@@ -393,7 +393,7 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 
 ## P7 — Dynamic Parameters / Schema Runtime
 
-- **Realtime Delivery Progress:** **35.6%** `███████░░░░░░░░░░░░░ 35.6%`
+- **Realtime Delivery Progress:** **37.5%** `████████░░░░░░░░░░░░ 37.5%`
 - **Slice Completion:** **25.0%** (2 / 8 implemented). Remaining 6. 2 implemented, 2 verifying, 4 planned.
 - **Program status:** in-progress. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Dynamic parameter schemas, option discovery, schema validation, caching, provider-backed lookup, parameter plugin boundaries (#90, #223).
@@ -407,7 +407,7 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 | `P7-S02` | Visibility & Dependency Graph | displayOptions visibility engine, parameter dependency graph, incremental recomputation of only affected fields, expression boundary (#223 §7-10, §42 P7.2) | 🟠 Verifying | 0.0% | 0.0% | none declared | none declared | — |
 | `P7-S03` | Local Validation & Normalization | schema validation, normalization, failure vocabulary and the immutable execution-ready parameter snapshot with canonical vs derived representation (#223 §20-21, §27, §29-30, §42 P7.3) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Negative/security matrix & determinism: malformed/oversized/missing inputs, circular/invalid dependencies, sensitive-value handling; idempotent, pure, no side effects (#223 §41, §44) (completed, 15) | — |
 | `P7-S04` | Dynamic Options Runtime | /rest/dynamic-node-parameters options, bounded dynamic cache classes with stale-while-revalidate, dependent-field race protection, request coalescing, provider backpressure and resource budgets (#223 §11, §14-16, §23-26, §34, §42 P7.4) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Backpressure + resource budgets: concurrency bound, deadline, timeout, max page size, max result count, max response bytes, retry budget, cancellation, negative cache; one slow provider cannot consume the whole process budget (#223 §26, §34) (completed, 15) | — |
-| `P7-S05` | Resource Locator & Search | resourceLocator modes, list search with pagination and search (#223 §12-13, §42 P7.5) | 🟡 Planned | 85.0% | 0.0% | — | CP-04 Race protection, request coalescing, and cancellation (completed, 20) | — |
+| `P7-S05` | Resource Locator & Search | resourceLocator modes, list search with pagination and search (#223 §12-13, §42 P7.5) | 🟡 Planned | 100.0% | 0.0% | — | CP-05 Failure vocabulary + resource budgets (no fake empty success) (completed, 15) | — |
 | `P7-S06` | Credential-Aware Resolution | credential/security composition through scoped SecretRefs and security-sensitive dynamic values that never leak into caches, snapshots or logs (#223 §18, §28, §42 P7.6) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 | `P7-S07` | Plugin/Provider Runtime Boundary | provider boundary, capability boundary, provider-backed schema, community node compatibility, plugin, storage and observability boundaries (#223 §17, §19, §22, §32-33, §35-36, §42 P7.7) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 | `P7-S08` | Differential Certification | differential oracle against pinned n8n-workflow 2.9.1, negative/security test matrix and the low-resource performance target (#223 §37-38, §40-41, §42 P7.8) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
@@ -583,7 +583,7 @@ Excluded from the current-delivery denominator. Realtime **0.0%**. Slice complet
 - **Live progress (DEC-0021, LIVE-MILESTONE EXCEPTION):** checkpoint progress, checkpoint status, checkpoint evidence, current checkpoint, slice / program / overall progress and the milestone evidence of a slice still in flight are operational telemetry. The Manager may reconcile them straight to `main` in a `governance(progress):` commit, without a governance PR, with `node tools/lego/progress-event.mjs record --slice <id> --checkpoint <CP-nn> --status <status> --evidence <reference>`. The tool runs the whole atomic chain: validate evidence and weights → write the register → regenerate `README.md` and `.ai` → run `npm run lego:ai:check` → commit → push → verify `main`. One measurable event is one commit; live progress is never batched and a partial state is never published. The Manager never types a percentage: `resolve` derives the state from evidence — `--fetch` reads the DEC-0015 jobs and the runner availability from the GitHub API, `--jobs <file.json>` reads an export, and `verify --cmd` derives completed / blocked from a verification command's exit code. A checkpoint that declares `requires` is earned only when every named check has passed; an absent self-hosted check is never PASS and `WAITING_RUNNER` is never PASS, so a head that never ran the suite cannot look green. Two paths, never mixed: delivery state is implementation → delivery PR → merge → post-merge verification → one governance PR reconciling status, merge SHA, evidence and projections; telemetry is evidence → checkpoint update → register → README → .ai → a `governance(progress):` commit → main. A slice status becoming `implemented` is delivery state and is never telemetry. The exception never covers source code, tests, runtime behaviour, API / frontend / backend / contract / schema implementation, dependencies, packages, Rust code, CI workflows, security policy, permissions, infrastructure, database schema or production configuration — those still go through a delivery PR. Live telemetry never bypasses a completion gate: 100% realtime progress with a completion contribution of 0% is a legitimate state, and only `implemented` (DEC-0014 + DEC-0015) moves Slice Completion.
 - **Rule:** Milestone truth is main-owned. A milestone design found or developed in Manager memory becomes authoritative only when reconciled into main through a PR. arena-manager is not an alternate milestone authority, and its docs/ tree is a stale snapshot that is never copied over main.
 - **Pending reconciliation:** A milestone change that exists only on arena-manager, a local worktree, a handoff, an issue, a PR body or chat is a proposal (pending reconciliation), never authoritative truth. A PR proposes a milestone state; only the merged state on main is authoritative.
-- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `e21a368407531d70`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
+- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `abd1747dd0c915c3`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
 - **Progress model (Issue #307):** Realtime Delivery Progress is checkpoint-weighted across P0-P11. Slice Completion is implemented / active in that same denominator. Future programs stay visible and are excluded from the current-delivery denominator. Illustrations of the status/progress split are not register measurements and must not be copied into slice checkpoints. The generator counts only weights declared on slice.checkpoints. It does not invent weights. A completed checkpoint requires evidence. Weights on a slice must sum to 100. A slice with no checkpoint model stays at 0 unless it is implemented, in which case the legacy rule contributes 100. This projection is not canonical until the change is on main.
 - **Completion KPI:** Slice Completion is implemented slices / active slices in P0–P11. A verifying or blocked slice never increases that numerator. Realtime Delivery Progress is a separate checkpoint-weighted figure and can move while Slice Completion stays still.
 - **Purpose field:** a slice purpose is `slice.purpose` when present, otherwise the text after the first `: ` in the canonical title, otherwise the title. No purpose is invented.

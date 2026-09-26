@@ -4097,10 +4097,12 @@
               "title": "Failure vocabulary + resource budgets (no fake empty success)",
               "purpose": "A failing/slow/cancelled provider is reported with a closed, marked failure code (UNAVAILABLE/TIMEOUT/RATE_LIMITED/INVALID_PROVIDER_DATA/CANCELLED/STALE_REQUEST) \u2014 never converted into a fake unmarked empty success (#223 \u00a727). Resource budgets reuse the P7-S04/\u00a726/\u00a734 primitives (concurrency bound, timeout, max response bytes, max result count); one slow provider cannot consume the whole process budget.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "A failing/slow/cancelled provider returns items:[] TOGETHER with a non-null error (closed LOCATOR_FAILURE_CODES: UNAVAILABLE/TIMEOUT/RATE_LIMITED/OVERLOADED/CANCELLED/STALE_REQUEST, ...) \u2014 never a fake unmarked empty success; a genuine empty provider result is a success (error undefined). The concurrency bound is a marked OVERLOADED (one slow provider cannot consume the budget); failures are negatively cached to stop retry storms. Pinned by the 6 CP-05 tests. See docs/n8n-lego/evidence/P7-S05-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:54:32Z"
             }
           ],
-          "updatedAt": "2026-09-26T19:54:31Z",
+          "updatedAt": "2026-09-26T19:54:32Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
