@@ -11,8 +11,8 @@
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "d58dfaebf6d181d115ff9bd9cb455377061590b1",
-    "latestCompletedSlice": { "id": "P2-S05", "pr": 339, "mergeSha": "1f89499ce936b110a6034b496b441c786db9e81b" },
-    "activeSlices": ["P7-S03"],
+    "latestCompletedSlice": { "id": "P7-S03", "pr": 340, "mergeSha": "d4243a94bb18b3876dc1c68b04d178e473c84ecc" },
+    "activeSlices": [],
     "verifyingSlices": [{ "id": "P7-S01", "pr": 334, "headSha": "71510167bffd57ac38fc75f5289fe20b7bd2f457", "mergeSha": "8aedbfa2cf67d4afd7cedb2e30b179e152107413", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }, { "id": "P7-S02", "pr": 336, "headSha": "3d1dcd0260e5accc127c42404549535a0d9c38ce", "mergeSha": "d58dfaebf6d181d115ff9bd9cb455377061590b1", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }],
     "plannedQueue": ["P7-S04","P7-S05","P7-S06","P7-S07","P7-S08"],
     "blockedSlices": [
@@ -3934,7 +3934,7 @@
           "id": "P7-S03",
           "title": "Local Validation & Normalization: schema validation, normalization, failure vocabulary and the immutable execution-ready parameter snapshot with canonical vs derived representation (#223 §20-21, §27, §29-30, §42 P7.3)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -3983,11 +3983,12 @@
             }
           ],
           "updatedAt": "2026-09-26T19:13:57Z",
-          "mergeSha": null,
+          "mergeSha": "d4243a94bb18b3876dc1c68b04d178e473c84ecc",
           "issue": 223,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P7-S03-EVIDENCE.md",
           "owner": "manager (MANAGER-01)",
-          "authorizedBy": "DEC-0024"
+          "authorizedBy": "DEC-0024",
+          "latestUpdate": "Implemented: P7-S03 delivers the VALIDATE stage (stage 5) of the P7 pipeline \u2014 explicit normalization, the compact validation vocabulary with structured errors, the closed failure vocabulary, and the compact immutable execution-ready snapshot (canonical vs derived). Five checkpoints completed (weights 20/25/15/25/15). Delivery PR #340 merged to main as d4243a94; the GitHub-hosted gate was green (3/3) at the PR head. Landed on main under the DEC-0025 temporary gate (GitHub-hosted as the effective gate) while the self-hosted fleet was offline; the self-hosted DEC-0015 jobs are excluded for the duration and back-filled on restoration. Evidence: docs/n8n-lego/evidence/P7-S03-EVIDENCE.md."
         },
         {
           "id": "P7-S04",
