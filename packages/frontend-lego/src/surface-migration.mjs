@@ -77,7 +77,7 @@ export const ENTRY_FIELDS = Object.freeze([
  * entry, because the single-pilot rule is per slice and "per slice" is
  * unenforceable if nothing records the slice.
  */
-export const ENTRY_OPTIONAL_FIELDS = Object.freeze(['sourceIssue']);
+export const ENTRY_OPTIONAL_FIELDS = Object.freeze(['sourceIssue', 'slice']);
 
 export class SurfaceMigrationError extends Error {
   constructor(message, { inventoryId = null, errors = [] } = {}) {
@@ -280,7 +280,10 @@ export function validateSurfaceMigrationInventory(inventory, surfaces = []) {
   // actually protects the strangler: one pilot per originating slice, because two
   // pilots stacked on ONE slice is how a reversible migration stops being
   // reversible. So every pilot must name the slice it came from, and no slice may
-  // carry two.
+  // carry two. A split umbrella (one issue that spawns several slices, e.g. the
+  // P2-S03 Layer 3 surface #240) names its slice, so two pilots of the same
+  // issue are not two pilots of the same slice; unsplit pilots fall back to the
+  // issue.
   const pilots = entries.filter((e) => e?.migrationStatus === 'pilot-available');
   const pilotOwners = new Set();
   for (const pilot of pilots) {
@@ -289,10 +292,11 @@ export function validateSurfaceMigrationInventory(inventory, surfaces = []) {
       errors.push(`pilot "${pilot.inventoryId}" must declare the sourceIssue it came from`);
       continue;
     }
-    if (pilotOwners.has(source)) {
-      errors.push(`source issue ${source} carries more than one pilot-available entry`);
+    const owner = (typeof pilot.slice === 'string' && pilot.slice.length > 0) ? pilot.slice : source;
+    if (pilotOwners.has(owner)) {
+      errors.push(`slice ${owner} carries more than one pilot-available entry`);
     }
-    pilotOwners.add(source);
+    pilotOwners.add(owner);
   }
 
   // Dependency edges must not cycle (simple DFS on the small graph).

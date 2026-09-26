@@ -228,6 +228,21 @@
     "dashboard"
    ],
    "operations": []
+  },
+  {
+   "id": "dialogs",
+   "lego": "ui-frontend",
+   "title": "Dialogs / overlays pilot (handed-over content, bounded, declared actions by kind)",
+   "status": "available",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "dialogs"
+   ],
+   "operations": []
   }
  ],
  "registered": [],
