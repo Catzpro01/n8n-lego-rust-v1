@@ -4190,7 +4190,9 @@
               "title": "Provider-backed schema: base schema + bounded provider fragment (versioned, size-bounded, validated, capability-scoped, cacheable, replaceable)",
               "purpose": "Support a base schema plus a bounded provider schema fragment (#223 \u00a722). The fragment must be versioned, size-bounded, validated, capability-scoped, cacheable, and replaceable. A provider CANNOT replace the canonical P7 contract or security model: a fragment that attempts to override canonical/security fields (security/authorization/credentials/canonical) is rejected (SCHEMA_FRAGMENT_SECURITY_OVERRIDE). The base schema is always authoritative.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "validateProviderSchemaFragment enforces that a provider schema fragment is versioned, size-bounded, validated, capability-scoped, cacheable, and replaceable; a fragment carrying a security/canonical override field (security/authorization/auth/credentials/canonical/permission/policy) is rejected (SCHEMA_FRAGMENT_SECURITY_OVERRIDE), and the base schema is always authoritative (baseAuthoritative: true). Pinned by the 3 CP-02 tests. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:27Z"
             },
             {
               "id": "CP-03",
