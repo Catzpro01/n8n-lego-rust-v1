@@ -4235,6 +4235,54 @@
           "title": "Differential Certification: differential oracle against pinned n8n-workflow 2.9.1, negative/security test matrix and the low-resource performance target (#223 §37-38, §40-41, §42 P7.8)",
           "kind": "slice",
           "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Differential oracle: compare P7 output against pinned n8n behavior and classify every difference",
+              "purpose": "The differential oracle (#223 \u00a740) compares P7 output against pinned n8n-workflow 2.9.1 behavior for the twelve aspects (visibility, defaults, options, dynamic options, dependent fields, resourceLocator, pagination, validation, error behavior, normalization, expression-dependent fields, credential-aware lookups) and classifies EVERY difference into one of the four closed classes: equivalent, compatible-improvement, migration-required, breaking. The comparison is canonical-JSON based with explicit superset/subset rules (a superset is a compatible improvement; dropping oracle data is breaking; a same-shape value change is migration-required). The oracle is an explicit, injectable, pinned reference \u2014 P7 never hardcodes vendor internals.",
+              "weight": 25,
+              "status": "completed",
+              "evidence": "classifyDifference compares P7 output against the pinned n8n oracle for all 12 DIFFERENTIAL_ASPECTS (visibility, defaults, options, dynamic options, dependent fields, resourceLocator, pagination, validation, error behavior, normalization, expression-dependent fields, credential-aware lookups) and classifies every difference via a canonical-JSON superset/subset rule: equal -> EQUIVALENT, P7 a strict superset -> COMPATIBLE_IMPROVEMENT, P7 drops oracle data (subset) -> BREAKING, same shape different value -> MIGRATION_REQUIRED. The oracle is an explicit, injectable, pinned reference (P7 never hardcodes vendor internals). Pinned by the 5 CP-01 tests in test/lego-parameter-certify.test.mjs. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:44Z"
+            },
+            {
+              "id": "CP-02",
+              "title": "Certification report: a slice is certified only when no difference is breaking",
+              "purpose": "certify() runs the differential cases and produces a frozen certification report { certified, total, differences, breaking }: certified is true ONLY when no difference is classified BREAKING (equivalent, compatible-improvement, and migration-required are tolerated, the latter with a migration note). The report is deterministic and the set of breaking differences is explicitly enumerated \u2014 a certification is a record, not a boolean hand-wave.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "certify(cases) runs the differential cases and produces a frozen certification report { format, pinnedN8nVersion, certified, total, differences, breaking }: certified is true ONLY when no difference is classified BREAKING (equivalent/compatible-improvement/migration-required are tolerated), and the breaking set is explicitly enumerated. Malformed cases are rejected (CERTIFICATION_INVALID). Pinned by the 3 CP-02 tests. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:45Z"
+            },
+            {
+              "id": "CP-03",
+              "title": "Negative/security test matrix: the 20 mandatory cases, each mapped to its expected marked failure or behavior",
+              "purpose": "The mandatory negative/security matrix (#223 \u00a741) is a frozen registry of the 20 required cases (cyclic dependency, invalid path, malformed/oversized provider response, excessive result count, timeout, cancellation, stale overlapping response, cache scope collision, wrong tenant, missing capability, provider without permission, credential access without P5, secret leakage through cache, secret leakage through logs, provider forged permission metadata, schema version mismatch, incompatible node definition, unbounded pagination, provider retry storm). verifyNegativeResult checks a P7 result is the expected marked failure code (or the expected no-leak/no-retry behavior) for each case, and runNegativeMatrix reports coverage + pass.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "NEGATIVE_CASES is a frozen registry of all 20 mandatory negative/security cases (#223 \u00a741: cyclic dependency, invalid path, malformed/oversized provider response, excessive result count, timeout, cancellation, stale overlapping response, cache scope collision, wrong tenant, missing capability, provider without permission, credential access without P5, secret leakage through cache/logs, provider forged permission metadata, schema version mismatch, incompatible node definition, unbounded pagination, provider retry storm); verifyNegativeResult checks each is the expected marked failure code (an unmarked empty success is explicitly NOT a pass) or the expected behavioral marker (no-leak/no-retry/forged-metadata); runNegativeMatrix reports coverage + pass, complete only when all 20 are covered and passing. Pinned by the 4 CP-03 tests. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:51Z"
+            },
+            {
+              "id": "CP-04",
+              "title": "Low-resource budget: the 1 vCPU / 1 GB target (bounded cache, bounded concurrency, small pages, no persistent polling, bounded responses)",
+              "purpose": "The low-resource target (#223 \u00a738) is a frozen budget for 1 vCPU / 1 GB: amortized (compile-once) schema compilation, bounded cache, bounded provider concurrency, small pages/results, bounded/rejected large responses, and no persistent polling by default. checkLowResourceBudget verifies a config fits the budget and enumerates violations; P7 must degrade before it becomes a process-level memory pressure source. The performance strategy (#37) is honored: compile once, local graph, bounded cache, coalescing, lazy provider calls, cancellation, incremental recomputation \u2014 no network on static fields, no whole-form recomputation, no per-keystroke provider calls.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "LOW_RESOURCE_BUDGET pins the 1 vCPU / 1 GB target (#223 \u00a738): amortized (compile-once) schema compilation, no persistent polling, bounded cache (512 entries), bounded provider concurrency (8), small pages (200), bounded results (4096), bounded responses (1 MiB). checkLowResourceBudget verifies a config fits and enumerates violations (persistent polling, per-request compilation, unbounded cache/concurrency/pages/results/responses) \u2014 P7 degrades before it becomes a process-level memory pressure source. Pinned by the 2 CP-04 tests. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:52Z"
+            },
+            {
+              "id": "CP-05",
+              "title": "Certification is a record: deterministic, reproducible, and tied to the pinned n8n version",
+              "purpose": "The certification is a deterministic record pinned to n8n-workflow 2.9.1: re-running the same cases + oracle gives a byte-identical report (reproducibility), the pinned version is recorded, and a version change re-runs the matrix (a stale certification is invalid). This makes differential certification a repeatable gate, not a one-off assertion.",
+              "weight": 15,
+              "status": "completed",
+              "evidence": "certificationFingerprint(report) gives a deterministic fingerprint of the report basis (canonical JSON of pinnedN8nVersion + total + differences + breaking): re-running the same cases + oracle gives an identical fingerprint, and a value difference or a pinned-version change changes the record \u2014 differential certification is a repeatable, reproducible gate pinned to n8n-workflow 2.9.1, not a one-off assertion. Pinned by the 2 CP-05 tests. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:52Z"
+            }
+          ],
+          "updatedAt": "2026-09-26T20:24:52Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
