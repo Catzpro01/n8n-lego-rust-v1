@@ -4181,7 +4181,9 @@
               "title": "Provider registration/declaration boundary: identity, version, capability requirements, locality, trust class, budgets",
               "purpose": "A parameter provider may live inside a node/plugin, but registration must DECLARE (#223 \u00a717, \u00a733): provider identity, version, capability requirements, locality, runtime trust class, and resource budgets. registerProvider validates the declaration (rejecting incomplete/malformed ones) and normalizes it to the canonical descriptor \u2014 vendor-specific business-model fields are EXCLUDED from the public contract (P7 does not import vendor models into public parameter contracts). P6 owns node/runtime admission and trust; P7 owns parameter resolution (the trust class is declared and validated, not admitted, here).",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "registerProvider validates the full provider declaration (identity, version, capability requirements, locality, runtime trust class, resource budgets) and rejects incomplete/malformed ones (PROVIDER_DECLARATION_INVALID); it normalizes to a frozen canonical descriptor and EXCLUDES vendor-specific business-model fields from the public contract (P7 does not import vendor models). The trust class is validated (one of PROVIDER_TRUST_CLASSES) but admission/trust is P6's. Pinned by the 4 CP-01 tests in test/lego-parameter-provider-boundary.test.mjs. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:27Z"
             },
             {
               "id": "CP-02",
@@ -4212,7 +4214,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T20:08:02Z",
+          "updatedAt": "2026-09-26T20:10:27Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
