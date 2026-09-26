@@ -23,6 +23,7 @@
 - `src/lego/parameter-plan.mjs`
 - `src/lego/parameter-graph.mjs`
 - `src/lego/parameter-validate.mjs`
+- `src/lego/parameter-discover.mjs`
 
 ## Public contract surface
 
@@ -57,3 +58,4 @@ _none — this LEGO has no public surface yet; do not import from it._
 - `test/lego-parameter-plan.test.mjs`
 - `test/lego-parameter-graph.test.mjs`
 - `test/lego-parameter-validate.test.mjs`
+- `test/lego-parameter-discover.test.mjs`
