@@ -3163,7 +3163,9 @@
               "id": "CP-02",
               "title": "Measured finding: run the harness at 1k/10k/50k/100k records; record that the work-list scan is negligible and the O(n) replaceAll persist dominates by ~100-250x (file-backed).",
               "weight": 30,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P5-M04-EVIDENCE.md (file-backed: persist dominates scan 5-15x; in-memory: scan dominates)",
+              "completedAt": "2026-09-26T20:42:02Z"
             },
             {
               "id": "CP-03",
