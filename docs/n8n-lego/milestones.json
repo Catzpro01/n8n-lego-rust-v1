@@ -4268,7 +4268,9 @@
               "title": "Low-resource budget: the 1 vCPU / 1 GB target (bounded cache, bounded concurrency, small pages, no persistent polling, bounded responses)",
               "purpose": "The low-resource target (#223 \u00a738) is a frozen budget for 1 vCPU / 1 GB: amortized (compile-once) schema compilation, bounded cache, bounded provider concurrency, small pages/results, bounded/rejected large responses, and no persistent polling by default. checkLowResourceBudget verifies a config fits the budget and enumerates violations; P7 must degrade before it becomes a process-level memory pressure source. The performance strategy (#37) is honored: compile once, local graph, bounded cache, coalescing, lazy provider calls, cancellation, incremental recomputation \u2014 no network on static fields, no whole-form recomputation, no per-keystroke provider calls.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "LOW_RESOURCE_BUDGET pins the 1 vCPU / 1 GB target (#223 \u00a738): amortized (compile-once) schema compilation, no persistent polling, bounded cache (512 entries), bounded provider concurrency (8), small pages (200), bounded results (4096), bounded responses (1 MiB). checkLowResourceBudget verifies a config fits and enumerates violations (persistent polling, per-request compilation, unbounded cache/concurrency/pages/results/responses) \u2014 P7 degrades before it becomes a process-level memory pressure source. Pinned by the 2 CP-04 tests. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:52Z"
             },
             {
               "id": "CP-05",
@@ -4278,7 +4280,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T20:24:51Z",
+          "updatedAt": "2026-09-26T20:24:52Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
