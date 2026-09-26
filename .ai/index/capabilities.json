@@ -243,6 +243,21 @@
     "dialogs"
    ],
    "operations": []
+  },
+  {
+   "id": "executions",
+   "lego": "ui-frontend",
+   "title": "Executions list pilot (loading/empty/error/ready, bounded + status-filterable)",
+   "status": "available",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "executions"
+   ],
+   "operations": []
   }
  ],
  "registered": [],

@@ -56,11 +56,14 @@ test('every pilot-available entry is a declared pilot with a capability and a te
   const pilots = inv.entries.filter((e) => e.migrationStatus === 'pilot-available');
   assert.deepEqual(
     pilots.map((e) => e.inventoryId).sort(),
-    [PILOT_ID, 'ui.primitives.dialogs', 'ui.primitives.notification-surface', 'ui.pages.dashboard'].sort(),
-    'the pilot set is exactly the status region (#241), the notification surface (#245) and the P2-S03 Layer 3 splits (dashboard P2-S04, dialogs P2-S05)',
+    [PILOT_ID, 'ui.executions.history', 'ui.primitives.dialogs', 'ui.primitives.notification-surface', 'ui.pages.dashboard'].sort(),
+    'the pilot set is exactly the status region (#241), the notification surface (#245) and the P2-S03 Layer 3 splits (dashboard P2-S04, dialogs P2-S05, executions P2-S06)',
   );
   for (const pilot of pilots) {
-    const capability = manifests.capabilities.find((c) => c.id === pilot.inventoryId.split('.').at(-1));
+    // A pilot declares the capability it was built from; that id is a dot-segment of the
+    // inventory id (e.g. `executions` in `ui.executions.history`), not necessarily the last one.
+    const segments = new Set(pilot.inventoryId.split('.'));
+    const capability = manifests.capabilities.find((c) => segments.has(c.id));
     assert.ok(capability, `${pilot.inventoryId} declares no capability`);
     assert.equal(capability.lifecycle, 'available', `${pilot.inventoryId} capability is not available`);
     assert.ok(pilot.evidencePath, `${pilot.inventoryId} names no evidence path`);
