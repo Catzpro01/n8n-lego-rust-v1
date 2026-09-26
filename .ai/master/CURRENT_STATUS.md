@@ -14,11 +14,11 @@ document is right and the prose is stale.
 | Agent 1 branch | `main` |
 | Agent 2 branch | `main` |
 | **Latest completed slice** | **P6-S01** |
-| **Realtime Delivery Progress** | **91.8%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
-| **Slice Completion** | **90.4%** (132/146 implemented; verifying and blocked contribute 0) |
-| **Active / verifying slices** | **P6-S02** |
-| Planned queue | — |
-| Blocked slices | P2-S03, P2-S02, P5-M02, P5-M05, P5-M06, P5-M10 |
+| **Realtime Delivery Progress** | **87.6%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
+| **Slice Completion** | **86.3%** (132/153 implemented; verifying and blocked contribute 0) |
+| **Active / verifying slices** | **P6-S02, P7-S03, P7-S01 (verifying), P7-S02 (verifying)** |
+| Planned queue | P7-S04, P7-S05, P7-S06, P7-S07, P7-S08 |
+| Blocked slices | P2-S02, P2-S03, P5-M02, P5-M05, P5-M06, P5-M10 |
 | Historical P2 ladder pointer | P2.27 (history, not active work) |
 | Previous completed P2 milestone | P2.26 |
 | Current branch state | `main` (implementation branch; not protected main) |

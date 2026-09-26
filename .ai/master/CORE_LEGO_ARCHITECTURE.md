@@ -21,7 +21,7 @@ states a different count, that document is stale and this one is right.
 | 8 | `workflow` | `agent-2` | domain | partial | `workflow` |
 | 9 | `execution` | `agent-2` | domain | partial | `execution` |
 | 10 | `node-registry` | `agent-4` | domain | partial | `node` |
-| 11 | `dynamic-parameters` | `agent-4` | domain | planned | `dynamic-parameters` |
+| 11 | `dynamic-parameters` | `agent-4` | domain | partial | `dynamic-parameters` |
 | 12 | `webhook` | `agent-2` | domain | planned | `webhook` |
 | 13 | `storage` | `agent-5` | domain | partial | `storage` |
 | 14 | `worker` | `agent-6` | domain | planned | `worker` |
