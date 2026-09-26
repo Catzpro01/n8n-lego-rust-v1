@@ -26,11 +26,29 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
           submodules: false
           lfs: false
+
+      # Self-heal (Linux workers only): a restarted WSL runner must not turn the
+      # workspace test run into "cargo: command not found" (exit 127). The Windows
+      # worker keeps its own cargo environment.
+      - name: Level 2 - Rust toolchain preflight
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f "$HOME/.cargo/env" ]; then . "$HOME/.cargo/env"; fi
+          if ! command -v cargo >/dev/null 2>&1; then
+            echo "cargo not found on PATH - installing rustup (minimal + rustfmt)"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --component rustfmt
+            . "$HOME/.cargo/env"
+          fi
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          echo "cargo: $(command -v cargo) ($(cargo --version))"
+          rustc --version
 
       - name: Level 2 - Full Rust Workspace Tests
         run: cargo test --workspace
@@ -41,7 +59,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
           submodules: false

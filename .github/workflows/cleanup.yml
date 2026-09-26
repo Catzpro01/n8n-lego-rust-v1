@@ -20,10 +20,27 @@ jobs:
       # fetches the SHA explicitly / deepens on its own, so a shallow checkout would
       # still work, but a complete history keeps the ancestry check conclusive.
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
+
+      # Self-heal: a restarted WSL runner must not turn the post-merge verification
+      # into "cargo: command not found" (exit 127) — that failure also blocks the
+      # branch cleanup step below and lets merged branches pile up.
+      - name: Rust toolchain preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f "$HOME/.cargo/env" ]; then . "$HOME/.cargo/env"; fi
+          if ! command -v cargo >/dev/null 2>&1; then
+            echo "cargo not found on PATH - installing rustup (minimal + rustfmt)"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --component rustfmt
+            . "$HOME/.cargo/env"
+          fi
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          echo "cargo: $(command -v cargo) ($(cargo --version))"
+          rustc --version
 
       - name: Post-Merge Main Verification (Level 0 + Level 2)
         run: |

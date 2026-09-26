@@ -39,11 +39,30 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
           submodules: false
           lfs: false
+
+      # Self-heal: WSL runners can lose ~/.cargo/bin from PATH after a restart, which
+      # surfaces as "cargo: command not found" (exit 127) instead of a real check
+      # result. Source the rustup env when present; install the minimal toolchain when
+      # absent; export the bin dir for the later steps either way.
+      - name: Level 0 - Rust toolchain preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f "$HOME/.cargo/env" ]; then . "$HOME/.cargo/env"; fi
+          if ! command -v cargo >/dev/null 2>&1; then
+            echo "cargo not found on PATH - installing rustup (minimal + rustfmt)"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --component rustfmt
+            . "$HOME/.cargo/env"
+          fi
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          echo "cargo: $(command -v cargo) ($(cargo --version))"
+          rustc --version
+          rustfmt --version
 
       - name: Level 0 - Verify Formatting
         run: cargo fmt --all -- --check
@@ -57,11 +76,27 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 2
           submodules: false
           lfs: false
+
+      # Same self-heal as Level 0: a restarted WSL runner must not turn a real check
+      # into "cargo: command not found" (exit 127).
+      - name: Level 1 - Rust toolchain preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f "$HOME/.cargo/env" ]; then . "$HOME/.cargo/env"; fi
+          if ! command -v cargo >/dev/null 2>&1; then
+            echo "cargo not found on PATH - installing rustup (minimal + rustfmt)"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --component rustfmt
+            . "$HOME/.cargo/env"
+          fi
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          echo "cargo: $(command -v cargo) ($(cargo --version))"
+          rustc --version
 
       - name: Level 1 - Affected Crate Unit Tests
         shell: bash
