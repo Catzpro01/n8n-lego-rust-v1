@@ -4208,7 +4208,9 @@
               "title": "Storage boundary: only bounded derived/cache state belongs in P7 (P7 does not become P8)",
               "purpose": "P7 does not become P8 (#223 \u00a735): only bounded derived/cache state (normalized options, plans, snapshots, digests) belongs here; canonical workflows and durable records remain owned by their proper domains. assertBoundedDerivedState rejects canonical workflow definitions, durable records, and unbounded state (STORAGE_BOUNDARY_VIOLATION) and accepts bounded derived state within the size limit.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "assertBoundedDerivedState enforces that P7 does not become P8 (#223 \u00a735): it rejects canonical/durable state markers (workflows/connections/durable/persistent) and unbounded state exceeding maxDerivedStateBytes (STORAGE_BOUNDARY_VIOLATION), and accepts bounded derived/cache state (normalized options, plans, digests) within the size limit. Pinned by the 2 CP-04 tests. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:34Z"
             },
             {
               "id": "CP-05",
@@ -4218,7 +4220,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T20:10:33Z",
+          "updatedAt": "2026-09-26T20:10:34Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
