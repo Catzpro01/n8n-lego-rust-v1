@@ -3932,7 +3932,8 @@
         "src/lego/parameter-graph.mjs",
         "src/lego/parameter-validate.mjs",
         "src/lego/parameter-discover.mjs",
-        "src/lego/parameter-locator.mjs"
+        "src/lego/parameter-locator.mjs",
+        "src/lego/parameter-credential.mjs"
       ],
       "public": [],
       "dependsOn": [
@@ -3953,7 +3954,8 @@
           "test/lego-parameter-graph.test.mjs",
           "test/lego-parameter-validate.test.mjs",
           "test/lego-parameter-discover.test.mjs",
-          "test/lego-parameter-locator.test.mjs"
+          "test/lego-parameter-locator.test.mjs",
+          "test/lego-parameter-credential.test.mjs"
         ]
       },
       "capabilities": [
