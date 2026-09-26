@@ -35,11 +35,11 @@ Status is not progress. Both percentages below are generated from [`docs/n8n-leg
 
 ### Realtime Delivery Progress
 
-**91.7%**
+**91.8%**
 
-`██████████████████░░ 91.7%`
+`██████████████████░░ 91.8%`
 
-Checkpoint-weighted earned points / current-delivery points: 14300 / 15600. Denominator: programs P0–P11 only (156 active slices). Future programs are excluded. 17 slice(s) declare checkpoints. 127 implemented slice(s) have no checkpoint list and contribute 100 each. 12 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
+Checkpoint-weighted earned points / current-delivery points: 14320 / 15600. Denominator: programs P0–P11 only (156 active slices). Future programs are excluded. 17 slice(s) declare checkpoints. 127 implemented slice(s) have no checkpoint list and contribute 100 each. 12 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
 
 ### Slice Completion
 
@@ -64,7 +64,7 @@ Checkpoint-weighted earned points / current-delivery points: 14300 / 15600. Deno
 ```text
 P0   realtime ████████████████████ 100.0%  completion 100.0%  2/2  status complete
 P1   realtime ████████████████████ 100.0%  completion 100.0%  2/2  status complete
-P2   realtime ███████████████████░  94.6%  completion  94.6%  35/37  status complete
+P2   realtime ███████████████████░  95.1%  completion  94.6%  35/37  status complete
 P3   realtime ████████████████████ 100.0%  completion 100.0%  18/18  status complete
 P4   realtime ████████████████████ 100.0%  completion 100.0%  10/10  status complete
 P5   realtime ████████████████░░░░  77.8%  completion  77.8%  14/18  status complete
@@ -82,7 +82,7 @@ P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0
 | --- | --- | ---: | ---: | ---: | --- |
 | P0 | Core Application Bootstrap | 100.0% | 100.0% | 2/2 | complete |
 | P1 | n8n Compatibility / Behavioral Baseline | 100.0% | 100.0% | 2/2 | complete |
-| P2 | LEGO / AI / Plugin Foundation | 94.6% | 94.6% | 35/37 | complete |
+| P2 | LEGO / AI / Plugin Foundation | 95.1% | 94.6% | 35/37 | complete |
 | P3 | Workflow + Execution + Unlimited Nodes | 100.0% | 100.0% | 18/18 | complete |
 | P4 | Trigger / Webhook / Ingress | 100.0% | 100.0% | 10/10 | complete |
 | P5 | Identity / Authentication / Authorization / Credentials (Security) | 77.8% | 77.8% | 14/18 | complete |
@@ -104,7 +104,7 @@ The queue is `executionPointer` only. Historical `P2.27` is not the next slice, 
 ```text
  1. `P7-S01` verifying; realtime 0.0%; completion contribution 0.0%
  2. `P7-S02` verifying; realtime 0.0%; completion contribution 0.0%
- 3. `P2-S06` in-progress; realtime 0.0%; completion contribution 0.0%; updated 2026-09-26T21:04:20Z
+ 3. `P2-S06` in-progress; realtime 20.0%; completion contribution 0.0%; updated 2026-09-26T21:17:57Z
 ```
 
 Latest completed slice: `P5-M04` (PR #346, merge `3ba8f339`).
@@ -198,7 +198,7 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 
 ## P2 — LEGO / AI / Plugin Foundation
 
-- **Realtime Delivery Progress:** **94.6%** `███████████████████░ 94.6%`
+- **Realtime Delivery Progress:** **95.1%** `███████████████████░ 95.1%`
 - **Slice Completion:** **94.6%** (35 / 37 implemented). Remaining 2. 35 implemented, 1 in progress, 1 blocked.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent Machine, Context/Session/Memory, Workspace, MCP boundary, portability, Node Creator, translation, usage integrity, provider adapters, readiness, P2.27 pluggable runtime/security foundation (#90).
@@ -244,7 +244,7 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 | `P2-S03` | Frontend Evolution layers 3-6 | Frontend Evolution layers 3-6 (core workflow, platform, AI surfaces, legacy UI decommission) | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - "Implementation must be split into dedicated milestone tasks with Manager Master Prompts." So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. The third Layer 3 surface (executions list) has now been split out as P2-S06 and is in progress on delivery/p2-s06-executions-surface; this umbrella covers the remaining Layer 3-5 surfaces (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. |
 | `P2-S04` | Dashboard workflow list | Dashboard workflow list (first Layer 3 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-06 Parity equivalent against reference fixtures, fail-closed (completed, 15) | — |
 | `P2-S05` | Dialogs / overlays | Dialogs / overlays (workflow settings, credential modal, confirmations) — second Layer 3 surface split out of P2-S03 | ✅ Implemented | 100.0% | 100.0% | — | CP-06 Parity equivalent against reference fixtures, fail-closed (completed, 15) | — |
-| `P2-S06` | Executions list | Executions list (third Layer 3 surface split out of P2-S03) | 🔵 In progress | 0.0% | 0.0% | — | — | — |
+| `P2-S06` | Executions list | Executions list (third Layer 3 surface split out of P2-S03) | 🔵 In progress | 20.0% | 0.0% | — | CP-01 Handed-over input boundary: no private data path (completed, 20) | — |
 
 </details>
 
@@ -581,7 +581,7 @@ Excluded from the current-delivery denominator. Realtime **0.0%**. Slice complet
 - **Live progress (DEC-0021, LIVE-MILESTONE EXCEPTION):** checkpoint progress, checkpoint status, checkpoint evidence, current checkpoint, slice / program / overall progress and the milestone evidence of a slice still in flight are operational telemetry. The Manager may reconcile them straight to `main` in a `governance(progress):` commit, without a governance PR, with `node tools/lego/progress-event.mjs record --slice <id> --checkpoint <CP-nn> --status <status> --evidence <reference>`. The tool runs the whole atomic chain: validate evidence and weights → write the register → regenerate `README.md` and `.ai` → run `npm run lego:ai:check` → commit → push → verify `main`. One measurable event is one commit; live progress is never batched and a partial state is never published. The Manager never types a percentage: `resolve` derives the state from evidence — `--fetch` reads the DEC-0015 jobs and the runner availability from the GitHub API, `--jobs <file.json>` reads an export, and `verify --cmd` derives completed / blocked from a verification command's exit code. A checkpoint that declares `requires` is earned only when every named check has passed; an absent self-hosted check is never PASS and `WAITING_RUNNER` is never PASS, so a head that never ran the suite cannot look green. Two paths, never mixed: delivery state is implementation → delivery PR → merge → post-merge verification → one governance PR reconciling status, merge SHA, evidence and projections; telemetry is evidence → checkpoint update → register → README → .ai → a `governance(progress):` commit → main. A slice status becoming `implemented` is delivery state and is never telemetry. The exception never covers source code, tests, runtime behaviour, API / frontend / backend / contract / schema implementation, dependencies, packages, Rust code, CI workflows, security policy, permissions, infrastructure, database schema or production configuration — those still go through a delivery PR. Live telemetry never bypasses a completion gate: 100% realtime progress with a completion contribution of 0% is a legitimate state, and only `implemented` (DEC-0014 + DEC-0015) moves Slice Completion.
 - **Rule:** Milestone truth is main-owned. A milestone design found or developed in Manager memory becomes authoritative only when reconciled into main through a PR. arena-manager is not an alternate milestone authority, and its docs/ tree is a stale snapshot that is never copied over main.
 - **Pending reconciliation:** A milestone change that exists only on arena-manager, a local worktree, a handoff, an issue, a PR body or chat is a proposal (pending reconciliation), never authoritative truth. A PR proposes a milestone state; only the merged state on main is authoritative.
-- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `206c822f9e11960d`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
+- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `47e7385e880b04be`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
 - **Progress model (Issue #307):** Realtime Delivery Progress is checkpoint-weighted across P0-P11. Slice Completion is implemented / active in that same denominator. Future programs stay visible and are excluded from the current-delivery denominator. Illustrations of the status/progress split are not register measurements and must not be copied into slice checkpoints. The generator counts only weights declared on slice.checkpoints. It does not invent weights. A completed checkpoint requires evidence. Weights on a slice must sum to 100. A slice with no checkpoint model stays at 0 unless it is implemented, in which case the legacy rule contributes 100. This projection is not canonical until the change is on main.
 - **Completion KPI:** Slice Completion is implemented slices / active slices in P0–P11. A verifying or blocked slice never increases that numerator. Realtime Delivery Progress is a separate checkpoint-weighted figure and can move while Slice Completion stays still.
 - **Purpose field:** a slice purpose is `slice.purpose` when present, otherwise the text after the first `: ` in the canonical title, otherwise the title. No purpose is invented.
