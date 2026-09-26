@@ -3983,12 +3983,12 @@
             }
           ],
           "updatedAt": "2026-09-26T19:13:57Z",
+          "latestUpdate": "Implemented: P7-S03 delivers the VALIDATE stage (stage 5) of the P7 pipeline \u2014 explicit normalization, the compact validation vocabulary with structured errors, the closed failure vocabulary, and the compact immutable execution-ready snapshot (canonical vs derived). Five checkpoints completed (weights 20/25/15/25/15). Delivery PR #340 merged to main as d4243a94; the GitHub-hosted gate was green (3/3) at the PR head. Landed on main under the DEC-0025 temporary gate (GitHub-hosted as the effective gate) while the self-hosted fleet was offline; the self-hosted DEC-0015 jobs are excluded for the duration and back-filled on restoration. Evidence: docs/n8n-lego/evidence/P7-S03-EVIDENCE.md.",
           "mergeSha": "d4243a94bb18b3876dc1c68b04d178e473c84ecc",
           "issue": 223,
           "evidence": "docs/n8n-lego/evidence/P7-S03-EVIDENCE.md",
           "owner": "manager (MANAGER-01)",
-          "authorizedBy": "DEC-0024",
-          "latestUpdate": "Implemented: P7-S03 delivers the VALIDATE stage (stage 5) of the P7 pipeline \u2014 explicit normalization, the compact validation vocabulary with structured errors, the closed failure vocabulary, and the compact immutable execution-ready snapshot (canonical vs derived). Five checkpoints completed (weights 20/25/15/25/15). Delivery PR #340 merged to main as d4243a94; the GitHub-hosted gate was green (3/3) at the PR head. Landed on main under the DEC-0025 temporary gate (GitHub-hosted as the effective gate) while the self-hosted fleet was offline; the self-hosted DEC-0015 jobs are excluded for the duration and back-filled on restoration. Evidence: docs/n8n-lego/evidence/P7-S03-EVIDENCE.md."
+          "authorizedBy": "DEC-0024"
         },
         {
           "id": "P7-S04",
