@@ -9,7 +9,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 **Realtime Delivery Progress 86.9%** — 13300/15300 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 20 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 86.3%** — 132/153 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 86.9%** — 133/153 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
@@ -19,7 +19,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | P3 | 100.0% | 100.0% | 18/18 | complete |
 | P4 | 100.0% | 100.0% | 10/10 | complete |
 | P5 | 72.2% | 72.2% | 13/18 | complete |
-| P6 | 94.3% | 91.4% | 32/35 | complete |
+| P6 | 94.3% | 94.3% | 33/35 | complete |
 | P7 | 0.0% | 0.0% | 0/8 | in-progress |
 | P8 | 0.0% | 0.0% | 0/1 | planned |
 | P9 | 100.0% | 100.0% | 23/23 | complete |
@@ -30,8 +30,8 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 | | |
 | --- | --- |
-| Latest completed slice | `P6-S01` — Live community / private / custom node installation path over the P6 admission pipeline (PR #328, merge `fce988e7`) |
-| Active slices | `P6-S02` — Production WASM node/plugin sandbox engine<br>`P7-S03` — Local Validation & Normalization |
+| Latest completed slice | `P6-S02` — Production WASM node/plugin sandbox engine (PR #330, merge `d3c35c73`) |
+| Active slices | `P7-S03` — Local Validation & Normalization |
 | Verifying (merged, post-merge verification pending) | `P7-S01` — Parameter Contract & Compiler (PR #334, merge `8aedbfa2`): DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)<br>`P7-S02` — Visibility & Dependency Graph (PR #336, merge `d58dfaeb`): DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0) |
 | Planned queue (in order; planned ≠ authorized) | `P7-S04`, `P7-S05`, `P7-S06`, `P7-S07`, `P7-S08`, `P2-S02`, `P2-S03` |
 | Blocked | `P5-M02` — blocked by P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145)<br>`P5-M05` — blocked by P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs<br>`P5-M06` — blocked by a mail-transport architecture decision (a dependency, or an injected transport contract); Node has no built-in SMTP<br>`P5-M10` — blocked by backing models this product does not have: projects/sharing, security audit, source control, data tables, workflow versions, a retry execution path, execution annotation tags (see P5-M08-EVIDENCE.md §1) |
@@ -49,7 +49,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
 | **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 13/18 | 20 | `P5-M04` (planned) |
-| **P6** | Node Registry / Node Runtime | **COMPLETE** | 32/35 | 67 | `P6-S02` (in-progress) |
+| **P6** | Node Registry / Node Runtime | **COMPLETE** | 33/35 | 67 | — |
 | **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 0/8 | 29 | `P7-S01` (in-progress) |
 | **P8** | Storage / Data Layer | **PLANNED** | 0/1 | 5 | `P8-S01` (planned) |
 | **P9** | Observability / Diagnostics / Operations | **COMPLETE** | 23/23 | 23 | — |
@@ -452,7 +452,7 @@ Node registry, lifecycle, installation/admission, runtime selection, official/co
 | `P6.30` | Repair, Ordered Restoration and Offline Recovery (registry.repair@0.1.0) | implemented | — | `7c7aa028` | #100 |
 | `P6.31` | The Acceptance of the Milestone (registry.acceptance@0.1.0) | implemented | — | `40dc5b00` | #100 |
 | `P6-S01` | Live community / private / custom node installation path over the P6 admission pipeline | implemented | — | `fce988e7` | #95 |
-| `P6-S02` | Production WASM node/plugin sandbox engine (P6.26 compilation cache and P2.27.4 locality are the foundation) | in-progress | — | — | #224 |
+| `P6-S02` | Production WASM node/plugin sandbox engine (P6.26 compilation cache and P2.27.4 locality are the foundation) | implemented | — | `d3c35c73` | #224 |
 | `P6-S03` | Universal resilient scraper node (candidate sub-slices S1-S21 in #115) | proposed | — | — | #115 |
 | `P6-S04` | Native high-performance node catalog (candidates N1-N12 in #116) | proposed | — | — | #116 |
 

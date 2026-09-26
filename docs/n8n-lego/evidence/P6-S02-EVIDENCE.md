@@ -114,6 +114,29 @@ a temporary debug grant becomes a permanent capability.
 identically on a clean clone of `main`. This slice adds **+29 passing tests and zero new
 failures**.
 
+### 5.1 The post-merge Windows probe — an environmental blocker, recorded not hidden
+
+`P6-S02` was merged correctly: at the **PR head** all nine required checks were `success` and
+`mergeable_state` was `clean`, which is the merge gate. DEC-0015 verification therefore passes on
+the evidence the rule actually specifies.
+
+The **post-merge** `Windows worker portability probe` then failed:
+
+| When | Runner | Result |
+| --- | --- | --- |
+| PR head `1037652b`, 02:21:55 | `laptop-build-worker-2` | **success** |
+| merge commit `d3c35c73`, 02:24:57 | `laptop-build-worker-5` | **failure** at step 4 |
+
+The tree is byte-identical between the two — the merge commit is a squash of the same PR — so the
+failure is not reproducible from the code. The DEC-0015 retry was requested and has been `queued`
+with **no runner picking it up for 28 minutes**, while the whole queue is otherwise empty. The
+Windows runner fleet is offline.
+
+This is recorded as an environmental blocker with its evidence, per §27. It is **not** recorded as
+a pass, and it is **not** treated as a code failure. The step that failed is
+`Every source file parses on Windows`, which passes locally (`node --check` on the new module is
+clean, and the same step passed on the PR head two minutes earlier).
+
 ## 6. Bugs found by the tests
 
 1. **The memory refusal was reported as `sandbox.fuel`.** Memory is not fuel, and an operator
