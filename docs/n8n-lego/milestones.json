@@ -4250,7 +4250,9 @@
               "title": "Certification report: a slice is certified only when no difference is breaking",
               "purpose": "certify() runs the differential cases and produces a frozen certification report { certified, total, differences, breaking }: certified is true ONLY when no difference is classified BREAKING (equivalent, compatible-improvement, and migration-required are tolerated, the latter with a migration note). The report is deterministic and the set of breaking differences is explicitly enumerated \u2014 a certification is a record, not a boolean hand-wave.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "certify(cases) runs the differential cases and produces a frozen certification report { format, pinnedN8nVersion, certified, total, differences, breaking }: certified is true ONLY when no difference is classified BREAKING (equivalent/compatible-improvement/migration-required are tolerated), and the breaking set is explicitly enumerated. Malformed cases are rejected (CERTIFICATION_INVALID). Pinned by the 3 CP-02 tests. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:45Z"
             },
             {
               "id": "CP-03",
@@ -4274,7 +4276,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T20:24:44Z",
+          "updatedAt": "2026-09-26T20:24:45Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
