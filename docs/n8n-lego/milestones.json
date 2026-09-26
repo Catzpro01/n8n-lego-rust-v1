@@ -4259,7 +4259,9 @@
               "title": "Negative/security test matrix: the 20 mandatory cases, each mapped to its expected marked failure or behavior",
               "purpose": "The mandatory negative/security matrix (#223 \u00a741) is a frozen registry of the 20 required cases (cyclic dependency, invalid path, malformed/oversized provider response, excessive result count, timeout, cancellation, stale overlapping response, cache scope collision, wrong tenant, missing capability, provider without permission, credential access without P5, secret leakage through cache, secret leakage through logs, provider forged permission metadata, schema version mismatch, incompatible node definition, unbounded pagination, provider retry storm). verifyNegativeResult checks a P7 result is the expected marked failure code (or the expected no-leak/no-retry behavior) for each case, and runNegativeMatrix reports coverage + pass.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "NEGATIVE_CASES is a frozen registry of all 20 mandatory negative/security cases (#223 \u00a741: cyclic dependency, invalid path, malformed/oversized provider response, excessive result count, timeout, cancellation, stale overlapping response, cache scope collision, wrong tenant, missing capability, provider without permission, credential access without P5, secret leakage through cache/logs, provider forged permission metadata, schema version mismatch, incompatible node definition, unbounded pagination, provider retry storm); verifyNegativeResult checks each is the expected marked failure code (an unmarked empty success is explicitly NOT a pass) or the expected behavioral marker (no-leak/no-retry/forged-metadata); runNegativeMatrix reports coverage + pass, complete only when all 20 are covered and passing. Pinned by the 4 CP-03 tests. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:51Z"
             },
             {
               "id": "CP-04",
@@ -4276,7 +4278,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T20:24:45Z",
+          "updatedAt": "2026-09-26T20:24:51Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
