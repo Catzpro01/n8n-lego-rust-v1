@@ -4217,10 +4217,12 @@
               "title": "Bounded observability: the closed P9 event set, with no secret material or full sensitive payloads",
               "purpose": "Emit bounded P9 events/metrics (#223 \u00a736) from a CLOSED set: parameter.resolve.started/completed/failed, parameter.cache.hit/miss, parameter.provider.timeout/rate_limited, parameter.validation.failed, parameter.stale_response.discarded. The sink is bounded (max events), rejects unknown events (EVENT_INVALID), and scrubs any secret material from payloads (never emit secret material or full sensitive parameter payloads).",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "createObservabilitySink + OBSERVABILITY_EVENTS emit the CLOSED 9-event P9 set (parameter.resolve.started/completed/failed, cache.hit/miss, provider.timeout/rate_limited, validation.failed, stale_response.discarded); the sink is bounded (maxEventsPerSink), rejects unknown events and non-object payloads (EVENT_INVALID), and scrubs secret material from every payload (never emits secret material or full sensitive parameter payloads; reuses P7-S06 scrub). Pinned by the 4 CP-05 tests. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:35Z"
             }
           ],
-          "updatedAt": "2026-09-26T20:10:34Z",
+          "updatedAt": "2026-09-26T20:10:35Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
