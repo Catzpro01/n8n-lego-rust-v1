@@ -4079,7 +4079,9 @@
               "title": "Bounded pagination: page size, next-page token, pages-per-session cap",
               "purpose": "Pagination is bounded (#223 \u00a713): the page size is capped, each page carries a next-page token (opaque, length-bounded), and a per-session page cap stops unbounded enumeration. A page token that does not match the session/query is rejected (STALE_REQUEST). The session cannot walk the entire catalog.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Pagination is bounded: an opaque next-page token (length-bounded; a missing/overlong token is a marked STALE_REQUEST), pages walk the list without duplicates until exhausted, and the maxPagesPerSession cap stops unbounded enumeration (hitting the cap is a marked OVERLOADED, never a silent empty page). Pinned by the 3 CP-03 tests. See docs/n8n-lego/evidence/P7-S05-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:54:31Z"
             },
             {
               "id": "CP-04",
@@ -4096,7 +4098,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:54:26Z",
+          "updatedAt": "2026-09-26T19:54:31Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
