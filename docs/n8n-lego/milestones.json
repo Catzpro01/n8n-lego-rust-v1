@@ -4037,10 +4037,12 @@
               "title": "Backpressure + resource budgets: concurrency bound, deadline, timeout, max page size, max result count, max response bytes, retry budget, cancellation, negative cache; one slow provider cannot consume the whole process budget (#223 \u00a726, \u00a734)",
               "purpose": "Bounded, degrading resolution that treats a slow/broken provider as a failure, not a process-level resource problem.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "DISCOVER_LIMITS enforces maxConcurrency, timeoutMs, maxResultCount (results truncated), retryBudget=0 (a failing provider is not retried), negativeTtlMs (a failure is negatively cached to stop a retry storm), providerTtlMs, staleWindowMs. A failing/slow/overloaded provider returns a marked failure (error + code) with options:[] \u2014 never a fake unmarked empty success \u2014 and one slow provider cannot consume the whole budget (#223 \u00a726, \u00a734). Pinned by the limit/failure tests (timeout, overload, negative-cache, failure-marked, maxResult truncation). See docs/n8n-lego/evidence/P7-S04-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:44:28Z"
             }
           ],
-          "updatedAt": "2026-09-26T19:44:27Z",
+          "updatedAt": "2026-09-26T19:44:28Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
