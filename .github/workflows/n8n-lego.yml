@@ -470,7 +470,9 @@ jobs:
             'node apps/n8n-lego/scripts/fetch-n8n-catalog.mjs --dir "$work/.catalog" >/dev/null',
             'N8N_LEGO_CATALOG_DIR="$work/.catalog" N8N_LEGO_USER_FOLDER="$work/.data" node --test apps/n8n-lego/test/*.test.mjs'
           )
-          Set-Content -Encoding ASCII -Path $script -Value $lines
+          # LF only: Set-Content writes CRLF, and the trailing CR turns
+          # 'set -euo pipefail' into 'set -euo pipefail<CR>' -> 'invalid option name'.
+          [System.IO.File]::WriteAllText($script, ($lines -join [char]10) + [char]10)
           $scriptInWsl = Convert-ToWslPath $script
 
           $out = (wsl.exe -- bash "$scriptInWsl" "$repo" 2>&1 | Out-String)
