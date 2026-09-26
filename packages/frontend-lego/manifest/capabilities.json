@@ -429,6 +429,35 @@
       ],
       "phase": "P2-S03",
             "owner": "agent-01", "notes": "P2-S03 Layer 3: the second strangler slice, a bounded view-model for modals/overlays. The content is handed over (the surface never fetches, so it holds no private data path to the content's owning capability). The four region states reuse REGION_STATES; a closed dialog is `empty`, not a fifth state. The kind (confirmation/form/notice) decides the declared ready actions. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
+      "id": "executions",
+      "lego": "ui-frontend",
+      "title": "Executions list pilot (loading / empty / error / ready, bounded + status-filterable)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/execution-list.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "executions"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "empty-states",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n executions page list remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/43-execution-list.test.mjs"
+      ],
+      "phase": "P2-S03",
+      "owner": "agent-01",
+      "notes": "P2-S03 Layer 3: the third strangler slice, a bounded and status-filterable view-model of the executions page list. Rows are handed over (the surface never fetches /rest/executions, so it holds no private data path to the execution catalog). The four region states reuse REGION_STATES; filtering to zero is `empty` with reason `filtered`, not a fifth state. Opening an execution is a declared interaction, never executed. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     }
   ]
 }

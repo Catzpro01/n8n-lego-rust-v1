@@ -167,13 +167,17 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
-      "dependencies": [],
-      "notes": "Execution engine authority stays backend-side; UI only declares/requests/renders."
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/43-execution-list.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.primitives.status-region"
+      ],
+      "notes": "P2-S03 Layer 3, third strangler slice. A bounded, status-filterable view-model of the executions page list: rows are handed over (the surface never fetches /rest/executions, so it holds no private path to the execution catalog), the four region states reuse REGION_STATES, filtering to zero is `empty` with reason `filtered` rather than a fifth state, and opening an execution is a declared interaction never executed. Execution engine authority stays backend-side; UI only declares/requests/renders. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "sourceIssue": "240",
+      "slice": "P2-S06"
     },
     {
       "inventoryId": "ui.credentials.list",
