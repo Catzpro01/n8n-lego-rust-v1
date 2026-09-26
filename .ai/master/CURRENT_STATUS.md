@@ -14,9 +14,9 @@ document is right and the prose is stale.
 | Agent 1 branch | `main` |
 | Agent 2 branch | `main` |
 | **Latest completed slice** | **P2-S06** |
-| **Realtime Delivery Progress** | **92.3%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
-| **Slice Completion** | **92.3%** (144/156 implemented; verifying and blocked contribute 0) |
-| **Active / verifying slices** | **P7-S01 (verifying), P7-S02 (verifying)** |
+| **Realtime Delivery Progress** | **93.6%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
+| **Slice Completion** | **93.6%** (146/156 implemented; verifying and blocked contribute 0) |
+| **Active / verifying slices** | **—** |
 | Planned queue | — |
 | Blocked slices | P2-S03, P5-M02, P5-M05, P5-M06, P5-M10 |
 | Historical P2 ladder pointer | P2.27 (history, not active work) |
