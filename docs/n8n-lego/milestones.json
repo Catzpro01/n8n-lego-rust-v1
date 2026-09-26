@@ -3950,7 +3950,9 @@
               "title": "Schema validation vocabulary + structured errors: type/required/enum/pattern/min-max/length/array bounds/object rules/dependent requirement/normalized-value constraints; errors carry path, code, expected vs actual class, never secret material (#223 \u00a720)",
               "purpose": "A compact canonical validation vocabulary over the compiled plan's extracted rules; structured, path-scoped errors with expected/actual classes and no secret leakage.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "validateValue/applyRules + TYPE_OK implement the compact \u00a720 vocabulary (type, required, enum, min/max, length, regex, email, minRequiredFields). Every issue is structured {path, code, rule, expected, actual, message} and never embeds the raw value (length-only / class-only). Absent values are a required problem, never a type problem. Pinned by 10 unit tests. See docs/n8n-lego/evidence/P7-S03-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:13:49Z"
             },
             {
               "id": "CP-03",
@@ -3974,7 +3976,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:13:45Z",
+          "updatedAt": "2026-09-26T19:13:49Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
