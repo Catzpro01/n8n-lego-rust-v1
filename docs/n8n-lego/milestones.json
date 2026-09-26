@@ -3959,7 +3959,9 @@
               "title": "Failure vocabulary: SCHEMA_INVALID / DEPENDENCY_INVALID (local stage) with the full \u00a727 set defined; validation failure is never converted into a fake empty success (#223 \u00a727)",
               "purpose": "A closed, typed failure vocabulary for the local stage that distinguishes schema-invalid from dependency-invalid and never fabricates an empty success.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "FAILURE_CODES is the closed \u00a727 set (11 codes, frozen); LOCAL_FAILURE_CODES = [SCHEMA_INVALID, DEPENDENCY_INVALID] are the only codes this local stage emits. A validation failure keeps the actual values in normalized (never a fake empty success). Pinned by 3 unit tests. See docs/n8n-lego/evidence/P7-S03-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:13:53Z"
             },
             {
               "id": "CP-04",
@@ -3976,7 +3978,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:13:49Z",
+          "updatedAt": "2026-09-26T19:13:53Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
