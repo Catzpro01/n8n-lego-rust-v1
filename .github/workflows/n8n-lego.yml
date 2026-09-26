@@ -444,7 +444,20 @@ jobs:
           }
           Write-Host "WSL Node $node - preparing a Linux copy of the app"
 
-          $repo = (wsl.exe -- wslpath -a "$PWD" 2>&1 | Out-String).Trim()
+          # wslpath receives its argv through wsl.exe, which can strip the
+          # backslashes on the way (the mangled name then fails with "File name
+          # too long"). Convert in PowerShell instead: C: drive path -> /mnt/c/... ,
+          # the standard WSL drive-mount layout.
+          function Convert-ToWslPath([string]$winPath) {
+            # [char] codes keep this block free of quote/backslash escaping rules.
+            $bs = [char]92
+            $p = $winPath.Trim().TrimEnd($bs, [char]47)
+            if ($p.Length -ge 3 -and $p[1] -eq [char]58 -and ($p[2] -eq $bs -or $p[2] -eq [char]47)) {
+              return "/mnt/" + $p.Substring(0, 1).ToLowerInvariant() + $p.Substring(2).Replace($bs, [char]47)
+            }
+            return $p.Replace($bs, [char]47)
+          }
+          $repo = Convert-ToWslPath "$PWD"
           $script = Join-Path $env:RUNNER_TEMP 'n8n-lego-wsl-unit.sh'
           $lines = @(
             'set -euo pipefail',
@@ -458,7 +471,7 @@ jobs:
             'N8N_LEGO_CATALOG_DIR="$work/.catalog" N8N_LEGO_USER_FOLDER="$work/.data" node --test apps/n8n-lego/test/*.test.mjs'
           )
           Set-Content -Encoding ASCII -Path $script -Value $lines
-          $scriptInWsl = (wsl.exe -- wslpath -a "$script" 2>&1 | Out-String).Trim()
+          $scriptInWsl = Convert-ToWslPath $script
 
           $out = (wsl.exe -- bash "$scriptInWsl" "$repo" 2>&1 | Out-String)
           Write-Host $out
