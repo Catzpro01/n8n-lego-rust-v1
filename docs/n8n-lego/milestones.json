@@ -4277,7 +4277,9 @@
               "title": "Certification is a record: deterministic, reproducible, and tied to the pinned n8n version",
               "purpose": "The certification is a deterministic record pinned to n8n-workflow 2.9.1: re-running the same cases + oracle gives a byte-identical report (reproducibility), the pinned version is recorded, and a version change re-runs the matrix (a stale certification is invalid). This makes differential certification a repeatable gate, not a one-off assertion.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "certificationFingerprint(report) gives a deterministic fingerprint of the report basis (canonical JSON of pinnedN8nVersion + total + differences + breaking): re-running the same cases + oracle gives an identical fingerprint, and a value difference or a pinned-version change changes the record \u2014 differential certification is a repeatable, reproducible gate pinned to n8n-workflow 2.9.1, not a one-off assertion. Pinned by the 2 CP-05 tests. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:52Z"
             }
           ],
           "updatedAt": "2026-09-26T20:24:52Z",
