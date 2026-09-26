@@ -4241,7 +4241,9 @@
               "title": "Differential oracle: compare P7 output against pinned n8n behavior and classify every difference",
               "purpose": "The differential oracle (#223 \u00a740) compares P7 output against pinned n8n-workflow 2.9.1 behavior for the twelve aspects (visibility, defaults, options, dynamic options, dependent fields, resourceLocator, pagination, validation, error behavior, normalization, expression-dependent fields, credential-aware lookups) and classifies EVERY difference into one of the four closed classes: equivalent, compatible-improvement, migration-required, breaking. The comparison is canonical-JSON based with explicit superset/subset rules (a superset is a compatible improvement; dropping oracle data is breaking; a same-shape value change is migration-required). The oracle is an explicit, injectable, pinned reference \u2014 P7 never hardcodes vendor internals.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "classifyDifference compares P7 output against the pinned n8n oracle for all 12 DIFFERENTIAL_ASPECTS (visibility, defaults, options, dynamic options, dependent fields, resourceLocator, pagination, validation, error behavior, normalization, expression-dependent fields, credential-aware lookups) and classifies every difference via a canonical-JSON superset/subset rule: equal -> EQUIVALENT, P7 a strict superset -> COMPATIBLE_IMPROVEMENT, P7 drops oracle data (subset) -> BREAKING, same shape different value -> MIGRATION_REQUIRED. The oracle is an explicit, injectable, pinned reference (P7 never hardcodes vendor internals). Pinned by the 5 CP-01 tests in test/lego-parameter-certify.test.mjs. See docs/n8n-lego/evidence/P7-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:24:44Z"
             },
             {
               "id": "CP-02",
@@ -4272,7 +4274,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T20:22:36Z",
+          "updatedAt": "2026-09-26T20:24:44Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
