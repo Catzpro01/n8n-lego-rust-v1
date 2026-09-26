@@ -4175,6 +4175,54 @@
           "title": "Plugin/Provider Runtime Boundary: provider boundary, capability boundary, provider-backed schema, community node compatibility, plugin, storage and observability boundaries (#223 §17, §19, §22, §32-33, §35-36, §42 P7.7)",
           "kind": "slice",
           "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Provider registration/declaration boundary: identity, version, capability requirements, locality, trust class, budgets",
+              "purpose": "A parameter provider may live inside a node/plugin, but registration must DECLARE (#223 \u00a717, \u00a733): provider identity, version, capability requirements, locality, runtime trust class, and resource budgets. registerProvider validates the declaration (rejecting incomplete/malformed ones) and normalizes it to the canonical descriptor \u2014 vendor-specific business-model fields are EXCLUDED from the public contract (P7 does not import vendor models into public parameter contracts). P6 owns node/runtime admission and trust; P7 owns parameter resolution (the trust class is declared and validated, not admitted, here).",
+              "weight": 25,
+              "status": "completed",
+              "evidence": "registerProvider validates the full provider declaration (identity, version, capability requirements, locality, runtime trust class, resource budgets) and rejects incomplete/malformed ones (PROVIDER_DECLARATION_INVALID); it normalizes to a frozen canonical descriptor and EXCLUDES vendor-specific business-model fields from the public contract (P7 does not import vendor models). The trust class is validated (one of PROVIDER_TRUST_CLASSES) but admission/trust is P6's. Pinned by the 4 CP-01 tests in test/lego-parameter-provider-boundary.test.mjs. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:27Z"
+            },
+            {
+              "id": "CP-02",
+              "title": "Provider-backed schema: base schema + bounded provider fragment (versioned, size-bounded, validated, capability-scoped, cacheable, replaceable)",
+              "purpose": "Support a base schema plus a bounded provider schema fragment (#223 \u00a722). The fragment must be versioned, size-bounded, validated, capability-scoped, cacheable, and replaceable. A provider CANNOT replace the canonical P7 contract or security model: a fragment that attempts to override canonical/security fields (security/authorization/credentials/canonical) is rejected (SCHEMA_FRAGMENT_SECURITY_OVERRIDE). The base schema is always authoritative.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "validateProviderSchemaFragment enforces that a provider schema fragment is versioned, size-bounded, validated, capability-scoped, cacheable, and replaceable; a fragment carrying a security/canonical override field (security/authorization/auth/credentials/canonical/permission/policy) is rejected (SCHEMA_FRAGMENT_SECURITY_OVERRIDE), and the base schema is always authoritative (baseAuthoritative: true). Pinned by the 3 CP-02 tests. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:27Z"
+            },
+            {
+              "id": "CP-03",
+              "title": "Community node compatibility: accept canonical n8n declaration, compile, preserve supported fields, reject only invalid/unsafe, expose diagnostics, fallback only where required",
+              "purpose": "Existing node definitions must work without mandatory rewrite (#223 \u00a732). compileCommunityNodeDeclaration accepts a canonical n8n declaration, compiles it, preserves supported upstream fields, rejects ONLY truly invalid/unsafe forms (non-object, missing/invalid name), exposes compatibility diagnostics (warnings for unsupported fields, not rejections), and uses a fallback only where upstream semantics require it. P7 is an internal optimization + compatibility layer, NOT a new node-authoring language.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "compileCommunityNodeDeclaration accepts a canonical n8n node declaration, compiles it, and preserves SUPPORTED_NODE_FIELDS; unsupported fields are downgraded to compatibility diagnostics (warnings, not rejections, preserved as opaque metadata); only truly invalid/unsafe forms (non-object, missing/invalid name) are rejected (NODE_DECLARATION_INVALID); fallbacks (type->name, parameters->{}, typeVersion->1) are applied only where upstream semantics require it, each with a reason. Pinned by the 4 CP-03 tests. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:33Z"
+            },
+            {
+              "id": "CP-04",
+              "title": "Storage boundary: only bounded derived/cache state belongs in P7 (P7 does not become P8)",
+              "purpose": "P7 does not become P8 (#223 \u00a735): only bounded derived/cache state (normalized options, plans, snapshots, digests) belongs here; canonical workflows and durable records remain owned by their proper domains. assertBoundedDerivedState rejects canonical workflow definitions, durable records, and unbounded state (STORAGE_BOUNDARY_VIOLATION) and accepts bounded derived state within the size limit.",
+              "weight": 15,
+              "status": "completed",
+              "evidence": "assertBoundedDerivedState enforces that P7 does not become P8 (#223 \u00a735): it rejects canonical/durable state markers (workflows/connections/durable/persistent) and unbounded state exceeding maxDerivedStateBytes (STORAGE_BOUNDARY_VIOLATION), and accepts bounded derived/cache state (normalized options, plans, digests) within the size limit. Pinned by the 2 CP-04 tests. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:34Z"
+            },
+            {
+              "id": "CP-05",
+              "title": "Bounded observability: the closed P9 event set, with no secret material or full sensitive payloads",
+              "purpose": "Emit bounded P9 events/metrics (#223 \u00a736) from a CLOSED set: parameter.resolve.started/completed/failed, parameter.cache.hit/miss, parameter.provider.timeout/rate_limited, parameter.validation.failed, parameter.stale_response.discarded. The sink is bounded (max events), rejects unknown events (EVENT_INVALID), and scrubs any secret material from payloads (never emit secret material or full sensitive parameter payloads).",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "createObservabilitySink + OBSERVABILITY_EVENTS emit the CLOSED 9-event P9 set (parameter.resolve.started/completed/failed, cache.hit/miss, provider.timeout/rate_limited, validation.failed, stale_response.discarded); the sink is bounded (maxEventsPerSink), rejects unknown events and non-object payloads (EVENT_INVALID), and scrubs secret material from every payload (never emits secret material or full sensitive parameter payloads; reuses P7-S06 scrub). Pinned by the 4 CP-05 tests. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:35Z"
+            }
+          ],
+          "updatedAt": "2026-09-26T20:10:35Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
