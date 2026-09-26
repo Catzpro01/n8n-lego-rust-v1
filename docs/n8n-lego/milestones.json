@@ -4010,7 +4010,9 @@
               "title": "Bounded dynamic cache + cache classes: cache key (nodeType + nodeVersion + parameterPath + methodName + normalizedDependencyDigest + searchQuery + providerVersion), bounded entries, STATIC/SESSION/REQUEST/PROVIDER/NEGATIVE classes; never caches credentials or secrets (#223 \u00a714-15)",
               "purpose": "A bounded, keyed, classed cache that stores only normalized options + bounded metadata, with per-class TTL/eviction and no secret material.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "DynamicCache is a bounded LRU with the STATIC/SESSION/REQUEST/PROVIDER/NEGATIVE classes (CACHE_CLASSES) and a per-class TTL; it stores only the normalized option list (never raw provider output or credentials), evicts by LRU at the bound, and peek/get/delete keep the SWR logic correct (#223 \u00a714-15). Pinned by the cache-class/TTL/bound tests. See docs/n8n-lego/evidence/P7-S04-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:44:23Z"
             },
             {
               "id": "CP-03",
@@ -4034,7 +4036,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:44:13Z",
+          "updatedAt": "2026-09-26T19:44:23Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
