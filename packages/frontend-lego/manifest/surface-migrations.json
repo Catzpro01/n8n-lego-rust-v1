@@ -22,7 +22,8 @@
     "localization",
     "loading-error-empty-primitives",
     "accessibility-shared-primitives",
-    "notifications-shared-surface"
+    "notifications-shared-surface",
+    "dialogs-overlay-surface"
   ],
   "migrationStatuses": [
     "reference-only",
@@ -371,7 +372,29 @@
         "ui.primitives.status-region"
       ],
       "notes": "P2-S03 Layer 3, first strangler slice. A bounded, client-filtered view-model of the Home workflow list: rows are handed over (the surface never fetches, so it holds no private path to the workflow catalog), the four region states reuse REGION_STATES, filtering to zero is `empty` with reason `filtered` rather than a fifth state, and opening/toggling a workflow are declared interactions never executed. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
-      "sourceIssue": "240"
+      "sourceIssue": "240",
+      "slice": "P2-S04"
+    },
+    {
+      "inventoryId": "ui.primitives.dialogs",
+      "category": "dialogs-overlay-surface",
+      "title": "Dialogs / overlays (handed-over content, bounded, declared actions by kind)",
+      "surfaceIds": [
+        "dialogs"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/42-dialog-surface.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.primitives.status-region"
+      ],
+      "notes": "P2-S03 Layer 3, second strangler slice (P2-S05). A bounded view-model for modals/overlays: the content is handed over (the surface never fetches, so it holds no private data path to the content's owning capability), the four region states reuse REGION_STATES, a closed dialog is `empty` not a fifth state, and the kind (confirmation/form/notice) decides the declared ready actions. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "sourceIssue": "240",
+      "slice": "P2-S05"
     }
   ]
 }

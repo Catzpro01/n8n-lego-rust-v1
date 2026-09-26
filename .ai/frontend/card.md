@@ -31,7 +31,7 @@ packages/frontend-lego/
     errors.mjs boot.mjs client.mjs manifests.mjs knowledge.mjs agents.mjs agent-events.mjs
     skills.mjs context-session.mjs memory.mjs workspace.mjs agent-machine.mjs lego.mjs
     surface-migration.mjs surface-contract.mjs parity.mjs pilot-status-region.mjs
-    notification-surface.mjs workflow-list.mjs
+    notification-surface.mjs workflow-list.mjs dialog-surface.mjs
     adapters/ the framework adapter boundary (currently Vue; the only framework-aware code)
   test/                     01-contract … 41-workflow-list (numbered as added; 39/40/41 pilots)
 ```

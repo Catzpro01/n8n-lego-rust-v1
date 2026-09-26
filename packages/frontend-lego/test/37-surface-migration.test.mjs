@@ -93,16 +93,22 @@ test('the inventory is not a second surface catalog and carries no secrets', () 
 
 test('one pilot per slice, and every pilot names its slice', () => {
   // Was "exactly one pilot overall", true while #241 was the only migrated
-  // surface. #245 adds its own pilot, so the gate is now the closed set with the
-  // provenance that makes the per-slice rule enforceable.
+  // surface. #245 adds its own pilot, and the P2-S03 Layer 3 umbrella (#240)
+  // splits into per-surface slices (dashboard, dialogs), so the gate is the
+  // closed set with the provenance that makes the per-slice rule enforceable.
   const pilots = inventory.entries.filter((e) => e.migrationStatus === 'pilot-available');
   assert.deepEqual(
     pilots.map((e) => e.inventoryId).sort(),
-    ['ui.pages.dashboard', 'ui.primitives.notification-surface', 'ui.primitives.status-region'],
+    ['ui.pages.dashboard', 'ui.primitives.dialogs', 'ui.primitives.notification-surface', 'ui.primitives.status-region'],
   );
   const sources = pilots.map((e) => e.sourceIssue).sort();
-  assert.deepEqual(sources, ['240', '241', '245'], 'each pilot names the slice it came from');
-  assert.equal(new Set(sources).size, sources.length, 'two pilots share one slice');
+  assert.deepEqual(sources, ['240', '240', '241', '245'], 'each pilot names the umbrella issue it came from');
+  // The #240 umbrella (P2-S03 Layer 3) splits into per-surface slices; each
+  // delivered slice contributes exactly one pilot. The #240 pilots are the two
+  // Layer 3 splits delivered so far (dashboard, dialogs) - a third would be an
+  // undocumented split.
+  const s240 = pilots.filter((e) => e.sourceIssue === '240').map((e) => e.inventoryId).sort();
+  assert.deepEqual(s240, ['ui.pages.dashboard', 'ui.primitives.dialogs'], '#240 pilots are the documented Layer 3 splits');
   for (const pilot of pilots) {
     assert.equal(pilot.rollbackStrategy, 'pilot-not-primary', `${pilot.inventoryId} claims primacy`);
   }
@@ -111,7 +117,7 @@ test('one pilot per slice, and every pilot names its slice', () => {
 test('describeSurfaceMigration summarizes status without loading code', () => {
   const described = describeSurfaceMigration(inventory);
   assert.equal(described.count, inventory.entries.length);
-  assert.deepEqual([...described.pilotIds].sort(), ['ui.pages.dashboard', 'ui.primitives.notification-surface', 'ui.primitives.status-region']);
+  assert.deepEqual([...described.pilotIds].sort(), ['ui.pages.dashboard', 'ui.primitives.dialogs', 'ui.primitives.notification-surface', 'ui.primitives.status-region']);
   const total = Object.values(described.byStatus).reduce((a, b) => a + b, 0);
   assert.equal(total, described.count);
 });

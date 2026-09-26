@@ -399,6 +399,36 @@
       "phase": "P2-S03",
       "owner": "agent-04",
       "notes": "P2-S03 Layer 3: the first strangler slice, a bounded and client-filtered view-model of the Home workflow list. Rows are handed over (the surface never fetches, so it holds no private data path to the workflow catalog). The four region states reuse REGION_STATES; filtering to zero is `empty` with reason `filtered`, not a fifth state. Opening/toggling a workflow are declared interactions, never executed. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
+      "id": "dialogs",
+      "lego": "ui-frontend",
+      "title": "Dialogs / overlays pilot (handed-over content, bounded, declared actions by kind)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/dialog-surface.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "dialogs"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [
+        "ui:dialog:render"
+      ],
+      "messages": "dialogs",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n modal/overlay presentation remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/42-dialog-surface.test.mjs"
+      ],
+      "phase": "P2-S03",
+            "owner": "agent-01", "notes": "P2-S03 Layer 3: the second strangler slice, a bounded view-model for modals/overlays. The content is handed over (the surface never fetches, so it holds no private data path to the content's owning capability). The four region states reuse REGION_STATES; a closed dialog is `empty`, not a fifth state. The kind (confirmation/form/notice) decides the declared ready actions. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     }
   ]
 }
