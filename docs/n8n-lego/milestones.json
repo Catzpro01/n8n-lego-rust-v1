@@ -11,10 +11,10 @@
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "d58dfaebf6d181d115ff9bd9cb455377061590b1",
-    "latestCompletedSlice": { "id": "P7-S03", "pr": 340, "mergeSha": "d4243a94bb18b3876dc1c68b04d178e473c84ecc" },
+    "latestCompletedSlice": { "id": "P7-S04", "pr": 341, "mergeSha": "568bcad86e0a96a32831d9a8536d89b2144eb342" },
     "activeSlices": [],
     "verifyingSlices": [{ "id": "P7-S01", "pr": 334, "headSha": "71510167bffd57ac38fc75f5289fe20b7bd2f457", "mergeSha": "8aedbfa2cf67d4afd7cedb2e30b179e152107413", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }, { "id": "P7-S02", "pr": 336, "headSha": "3d1dcd0260e5accc127c42404549535a0d9c38ce", "mergeSha": "d58dfaebf6d181d115ff9bd9cb455377061590b1", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }],
-    "plannedQueue": ["P7-S04","P7-S05","P7-S06","P7-S07","P7-S08"],
+    "plannedQueue": ["P7-S05","P7-S06","P7-S07","P7-S08"],
     "blockedSlices": [
       "P2-S03",
       "P5-M02",
@@ -3994,7 +3994,7 @@
           "id": "P7-S04",
           "title": "Dynamic Options Runtime: /rest/dynamic-node-parameters options, bounded dynamic cache classes with stale-while-revalidate, dependent-field race protection, request coalescing, provider backpressure and resource budgets (#223 §11, §14-16, §23-26, §34, §42 P7.4)",
           "kind": "slice",
-          "status": "planned",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -4043,9 +4043,10 @@
             }
           ],
           "updatedAt": "2026-09-26T19:44:28Z",
-          "mergeSha": null,
+          "latestUpdate": "Implemented: P7-S04 delivers the DISCOVER stage (stage 4) of the P7 pipeline \u2014 bounded, cached, race-safe dynamic option provider resolution: normalized cache key, bounded LRU cache with per-class TTL, display-only stale-while-revalidate, generation + dependency-digest race protection with request coalescing, and concurrency/timeout/maxResult/retry-budget/negative-cache limits (a failure is always marked, never a fake empty success). Five checkpoints completed (weights 25/25/15/20/15). Delivery PR #341 merged to main as 568bcad8; the GitHub-hosted gate was green (3/3) at the PR head. Landed on main under the DEC-0025 temporary gate (GitHub-hosted as the effective gate) while the self-hosted fleet was offline; the self-hosted jobs are excluded for the duration and back-filled on restoration. Evidence: docs/n8n-lego/evidence/P7-S04-EVIDENCE.md.",
+          "mergeSha": "568bcad86e0a96a32831d9a8536d89b2144eb342",
           "issue": 223,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P7-S04-EVIDENCE.md",
           "owner": "manager (MANAGER-01)",
           "authorizedBy": "DEC-0024"
         },
