@@ -4121,7 +4121,9 @@
               "title": "Scoped SecretRef: a request-bound, opaque credential reference that never holds plaintext",
               "purpose": "A SecretRef is the only handle a dynamic lookup may carry for a credential (#223 \u00a718): a request-bound, opaque reference bound to a capability scope (principal, tenant, capability, action, resource) + credentialId + nonce. It must NEVER contain raw credential material \u2014 passing plaintext (secret/password/token/value fields) is rejected (CREDENTIAL_LEAK). The SecretRef is immutable and safe to log (only its scope fields).",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "createSecretRef builds a request-bound, opaque, immutable SecretRef (credentialId + principal/tenant/capability/action/resource scope + nonce); it is the only credential handle a lookup may carry and REJECTS any plaintext field (secret/password/token/accessToken/apiKey/value) with CREDENTIAL_LEAK; a missing/empty scope field is rejected with INVALID_SECRET_REF. The ref is safe to log (scope fields only, never material). Pinned by the 3 CP-01 tests in test/lego-parameter-credential.test.mjs. See docs/n8n-lego/evidence/P7-S06-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:03:20Z"
             },
             {
               "id": "CP-02",
@@ -4152,7 +4154,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:59:52Z",
+          "updatedAt": "2026-09-26T20:03:20Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
