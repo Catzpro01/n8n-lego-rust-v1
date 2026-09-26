@@ -4199,7 +4199,9 @@
               "title": "Community node compatibility: accept canonical n8n declaration, compile, preserve supported fields, reject only invalid/unsafe, expose diagnostics, fallback only where required",
               "purpose": "Existing node definitions must work without mandatory rewrite (#223 \u00a732). compileCommunityNodeDeclaration accepts a canonical n8n declaration, compiles it, preserves supported upstream fields, rejects ONLY truly invalid/unsafe forms (non-object, missing/invalid name), exposes compatibility diagnostics (warnings for unsupported fields, not rejections), and uses a fallback only where upstream semantics require it. P7 is an internal optimization + compatibility layer, NOT a new node-authoring language.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "compileCommunityNodeDeclaration accepts a canonical n8n node declaration, compiles it, and preserves SUPPORTED_NODE_FIELDS; unsupported fields are downgraded to compatibility diagnostics (warnings, not rejections, preserved as opaque metadata); only truly invalid/unsafe forms (non-object, missing/invalid name) are rejected (NODE_DECLARATION_INVALID); fallbacks (type->name, parameters->{}, typeVersion->1) are applied only where upstream semantics require it, each with a reason. Pinned by the 4 CP-03 tests. See docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:10:33Z"
             },
             {
               "id": "CP-04",
@@ -4216,7 +4218,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T20:10:27Z",
+          "updatedAt": "2026-09-26T20:10:33Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
