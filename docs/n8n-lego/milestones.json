@@ -3968,7 +3968,9 @@
               "title": "Immutable execution-ready parameter snapshot: schema version, normalized values, unresolved expression refs where allowed, validation status, dependency digest; canonical vs derived, always reconstructible (#223 \u00a729-30)",
               "purpose": "A compact deep-frozen execution snapshot derived from the plan + normalized values, clearly separated from the canonical workflow definition and reconstructible.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "buildExecutionSnapshot/reconstructSnapshot produce the compact immutable \u00a729 snapshot: deep-frozen, with schemaVersion, normalized values, unresolvedExpressions, validationStatus, issueCount and a dependencyDigest (SHA-256 over the canonical normalized values). It is \u00a730-derived (never the canonical workflow definition) and reconstructible; re-derivation is byte-identical and the input is never rewritten or frozen. Pinned by 4 unit tests. See docs/n8n-lego/evidence/P7-S03-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:13:53Z"
             },
             {
               "id": "CP-05",
