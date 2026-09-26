@@ -11,10 +11,10 @@
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "d58dfaebf6d181d115ff9bd9cb455377061590b1",
-    "latestCompletedSlice": { "id": "P7-S06", "pr": 343, "mergeSha": "aea9db18344a37602e38cc342345b917c68dec17" },
+    "latestCompletedSlice": { "id": "P7-S07", "pr": 344, "mergeSha": "f3f98aaa68c08d7278c70b1502dabcee22d94050" },
     "activeSlices": [],
     "verifyingSlices": [{ "id": "P7-S01", "pr": 334, "headSha": "71510167bffd57ac38fc75f5289fe20b7bd2f457", "mergeSha": "8aedbfa2cf67d4afd7cedb2e30b179e152107413", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }, { "id": "P7-S02", "pr": 336, "headSha": "3d1dcd0260e5accc127c42404549535a0d9c38ce", "mergeSha": "d58dfaebf6d181d115ff9bd9cb455377061590b1", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }],
-    "plannedQueue": ["P7-S07","P7-S08"],
+    "plannedQueue": ["P7-S08"],
     "blockedSlices": [
       "P2-S03",
       "P5-M02",
@@ -4174,7 +4174,7 @@
           "id": "P7-S07",
           "title": "Plugin/Provider Runtime Boundary: provider boundary, capability boundary, provider-backed schema, community node compatibility, plugin, storage and observability boundaries (#223 §17, §19, §22, §32-33, §35-36, §42 P7.7)",
           "kind": "slice",
-          "status": "planned",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -4223,9 +4223,10 @@
             }
           ],
           "updatedAt": "2026-09-26T20:10:35Z",
-          "mergeSha": null,
+          "latestUpdate": "Implemented: P7-S07 delivers the plugin/provider runtime boundary of the P7 pipeline: provider registration/declaration (identity/version/capabilities/locality/trust class/budgets, vendor fields excluded from the public contract, admission is P6\u2019s), the provider-backed schema fragment (versioned/size-bounded/capability-scoped/cacheable; a provider cannot override the canonical contract or security model), community node compatibility (accept canonical n8n, preserve supported fields, reject only invalid/unsafe, diagnostics, fallbacks only where required), the storage boundary (only bounded derived/cache state; P7 does not become P8), and bounded observability (the closed P9 event set, no secret material). Five checkpoints completed (weights 25/20/20/15/20). Delivery PR #344 merged to main as f3f98aaa; the GitHub-hosted gate was green (3/3) at the PR head. Landed on main under the DEC-0025 temporary gate (GitHub-hosted as the effective gate) while the self-hosted fleet was offline; the self-hosted jobs are excluded for the duration and back-filled on restoration. Evidence: docs/n8n-lego/evidence/P7-S07-EVIDENCE.md.",
+          "mergeSha": "f3f98aaa68c08d7278c70b1502dabcee22d94050",
           "issue": 223,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P7-S07-EVIDENCE.md",
           "owner": "manager (MANAGER-01)",
           "authorizedBy": "DEC-0024"
         },
