@@ -9,7 +9,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 **Realtime Delivery Progress 92.3%** — 14300/15500 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 12 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 91.6%** — 142/155 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 92.3%** — 143/155 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
@@ -18,7 +18,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | P2 | 97.2% | 97.2% | 35/36 | complete |
 | P3 | 100.0% | 100.0% | 18/18 | complete |
 | P4 | 100.0% | 100.0% | 10/10 | complete |
-| P5 | 77.8% | 72.2% | 13/18 | complete |
+| P5 | 77.8% | 77.8% | 14/18 | complete |
 | P6 | 94.3% | 94.3% | 33/35 | complete |
 | P7 | 75.0% | 75.0% | 6/8 | in-progress |
 | P8 | 0.0% | 0.0% | 0/1 | planned |
@@ -30,7 +30,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 | | |
 | --- | --- |
-| Latest completed slice | `P7-S08` — Differential Certification (PR #345, merge `88435ead`) |
+| Latest completed slice | `P5-M04` — Key-rotation work list without an O(n) scan (PR #346, merge `3ba8f339`) |
 | Active slices | — (none) |
 | Verifying (merged, post-merge verification pending) | `P7-S01` — Parameter Contract & Compiler (PR #334, merge `8aedbfa2`): DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)<br>`P7-S02` — Visibility & Dependency Graph (PR #336, merge `d58dfaeb`): DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0) |
 | Planned queue (in order; planned ≠ authorized) | — |
@@ -48,7 +48,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 35/36 | 29 | — |
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
-| **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 13/18 | 20 | `P5-M04` (planned) |
+| **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 14/18 | 20 | — |
 | **P6** | Node Registry / Node Runtime | **COMPLETE** | 33/35 | 67 | — |
 | **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 6/8 | 29 | `P7-S01` (in-progress) |
 | **P8** | Storage / Data Layer | **PLANNED** | 0/1 | 5 | `P8-S01` (planned) |
@@ -375,7 +375,7 @@ Identity, sessions, authorization, credential boundary, key management, account 
 | `P5-M01` | Security hardening: soft-revoke API keys and service principals (bounded tombstones, REVOKED verdict, audit row kept); REST decision cache deferred on measured evidence (P5.8 finding 1: warm hit 438 ns p50 is not faster than uncached authorize 384 ns p50) | implemented | #289 | `27191091` | #85 |
 | `P5-M02` | Credential runtime integration: execution path resolves credentials via SecretRef over the P2.27 broker **Blocked by:** P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145) | blocked | — | — | #85 |
 | `P5-M03` | Public /api/v1 first surface: API-key boundary in upstream order (recorded 401 goldens), key scopes always enforced through the P5.3 kernel, offset-cursor pagination, workflows resource (9 operations). Re-planned by the Manager: email recovery moved to P5-M06, service-principal REST/UI to P5-M07, remaining /api/v1 resources to P5-M08 (one delivery PR per slice) | implemented | #291 | `cf52701c` | #85 |
-| `P5-M04` | Key-rotation work list without an O(n) scan: measure first (per-batch scan vs the O(n) replaceAll persist), index only if the scan dominates | planned | — | — | #85 |
+| `P5-M04` | Key-rotation work list without an O(n) scan: measure first (per-batch scan vs the O(n) replaceAll persist), index only if the scan dominates | implemented | — | `3ba8f339` | #85 |
 | `P5-M05` | Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, not authorized) **Blocked by:** P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs | blocked | — | — | #85 |
 | `P5-M06` | Email-based password recovery: needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03) **Blocked by:** a mail-transport architecture decision (a dependency, or an injected transport contract); Node has no built-in SMTP | blocked | — | — | #85 |
 | `P5-M07` | Service-principal REST + UI management over the P5.7 programmatic lifecycle (create shown once, redacted list, revoke with tombstone) (split out of P5-M03) | implemented | #317 | `0845c25f` | #85 |
