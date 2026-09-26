@@ -4088,7 +4088,9 @@
               "title": "Race protection, request coalescing, and cancellation",
               "purpose": "Every search gets a requestId + generation + normalized query digest (#223 \u00a724): only a response matching the current generation updates state. Identical concurrent searches (same key + generation) coalesce onto one in-flight op (\u00a725). Cancellation is supported (\u00a726): a cancelled search is reported as a marked CANCELLED failure, and in-flight state is bounded and evicted.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Race protection: each issued provider call bumps the generation (carried on the result; distinct across searches). Coalescing: identical concurrent searches (same page key) share one in-flight op (the coalesced result is marked cache:'coalesced'). Cancellation: createCancelToken or session.cancel(requestId) reports a marked CANCELLED (the result is discarded; the provider was called once). Pinned by the 4 CP-04 tests. See docs/n8n-lego/evidence/P7-S05-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:54:31Z"
             },
             {
               "id": "CP-05",
