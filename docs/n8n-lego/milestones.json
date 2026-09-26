@@ -11,8 +11,8 @@
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "d58dfaebf6d181d115ff9bd9cb455377061590b1",
-    "latestCompletedSlice": { "id": "P5-M04", "pr": 346, "mergeSha": "3ba8f3397542dceffb7c48c220cd380ec64f5174" },
-    "activeSlices": ["P2-S06"],
+    "latestCompletedSlice": { "id": "P2-S06", "pr": 347, "mergeSha": "b3aba7284e37f2365c7689ae53c854d3802b2faf" },
+    "activeSlices": [],
     "verifyingSlices": [{ "id": "P7-S01", "pr": 334, "headSha": "71510167bffd57ac38fc75f5289fe20b7bd2f457", "mergeSha": "8aedbfa2cf67d4afd7cedb2e30b179e152107413", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }, { "id": "P7-S02", "pr": 336, "headSha": "3d1dcd0260e5accc127c42404549535a0d9c38ce", "mergeSha": "d58dfaebf6d181d115ff9bd9cb455377061590b1", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }],
     "plannedQueue": [],
     "blockedSlices": [
@@ -2641,7 +2641,7 @@
           "id": "P2-S06",
           "title": "Executions list (third Layer 3 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -2699,9 +2699,10 @@
             }
           ],
           "updatedAt": "2026-09-26T21:18:00Z",
-          "mergeSha": null,
+          "latestUpdate": "Implemented: P2-S06 delivers the executions history surface (third P2-S03 Layer 3 strangler slice) as a bounded, status-filterable list view-model; rows are handed over through loadSuccess() only, the surface never fetches the execution catalog, and the original editor stays the default path. Six checkpoints completed (weights 20/20/15/15/15/15, sum 100). Delivery PR #347 merged to main as b3aba728; the full check matrix was green at the PR head ca128f56 (9/9: the GitHub-hosted n8n-lego gate jobs and the self-hosted Level 0, Level 1 and Level 2 suites with the runner fleet restored - no WAITING_RUNNER debt). Post-merge verification passed on main and the delivery branch was auto-deleted. Evidence: docs/n8n-lego/evidence/P2-S06-EVIDENCE.md.",
+          "mergeSha": "b3aba7284e37f2365c7689ae53c854d3802b2faf",
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S06-EVIDENCE.md",
           "owner": "agent-1",
           "note": "P2-S03 Layer 3 third strangler slice; split out per #240 under the Manager continuation directive. Advances the already-declared ui.executions.history surface from reference-only to pilot-available. Rows are handed over (the surface never fetches, so it holds no private path to the execution catalog). One module, one manifest entry, one test suite, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
         }
