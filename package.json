@@ -16,7 +16,7 @@
     "runtime:start": "node apps/n8n-ts/src/server.ts",
     "runtime:dev": "node --watch apps/n8n-ts/src/server.ts",
     "runtime:typecheck": "npm --prefix apps/n8n-ts run typecheck",
-    "runtime:test": "node --test tests/runtime/",
+    "runtime:test": "node --test \"tests/runtime/*.test.mjs\"",
     "runtime:gate": "bash tests/integration/runtime_gate.sh",
     "runtime:smoke": "node tests/runtime/helpers/smoke.mjs",
     "lego:install": "npm --prefix apps/n8n-lego install && node apps/n8n-lego/bin/n8n-lego.mjs catalog",

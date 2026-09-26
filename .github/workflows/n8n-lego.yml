@@ -96,10 +96,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.18'
 
@@ -175,10 +175,10 @@ jobs:
     timeout-minutes: 25
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.18'
           cache: npm
@@ -249,10 +249,10 @@ jobs:
     timeout-minutes: 35
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.18'
 
@@ -380,10 +380,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.18'
 
@@ -409,21 +409,40 @@ jobs:
       - name: Run the unit tests inside WSL when this worker has one
         # Best effort: this is a laptop worker, not the runtime's platform. The
         # blocking Linux runtime gate is the ubuntu-latest clean-clone job, so a
-        # quirk of this worker must not paint the whole gate red — it reports a
+        # quirk of this worker must not paint the whole gate red - it reports a
         # warning with the failing output instead.
+        #
+        # ASCII only in this block: Windows PowerShell 5.1 reads the generated
+        # script as ANSI, so a UTF-8 em-dash (bytes E2 80 94) lands as byte 0x94
+        # which its tokenizer treats as a smart double quote. That used to break
+        # string parsing here ("Missing closing '}'"), and because the step is
+        # best effort the broken parse stayed invisible.
         shell: powershell
         continue-on-error: true
         run: |
           $ErrorActionPreference = 'Continue'
           $wsl = Get-Command wsl.exe -ErrorAction SilentlyContinue
-          if (-not $wsl) { Write-Host '::notice::No WSL on this worker — the authoritative Linux runtime gate is the ubuntu-latest clean-clone job.'; exit 0 }
-
-          $node = (wsl.exe -- bash -lc 'node -v' 2>&1 | Out-String).Trim()
-          if (-not $node -or -not ($node -match '^v(2[2-9]|[3-9][0-9])\.')) {
-            Write-Host "::notice::WSL has no usable Node >= 22 (got '$node') — the authoritative Linux runtime gate is the ubuntu-latest clean-clone job."
+          if (-not $wsl) {
+            Write-Host '::notice::No WSL on this worker - the authoritative Linux runtime gate is the ubuntu-latest clean-clone job.'
             exit 0
           }
-          Write-Host "WSL Node $node — preparing a Linux copy of the app"
+
+          $node = (wsl.exe -- bash -lc 'node -v' 2>&1 | Out-String).Trim()
+          $nodeOk = $false
+          if ($node.StartsWith('v')) {
+            $dot = $node.IndexOf('.')
+            if ($dot -gt 1) {
+              $major = 0
+              if ([int]::TryParse($node.Substring(1, $dot - 1), [ref]$major)) {
+                if ($major -ge 22) { $nodeOk = $true }
+              }
+            }
+          }
+          if (-not $nodeOk) {
+            Write-Host "::notice::WSL has no usable Node >= 22 (got '$node') - the authoritative Linux runtime gate is the ubuntu-latest clean-clone job."
+            exit 0
+          }
+          Write-Host "WSL Node $node - preparing a Linux copy of the app"
 
           $repo = (wsl.exe -- wslpath -a "$PWD" 2>&1 | Out-String).Trim()
           $script = Join-Path $env:RUNNER_TEMP 'n8n-lego-wsl-unit.sh'
