@@ -4001,7 +4001,9 @@
               "title": "Dynamic options resolution flow: parameter -> loadOptionsMethod -> resolved dependency context -> provider operation -> normalized option list; provider results normalized to the canonical shape (name, value, optional description); malformed provider data rejected, never passed to UI (#223 \u00a711)",
               "purpose": "A deterministic resolution flow over an explicit, replaceable provider abstraction that normalizes provider results into a small canonical shape and rejects malformed data.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "cacheKey composes nodeType + nodeVersion + parameterPath + methodName + normalizedDependencyDigest (SHA-256 over the canonical dependency context) + normalizedSearchQuery + providerVersion + schemaVersion, so distinct dependency contexts yield distinct keys and a digest change invalidates stale entries. Pinned by the cache-key tests in test/lego-parameter-discover.test.mjs. See docs/n8n-lego/evidence/P7-S04-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:44:13Z"
             },
             {
               "id": "CP-02",
@@ -4032,7 +4034,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:18:13Z",
+          "updatedAt": "2026-09-26T19:44:13Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
