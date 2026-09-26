@@ -4061,7 +4061,9 @@
               "title": "resourceLocator canonical model: the four modes (list/name/id/url) with an n8n-compatible stored value",
               "purpose": "Treat resourceLocator as first-class P7 semantics (#223 \u00a712): parse a stored n8n { mode, value } into a canonical form, validate the mode is one of list/name/id/url, and normalize each mode's value (name/id as bounded strings, url as a validated URL, list as the selected option value). Stored workflow values remain n8n-compatible; unknown modes or malformed values are rejected, never silently coerced.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "parseResourceLocator/normalizeLocatorValue implement the four LOCATOR_MODES (list/name/id/url) as a canonical frozen { mode, value }; stored n8n values remain compatible (extra fields such as cachable are ignored); unknown modes and malformed values are rejected (SCHEMA_INVALID / INVALID_URL), never silently coerced; url mode validates the URL; values are length-bounded. Pinned by the 6 CP-01 tests in test/lego-parameter-locator.test.mjs. See docs/n8n-lego/evidence/P7-S05-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:54:25Z"
             },
             {
               "id": "CP-02",
@@ -4092,7 +4094,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:51:07Z",
+          "updatedAt": "2026-09-26T19:54:25Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
