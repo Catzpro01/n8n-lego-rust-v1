@@ -4019,7 +4019,9 @@
               "title": "Stale-while-revalidate: display-only metadata may serve stale; security-sensitive / execution-authoritative values are revalidated before execution; cached UI state is never permission authority (#223 \u00a716)",
               "purpose": "A two-tier freshness policy that never lets a cached UI option become assumed authority.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Stale-while-revalidate is display-only: a non-authoritative resolution serves a stale PROVIDER value within staleWindowMs and triggers a coalesced background revalidation; an authoritative resolution never serves stale (always revalidates or misses). The revalidation is non-recursive (it goes through the bounded _fetchAndCache path, never re-entering the SWR branch) (#223 \u00a716). Pinned by the SWR tests (stale-served + background-revalidated, authoritative-never-stale, no-recursion). See docs/n8n-lego/evidence/P7-S04-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:44:27Z"
             },
             {
               "id": "CP-04",
@@ -4036,7 +4038,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:44:23Z",
+          "updatedAt": "2026-09-26T19:44:27Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
