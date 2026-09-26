@@ -4070,7 +4070,9 @@
               "title": "Bounded list search with deterministic ordering + query length limits",
               "purpose": "List mode performs a targeted search (#223 \u00a713): the query is length-bounded, results are normalized and deterministically ordered (stable sort by value then name), and the result count is bounded. Prefers targeted search over downloading a full remote catalog; never performs unbounded enumeration to populate a dropdown. Malformed provider data is rejected (INVALID_PROVIDER_DATA), never passed downstream.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "ResourceLocatorSession.search performs a bounded targeted search: the query is length-bounded (maxQueryLength), results are normalized and deterministically ordered (sorted by value then name, independent of provider order), and the result count is bounded by maxPageSize/maxResultCount; a query returns only matching items (targeted, not the full catalog); a malformed provider page is rejected (INVALID_PROVIDER_DATA). Pinned by the 6 CP-02 tests. See docs/n8n-lego/evidence/P7-S05-EVIDENCE.md.",
+              "completedAt": "2026-09-26T19:54:26Z"
             },
             {
               "id": "CP-03",
@@ -4094,7 +4096,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T19:54:25Z",
+          "updatedAt": "2026-09-26T19:54:26Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
