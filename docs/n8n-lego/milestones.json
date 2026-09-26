@@ -3171,10 +3171,12 @@
               "id": "CP-03",
               "title": "Decision + evidence + debt clarification: encode the shouldIndex rule, document NO index (scan does not dominate), record the real bottleneck (full-file rewrite per batch, O(n^2/batchSize)) as the actual remaining P5.5 rotation debt.",
               "weight": 30,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P5-M04-EVIDENCE.md (decision: NO index; real debt = O(n^2/batchSize) replaceAll persist) + P5.8-CERTIFICATION-EVIDENCE \u00a77 cross-ref",
+              "completedAt": "2026-09-26T20:42:03Z"
             }
           ],
-          "updatedAt": "2026-09-26T20:42:02Z",
+          "updatedAt": "2026-09-26T20:42:03Z",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
