@@ -7,7 +7,7 @@
   "updatedAt": "2026-09-26T18:07:31Z",
   "events": [],
   "state": "ACTIVE",
-  "category": "GOVERNANCE",
+  "category": "MERGE",
   "title": "Temporary merge gate: the GitHub-hosted n8n-lego Gate is the effective merge gate while the self-hosted runner fleet is offline",
   "problem": "The 10-runner self-hosted fleet is offline: on every PR head the 6 required self-hosted DEC-0015 jobs (Level 0 Check & Format, Level 1 Affected Tests, Level 2 Conformance, Level 2 Workspace linux/windows, Windows worker portability probe) never leave queued, so the full fleet gate cannot be satisfied and delivery merges stall. The owner directed that progress keep moving using GitHub's built-in runners, and that the gate be reverted to the current settings when the self-hosted fleet returns.",
   "options": [
@@ -21,7 +21,7 @@
     }
   ],
   "selectedOption": "A-github-hosted-gate",
-  "rationale": "Owner instruction in chat on 2026-09-26 (Indonesian): 'Kamu bisa menggunakan Runner bawaan github, sementara ketika Runner selfhosted hidup maka kembali seperti pengaturan saat ini. Sebisa mungkin progress tetap berjalan walaupun tak ada Runner selfhosted sekarang.' (You may use GitHub's built-in runners; when the self-hosted runner is alive, revert to the current settings; keep progress moving even without the self-hosted runner now.) Option A follows that instruction and keeps the marathon moving; B would stall all delivery for the duration of the outage. This is a TEMPORARY relaxation of the merge gate only, scoped to the fleet outage: it does not change DEC-0015, does not count self-hosted checks as PASS (they are recorded as excluded-for-outage), and does not touch any CI workflow, runner or compiler configuration (owner runner/CI mandate). Applied to land PRs #331 (P6-S02), #332 (P2-S02) and #338 (P2-S04), each verified 3/3 green on the GitHub-hosted Gate at its PR head.",
+  "rationale": "Owner instruction in chat on 2026-09-26 (Indonesian): 'Kamu bisa menggunakan Runner bawaan github, sementara ketika Runner selfhosted hidup maka kembali seperti pengaturan saat ini. Sebisa mungkin progress tetap berjalan walaupun tak ada Runner selfhosted sekarang.' (You may use GitHub's built-in runners; when the self-hosted runner is alive, revert to the current settings; keep progress moving even without the self-hosted runner now.) Option A follows that instruction and keeps the marathon moving; B would stall all delivery for the duration of the outage. This is a TEMPORARY relaxation of the merge gate only, scoped to the fleet outage: it does not change DEC-0015, does not count self-hosted checks as PASS (they are recorded as excluded-for-outage), and does not touch any CI workflow, runner or compiler configuration (owner runner/CI mandate). Applied to land PRs #331 (P6-S02), #332 (P2-S02) and #338 (P2-S04), each verified 3/3 green on the GitHub-hosted Gate at its PR head. RESTORATION CONTRACT (when the self-hosted runner fleet is alive again): (1) re-run the full DEC-0015 fleet gate on the affected PR heads / main; (2) restore the full fleet requirement as the merge gate (self-hosted checks required green, not excluded); (3) record the fleet return and supersede this DEC-0025 (supersededBy -> the restoration DEC); (4) confirm the previously-landed slices (P6-S02, P2-S02, P2-S04) against the full fleet gate as a back-fill, and note any gap in the register. Until then, self-hosted checks are recorded as excluded-for-outage, never as PASS.",
   "scope": {
     "programs": [
       "GOVERNANCE"
@@ -51,10 +51,10 @@
       338
     ],
     "commits": [
-      "28e7573a",
-      "0c2c5a7c",
-      "1cab18c2",
-      "d4dad5cc"
+      "28e7573a178b95a4460b62d47350edb28f2051d5",
+      "0c2c5a7c06250c35fae532daa4370037f28a82dc",
+      "1cab18c2e201fedd036d885b92b699eb93be74e1",
+      "d4dad5ccba4a62a532c4fb69bd3cb70863fad991"
     ],
     "requests": []
   },
@@ -67,6 +67,5 @@
     "promotedAt": null,
     "promotedBy": null
   },
-  "restoration": "WHEN the self-hosted runner fleet is alive again: (1) re-run the full DEC-0015 fleet gate on the affected PR heads / main; (2) restore the full fleet requirement as the merge gate (self-hosted checks required green, not excluded); (3) record the fleet return and supersede this DEC-0025 (supersededBy -> the restoration DEC); (4) confirm the 3 previously-landed slices (P6-S02, P2-S02, P2-S04) against the full fleet gate as a back-fill, and note any gap in the register. Until then, self-hosted checks are recorded as excluded-for-outage, never as PASS.",
   "reason": null
 }
