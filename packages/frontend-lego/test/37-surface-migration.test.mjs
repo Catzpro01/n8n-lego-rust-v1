@@ -98,10 +98,10 @@ test('one pilot per slice, and every pilot names its slice', () => {
   const pilots = inventory.entries.filter((e) => e.migrationStatus === 'pilot-available');
   assert.deepEqual(
     pilots.map((e) => e.inventoryId).sort(),
-    ['ui.primitives.notification-surface', 'ui.primitives.status-region'],
+    ['ui.pages.dashboard', 'ui.primitives.notification-surface', 'ui.primitives.status-region'],
   );
   const sources = pilots.map((e) => e.sourceIssue).sort();
-  assert.deepEqual(sources, ['241', '245'], 'each pilot names the slice it came from');
+  assert.deepEqual(sources, ['240', '241', '245'], 'each pilot names the slice it came from');
   assert.equal(new Set(sources).size, sources.length, 'two pilots share one slice');
   for (const pilot of pilots) {
     assert.equal(pilot.rollbackStrategy, 'pilot-not-primary', `${pilot.inventoryId} claims primacy`);
@@ -111,7 +111,7 @@ test('one pilot per slice, and every pilot names its slice', () => {
 test('describeSurfaceMigration summarizes status without loading code', () => {
   const described = describeSurfaceMigration(inventory);
   assert.equal(described.count, inventory.entries.length);
-  assert.deepEqual([...described.pilotIds].sort(), ['ui.primitives.notification-surface', 'ui.primitives.status-region']);
+  assert.deepEqual([...described.pilotIds].sort(), ['ui.pages.dashboard', 'ui.primitives.notification-surface', 'ui.primitives.status-region']);
   const total = Object.values(described.byStatus).reduce((a, b) => a + b, 0);
   assert.equal(total, described.count);
 });

@@ -56,8 +56,8 @@ test('every pilot-available entry is a declared pilot with a capability and a te
   const pilots = inv.entries.filter((e) => e.migrationStatus === 'pilot-available');
   assert.deepEqual(
     pilots.map((e) => e.inventoryId).sort(),
-    [PILOT_ID, 'ui.primitives.notification-surface'].sort(),
-    'the pilot set is exactly the status region (#241) and the notification surface (#245)',
+    [PILOT_ID, 'ui.primitives.notification-surface', 'ui.pages.dashboard'].sort(),
+    'the pilot set is exactly the status region (#241), the notification surface (#245) and the dashboard workflow list (P2-S03)',
   );
   for (const pilot of pilots) {
     const capability = manifests.capabilities.find((c) => c.id === pilot.inventoryId.split('.').at(-1));

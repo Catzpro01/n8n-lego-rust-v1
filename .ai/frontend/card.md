@@ -31,9 +31,9 @@ packages/frontend-lego/
     errors.mjs boot.mjs client.mjs manifests.mjs knowledge.mjs agents.mjs agent-events.mjs
     skills.mjs context-session.mjs memory.mjs workspace.mjs agent-machine.mjs lego.mjs
     surface-migration.mjs surface-contract.mjs parity.mjs pilot-status-region.mjs
-    notification-surface.mjs
+    notification-surface.mjs workflow-list.mjs
     adapters/ the framework adapter boundary (currently Vue; the only framework-aware code)
-  test/                     01-contract … 40-notification-surface (numbered as added; 39/40 pilots)
+  test/                     01-contract … 41-workflow-list (numbered as added; 39/40/41 pilots)
 ```
 
 What the odd ones own: `negotiation.mjs` discovery, access, degradation and operation
@@ -78,7 +78,7 @@ other's payloads by name.
 | Browser-visible delta | the one `<meta>` tag (24,268 B served) |
 | Runtime dependencies | none |
 | Locales | `id, en, ar, zh, ru, jv`; Arabic is RTL; 13 message slots |
-| Declared capabilities | 9 (`translation` + 6 AI + 2 pilots), installed: 0 |
+| Declared capabilities | 10 (`translation` + 6 AI + 3 pilots), installed: 0 |
 | Contract lock rows | 20 on this P2.16 implementation branch (`ai.skill`, `ai.context`, `ai.agent-session`, `ai.memory`, `ai.workspace`, `ai.agent-machine` published); protected main remains the pre-P2.16 baseline |
 | Vocabularies | 72 quoted with provenance, 29 local, 0 pending publication (`XA-20` closed by publication) |
 | Seam | 13 declared inputs, 7 forbidden sources, 16 identity fields |

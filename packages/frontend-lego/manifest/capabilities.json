@@ -1,15 +1,15 @@
 {
   "catalogVersion": "1.0.0",
-  "description": "The frontend capability catalog: what the frontend LEGO can offer beyond the pinned editor UI, and how the UI must behave when it is absent. Every entry here is DECLARED \u2014 declared is not installed, installed is not loaded, loaded is not active. P2.8-F implements no capability and registers none: this file exists so the identity, criticality, trust level, activation mode and fallback of a future capability are agreed before its code is written. P2.10 declares the AI foundation's frontend-visible capabilities (AI Assistant, Copilot, Agent node, Agent Machine, Execution AI mode, Agent Work Trace) in the same form, so an installation with no model and no runtime is a declared state rather than an error.",
+  "description": "The frontend capability catalog: what the frontend LEGO can offer beyond the pinned editor UI, and how the UI must behave when it is absent. Every entry here is DECLARED — declared is not installed, installed is not loaded, loaded is not active. P2.8-F implements no capability and registers none: this file exists so the identity, criticality, trust level, activation mode and fallback of a future capability are agreed before its code is written. P2.10 declares the AI foundation's frontend-visible capabilities (AI Assistant, Copilot, Agent node, Agent Machine, Execution AI mode, Agent Work Trace) in the same form, so an installation with no model and no runtime is a declared state rather than an error.",
   "notes": [
     "An entry describes a capability, never an implementation: metadata only, no render/mount/load functions, no inline code.",
     "`entry` is a module path so the runtime can stay lazy. A capability that is not installed yet declares none.",
-    "`criticality: core` may not declare a fallback \u2014 a missing core capability must stay visible.",
+    "`criticality: core` may not declare a fallback — a missing core capability must stay visible.",
     "`trust` is inherited by nesting: a sub-LEGO inside a `feature` capability is a feature, never core.",
-    "Backend-bound capabilities are NOT re-declared here. The surface catalog already binds a surface to its backend capability and contract (manifest/surfaces.json); duplicating those ids here would create a second source of truth (contract \u00a712).",
+    "Backend-bound capabilities are NOT re-declared here. The surface catalog already binds a surface to its backend capability and contract (manifest/surfaces.json); duplicating those ids here would create a second source of truth (contract §12).",
     "Features this instance cannot serve are answered by the compatibility layer's unsupported map (apps/n8n-lego/src/compat/capability.mjs), which is the backend-side registry. This catalog never duplicates it.",
-    "Locales are declared once, in src/i18n.mjs. The official set is id, en, ar, zh, ru, jv; the legacy micro-frontend.contract.md set (id/en/es/fr/de/ja) is superseded \u2014 see contracts/frontend.contract.md \u00a716.1.",
-    "Official locales (id, en, ar, zh, ru, jv) and the translation fallback chain are already owned and tested by contracts/localization.contract.md \u2014 the frontend declares readiness for that contract, it does not restate it."
+    "Locales are declared once, in src/i18n.mjs. The official set is id, en, ar, zh, ru, jv; the legacy micro-frontend.contract.md set (id/en/es/fr/de/ja) is superseded — see contracts/frontend.contract.md §16.1.",
+    "Official locales (id, en, ar, zh, ru, jv) and the translation fallback chain are already owned and tested by contracts/localization.contract.md — the frontend declares readiness for that contract, it does not restate it."
   ],
   "capabilities": [
     {
@@ -53,7 +53,7 @@
       ],
       "phase": "P2.9",
       "owner": "agent-01",
-      "notes": "Declared so the eleven translatable surfaces, the RTL rule and the fallback behaviour are agreed before the Translation LEGO exists. It is not installed, not loaded and not registered \u2014 the boot payload must not mention it. The locale set and the fallback chain are owned by contracts/localization.contract.md (agent-9 lineage, TESTED); this frontend never redefines them."
+      "notes": "Declared so the eleven translatable surfaces, the RTL rule and the fallback behaviour are agreed before the Translation LEGO exists. It is not installed, not loaded and not registered — the boot payload must not mention it. The locale set and the fallback chain are owned by contracts/localization.contract.md (agent-9 lineage, TESTED); this frontend never redefines them."
     },
     {
       "id": "ai-assistant",
@@ -139,7 +139,7 @@
       ],
       "phase": "P2.10",
       "owner": "agent-01",
-      "notes": "An edit the copilot proposes is still an ordinary workflow operation, applied through the workflow capability \u2014 the copilot never gets a private write path."
+      "notes": "An edit the copilot proposes is still an ordinary workflow operation, applied through the workflow capability — the copilot never gets a private write path."
     },
     {
       "id": "ai-agent-node",
@@ -370,6 +370,35 @@
       "phase": "issue-245",
       "owner": "agent-04",
       "notes": "Issue #245: one shared notification surface behind the existing registry/adapter seam. Severity (info/success/warning/error) and disposition (shown/dismissed) are separate axes from the region state the parity harness compares. Dismissal removes the notice from the live region rather than adding a sixth region state. Bounded queue; errors are never silently dropped. Not installed at boot unless registered by a consumer; the original n8n editor stays the default path."
+    },
+    {
+      "id": "dashboard",
+      "lego": "ui-frontend",
+      "title": "Dashboard workflow-list pilot (loading / empty / error / ready, bounded + filterable)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/workflow-list.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "dashboard"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "dashboard",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n Home workflow list remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/41-workflow-list.test.mjs"
+      ],
+      "phase": "P2-S03",
+      "owner": "agent-04",
+      "notes": "P2-S03 Layer 3: the first strangler slice, a bounded and client-filtered view-model of the Home workflow list. Rows are handed over (the surface never fetches, so it holds no private data path to the workflow catalog). The four region states reuse REGION_STATES; filtering to zero is `empty` with reason `filtered`, not a fifth state. Opening/toggling a workflow are declared interactions, never executed. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     }
   ]
 }

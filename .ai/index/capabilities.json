@@ -1,730 +1,745 @@
 {
-  "description": "The frontend capability index: one entry per DECLARED capability, plus the vocabularies, negotiation outcomes, seam and AI vocabulary the modules enforce. Nothing here is running and none of it belongs in the boot payload. Entries: packages/frontend-lego/manifest/capabilities.json; every other block is generated from the module it names. Verified by test/12-knowledge.test.mjs.",
-  "declared": [
-    {
-      "id": "translation",
-      "lego": "translation",
-      "title": "Translation and locale switching",
-      "status": "declared",
-      "activation": "lazy",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "navigation",
-        "dashboard",
-        "settings",
-        "workflow-editor",
-        "node-picker",
-        "dialogs",
-        "notifications",
-        "error-surfaces"
-      ],
-      "degradation": {
-        "fallback": "fallback-locale",
-        "detail": "without the Translation LEGO a surface renders through the fallback chain owned by contracts/localization.contract.md (locale dictionary -> en -> the raw key); an unknown key never throws"
-      },
-      "operations": [],
-      "coordination": "Locales, dictionaries and the fallback chain are owned by contracts/localization.contract.md (agent-9 lineage). This LEGO prepares the surfaces; it does not own the dictionaries."
-    },
-    {
-      "id": "ai-assistant",
-      "lego": "ai-foundation",
-      "title": "AI Assistant (in-product conversational help)",
-      "status": "declared",
-      "activation": "lazy",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "dialogs",
-        "navigation"
-      ],
-      "degradation": {
-        "fallback": "hide-assistant",
-        "detail": "without an inference provider the assistant entry point is not rendered; the editor is unaffected"
-      },
-      "operations": [
-        "assistant.ask",
-        "assistant.cancel"
-      ],
-      "permissions": [
-        "inference:invoke"
-      ]
-    },
-    {
-      "id": "ai-copilot",
-      "lego": "ai-foundation",
-      "title": "AI Copilot (workflow authoring assistance)",
-      "status": "declared",
-      "activation": "lazy",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "workflow-editor",
-        "node-picker"
-      ],
-      "degradation": {
-        "fallback": "hide-copilot",
-        "detail": "without the capability the editor behaves exactly as it does today; no suggestion is faked"
-      },
-      "operations": [
-        "copilot.suggest",
-        "copilot.apply"
-      ],
-      "permissions": [
-        "inference:invoke",
-        "workflow:write"
-      ]
-    },
-    {
-      "id": "ai-agent-node",
-      "lego": "ai-foundation",
-      "title": "AI Agent node (a workflow step that delegates to an agent)",
-      "status": "declared",
-      "activation": "lazy",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "node-picker",
-        "workflow-editor"
-      ],
-      "degradation": {
-        "fallback": "hide-node-type",
-        "detail": "without an agent runtime the node type is not offered in the palette; existing workflows that use it report it through the error model"
-      },
-      "operations": [
-        "agent.delegate"
-      ],
-      "permissions": [
-        "agent:delegate"
-      ]
-    },
-    {
-      "id": "agent-machine",
-      "lego": "agent-machine",
-      "title": "Agent Machine (runtime that executes delegated tasks)",
-      "status": "declared",
-      "activation": "manual",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "executions"
-      ],
-      "degradation": {
-        "fallback": "native-execution",
-        "detail": "executions run exactly as they do today; the UI simply has no agent runtime to offer"
-      },
-      "operations": [
-        "agent.run",
-        "agent.cancel"
-      ],
-      "permissions": [
-        "agent:run"
-      ]
-    },
-    {
-      "id": "execution-ai-mode",
-      "lego": "ai-foundation",
-      "title": "Execution AI mode (an execution that is partially agentic)",
-      "status": "declared",
-      "activation": "manual",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "executions"
-      ],
-      "degradation": {
-        "fallback": "native-execution-status",
-        "detail": "the execution page shows the ordinary status; nothing claims an agent was involved"
-      },
-      "operations": [
-        "execution.escalate"
-      ],
-      "permissions": [
-        "execution:escalate"
-      ]
-    },
-    {
-      "id": "agent-work-trace",
-      "lego": "ai-foundation",
-      "title": "Agent Work Trace (operational timeline of delegated work)",
-      "status": "declared",
-      "activation": "lazy",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "executions",
-        "notifications"
-      ],
-      "degradation": {
-        "fallback": "hide-trace",
-        "detail": "without the capability the execution page shows the ordinary log; no timeline is invented"
-      },
-      "operations": [
-        "trace.list",
-        "trace.subscribe"
-      ],
-      "permissions": [
-        "agent:observe"
-      ]
-    },
-    {
-      "id": "status-region",
-      "lego": "ui-frontend",
-      "title": "Status region pilot (loading/empty/error)",
-      "status": "available",
-      "activation": "eager",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "error-surfaces",
-        "dashboard"
-      ],
-      "operations": []
-    },
-    {
-      "id": "notification-surface",
-      "lego": "ui-frontend",
-      "title": "Shared notification surface (toast/banner/inline)",
-      "status": "available",
-      "activation": "lazy",
-      "criticality": "optional",
-      "trust": "feature",
-      "lifecycle": "available",
-      "installed": false,
-      "surfaces": [
-        "notifications",
-        "error-surfaces",
-        "dashboard"
-      ],
-      "operations": []
-    }
+ "description": "The frontend capability index: one entry per DECLARED capability, plus the vocabularies, negotiation outcomes, seam and AI vocabulary the modules enforce. Nothing here is running and none of it belongs in the boot payload. Entries: packages/frontend-lego/manifest/capabilities.json; every other block is generated from the module it names. Verified by test/12-knowledge.test.mjs.",
+ "declared": [
+  {
+   "id": "translation",
+   "lego": "translation",
+   "title": "Translation and locale switching",
+   "status": "declared",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "navigation",
+    "dashboard",
+    "settings",
+    "workflow-editor",
+    "node-picker",
+    "dialogs",
+    "notifications",
+    "error-surfaces"
+   ],
+   "degradation": {
+    "fallback": "fallback-locale",
+    "detail": "without the Translation LEGO a surface renders through the fallback chain owned by contracts/localization.contract.md (locale dictionary -> en -> the raw key); an unknown key never throws"
+   },
+   "operations": [],
+   "coordination": "Locales, dictionaries and the fallback chain are owned by contracts/localization.contract.md (agent-9 lineage). This LEGO prepares the surfaces; it does not own the dictionaries."
+  },
+  {
+   "id": "ai-assistant",
+   "lego": "ai-foundation",
+   "title": "AI Assistant (in-product conversational help)",
+   "status": "declared",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "dialogs",
+    "navigation"
+   ],
+   "degradation": {
+    "fallback": "hide-assistant",
+    "detail": "without an inference provider the assistant entry point is not rendered; the editor is unaffected"
+   },
+   "operations": [
+    "assistant.ask",
+    "assistant.cancel"
+   ],
+   "permissions": [
+    "inference:invoke"
+   ]
+  },
+  {
+   "id": "ai-copilot",
+   "lego": "ai-foundation",
+   "title": "AI Copilot (workflow authoring assistance)",
+   "status": "declared",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "workflow-editor",
+    "node-picker"
+   ],
+   "degradation": {
+    "fallback": "hide-copilot",
+    "detail": "without the capability the editor behaves exactly as it does today; no suggestion is faked"
+   },
+   "operations": [
+    "copilot.suggest",
+    "copilot.apply"
+   ],
+   "permissions": [
+    "inference:invoke",
+    "workflow:write"
+   ]
+  },
+  {
+   "id": "ai-agent-node",
+   "lego": "ai-foundation",
+   "title": "AI Agent node (a workflow step that delegates to an agent)",
+   "status": "declared",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "node-picker",
+    "workflow-editor"
+   ],
+   "degradation": {
+    "fallback": "hide-node-type",
+    "detail": "without an agent runtime the node type is not offered in the palette; existing workflows that use it report it through the error model"
+   },
+   "operations": [
+    "agent.delegate"
+   ],
+   "permissions": [
+    "agent:delegate"
+   ]
+  },
+  {
+   "id": "agent-machine",
+   "lego": "agent-machine",
+   "title": "Agent Machine (runtime that executes delegated tasks)",
+   "status": "declared",
+   "activation": "manual",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "executions"
+   ],
+   "degradation": {
+    "fallback": "native-execution",
+    "detail": "executions run exactly as they do today; the UI simply has no agent runtime to offer"
+   },
+   "operations": [
+    "agent.run",
+    "agent.cancel"
+   ],
+   "permissions": [
+    "agent:run"
+   ]
+  },
+  {
+   "id": "execution-ai-mode",
+   "lego": "ai-foundation",
+   "title": "Execution AI mode (an execution that is partially agentic)",
+   "status": "declared",
+   "activation": "manual",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "executions"
+   ],
+   "degradation": {
+    "fallback": "native-execution-status",
+    "detail": "the execution page shows the ordinary status; nothing claims an agent was involved"
+   },
+   "operations": [
+    "execution.escalate"
+   ],
+   "permissions": [
+    "execution:escalate"
+   ]
+  },
+  {
+   "id": "agent-work-trace",
+   "lego": "ai-foundation",
+   "title": "Agent Work Trace (operational timeline of delegated work)",
+   "status": "declared",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "executions",
+    "notifications"
+   ],
+   "degradation": {
+    "fallback": "hide-trace",
+    "detail": "without the capability the execution page shows the ordinary log; no timeline is invented"
+   },
+   "operations": [
+    "trace.list",
+    "trace.subscribe"
+   ],
+   "permissions": [
+    "agent:observe"
+   ]
+  },
+  {
+   "id": "status-region",
+   "lego": "ui-frontend",
+   "title": "Status region pilot (loading/empty/error)",
+   "status": "available",
+   "activation": "eager",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "error-surfaces",
+    "dashboard"
+   ],
+   "operations": []
+  },
+  {
+   "id": "notification-surface",
+   "lego": "ui-frontend",
+   "title": "Shared notification surface (toast/banner/inline)",
+   "status": "available",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "notifications",
+    "error-surfaces",
+    "dashboard"
+   ],
+   "operations": []
+  },
+  {
+   "id": "dashboard",
+   "lego": "ui-frontend",
+   "title": "Dashboard workflow-list pilot (loading/empty/error/ready, bounded + filterable)",
+   "status": "available",
+   "activation": "lazy",
+   "criticality": "optional",
+   "trust": "feature",
+   "lifecycle": "available",
+   "installed": false,
+   "surfaces": [
+    "dashboard"
+   ],
+   "operations": []
+  }
+ ],
+ "registered": [],
+ "vocabularies": {
+  "activation": [
+   "eager",
+   "lazy",
+   "manual"
   ],
-  "registered": [],
-  "vocabularies": {
-    "activation": [
-      "eager",
-      "lazy",
-      "manual"
-    ],
-    "lifecycle": [
-      "available",
-      "installed",
-      "loaded",
-      "active",
-      "idle",
-      "unloaded",
-      "disabled"
-    ],
-    "runnableStates": [
-      "loaded",
-      "active",
-      "idle"
-    ],
-    "criticality": [
-      "core",
-      "optional",
-      "enhancement"
-    ],
-    "trust": [
-      "core",
-      "feature",
-      "extension",
-      "untrusted"
-    ],
-    "support": [
-      "supported",
-      "degraded",
-      "remote",
-      "unsupported"
-    ],
-    "status": [
-      "declared",
-      "available",
-      "partial",
-      "unsupported"
-    ],
-    "deviceProfiles": [
-      "desktop",
-      "laptop",
-      "low-memory",
-      "android",
-      "termux-companion",
-      "remote-only"
-    ],
-    "requirementFields": [
-      "memoryMb",
-      "storageMb",
-      "cpuCores",
-      "requiresLocalExecution",
-      "requiresNetwork",
-      "heavy",
-      "batteryHeavy",
-      "costClass",
-      "maxLatencyMs",
-      "input"
-    ],
-    "budgetFields": [
-      "memoryMb",
-      "storageMb",
-      "cpuCores",
-      "input",
-      "alwaysOnline",
-      "meteredNetwork",
-      "onBattery",
-      "latencyBudgetMs",
-      "executionModel"
-    ],
-    "costClasses": [
-      "free",
-      "metered",
-      "paid"
-    ]
+  "lifecycle": [
+   "available",
+   "installed",
+   "loaded",
+   "active",
+   "idle",
+   "unloaded",
+   "disabled"
+  ],
+  "runnableStates": [
+   "loaded",
+   "active",
+   "idle"
+  ],
+  "criticality": [
+   "core",
+   "optional",
+   "enhancement"
+  ],
+  "trust": [
+   "core",
+   "feature",
+   "extension",
+   "untrusted"
+  ],
+  "support": [
+   "supported",
+   "degraded",
+   "remote",
+   "unsupported"
+  ],
+  "status": [
+   "declared",
+   "available",
+   "partial",
+   "unsupported"
+  ],
+  "deviceProfiles": [
+   "desktop",
+   "laptop",
+   "low-memory",
+   "android",
+   "termux-companion",
+   "remote-only"
+  ],
+  "requirementFields": [
+   "memoryMb",
+   "storageMb",
+   "cpuCores",
+   "requiresLocalExecution",
+   "requiresNetwork",
+   "heavy",
+   "batteryHeavy",
+   "costClass",
+   "maxLatencyMs",
+   "input"
+  ],
+  "budgetFields": [
+   "memoryMb",
+   "storageMb",
+   "cpuCores",
+   "input",
+   "alwaysOnline",
+   "meteredNetwork",
+   "onBattery",
+   "latencyBudgetMs",
+   "executionModel"
+  ],
+  "costClasses": [
+   "free",
+   "metered",
+   "paid"
+  ]
+ },
+ "rules": [
+  "A capability attaches only to a surface declared in manifest/surfaces.json.",
+  "activation lazy|manual must name an `entry` module path once the capability is installable; a declared capability owes none.",
+  "criticality core may not declare a fallback: a missing core capability must be visible.",
+  "trust is inherited; a unit nested under a feature capability is a feature and may only be lowered.",
+  "Backend-bound capabilities are not re-declared here: the surface catalog already binds a surface to its backend capability and contract.",
+  "A feature this instance cannot serve is answered by the compatibility layer's unsupported map (apps/n8n-lego/src/compat/capability.mjs) — never duplicated here."
+ ],
+ "negotiation": {
+  "availabilityStates": [
+   "available",
+   "degraded",
+   "capability-unavailable",
+   "optional-absent",
+   "version-incompatible",
+   "dependency-disabled",
+   "migration-required",
+   "feature-unsupported"
+  ],
+  "operationStates": [
+   "available",
+   "degraded",
+   "capability-unavailable",
+   "optional-absent",
+   "version-incompatible",
+   "dependency-disabled",
+   "migration-required",
+   "feature-unsupported",
+   "operation-denied",
+   "operation-unpublished",
+   "permission-missing",
+   "permission-unknown"
+  ],
+  "origins": [
+   "frontend-registered",
+   "frontend-declared",
+   "backend-advertised"
+  ],
+  "triggers": "negotiation.mjs -> DEGRADATION_SITUATIONS (one row per situation; the prose stays in the module)",
+  "degradationSituations": [
+   {
+    "situation": "available",
+    "state": "available"
+   },
+   {
+    "situation": "unavailable",
+    "state": "capability-unavailable"
+   },
+   {
+    "situation": "disabled",
+    "state": "dependency-disabled"
+   },
+   {
+    "situation": "unsupported",
+    "state": "feature-unsupported"
+   },
+   {
+    "situation": "incompatible",
+    "state": "version-incompatible"
+   },
+   {
+    "situation": "degraded",
+    "state": "degraded"
+   },
+   {
+    "situation": "not-installed",
+    "state": "optional-absent"
+   },
+   {
+    "situation": "migration-required",
+    "state": "migration-required"
+   }
+  ],
+  "rules": "packages/frontend-lego/src/negotiation.mjs → describeNegotiation().rules"
+ },
+ "delivery": {
+  "transports": [
+   "local",
+   "rest",
+   "event",
+   "stream",
+   "ipc",
+   "remote"
+  ],
+  "implemented": [
+   "local"
+  ],
+  "interactionClasses": [
+   "call",
+   "event",
+   "stream",
+   "batch"
+  ],
+  "interactionTransports": {
+   "call": [
+    "local",
+    "rest",
+    "ipc",
+    "remote"
+   ],
+   "event": [
+    "local",
+    "event",
+    "ipc",
+    "remote"
+   ],
+   "stream": [
+    "local",
+    "stream",
+    "ipc",
+    "remote"
+   ],
+   "batch": [
+    "local",
+    "rest",
+    "ipc",
+    "remote"
+   ]
   },
   "rules": [
-    "A capability attaches only to a surface declared in manifest/surfaces.json.",
-    "activation lazy|manual must name an `entry` module path once the capability is installable; a declared capability owes none.",
-    "criticality core may not declare a fallback: a missing core capability must be visible.",
-    "trust is inherited; a unit nested under a feature capability is a feature and may only be lowered.",
-    "Backend-bound capabilities are not re-declared here: the surface catalog already binds a surface to its backend capability and contract.",
-    "A feature this instance cannot serve is answered by the compatibility layer's unsupported map (apps/n8n-lego/src/compat/capability.mjs) \u2014 never duplicated here."
+   "Business contracts name operations and their interaction class, never transports.",
+   "The cheapest capable transport wins; same-process calls are direct with no serialization.",
+   "No HTTP between local modules; an operation no transport can carry is refused by name.",
+   "A caller may not reshape an operation: the declared class wins."
+  ]
+ },
+ "localization": {
+  "localeSet": [
+   {
+    "code": {
+     "code": "id",
+     "englishName": "Indonesian",
+     "nativeName": "Bahasa Indonesia",
+     "direction": "ltr",
+     "status": "declared"
+    },
+    "direction": "ltr",
+    "fallback": false
+   },
+   {
+    "code": {
+     "code": "en",
+     "englishName": "English",
+     "nativeName": "English",
+     "direction": "ltr",
+     "status": "declared",
+     "fallback": true
+    },
+    "direction": "ltr",
+    "fallback": false
+   },
+   {
+    "code": {
+     "code": "ar",
+     "englishName": "Arabic",
+     "nativeName": "العربية",
+     "direction": "rtl",
+     "status": "declared"
+    },
+    "direction": "ltr",
+    "fallback": false
+   },
+   {
+    "code": {
+     "code": "zh",
+     "englishName": "Chinese",
+     "nativeName": "中文",
+     "direction": "ltr",
+     "status": "declared"
+    },
+    "direction": "ltr",
+    "fallback": false
+   },
+   {
+    "code": {
+     "code": "ru",
+     "englishName": "Russian",
+     "nativeName": "Русский",
+     "direction": "ltr",
+     "status": "declared"
+    },
+    "direction": "ltr",
+    "fallback": false
+   },
+   {
+    "code": {
+     "code": "jv",
+     "englishName": "Javanese",
+     "nativeName": "Basa Jawa",
+     "direction": "ltr",
+     "status": "declared"
+    },
+    "direction": "ltr",
+    "fallback": false
+   }
   ],
-  "negotiation": {
-    "availabilityStates": [
-      "available",
-      "degraded",
-      "capability-unavailable",
-      "optional-absent",
-      "version-incompatible",
-      "dependency-disabled",
-      "migration-required",
-      "feature-unsupported"
-    ],
-    "operationStates": [
-      "available",
-      "degraded",
-      "capability-unavailable",
-      "optional-absent",
-      "version-incompatible",
-      "dependency-disabled",
-      "migration-required",
-      "feature-unsupported",
-      "operation-denied",
-      "operation-unpublished",
-      "permission-missing",
-      "permission-unknown"
-    ],
-    "origins": [
-      "frontend-registered",
-      "frontend-declared",
-      "backend-advertised"
-    ],
-    "triggers": "negotiation.mjs -> DEGRADATION_SITUATIONS (one row per situation; the prose stays in the module)",
-    "degradationSituations": [
-      {
-        "situation": "available",
-        "state": "available"
-      },
-      {
-        "situation": "unavailable",
-        "state": "capability-unavailable"
-      },
-      {
-        "situation": "disabled",
-        "state": "dependency-disabled"
-      },
-      {
-        "situation": "unsupported",
-        "state": "feature-unsupported"
-      },
-      {
-        "situation": "incompatible",
-        "state": "version-incompatible"
-      },
-      {
-        "situation": "degraded",
-        "state": "degraded"
-      },
-      {
-        "situation": "not-installed",
-        "state": "optional-absent"
-      },
-      {
-        "situation": "migration-required",
-        "state": "migration-required"
-      }
-    ],
-    "rules": "packages/frontend-lego/src/negotiation.mjs \u2192 describeNegotiation().rules"
+  "fallback": "en",
+  "rtl": [
+   "ar"
+  ],
+  "ownedByFrontend": [
+   "locale identity",
+   "direction metadata",
+   "message keys",
+   "fallback chain",
+   "plural categories (contract)"
+  ],
+  "notOwnedByFrontend": [
+   "dictionaries",
+   "translation content",
+   "loading strategy",
+   "translation runtime"
+  ]
+ },
+ "ai": {
+  "note": "The AI foundation's frontend-visible vocabulary. Declared capabilities are UI identities, not implementations: the frontend performs no inference and holds no provider client.",
+  "capabilities": [
+   "ai-assistant",
+   "ai-copilot",
+   "ai-agent-node",
+   "agent-machine",
+   "execution-ai-mode",
+   "agent-work-trace"
+  ],
+  "providerKinds": [
+   "model-provider",
+   "tool-provider",
+   "application-provider"
+  ],
+  "runtimeKinds": [
+   "agent-runtime",
+   "simulation-runtime"
+  ],
+  "runtimeLocality": [
+   "local",
+   "remote"
+  ],
+  "mcpObjects": [
+   "client-capability",
+   "server-capability",
+   "tool",
+   "resource",
+   "prompt",
+   "connection",
+   "authorization",
+   "availability"
+  ],
+  "mcpStates": [
+   "connected",
+   "unavailable",
+   "permission-required",
+   "capability-unsupported"
+  ],
+  "zeroInstallIsValid": true,
+  "eventVocabulary": "agent-events.mjs (26 types, 7 namespaces)",
+  "traceIsBounded": "declared capacity, references instead of payloads, no field for reasoning or credentials",
+  "source": "packages/frontend-lego/manifest/capabilities.json + src/agents.mjs + src/agent-events.mjs",
+  "trace": {
+   "fields": 18,
+   "limit": 200,
+   "summaryLimit": 280,
+   "refuses": [
+    "payload",
+    "messages",
+    "reasoning",
+    "chainOfThought"
+   ]
   },
-  "delivery": {
-    "transports": [
-      "local",
-      "rest",
-      "event",
-      "stream",
-      "ipc",
-      "remote"
-    ],
-    "implemented": [
-      "local"
-    ],
-    "interactionClasses": [
-      "call",
-      "event",
-      "stream",
-      "batch"
-    ],
-    "interactionTransports": {
-      "call": [
-        "local",
-        "rest",
-        "ipc",
-        "remote"
-      ],
-      "event": [
-        "local",
-        "event",
-        "ipc",
-        "remote"
-      ],
-      "stream": [
-        "local",
-        "stream",
-        "ipc",
-        "remote"
-      ],
-      "batch": [
-        "local",
-        "rest",
-        "ipc",
-        "remote"
-      ]
-    },
-    "rules": [
-      "Business contracts name operations and their interaction class, never transports.",
-      "The cheapest capable transport wins; same-process calls are direct with no serialization.",
-      "No HTTP between local modules; an operation no transport can carry is refused by name.",
-      "A caller may not reshape an operation: the declared class wins."
-    ]
-  },
-  "localization": {
-    "localeSet": [
-      {
-        "code": {
-          "code": "id",
-          "englishName": "Indonesian",
-          "nativeName": "Bahasa Indonesia",
-          "direction": "ltr",
-          "status": "declared"
-        },
-        "direction": "ltr",
-        "fallback": false
-      },
-      {
-        "code": {
-          "code": "en",
-          "englishName": "English",
-          "nativeName": "English",
-          "direction": "ltr",
-          "status": "declared",
-          "fallback": true
-        },
-        "direction": "ltr",
-        "fallback": false
-      },
-      {
-        "code": {
-          "code": "ar",
-          "englishName": "Arabic",
-          "nativeName": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629",
-          "direction": "rtl",
-          "status": "declared"
-        },
-        "direction": "ltr",
-        "fallback": false
-      },
-      {
-        "code": {
-          "code": "zh",
-          "englishName": "Chinese",
-          "nativeName": "\u4e2d\u6587",
-          "direction": "ltr",
-          "status": "declared"
-        },
-        "direction": "ltr",
-        "fallback": false
-      },
-      {
-        "code": {
-          "code": "ru",
-          "englishName": "Russian",
-          "nativeName": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439",
-          "direction": "ltr",
-          "status": "declared"
-        },
-        "direction": "ltr",
-        "fallback": false
-      },
-      {
-        "code": {
-          "code": "jv",
-          "englishName": "Javanese",
-          "nativeName": "Basa Jawa",
-          "direction": "ltr",
-          "status": "declared"
-        },
-        "direction": "ltr",
-        "fallback": false
-      }
-    ],
-    "fallback": "en",
-    "rtl": [
-      "ar"
-    ],
-    "ownedByFrontend": [
-      "locale identity",
-      "direction metadata",
-      "message keys",
-      "fallback chain",
-      "plural categories (contract)"
-    ],
-    "notOwnedByFrontend": [
-      "dictionaries",
-      "translation content",
-      "loading strategy",
-      "translation runtime"
-    ]
-  },
-  "ai": {
-    "note": "The AI foundation's frontend-visible vocabulary. Declared capabilities are UI identities, not implementations: the frontend performs no inference and holds no provider client.",
-    "capabilities": [
-      "ai-assistant",
-      "ai-copilot",
-      "ai-agent-node",
-      "agent-machine",
-      "execution-ai-mode",
-      "agent-work-trace"
-    ],
-    "providerKinds": [
-      "model-provider",
-      "tool-provider",
-      "application-provider"
-    ],
-    "runtimeKinds": [
-      "agent-runtime",
-      "simulation-runtime"
-    ],
-    "runtimeLocality": [
-      "local",
-      "remote"
-    ],
-    "mcpObjects": [
-      "client-capability",
-      "server-capability",
-      "tool",
-      "resource",
-      "prompt",
-      "connection",
-      "authorization",
-      "availability"
-    ],
-    "mcpStates": [
-      "connected",
-      "unavailable",
-      "permission-required",
-      "capability-unsupported"
-    ],
-    "zeroInstallIsValid": true,
-    "eventVocabulary": "agent-events.mjs (26 types, 7 namespaces)",
-    "traceIsBounded": "declared capacity, references instead of payloads, no field for reasoning or credentials",
-    "source": "packages/frontend-lego/manifest/capabilities.json + src/agents.mjs + src/agent-events.mjs",
-    "trace": {
-      "fields": 18,
-      "limit": 200,
-      "summaryLimit": 280,
-      "refuses": [
-        "payload",
-        "messages",
-        "reasoning",
-        "chainOfThought"
-      ]
-    },
-    "runtimeSelection": "derived from the declared device budget (src/profiles.mjs): real before simulated, local before remote; no runtime is required locally"
-  },
-  "seam": {
-    "note": "What the frontend may consume from the other side of the seam, and the one identity every capability is projected into (src/seam.mjs).",
-    "identityFields": [
-      "id",
-      "lego",
-      "owner",
-      "contractVersion",
-      "operations",
-      "permissions",
-      "lifecycle",
-      "status",
-      "availability",
-      "criticality",
-      "trust",
-      "interaction",
-      "migration",
-      "degradation",
-      "surfaces",
-      "requirements"
-    ],
-    "forbiddenSources": 7,
-    "publicationPending": "a quoted word whose file no contract row publishes names owner, domain and decision (XA-9)",
-    "inputs": [
-      {
-        "id": "capability-id",
-        "sources": [
-          "manifest",
-          "declaration",
-          "advertisement"
-        ],
-        "vocabulary": null
-      },
-      {
-        "id": "capability-status",
-        "sources": [
-          "manifest",
-          "declaration",
-          "advertisement"
-        ],
-        "vocabulary": "capabilityStatus"
-      },
-      {
-        "id": "version",
-        "sources": [
-          "manifest",
-          "declaration",
-          "advertisement"
-        ],
-        "vocabulary": "changeKind"
-      },
-      {
-        "id": "operations",
-        "sources": [
-          "manifest",
-          "declaration",
-          "advertisement"
-        ],
-        "vocabulary": "operationOutcome"
-      },
-      {
-        "id": "permissions",
-        "sources": [
-          "manifest",
-          "declaration",
-          "advertisement"
-        ],
-        "vocabulary": null
-      },
-      {
-        "id": "lifecycle",
-        "sources": [
-          "manifest",
-          "declaration",
-          "advertisement"
-        ],
-        "vocabulary": "lifecycle"
-      },
-      {
-        "id": "availability",
-        "sources": [
-          "declaration",
-          "advertisement",
-          "compatibility-layer"
-        ],
-        "vocabulary": "degradation"
-      },
-      {
-        "id": "degradation",
-        "sources": [
-          "declaration",
-          "compatibility-layer"
-        ],
-        "vocabulary": "degradation"
-      },
-      {
-        "id": "interaction-class",
-        "sources": [
-          "manifest",
-          "declaration"
-        ],
-        "vocabulary": "interaction"
-      },
-      {
-        "id": "transport-capability",
-        "sources": [
-          "manifest",
-          "boot-payload"
-        ],
-        "vocabulary": "transportTarget"
-      },
-      {
-        "id": "error-code",
-        "sources": [
-          "compatibility-layer",
-          "manifest"
-        ],
-        "vocabulary": null
-      },
-      {
-        "id": "locale-set",
-        "sources": [
-          "locale-registry"
-        ],
-        "vocabulary": null
-      },
-      {
-        "id": "observability-metadata",
-        "sources": [
-          "observability"
-        ],
-        "vocabulary": null
-      }
-    ],
+  "runtimeSelection": "derived from the declared device budget (src/profiles.mjs): real before simulated, local before remote; no runtime is required locally"
+ },
+ "seam": {
+  "note": "What the frontend may consume from the other side of the seam, and the one identity every capability is projected into (src/seam.mjs).",
+  "identityFields": [
+   "id",
+   "lego",
+   "owner",
+   "contractVersion",
+   "operations",
+   "permissions",
+   "lifecycle",
+   "status",
+   "availability",
+   "criticality",
+   "trust",
+   "interaction",
+   "migration",
+   "degradation",
+   "surfaces",
+   "requirements"
+  ],
+  "forbiddenSources": 7,
+  "publicationPending": "a quoted word whose file no contract row publishes names owner, domain and decision (XA-9)",
+  "inputs": [
+   {
+    "id": "capability-id",
     "sources": [
-      "manifest",
-      "declaration",
-      "advertisement",
-      "compatibility-layer",
-      "boot-payload",
-      "observability",
-      "locale-registry"
+     "manifest",
+     "declaration",
+     "advertisement"
     ],
-    "forbidden": [
-      "implementation-file",
-      "module-path",
-      "route-table",
-      "port",
-      "credential-store",
-      "model-output",
-      "screen"
+    "vocabulary": null
+   },
+   {
+    "id": "capability-status",
+    "sources": [
+     "manifest",
+     "declaration",
+     "advertisement"
     ],
-    "provenanceFields": [
-      "origin"
+    "vocabulary": "capabilityStatus"
+   },
+   {
+    "id": "version",
+    "sources": [
+     "manifest",
+     "declaration",
+     "advertisement"
     ],
-    "rules": [
-      "The frontend consumes declared inputs only: an id, a version, an operation list, permissions, a lifecycle state, an availability answer, a degradation state, an interaction class, a transport binding, an error code, the locale set or boundary telemetry.",
-      "Never from an implementation file, a module path, a route table, a port or a credential store \u2014 the seam is a contract, not a filesystem.",
-      "An input the seam does not declare is refused by name; a value outside its declared vocabulary is refused too.",
-      "Both sides project the same sixteen-field identity: an undeclared field is null, and a capability the caller was not granted is not described at all."
-    ]
-  }
+    "vocabulary": "changeKind"
+   },
+   {
+    "id": "operations",
+    "sources": [
+     "manifest",
+     "declaration",
+     "advertisement"
+    ],
+    "vocabulary": "operationOutcome"
+   },
+   {
+    "id": "permissions",
+    "sources": [
+     "manifest",
+     "declaration",
+     "advertisement"
+    ],
+    "vocabulary": null
+   },
+   {
+    "id": "lifecycle",
+    "sources": [
+     "manifest",
+     "declaration",
+     "advertisement"
+    ],
+    "vocabulary": "lifecycle"
+   },
+   {
+    "id": "availability",
+    "sources": [
+     "declaration",
+     "advertisement",
+     "compatibility-layer"
+    ],
+    "vocabulary": "degradation"
+   },
+   {
+    "id": "degradation",
+    "sources": [
+     "declaration",
+     "compatibility-layer"
+    ],
+    "vocabulary": "degradation"
+   },
+   {
+    "id": "interaction-class",
+    "sources": [
+     "manifest",
+     "declaration"
+    ],
+    "vocabulary": "interaction"
+   },
+   {
+    "id": "transport-capability",
+    "sources": [
+     "manifest",
+     "boot-payload"
+    ],
+    "vocabulary": "transportTarget"
+   },
+   {
+    "id": "error-code",
+    "sources": [
+     "compatibility-layer",
+     "manifest"
+    ],
+    "vocabulary": null
+   },
+   {
+    "id": "locale-set",
+    "sources": [
+     "locale-registry"
+    ],
+    "vocabulary": null
+   },
+   {
+    "id": "observability-metadata",
+    "sources": [
+     "observability"
+    ],
+    "vocabulary": null
+   }
+  ],
+  "sources": [
+   "manifest",
+   "declaration",
+   "advertisement",
+   "compatibility-layer",
+   "boot-payload",
+   "observability",
+   "locale-registry"
+  ],
+  "forbidden": [
+   "implementation-file",
+   "module-path",
+   "route-table",
+   "port",
+   "credential-store",
+   "model-output",
+   "screen"
+  ],
+  "provenanceFields": [
+   "origin"
+  ],
+  "rules": [
+   "The frontend consumes declared inputs only: an id, a version, an operation list, permissions, a lifecycle state, an availability answer, a degradation state, an interaction class, a transport binding, an error code, the locale set or boundary telemetry.",
+   "Never from an implementation file, a module path, a route table, a port or a credential store — the seam is a contract, not a filesystem.",
+   "An input the seam does not declare is refused by name; a value outside its declared vocabulary is refused too.",
+   "Both sides project the same sixteen-field identity: an undeclared field is null, and a capability the caller was not granted is not described at all."
+  ]
+ }
 }

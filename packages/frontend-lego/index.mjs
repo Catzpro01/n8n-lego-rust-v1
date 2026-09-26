@@ -613,3 +613,20 @@ export {
   referenceNotificationObservation,
   validateNotificationSurfaceContract,
 } from './src/notification-surface.mjs';
+
+export {
+  WORKFLOW_LIST_A11Y,
+  WORKFLOW_LIST_CAPABILITY_ID,
+  WORKFLOW_LIST_LIMITS,
+  WORKFLOW_LIST_MESSAGE_SLOT,
+  WORKFLOW_LIST_ROW_FIELDS,
+  WORKFLOW_LIST_SURFACE_ID,
+  WORKFLOW_LIST_SURFACE_VERSION,
+  createWorkflowListSurface,
+  referenceEmptyObservation,
+  referenceErrorObservation,
+  referenceLoadingObservation,
+  referenceReadyObservation,
+  validateWorkflowListSurfaceContract,
+  workflowListSurfaceContract,
+} from './src/workflow-list.mjs';

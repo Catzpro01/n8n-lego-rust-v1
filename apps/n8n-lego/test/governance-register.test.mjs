@@ -424,9 +424,9 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // Pin of the reconciled register. Refresh it when a slice's delivery state is reconciled; it
   // exists so a silently-flipped status cannot pass unnoticed. The tally itself is derived above,
   // so this pin is a tripwire on the register's delivery state, not on the arithmetic.
-  assert.equal(tally.percent, 84.3);
+  assert.equal(tally.percent, 83.8);
   assert.equal(tally.implemented, 134);
-  assert.equal(tally.total, 159);
+  assert.equal(tally.total, 160);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
   assert.equal(displayStatus(m08, verifying), 'implemented');
@@ -435,9 +435,9 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('blocked'), 0);
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
-  assert.equal(metrics.current.total, 153);
+  assert.equal(metrics.current.total, 154);
   assert.equal(metrics.current.implemented, 133);
-  assert.equal(metrics.current.sliceCompletion, percent1(133, 153));
+  assert.equal(metrics.current.sliceCompletion, percent1(133, 154));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);
