@@ -12,7 +12,7 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "d58dfaebf6d181d115ff9bd9cb455377061590b1",
     "latestCompletedSlice": { "id": "P5-M04", "pr": 346, "mergeSha": "3ba8f3397542dceffb7c48c220cd380ec64f5174" },
-    "activeSlices": [],
+    "activeSlices": ["P2-S06"],
     "verifyingSlices": [{ "id": "P7-S01", "pr": 334, "headSha": "71510167bffd57ac38fc75f5289fe20b7bd2f457", "mergeSha": "8aedbfa2cf67d4afd7cedb2e30b179e152107413", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }, { "id": "P7-S02", "pr": 336, "headSha": "3d1dcd0260e5accc127c42404549535a0d9c38ce", "mergeSha": "d58dfaebf6d181d115ff9bd9cb455377061590b1", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }],
     "plannedQueue": [],
     "blockedSlices": [
@@ -2485,7 +2485,7 @@
           "issue": 240,
           "evidence": null,
           "owner": "manager (unassigned)",
-          "blockedBy": "Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - \"Implementation must be split into dedicated milestone tasks with Manager Master Prompts.\" So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6."
+          "blockedBy": "Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - \"Implementation must be split into dedicated milestone tasks with Manager Master Prompts.\" So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. The third Layer 3 surface (executions list) has now been split out as P2-S06 and is in progress on delivery/p2-s06-executions-surface; this umbrella covers the remaining Layer 3-5 surfaces (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6."
         },
         {
           "id": "P2-S04",
@@ -2636,6 +2636,62 @@
           "evidence": "docs/n8n-lego/evidence/P2-S05-EVIDENCE.md",
           "owner": "agent-1",
           "note": "P2-S03 Layer 3 second strangler slice; split out per #240 under the Manager continuation directive. No backend, no contract; needed by later slices. One module, one manifest entry, one test suite, mode pilot, rollback pilot-not-primary."
+        },
+        {
+          "id": "P2-S06",
+          "title": "Executions list (third Layer 3 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "in-progress",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Handed-over input boundary: no private data path",
+              "purpose": "The execution rows are handed over (inputBoundary source hand-over). The surface never fetches /rest/executions, so it holds no private data path or second source of truth for the execution catalog - the compatibility boundary exists to prevent exactly that. loadSuccess() is the only row entry point.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Closed contract reusing REGION_STATES: no fifth state",
+              "purpose": "The four region states (loading / empty / error / ready) reuse the closed REGION_STATES the parity harness compares. A list filtered down to nothing and a list with no executions are BOTH empty at the region level; the difference is carried in the display model's reason (none vs filtered), not invented as a fifth region state. The contract's states are pinned to REGION_STATES exactly.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Bounded executions list with enforced bounds",
+              "purpose": "Visible rows are capped at maxVisible (default 20, hard max 50) and the status-filter selection is from a closed vocabulary; both are enforced, not merely declared. Rows past the bound are retained (the data is not dropped) but not presented; show-more is a declared interaction, not a silent overflow. An unknown execution status or an over-bound request is refused, not silently coerced.",
+              "weight": 15,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Status filter as a real observable mutation",
+              "purpose": "The client-side status filter (all / success / error / canceled / crashed / running / waiting) changes what is VISIBLE and is the one behaviour a test can observe end to end: select, narrow, clear. Filtering to zero is empty with reason filtered, which is how the reference tells a first-time no executions yet from your status filter matched nothing.",
+              "weight": 15,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Accessibility derived once; only error assertive, only loading busy",
+              "purpose": "The a11y intent is derived once in EXECUTION_LIST_A11Y so the contract's declared observables and the view-model's rendered attributes cannot drift. Only error is aria-live assertive (making a caution assertive trains users to dismiss the live region without reading it); only loading is aria-busy; ready is announced politely so a background refresh does not interrupt.",
+              "weight": 15,
+              "status": "planned"
+            },
+            {
+              "id": "CP-06",
+              "title": "Parity equivalent against reference fixtures, fail-closed",
+              "purpose": "All four region states are parity-equivalent to deterministic reference fixtures (the pinned n8n executions page). The error kind is pinned (equivalent when it matches, migration-required when it does not) and the harness is fail-closed: a drifted field is migration-required and an incomparable observation throws. A fixture that drifts from the candidate is a bug.",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-26T21:04:20Z",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "agent-1",
+          "note": "P2-S03 Layer 3 third strangler slice; split out per #240 under the Manager continuation directive. Advances the already-declared ui.executions.history surface from reference-only to pilot-available. Rows are handed over (the surface never fetches, so it holds no private path to the execution catalog). One module, one manifest entry, one test suite, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
         }
       ]
     },
