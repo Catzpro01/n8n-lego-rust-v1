@@ -11,13 +11,11 @@
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "d58dfaebf6d181d115ff9bd9cb455377061590b1",
-    "latestCompletedSlice": { "id": "P6-S02", "pr": 330, "mergeSha": "d3c35c734f59311f08ede19500a4a1b72a881fa1" },
+    "latestCompletedSlice": { "id": "P2-S04", "pr": 338, "mergeSha": "1cab18c2e201fedd036d885b92b699eb93be74e1" },
     "activeSlices": ["P7-S03"],
     "verifyingSlices": [{ "id": "P7-S01", "pr": 334, "headSha": "71510167bffd57ac38fc75f5289fe20b7bd2f457", "mergeSha": "8aedbfa2cf67d4afd7cedb2e30b179e152107413", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }, { "id": "P7-S02", "pr": 336, "headSha": "3d1dcd0260e5accc127c42404549535a0d9c38ce", "mergeSha": "d58dfaebf6d181d115ff9bd9cb455377061590b1", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }],
     "plannedQueue": ["P7-S04","P7-S05","P7-S06","P7-S07","P7-S08"],
     "blockedSlices": [
-      "P2-S04",
-      "P2-S02",
       "P2-S03",
       "P5-M02",
       "P5-M05",
@@ -2407,7 +2405,7 @@
           "id": "P2-S02",
           "title": "Frontend LEGO shared notification surface + accessibility parity",
           "kind": "slice",
-          "status": "blocked",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -2470,14 +2468,13 @@
               "completedAt": "2026-09-26T00:00:00Z"
             }
           ],
-          "updatedAt": "2026-09-26T04:43:20Z",
-          "latestUpdate": "Implementation complete on delivery/p2-s02-notification-surface: one shared notification surface (ui.primitives.notification-surface@1.0.0) with region state, severity and disposition as three separate axes. Only error is assertive; an empty region is not announced. Degradation keeps the observable history identical. The #241 single-pilot rule was generalized to one pilot per originating slice via sourceIssue, and five pinned gate facts were refreshed. frontend-lego:test 479/480 (1 pre-existing skip); 40-notification-surface 28/28; lego:arch, lego:foundation, lego:capabilities, lego:scaleout, lego:ai:check OK.",
-          "mergeSha": null,
+          "updatedAt": "2026-09-26T18:06:09Z",
+          "latestUpdate": "Implemented: P2-S02 delivers the shared notification surface (ui.primitives.notification-surface@1.0.0) with region state, severity and disposition as three separate axes. Six checkpoints completed (weights 25/20/20/15/10/10, sum 100). Delivery PR #332 merged to main as 0c2c5a7c; the GitHub-hosted gate was green (3/3) at the PR head. Landed on main under the temporary gate directive (GitHub-hosted as the effective gate) while the self-hosted fleet was offline; the self-hosted DEC-0015 jobs were excluded from the gate for the duration of the outage. Evidence: docs/n8n-lego/evidence/P2-S02-EVIDENCE.md.",
+          "mergeSha": "0c2c5a7c06250c35fae532daa4370037f28a82dc",
           "issue": 245,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S02-EVIDENCE.md",
           "owner": "agent-4",
-          "note": "Issue #245 open; no PR yet. #240 Layer 2 (shared UI primitives).",
-          "blockedBy": "Self-hosted runner fleet offline. Delivery PR #332 (head 3adb63c142eacfaa959d692f3581969ed2f530ee) is green on all 3 GitHub-hosted jobs, but the 6 required self-hosted jobs have never left queued: Level 0 (Check & Format), Level 1 (Affected Tests), Level 2 Conformance LEGO & Node Catalog, Level 2 Workspace Tests (linux), Level 2 Workspace Tests (windows), Windows worker portability probe. No runner has ever picked any of them up. DEC-0015 retry attempted on all 6 (jobs 108338293120, 108338293185, 108338293240, 108338293361, 108338293536, 108338293770 - recorded from an earlier run of the same PR head against the same offline fleet); each returned HTTP 403 already-running and stayed queued, so the retry path is exhausted. mergeable_state is unstable, which is not green. The same fleet outage also blocks governance PR #331 (P6-S02). Implementation, evidence and all 6 checkpoints are complete and five real defects were found and fixed while blocked; only the merge is blocked. Head SHA corrected from the stale c62846f8 recorded earlier, because whoever resumes needs the current one."
+          "note": "Issue #245 open; no PR yet. #240 Layer 2 (shared UI primitives)."
         },
         {
           "id": "P2-S03",
@@ -2494,7 +2491,7 @@
           "id": "P2-S04",
           "title": "Dashboard workflow list (first Layer 3 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "blocked",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -2557,14 +2554,13 @@
               "completedAt": "2026-09-26T06:30:00Z"
             }
           ],
-          "updatedAt": "2026-09-26T06:30:00Z",
-          "latestUpdate": "First P2-S03 Layer 3 strangler slice split out by the Manager continuation directive and implemented as a bounded, client-filtered workflow-list pilot on delivery/p2-s03-dashboard; original editor stays the default path.",
-          "mergeSha": null,
+          "updatedAt": "2026-09-26T18:06:09Z",
+          "latestUpdate": "Implemented: P2-S04 delivers the dashboard workflow list (first Layer 3 surface split out of P2-S03) as a bounded, client-filtered pilot; the original editor stays the default path. Six checkpoints completed (weights 20/20/15/15/15/15, sum 100). Delivery PR #338 merged to main as 1cab18c2; the GitHub-hosted gate was green (3/3) at the PR head. Landed on main under the temporary gate directive (GitHub-hosted as the effective gate) while the self-hosted fleet was offline. Evidence: docs/n8n-lego/evidence/P2-S04-EVIDENCE.md.",
+          "mergeSha": "1cab18c2e201fedd036d885b92b699eb93be74e1",
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S04-EVIDENCE.md",
           "owner": "agent-4",
-          "note": "P2-S03 Layer 3 first strangler slice; split out per #240 under the Manager continuation directive. One low-risk surface, mode pilot, rollback pilot-not-primary.",
-          "blockedBy": "Self-hosted runner fleet offline. Delivery PR #338 (head 36f41944b5) is green on its GitHub-hosted jobs, but the 6 required self-hosted jobs cannot run: the same fleet outage that blocks PRs #331 and #332, where every self-hosted job has sat queued all session with no runner picking it up. mergeable_state is not green while a required check is un-run. Implementation, all 6 checkpoints and the evidence are complete; only the merge is blocked on the fleet. This is the #312 unstable pattern the marathon refuses to repeat, so it is not merged while the required self-hosted checks are un-run."
+          "note": "P2-S03 Layer 3 first strangler slice; split out per #240 under the Manager continuation directive. One low-risk surface, mode pilot, rollback pilot-not-primary."
         }
       ]
     },
