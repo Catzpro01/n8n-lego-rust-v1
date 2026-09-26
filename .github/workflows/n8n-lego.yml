@@ -483,7 +483,10 @@ jobs:
           [System.IO.File]::WriteAllText($script, ($lines -join [char]10) + [char]10)
           $scriptInWsl = Convert-ToWslPath $script
 
-          $out = (wsl.exe -- bash "$scriptInWsl" "$repo" 2>&1 | Out-String)
+          # bash -lc (login) so the PATH matches the checks above: a plain
+          # non-login bash drops nvm/profile PATH and falls back to the Windows
+          # interop npm, which then fails EBADPLATFORM (os win32) on linux-only deps.
+          $out = (wsl.exe -- bash -lc 'bash "$1" "$2"' probe "$scriptInWsl" "$repo" 2>&1 | Out-String)
           Write-Host $out
           if ($LASTEXITCODE -ne 0) {
             $tail = ($out -split "`r?`n" | Where-Object { $_ -ne "" } | Select-Object -Last 4) -join " >> "
