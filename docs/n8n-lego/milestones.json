@@ -1,5 +1,5 @@
 {
-  "registerVersion": "2.3.0",
+  "registerVersion": "2.4.0",
   "owner": "manager",
   "canonical": true,
   "purpose": "Granular milestone truth beneath the strategic Phase A-F roadmap, and \u2014 since the governance reset (#256) \u2014 the single canonical register of programs P0-P11, their slices, the thematic future programs and the feature registry. This is the only machine-readable milestone register. Milestones and slices may be refined by Manager only by updating this file; strategic phases are not deleted.",
@@ -10,11 +10,11 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "fce988e709a97c671c116310fc9a7a58ec402e42",
+    "lastVerifiedMain": "d58dfaebf6d181d115ff9bd9cb455377061590b1",
     "latestCompletedSlice": { "id": "P6-S01", "pr": 328, "mergeSha": "fce988e709a97c671c116310fc9a7a58ec402e42" },
-    "activeSlices": ["P6-S02"],
-    "verifyingSlices": [],
-    "plannedQueue": [],
+    "activeSlices": ["P6-S02","P7-S03"],
+    "verifyingSlices": [{ "id": "P7-S01", "pr": 334, "headSha": "71510167bffd57ac38fc75f5289fe20b7bd2f457", "mergeSha": "8aedbfa2cf67d4afd7cedb2e30b179e152107413", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }, { "id": "P7-S02", "pr": 336, "headSha": "3d1dcd0260e5accc127c42404549535a0d9c38ce", "mergeSha": "d58dfaebf6d181d115ff9bd9cb455377061590b1", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }],
+    "plannedQueue": ["P7-S04","P7-S05","P7-S06","P7-S07","P7-S08"],
     "blockedSlices": [
       "P2-S04",
       "P2-S03",
@@ -3829,7 +3829,7 @@
     {
       "id": "P7",
       "title": "Dynamic Parameters / Schema Runtime",
-      "status": "planned",
+      "status": "in-progress",
       "scope": "Dynamic parameter schemas, option discovery, schema validation, caching, provider-backed lookup, parameter plugin boundaries (#90, #223).",
       "sourceIssues": [
         223
@@ -3837,13 +3837,93 @@
       "slices": [
         {
           "id": "P7-S01",
-          "title": "P7 implementation ladder per #223 \u00a742 (not authorized; requires a Manager Master Prompt)",
+          "title": "Parameter Contract & Compiler: canonical n8n parameter definitions compiled once into an immutable ParameterPlan with stable parameter identity and plan versioning (#223 §4-6, §31, §42 P7.1)",
+          "kind": "slice",
+          "status": "in-progress",
+          "mergeSha": null,
+          "pr": 334,
+          "issue": 223,
+          "evidence": "docs/n8n-lego/evidence/P7-S01-EVIDENCE.md",
+          "owner": "manager (MANAGER-01)",
+          "authorizedBy": "DEC-0024"
+        },
+        {
+          "id": "P7-S02",
+          "title": "Visibility & Dependency Graph: displayOptions visibility engine, parameter dependency graph, incremental recomputation of only affected fields, expression boundary (#223 §7-10, §42 P7.2)",
+          "kind": "slice",
+          "status": "in-progress",
+          "mergeSha": null,
+          "pr": 336,
+          "issue": 223,
+          "evidence": "docs/n8n-lego/evidence/P7-S02-EVIDENCE.md",
+          "owner": "manager (MANAGER-01)",
+          "authorizedBy": "DEC-0024"
+        },
+        {
+          "id": "P7-S03",
+          "title": "Local Validation & Normalization: schema validation, normalization, failure vocabulary and the immutable execution-ready parameter snapshot with canonical vs derived representation (#223 §20-21, §27, §29-30, §42 P7.3)",
+          "kind": "slice",
+          "status": "in-progress",
+          "mergeSha": null,
+          "issue": 223,
+          "evidence": null,
+          "owner": "manager (MANAGER-01)",
+          "authorizedBy": "DEC-0024"
+        },
+        {
+          "id": "P7-S04",
+          "title": "Dynamic Options Runtime: /rest/dynamic-node-parameters options, bounded dynamic cache classes with stale-while-revalidate, dependent-field race protection, request coalescing, provider backpressure and resource budgets (#223 §11, §14-16, §23-26, §34, §42 P7.4)",
           "kind": "slice",
           "status": "planned",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
-          "owner": "manager (unassigned)"
+          "owner": "manager (MANAGER-01)",
+          "authorizedBy": "DEC-0024"
+        },
+        {
+          "id": "P7-S05",
+          "title": "Resource Locator & Search: resourceLocator modes, list search with pagination and search (#223 §12-13, §42 P7.5)",
+          "kind": "slice",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 223,
+          "evidence": null,
+          "owner": "manager (MANAGER-01)",
+          "authorizedBy": "DEC-0024"
+        },
+        {
+          "id": "P7-S06",
+          "title": "Credential-Aware Resolution: credential/security composition through scoped SecretRefs and security-sensitive dynamic values that never leak into caches, snapshots or logs (#223 §18, §28, §42 P7.6)",
+          "kind": "slice",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 223,
+          "evidence": null,
+          "owner": "manager (MANAGER-01)",
+          "authorizedBy": "DEC-0024"
+        },
+        {
+          "id": "P7-S07",
+          "title": "Plugin/Provider Runtime Boundary: provider boundary, capability boundary, provider-backed schema, community node compatibility, plugin, storage and observability boundaries (#223 §17, §19, §22, §32-33, §35-36, §42 P7.7)",
+          "kind": "slice",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 223,
+          "evidence": null,
+          "owner": "manager (MANAGER-01)",
+          "authorizedBy": "DEC-0024"
+        },
+        {
+          "id": "P7-S08",
+          "title": "Differential Certification: differential oracle against pinned n8n-workflow 2.9.1, negative/security test matrix and the low-resource performance target (#223 §37-38, §40-41, §42 P7.8)",
+          "kind": "slice",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 223,
+          "evidence": null,
+          "owner": "manager (MANAGER-01)",
+          "authorizedBy": "DEC-0024"
         }
       ]
     },
@@ -7836,7 +7916,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S02",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -7856,7 +7936,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S02",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -7876,7 +7956,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S02",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -7896,7 +7976,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S02",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -7916,7 +7996,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S04",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -7936,7 +8016,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S05",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -7956,7 +8036,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S05",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -7976,7 +8056,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S04",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -7996,7 +8076,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S07",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8016,7 +8096,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S06",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8036,7 +8116,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S07",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8056,7 +8136,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S03",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8076,7 +8156,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S07",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8096,7 +8176,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S04",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8116,7 +8196,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S04",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8136,7 +8216,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S03",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8156,7 +8236,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S06",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8176,7 +8256,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S03",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8216,7 +8296,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S07",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8236,7 +8316,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S07",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8256,7 +8336,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S04",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8276,7 +8356,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S07",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8296,7 +8376,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S07",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8316,7 +8396,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S08",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8336,7 +8416,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S08",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",
@@ -8356,7 +8436,7 @@
         223
       ],
       "parent": "P7",
-      "slice": "P7-S01",
+      "slice": "P7-S08",
       "owner": "manager (unassigned)",
       "status": "planned",
       "relevance": "active",

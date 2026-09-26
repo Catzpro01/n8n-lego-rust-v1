@@ -10,7 +10,7 @@
  *
  * Rules encoded (all from the governance mandate #254/#255/#256):
  *  - top-level programs are exactly P0..P11 — no P12+ and never P24+;
- *  - P0-P6 and P9 are complete; P7, P8, P10 and P11 are planned (a status change is a Manager
+ *  - P0-P6 and P9 are complete; P7 is in-progress (DEC-0024); P8, P10 and P11 are planned (a status change is a Manager
  *    decision recorded here, and this list must be updated in the same change);
  *  - new work inside an existing P is a slice `Pn-Snn`, maintenance is `Pn-Mnn`; there is no P5.9;
  *  - legacy P12-P23 are consolidated into thematic future programs, each exactly once;
@@ -32,7 +32,7 @@ import { createHash } from 'node:crypto';
 export const TOP_LEVEL_PROGRAMS = Object.freeze(['P0', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11']);
 export const EXPECTED_PROGRAM_STATUS = Object.freeze({
   P0: 'complete', P1: 'complete', P2: 'complete', P3: 'complete', P4: 'complete', P5: 'complete', P6: 'complete',
-  P7: 'planned', P8: 'planned', P9: 'complete', P10: 'planned', P11: 'planned',
+  P7: 'in-progress', P8: 'planned', P9: 'complete', P10: 'planned', P11: 'planned',
 });
 export const LEGACY_FUTURE_MILESTONES = Object.freeze(['P12', 'P13', 'P14', 'P15', 'P16', 'P17', 'P18', 'P19', 'P20', 'P21', 'P22', 'P23']);
 export const FEATURE_REQUIRED_FIELDS = Object.freeze([

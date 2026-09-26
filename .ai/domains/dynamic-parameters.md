@@ -7,7 +7,7 @@
 | --- | --- |
 | Owner | `agent-4` |
 | Kind / tier | `domain` / `domain` |
-| Status | `planned` (phase `P7`) |
+| Status | `partial` (phase `P7`) |
 | Parent | _root_ |
 | Contract | _none declared_ |
 | Error namespace | `dynamic-parameters` |
@@ -20,7 +20,8 @@
 
 ## Owns
 
-_no paths_
+- `src/lego/parameter-plan.mjs`
+- `src/lego/parameter-graph.mjs`
 
 ## Public contract surface
 
@@ -52,4 +53,5 @@ _none — this LEGO has no public surface yet; do not import from it._
 
 ## Tests that guard it
 
-_none declared_
+- `test/lego-parameter-plan.test.mjs`
+- `test/lego-parameter-graph.test.mjs`
