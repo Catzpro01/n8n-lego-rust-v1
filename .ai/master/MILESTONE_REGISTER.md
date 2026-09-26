@@ -9,7 +9,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 **Realtime Delivery Progress 90.3%** — 14000/15500 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 15 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 89.7%** — 139/155 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 90.3%** — 140/155 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
@@ -20,7 +20,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | P4 | 100.0% | 100.0% | 10/10 | complete |
 | P5 | 72.2% | 72.2% | 13/18 | complete |
 | P6 | 94.3% | 94.3% | 33/35 | complete |
-| P7 | 50.0% | 37.5% | 3/8 | in-progress |
+| P7 | 50.0% | 50.0% | 4/8 | in-progress |
 | P8 | 0.0% | 0.0% | 0/1 | planned |
 | P9 | 100.0% | 100.0% | 23/23 | complete |
 | P10 | 0.0% | 0.0% | 0/1 | planned |
@@ -30,10 +30,10 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 | | |
 | --- | --- |
-| Latest completed slice | `P7-S05` — Resource Locator & Search (PR #342, merge `05374e9f`) |
+| Latest completed slice | `P7-S06` — Credential-Aware Resolution (PR #343, merge `aea9db18`) |
 | Active slices | — (none) |
 | Verifying (merged, post-merge verification pending) | `P7-S01` — Parameter Contract & Compiler (PR #334, merge `8aedbfa2`): DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)<br>`P7-S02` — Visibility & Dependency Graph (PR #336, merge `d58dfaeb`): DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0) |
-| Planned queue (in order; planned ≠ authorized) | `P7-S06`, `P7-S07`, `P7-S08` |
+| Planned queue (in order; planned ≠ authorized) | `P7-S07`, `P7-S08` |
 | Blocked | `P2-S03` — blocked by Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - "Implementation must be split into dedicated milestone tasks with Manager Master Prompts." So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6.<br>`P5-M02` — blocked by P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145)<br>`P5-M05` — blocked by P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs<br>`P5-M06` — blocked by a mail-transport architecture decision (a dependency, or an injected transport contract); Node has no built-in SMTP<br>`P5-M10` — blocked by backing models this product does not have: projects/sharing, security audit, source control, data tables, workflow versions, a retry execution path, execution annotation tags (see P5-M08-EVIDENCE.md §1) |
 | Not authorized | planned is not authorized: the Manager starts a queued slice by moving it to in-progress in a PR on main. P5-M04 is planned and measure-first. P7-S01, P8-S01, P10-S01 and P11-S01 are placeholders that need a Manager Master Prompt before any work. |
 | Historical P2 ladder pointer | `P2.27` (history, not active work) |
@@ -50,7 +50,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
 | **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 13/18 | 20 | `P5-M04` (planned) |
 | **P6** | Node Registry / Node Runtime | **COMPLETE** | 33/35 | 67 | — |
-| **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 3/8 | 29 | `P7-S01` (in-progress) |
+| **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 4/8 | 29 | `P7-S01` (in-progress) |
 | **P8** | Storage / Data Layer | **PLANNED** | 0/1 | 5 | `P8-S01` (planned) |
 | **P9** | Observability / Diagnostics / Operations | **COMPLETE** | 23/23 | 23 | — |
 | **P10** | Multi-Tenant / Isolation / Quota | **PLANNED** | 0/1 | 5 | `P10-S01` (planned) |
@@ -549,7 +549,7 @@ Dynamic parameter schemas, option discovery, schema validation, caching, provide
 | `P7-S03` | Local Validation & Normalization: schema validation, normalization, failure vocabulary and the immutable execution-ready parameter snapshot with canonical vs derived representation (#223 §20-21, §27, §29-30, §42 P7.3) | implemented | — | `d4243a94` | #223 |
 | `P7-S04` | Dynamic Options Runtime: /rest/dynamic-node-parameters options, bounded dynamic cache classes with stale-while-revalidate, dependent-field race protection, request coalescing, provider backpressure and resource budgets (#223 §11, §14-16, §23-26, §34, §42 P7.4) | implemented | — | `568bcad8` | #223 |
 | `P7-S05` | Resource Locator & Search: resourceLocator modes, list search with pagination and search (#223 §12-13, §42 P7.5) | implemented | — | `05374e9f` | #223 |
-| `P7-S06` | Credential-Aware Resolution: credential/security composition through scoped SecretRefs and security-sensitive dynamic values that never leak into caches, snapshots or logs (#223 §18, §28, §42 P7.6) | planned | — | — | #223 |
+| `P7-S06` | Credential-Aware Resolution: credential/security composition through scoped SecretRefs and security-sensitive dynamic values that never leak into caches, snapshots or logs (#223 §18, §28, §42 P7.6) | implemented | — | `aea9db18` | #223 |
 | `P7-S07` | Plugin/Provider Runtime Boundary: provider boundary, capability boundary, provider-backed schema, community node compatibility, plugin, storage and observability boundaries (#223 §17, §19, §22, §32-33, §35-36, §42 P7.7) | planned | — | — | #223 |
 | `P7-S08` | Differential Certification: differential oracle against pinned n8n-workflow 2.9.1, negative/security test matrix and the low-resource performance target (#223 §37-38, §40-41, §42 P7.8) | planned | — | — | #223 |
 
