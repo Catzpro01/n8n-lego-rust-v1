@@ -11,12 +11,11 @@
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "d58dfaebf6d181d115ff9bd9cb455377061590b1",
-    "latestCompletedSlice": { "id": "P2-S04", "pr": 338, "mergeSha": "1cab18c2e201fedd036d885b92b699eb93be74e1" },
+    "latestCompletedSlice": { "id": "P2-S05", "pr": 339, "mergeSha": "1f89499ce936b110a6034b496b441c786db9e81b" },
     "activeSlices": ["P7-S03"],
     "verifyingSlices": [{ "id": "P7-S01", "pr": 334, "headSha": "71510167bffd57ac38fc75f5289fe20b7bd2f457", "mergeSha": "8aedbfa2cf67d4afd7cedb2e30b179e152107413", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main 8aedbfa2 re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }, { "id": "P7-S02", "pr": 336, "headSha": "3d1dcd0260e5accc127c42404549535a0d9c38ce", "mergeSha": "d58dfaebf6d181d115ff9bd9cb455377061590b1", "pending": "DEC-0015 self-hosted checks WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe); GitHub-hosted 3/3 green; main d58dfaeb re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0)" }],
     "plannedQueue": ["P7-S04","P7-S05","P7-S06","P7-S07","P7-S08"],
     "blockedSlices": [
-      "P2-S05",
       "P2-S03",
       "P5-M02",
       "P5-M05",
@@ -2567,7 +2566,7 @@
           "id": "P2-S05",
           "title": "Dialogs / overlays (workflow settings, credential modal, confirmations) \u2014 second Layer 3 surface split out of P2-S03",
           "kind": "slice",
-          "status": "blocked",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -2630,14 +2629,13 @@
               "completedAt": "2026-09-27T06:30:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T06:30:00Z",
-          "latestUpdate": "Second P2-S03 Layer 3 strangler slice (dialogs / overlays) implemented as a bounded, handed-over-content modal view-model on delivery/p2-s05-dialogs; original editor stays the default path.",
-          "mergeSha": null,
+          "updatedAt": "2026-09-26T18:59:49Z",
+          "latestUpdate": "Implemented: P2-S05 delivers the dialogs / overlays surface (second P2-S03 Layer 3 strangler slice) as a bounded, handed-over-content modal view-model; the original editor stays the default path. Six checkpoints completed. Delivery PR #339 merged to main as 1f89499c; the GitHub-hosted gate was green (3/3) at the PR head. Landed on main under the DEC-0025 temporary gate (GitHub-hosted as the effective gate) while the self-hosted fleet was offline; the self-hosted DEC-0015 jobs are excluded for the duration and back-filled on restoration. Evidence: docs/n8n-lego/evidence/P2-S05-EVIDENCE.md.",
+          "mergeSha": "1f89499ce936b110a6034b496b441c786db9e81b",
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S05-EVIDENCE.md",
           "owner": "agent-1",
-          "note": "P2-S03 Layer 3 second strangler slice; split out per #240 under the Manager continuation directive. No backend, no contract; needed by later slices. One module, one manifest entry, one test suite, mode pilot, rollback pilot-not-primary.",
-          "blockedBy": "Self-hosted runner fleet offline. Delivery PR #339 on delivery/p2-s05-dialogs is green on its GitHub-hosted jobs, but the required self-hosted jobs cannot run: the same fleet outage that blocked the P2-S02 and P2-S04 delivery PRs. mergeable_state is not green while a required check is un-run. Implementation, all 6 checkpoints and the evidence are complete; only the merge is blocked on the fleet. Under DEC-0025 the GitHub-hosted n8n-lego.yml jobs are the effective gate while the fleet is offline; the self-hosted DEC-0015 jobs are excluded for the duration of the outage and are back-filled on restoration."
+          "note": "P2-S03 Layer 3 second strangler slice; split out per #240 under the Manager continuation directive. No backend, no contract; needed by later slices. One module, one manifest entry, one test suite, mode pilot, rollback pilot-not-primary."
         }
       ]
     },
