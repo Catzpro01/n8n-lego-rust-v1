@@ -427,6 +427,14 @@ jobs:
             exit 0
           }
 
+          # The distro must own its Node: WSL interop surfaces the Windows
+          # node.exe on PATH (process.platform 'win32'), and npm then refuses a
+          # linux-only install ("notsup Actual os: win32").
+          $nodePlat = (wsl.exe -- bash -lc 'node -p "process.platform"' 2>&1 | Out-String).Trim()
+          if ($nodePlat -ne 'linux') {
+            Write-Host "::notice::WSL on this worker has no native Linux Node (interop node reports '$nodePlat') - the authoritative Linux runtime gate is the ubuntu-latest clean-clone job."
+            exit 0
+          }
           $node = (wsl.exe -- bash -lc 'node -v' 2>&1 | Out-String).Trim()
           $nodeOk = $false
           if ($node.StartsWith('v')) {
