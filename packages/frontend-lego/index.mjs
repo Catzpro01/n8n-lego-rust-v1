@@ -597,3 +597,19 @@ export {
   assertValidPilotObservation,
   pilotCapabilityDeclaration,
 } from './src/pilot-status-region.mjs';
+
+export {
+  NOTIFICATION_A11Y,
+  NOTIFICATION_CAPABILITY_ID,
+  NOTIFICATION_DISPOSITIONS,
+  NOTIFICATION_LIMITS,
+  NOTIFICATION_MESSAGE_SLOT,
+  NOTIFICATION_SEVERITIES,
+  NOTIFICATION_SURFACE_ID,
+  NOTIFICATION_SURFACE_VERSION,
+  createNotificationSurface,
+  notificationSurfaceContract,
+  referenceEmptyNotificationObservation,
+  referenceNotificationObservation,
+  validateNotificationSurfaceContract,
+} from './src/notification-surface.mjs';

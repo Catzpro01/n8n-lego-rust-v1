@@ -31,11 +31,9 @@ packages/frontend-lego/
     errors.mjs boot.mjs client.mjs manifests.mjs knowledge.mjs agents.mjs agent-events.mjs
     skills.mjs context-session.mjs memory.mjs workspace.mjs agent-machine.mjs lego.mjs
     surface-migration.mjs surface-contract.mjs parity.mjs pilot-status-region.mjs
+    notification-surface.mjs
     adapters/ the framework adapter boundary (currently Vue; the only framework-aware code)
-  test/                     01-contract … 23-degradation, 24-vocabulary, 25-operations,
-                            26-ai-contracts, 27-agent-events, 28-seam, 29-alignment, 30-master,
-                            31-skills, 32-context-session, 33-milestones, 34-memory, 35-workspace,
-                            36-agent-machine
+  test/                     01-contract … 40-notification-surface (numbered as added; 39/40 pilots)
 ```
 
 What the odd ones own: `negotiation.mjs` discovery, access, degradation and operation
@@ -44,16 +42,18 @@ the one capability identity; `agents.mjs` the AI capability/provider/runtime kin
 boundary and the installation layers; `agent-events.mjs` the event vocabulary, the work trace
 and the delegation tree; `knowledge.mjs` the `.ai/` pack index; `skills.mjs` consumes
 `ai.skill@1.0.0` — six states, four operations, no execution (`test/31`);
-`context-session.mjs` is ONE LEGO, TWO contracts (`ai.context`, `ai.agent-session`) with five
-and three published operations (`test/32`); `memory.mjs` consumes `ai.memory@1.0.0` — a
-different LEGO, nine quoted sets, four published operations and no write, no ranking and no
-persistence claim (`test/34`). `workspace.mjs` consumes the bounded `ai.workspace@1.0.0`
-identity/lifecycle contract (`test/35`): it renders exact handed-over records only and never
-creates a provider, filesystem, terminal or execution authority. `agent-machine.mjs` consumes
-the bounded `ai.agent-machine@1.0.0` execution-foundation contract (`test/36`): it renders exact
-handed-over machine records — identity, canonical lifecycle, budgets, the bounded step ledger —
-and never offers start/step/pause/resume/cancel affordances, an approval decision or any
-execution, delegation or provider authority. Memory is what survives context
+`context-session.mjs` is ONE LEGO, TWO contracts (`ai.context`, `ai.agent-session`), five and
+three published operations (`test/32`); `memory.mjs` consumes `ai.memory@1.0.0` — a different
+LEGO, nine quoted sets, four published operations, no write/ranking/persistence claim
+(`test/34`). `workspace.mjs` consumes the bounded `ai.workspace@1.0.0` identity/lifecycle
+contract (`test/35`): exact handed-over records only, never a provider, filesystem, terminal or
+execution authority. `agent-machine.mjs` consumes the bounded `ai.agent-machine@1.0.0`
+execution-foundation contract (`test/36`): exact handed-over machine records — identity,
+canonical lifecycle, budgets, the bounded step ledger — and never start/step/pause/resume/cancel
+affordances, an approval decision, or any execution, delegation or provider authority.
+`notification-surface.mjs` declares ONE shared notification surface (`test/40`): severity and
+disposition are separate axes from the `REGION_STATES` the parity harness compares. Memory is
+what survives context
 replacement; Context references it and never contains it, and the surfaces refuse each
 other's payloads by name.
 
@@ -71,14 +71,14 @@ other's payloads by name.
 
 | Thing | Value |
 | ----- | ----- |
-| Architecture tests | 415 across 36 suites (measured with `node --test packages/frontend-lego/test/*.test.mjs`); backend comparisons skip *with a reason* unless the tree is present |
+| Architecture tests | 480 across 40 suites (measured with `node --test packages/frontend-lego/test/*.test.mjs`); backend comparisons skip *with a reason* unless the tree is present |
 | Architecture rules | 29, as data (`frontend.conformance()`), mirrored in contract §19.16 |
 | Surfaces / hooks / units | 12 / 15 (`1.1.0`) / 19 in a 3-level hierarchy |
 | Boot payload | 18,126 B JSON / 24,168 B base64, budget **32 KB**, byte-pinned to P2.5 |
 | Browser-visible delta | the one `<meta>` tag (24,268 B served) |
 | Runtime dependencies | none |
 | Locales | `id, en, ar, zh, ru, jv`; Arabic is RTL; 13 message slots |
-| Declared capabilities | 7 (`translation` + 6 AI), installed: 0 |
+| Declared capabilities | 9 (`translation` + 6 AI + 2 pilots), installed: 0 |
 | Contract lock rows | 20 on this P2.16 implementation branch (`ai.skill`, `ai.context`, `ai.agent-session`, `ai.memory`, `ai.workspace`, `ai.agent-machine` published); protected main remains the pre-P2.16 baseline |
 | Vocabularies | 72 quoted with provenance, 29 local, 0 pending publication (`XA-20` closed by publication) |
 | Seam | 13 declared inputs, 7 forbidden sources, 16 identity fields |

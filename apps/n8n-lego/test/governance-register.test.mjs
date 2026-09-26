@@ -113,10 +113,15 @@ const MUTATIONS = [
   ['a P24 top-level program', (r) => { r.programs.push({ ...r.programs[7], id: 'P24' }); }, /exactly P0/],
   ['a duplicate slice id', (r) => { r.programs[5].slices.push({ ...r.programs[5].slices.find((x) => x.id === 'P5-M09') }); }, /declared twice/],
   ['a verifying slice recorded as implemented before post-merge verification', (r) => {
-    // The subject must still be un-merged, or the mutation is a no-op. Take the
-    // first queued slice rather than pinning an id that a later slice implements.
-    const queued = r.executionPointer.plannedQueue[0];
-    r.programs.flatMap((program) => program.slices).find((x) => x.id === queued).status = 'implemented';
+    // The subject must still be un-merged, or the mutation is a no-op. Prefer the
+    // first queued slice rather than pinning an id a later slice implements, and
+    // fall back to any un-merged slice: draining the queue to empty must not turn
+    // this mutation into a crash on `undefined`.
+    const unmerged = (r) => r.programs.flatMap((program) => program.slices)
+      .filter((slice) => slice.status !== 'implemented' && !slice.mergeSha);
+    const subject = unmerged(r).find((slice) => r.executionPointer.plannedQueue.includes(slice.id))
+      ?? unmerged(r)[0];
+    subject.status = 'implemented';
   }, /implemented without a 40-hex merge SHA/],
   ['an implemented P5-M08 whose merge SHA is deleted', (r) => {
     r.programs[5].slices.find((x) => x.id === 'P5-M08').mergeSha = null;
@@ -124,22 +129,52 @@ const MUTATIONS = [
   ['an implemented slice without evidence', (r) => { r.programs[5].slices.find((x) => x.id === 'P5-M03').evidence = null; }, /P5-M03: implemented without evidence/],
   ['an in-progress slice missing from the pointer', (r) => {
     // Whatever is queued becomes in-progress and is then dropped from every
-    // pointer list, which is the state the rule exists to catch.
-    const queued = r.executionPointer.plannedQueue[0];
-    r.programs.flatMap((program) => program.slices).find((x) => x.id === queued).status = 'in-progress';
-    r.executionPointer.plannedQueue = r.executionPointer.plannedQueue.filter((id) => id !== queued);
+    // pointer list, which is the state the rule exists to catch. Fall back to any
+    // un-merged slice when the queue is empty, so the mutation still exercises the
+    // rule once every queued slice has been started or blocked.
+    const unmerged = (reg) => reg.programs.flatMap((program) => program.slices)
+      .filter((slice) => slice.status !== 'implemented' && !slice.mergeSha);
+    const subject = unmerged(r).find((slice) => r.executionPointer.plannedQueue.includes(slice.id))
+      ?? unmerged(r)[0];
+    subject.status = 'in-progress';
+    r.executionPointer.plannedQueue = r.executionPointer.plannedQueue.filter((id) => id !== subject.id);
+    r.executionPointer.activeSlices = r.executionPointer.activeSlices.filter((id) => id !== subject.id);
+    r.executionPointer.verifyingSlices = r.executionPointer.verifyingSlices
+      .filter((entry) => entry.id !== subject.id);
   }, /is neither active nor verifying/],
   ['a queued slice that is not planned', (r) => { r.executionPointer.plannedQueue.push('P5-M03'); }, /queued slice P5-M03 is implemented/],
   ['a blocked slice without blockedBy', (r) => { delete r.programs[5].slices.find((x) => x.id === 'P5-M10').blockedBy; }, /P5-M10 does not record blockedBy/],
   ['a blocked slice missing from blockedSlices', (r) => { r.executionPointer.blockedSlices = []; }, /blocked slice P5-M02 is missing/],
   ['a latest completed slice that is not implemented', (r) => {
-    const queued = r.executionPointer.plannedQueue[0];
-    r.executionPointer.latestCompletedSlice.id = queued;
+    // Any slice that is not implemented will do; the queue may legitimately be
+    // empty once every queued slice has been started or blocked.
+    const notImplemented = r.programs.flatMap((program) => program.slices)
+      .find((slice) => slice.status !== 'implemented');
+    r.executionPointer.latestCompletedSlice.id = notImplemented.id;
   }, /latestCompletedSlice .* must be implemented with merge SHA/],
   ['a pointer naming an unknown slice', (r) => { r.executionPointer.plannedQueue.push('P5-M99'); }, /unknown slice P5-M99/],
   ['a pointer whose authority is not main', (r) => { r.executionPointer.authority = 'arena-manager'; }, /authority must be main/],
   ['a slice listed twice in the pointer', (r) => {
-    r.executionPointer.blockedSlices.push(r.executionPointer.plannedQueue[0]);
+    // The duplicate the rule exists to catch needs a slice that is ALREADY claimed
+    // by one pointer list, added to a DIFFERENT one. Derived from whichever list is
+    // non-empty rather than from plannedQueue[0] (undefined once the queue drains).
+    //
+    // An earlier version of this fallback took the first slice of the first program,
+    // which is in no pointer list at all — so the push created no duplicate, the
+    // validator correctly passed, and the mutation silently stopped testing
+    // anything. It only surfaced once P6-S02's reconciliation merged and drained
+    // activeSlices, verifyingSlices and plannedQueue to empty at the same time.
+    // Only the three STRING lists: verifyingSlices holds { id, pr, mergeSha, ... }
+    // objects, so pushing a bare id there claims `undefined` rather than the slice
+    // and produces a different, unrelated error instead of the duplicate.
+    const lists = [
+      ['activeSlices', r.executionPointer.activeSlices ?? []],
+      ['plannedQueue', r.executionPointer.plannedQueue ?? []],
+      ['blockedSlices', r.executionPointer.blockedSlices ?? []],
+    ];
+    const [from, claimed] = lists.find(([, ids]) => ids.length > 0);
+    const target = lists.find(([name]) => name !== from)[1];
+    target.push(claimed[0]);
   }, /listed in both/],
   // DEC-0020: main-owned milestone authority
   ['Main-Owned changed to Manager-Owned', (r) => { r.governance.milestoneAuthority.milestoneTruthOwner = 'arena-manager'; }, /milestoneTruthOwner must be "main"/],
@@ -464,9 +499,23 @@ test('Issue #307: two metrics, status independent, checkpoint weights only where
   for (const id of REGISTER.executionPointer.blockedSlices) {
     const slice = slices(REGISTER).find((item) => item.id === id);
     assert.equal(slice.status, 'blocked', id);
+    // A blocked slice never contributes to slice completion, whatever it has earned.
     assert.equal(completionContribution(slice), 0, id);
-    assert.equal(sliceDeliveryProgress(slice).source, 'no-checkpoint-model', id);
     assert.ok(slice.blockedBy, id);
+    // But blocking must NOT reset realtime progress that was already earned. This used to
+    // assert 'no-checkpoint-model' for every blocked slice, which held only while the
+    // blocked list was four maintenance slices that never installed a model. It stopped
+    // holding the moment a *delivered* slice was blocked by infrastructure (P2-S02, whose
+    // merge is stuck behind the runner fleet): resetting its checkpoints would have
+    // destroyed the earned progress that blocking is required to preserve. So the two
+    // cases are asserted separately, and the earned figure is checked to survive.
+    const progress = sliceDeliveryProgress(slice);
+    if (Array.isArray(slice.checkpoints) && slice.checkpoints.length > 0) {
+      assert.equal(progress.source, 'checkpoints', id);
+      assert.ok(progress.percent > 0, `${id} keeps its earned realtime while blocked`);
+    } else {
+      assert.equal(progress.source, 'no-checkpoint-model', id);
+    }
   }
   const block = renderReadmeMilestoneSection(REGISTER);
   assert.match(block, /### Realtime Delivery Progress/);
@@ -574,7 +623,12 @@ test('the historical P2 fingerprint is pinned', () => {
 
 const PROJECTION_MUTATIONS = [
   ['a stale README block', (p) => { p.readme = p.readme.replace('### Active work', '### Active work (edited)'); }, /block is stale/],
-  ['a README generated from a different register', (p) => { p.register.executionPointer.plannedQueue.reverse(); }, /stale or was generated from a different register/],
+  // `reverse()` was order-only, so it silently became a no-op the moment the queue shrank to a
+  // single entry (P2-S02 leaving the queue on its way to in-progress) and the mutation stopped
+  // testing anything. Change the queue CONTENT instead, which is detected at any length.
+  ['a README generated from a different register', (p) => {
+    p.register.executionPointer.plannedQueue = [...p.register.executionPointer.plannedQueue, 'P2-ZZ-PROBE'];
+  }, /stale or was generated from a different register/],
   ['a README/register mismatch after a status change', (p) => { p.register.programs[5].slices.find((x) => x.id === 'P5-M09').title = 'Changed title'; }, /different register/],
   ['a README without the generated block', (p) => { p.readme = p.readme.replace(README_MARKERS.begin, ''); }, /exactly once/],
   ['a duplicated README block', (p) => { p.readme += `\n${renderReadmeMilestoneSection(p.register)}\n`; }, /exactly once/],

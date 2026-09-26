@@ -14,11 +14,11 @@ document is right and the prose is stale.
 | Agent 1 branch | `main` |
 | Agent 2 branch | `main` |
 | **Latest completed slice** | **P6-S02** |
-| **Realtime Delivery Progress** | **86.9%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
+| **Realtime Delivery Progress** | **87.6%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
 | **Slice Completion** | **86.9%** (133/153 implemented; verifying and blocked contribute 0) |
 | **Active / verifying slices** | **P7-S03, P7-S01 (verifying), P7-S02 (verifying)** |
-| Planned queue | P7-S04, P7-S05, P7-S06, P7-S07, P7-S08, P2-S02, P2-S03 |
-| Blocked slices | P5-M02, P5-M05, P5-M06, P5-M10 |
+| Planned queue | P7-S04, P7-S05, P7-S06, P7-S07, P7-S08 |
+| Blocked slices | P2-S02, P2-S03, P5-M02, P5-M05, P5-M06, P5-M10 |
 | Historical P2 ladder pointer | P2.27 (history, not active work) |
 | Previous completed P2 milestone | P2.26 |
 | Current branch state | `main` (implementation branch; not protected main) |
@@ -58,6 +58,7 @@ Every slice that declares a checkpoint model, straight from the canonical regist
 `docs/n8n-lego/milestones.json` on `main`. Status is not progress: a verifying or blocked slice keeps its
 evidenced progress and contributes 0% to Slice Completion.
 
+- **P2-S02** (P2) — blocked · realtime 100.0% · completion contribution 0.0% · current checkpoint — · latest completed CP-06 (completed) · updated 2026-09-26T04:43:20Z — Implementation complete on delivery/p2-s02-notification-surface: one shared notification surface (ui.primitives.notification-surface@1.0.0) with region state, severity and disposition as three separate axes. Only error is assertive; an empty region is not announced. Degradation keeps the observable history identical. The #241 single-pilot rule was generalized to one pilot per originating slice via sourceIssue, and five pinned gate facts were refreshed. frontend-lego:test 479/480 (1 pre-existing skip); 40-notification-surface 28/28; lego:arch, lego:foundation, lego:capabilities, lego:scaleout, lego:ai:check OK.
 - **P4-S01** (P4) — implemented · realtime 100.0% · completion contribution 100.0% · current checkpoint — · latest completed CP-04 (completed) · updated 2026-09-25T21:31:33Z — CP-04 complete (22%, cumulative 100%). Dedicated webhook/ingress plane delivered. Webhook intake is structurally separated from the editor/API control plane and from execution workers, each plane owns its own budget, and the isolation invariant is proven by driving 1000 requests into a 128-capacity webhook plane: 128 are admitted, 872 are rejected, and the editor/API headroom is unchanged at 128 — the UI and API stay responsive under sudden overload. Buffering is bounded so a full plane rejects rather than queueing without bound, admission follows the existing QoS policy, responses can be streamed or offloaded out of the intake buffer, and offload is opt-in.
 - **P5-M07** (P5) — implemented · realtime 100.0% · completion contribution 100.0% · current checkpoint — · latest completed CP-06 (completed) · updated 2026-09-25T20:23:35Z — P5-M07: service-principal REST surface mounted (create once, redacted list, revoke tombstone, transfer rotates the credential); DEC-0023 closes the member boundary
 - **P5-M08** (P5) — implemented · realtime 100.0% · completion contribution 100.0% · current checkpoint — · latest completed CP-05 (completed) · updated 2026-09-26T04:05:00Z — Implemented by PR #304 (merge 600a21456213602ebdc6193229bab8432e6d1024). CP-05 DEC-0015 verification PASS on head d520a740 (PR #310, merge b528a19): Level 0 on MDMTEST-n8n-wsl-2, Level 1 on MDMTEST-n8n-wsl, Level 2 linux on MDMTEST-n8n-wsl-3, Level 2 windows on laptop-build-worker-3, conformance on MDMTEST-n8n-wsl-4, post-merge verification on MDMTEST-n8n-wsl-3 (run 36167178324). This was the last documented environmental retry; the earlier failure was a runner communication loss, not an implementation regression, and the P5-M08 implementation on this head is byte-identical to delivery merge 600a2145

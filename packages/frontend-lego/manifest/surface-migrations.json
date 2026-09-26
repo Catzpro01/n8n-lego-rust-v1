@@ -21,7 +21,8 @@
     "ai-surfaces",
     "localization",
     "loading-error-empty-primitives",
-    "accessibility-shared-primitives"
+    "accessibility-shared-primitives",
+    "notifications-shared-surface"
   ],
   "migrationStatuses": [
     "reference-only",
@@ -188,7 +189,7 @@
       "evidencePath": null,
       "rollbackStrategy": "reference-remains-default",
       "dependencies": [],
-      "notes": "Credential security boundary is P5 (Agent 1) — finding-only, never modified here."
+      "notes": "Credential security boundary is P5 (Agent 1) \u2014 finding-only, never modified here."
     },
     {
       "inventoryId": "ui.settings.pages",
@@ -308,7 +309,8 @@
       "evidencePath": "packages/frontend-lego/test/39-pilot-status-region.test.mjs",
       "rollbackStrategy": "pilot-not-primary",
       "dependencies": [],
-      "notes": "Issue #241 pilot: framework-neutral status region behind the existing registry/extension seam; original UI stays primary."
+      "notes": "Issue #241 pilot: framework-neutral status region behind the existing registry/extension seam; original UI stays primary.",
+      "sourceIssue": "241"
     },
     {
       "inventoryId": "ui.primitives.accessibility",
@@ -328,6 +330,28 @@
         "ui.primitives.status-region"
       ],
       "notes": "ui:accessibility:annotate stays attribute-only; no layout authority moves into LEGO."
+    },
+    {
+      "inventoryId": "ui.primitives.notification-surface",
+      "category": "notifications-shared-surface",
+      "title": "Shared notification surface (toast / banner / inline)",
+      "surfaceIds": [
+        "notifications",
+        "error-surfaces",
+        "dashboard"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "verified",
+      "evidencePath": "packages/frontend-lego/test/40-notification-surface.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.primitives.status-region"
+      ],
+      "notes": "Issue #245. Severity (info/success/warning/error) and disposition (shown/dismissed) are separate axes from the region state the parity harness compares: the contract reuses REGION_STATES rather than forking a second list. Dismissal removes the notice from the live region instead of adding a sixth region state, because a dismissed notice that still occupied a region would still be announced. Only `error` is aria-live assertive; `warning` stays polite so cautions do not train users to ignore the region. The queue is bounded and errors are never silently dropped. Opt-in and non-primary: the stock n8n notification presentation remains the default path.",
+      "sourceIssue": "245"
     }
   ]
 }

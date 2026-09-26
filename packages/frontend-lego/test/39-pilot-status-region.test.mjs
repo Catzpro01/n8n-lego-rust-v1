@@ -26,6 +26,7 @@ import { MESSAGE_SLOTS } from '../src/i18n.mjs';
 import { createFrontendRegistry, validateCapability } from '../src/registry.mjs';
 import { createFrontendLego } from '../src/lego.mjs';
 import { PACKAGE_ROOT, loadManifests } from '../src/manifests.mjs';
+import { existsSync } from 'node:fs';
 import { createTranslator, isValidMessageKey } from '../src/i18n.mjs';
 
 const manifests = loadManifests();
@@ -43,16 +44,33 @@ test('the pilot surface contract validates against closed vocabularies', () => {
   assert.equal(ok, true, errors.join('; '));
 });
 
-test('exactly one pilot module exists and it is the status region', async () => {
-  // Inventory pilot gate
-  const inventory = manifests; // loaded surfaces only — read migration file via registry side
+test('every pilot-available entry is a declared pilot with a capability and a test path', async () => {
+  // Inventory pilot gate. This used to assert "exactly one pilot", which was true
+  // while #241 was the only migrated surface. #245 adds a second pilot for its own
+  // slice, so the gate is now a CLOSED SET: one pilot per originating slice, each
+  // with a capability declaration and a test path that exists. Pinning the set is
+  // stronger than counting — a pilot that appears without declaring itself fails.
   const { readFileSync } = await import('node:fs');
   const { join } = await import('node:path');
   const inv = JSON.parse(readFileSync(join(PACKAGE_ROOT, 'manifest', 'surface-migrations.json'), 'utf8'));
   const pilots = inv.entries.filter((e) => e.migrationStatus === 'pilot-available');
-  assert.equal(pilots.length, 1);
-  assert.equal(pilots[0].inventoryId, PILOT_ID);
-  void inventory;
+  assert.deepEqual(
+    pilots.map((e) => e.inventoryId).sort(),
+    [PILOT_ID, 'ui.primitives.notification-surface'].sort(),
+    'the pilot set is exactly the status region (#241) and the notification surface (#245)',
+  );
+  for (const pilot of pilots) {
+    const capability = manifests.capabilities.find((c) => c.id === pilot.inventoryId.split('.').at(-1));
+    assert.ok(capability, `${pilot.inventoryId} declares no capability`);
+    assert.equal(capability.lifecycle, 'available', `${pilot.inventoryId} capability is not available`);
+    assert.ok(pilot.evidencePath, `${pilot.inventoryId} names no evidence path`);
+    assert.ok(
+      existsSync(join(PACKAGE_ROOT, '..', '..', pilot.evidencePath)),
+      `${pilot.evidencePath} does not exist`,
+    );
+    // A pilot must not claim to be primary: the reference UI stays the default.
+    assert.equal(pilot.rollbackStrategy, 'pilot-not-primary', `${pilot.inventoryId} claims primacy`);
+  }
 });
 
 test('the pilot capability declaration is valid for the existing registry catalog', () => {

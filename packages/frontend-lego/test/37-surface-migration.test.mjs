@@ -91,17 +91,27 @@ test('the inventory is not a second surface catalog and carries no secrets', () 
   }
 });
 
-test('exactly one pilot-available entry exists (single-pilot rule)', () => {
+test('one pilot per slice, and every pilot names its slice', () => {
+  // Was "exactly one pilot overall", true while #241 was the only migrated
+  // surface. #245 adds its own pilot, so the gate is now the closed set with the
+  // provenance that makes the per-slice rule enforceable.
   const pilots = inventory.entries.filter((e) => e.migrationStatus === 'pilot-available');
-  assert.equal(pilots.length, 1);
-  assert.equal(pilots[0].inventoryId, 'ui.primitives.status-region');
-  assert.equal(pilots[0].rollbackStrategy, 'pilot-not-primary');
+  assert.deepEqual(
+    pilots.map((e) => e.inventoryId).sort(),
+    ['ui.primitives.notification-surface', 'ui.primitives.status-region'],
+  );
+  const sources = pilots.map((e) => e.sourceIssue).sort();
+  assert.deepEqual(sources, ['241', '245'], 'each pilot names the slice it came from');
+  assert.equal(new Set(sources).size, sources.length, 'two pilots share one slice');
+  for (const pilot of pilots) {
+    assert.equal(pilot.rollbackStrategy, 'pilot-not-primary', `${pilot.inventoryId} claims primacy`);
+  }
 });
 
 test('describeSurfaceMigration summarizes status without loading code', () => {
   const described = describeSurfaceMigration(inventory);
   assert.equal(described.count, inventory.entries.length);
-  assert.deepEqual([...described.pilotIds], ['ui.primitives.status-region']);
+  assert.deepEqual([...described.pilotIds].sort(), ['ui.primitives.notification-surface', 'ui.primitives.status-region']);
   const total = Object.values(described.byStatus).reduce((a, b) => a + b, 0);
   assert.equal(total, described.count);
 });

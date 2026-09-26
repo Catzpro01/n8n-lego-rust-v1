@@ -196,6 +196,23 @@
         "dashboard"
       ],
       "operations": []
+    },
+    {
+      "id": "notification-surface",
+      "lego": "ui-frontend",
+      "title": "Shared notification surface (toast/banner/inline)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "notifications",
+        "error-surfaces",
+        "dashboard"
+      ],
+      "operations": []
     }
   ],
   "registered": [],
@@ -285,7 +302,7 @@
     "criticality core may not declare a fallback: a missing core capability must be visible.",
     "trust is inherited; a unit nested under a feature capability is a feature and may only be lowered.",
     "Backend-bound capabilities are not re-declared here: the surface catalog already binds a surface to its backend capability and contract.",
-    "A feature this instance cannot serve is answered by the compatibility layer's unsupported map (apps/n8n-lego/src/compat/capability.mjs) — never duplicated here."
+    "A feature this instance cannot serve is answered by the compatibility layer's unsupported map (apps/n8n-lego/src/compat/capability.mjs) \u2014 never duplicated here."
   ],
   "negotiation": {
     "availabilityStates": [
@@ -352,7 +369,7 @@
         "state": "migration-required"
       }
     ],
-    "rules": "packages/frontend-lego/src/negotiation.mjs → describeNegotiation().rules"
+    "rules": "packages/frontend-lego/src/negotiation.mjs \u2192 describeNegotiation().rules"
   },
   "delivery": {
     "transports": [
@@ -434,7 +451,7 @@
         "code": {
           "code": "ar",
           "englishName": "Arabic",
-          "nativeName": "العربية",
+          "nativeName": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629",
           "direction": "rtl",
           "status": "declared"
         },
@@ -445,7 +462,7 @@
         "code": {
           "code": "zh",
           "englishName": "Chinese",
-          "nativeName": "中文",
+          "nativeName": "\u4e2d\u6587",
           "direction": "ltr",
           "status": "declared"
         },
@@ -456,7 +473,7 @@
         "code": {
           "code": "ru",
           "englishName": "Russian",
-          "nativeName": "Русский",
+          "nativeName": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439",
           "direction": "ltr",
           "status": "declared"
         },
@@ -705,7 +722,7 @@
     ],
     "rules": [
       "The frontend consumes declared inputs only: an id, a version, an operation list, permissions, a lifecycle state, an availability answer, a degradation state, an interaction class, a transport binding, an error code, the locale set or boundary telemetry.",
-      "Never from an implementation file, a module path, a route table, a port or a credential store — the seam is a contract, not a filesystem.",
+      "Never from an implementation file, a module path, a route table, a port or a credential store \u2014 the seam is a contract, not a filesystem.",
       "An input the seam does not declare is refused by name; a value outside its declared vocabulary is refused too.",
       "Both sides project the same sixteen-field identity: an undeclared field is null, and a capability the caller was not granted is not described at all."
     ]

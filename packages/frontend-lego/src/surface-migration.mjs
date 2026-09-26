@@ -70,6 +70,15 @@ export const ENTRY_FIELDS = Object.freeze([
   'notes',
 ]);
 
+/**
+ * Fields an entry MAY carry but need not. `sourceIssue` is here rather than in
+ * `ENTRY_FIELDS` because it is only meaningful on a migrated surface: requiring it
+ * on a `reference-only` entry would be noise. It IS required on a pilot-available
+ * entry, because the single-pilot rule is per slice and "per slice" is
+ * unenforceable if nothing records the slice.
+ */
+export const ENTRY_OPTIONAL_FIELDS = Object.freeze(['sourceIssue']);
+
 export class SurfaceMigrationError extends Error {
   constructor(message, { inventoryId = null, errors = [] } = {}) {
     super(message);
@@ -111,7 +120,7 @@ export function validateMigrationEntry(entry, catalog = {}) {
   for (const field of ENTRY_FIELDS) {
     if (entry[field] === undefined) errors.push(`missing required field "${field}"`);
   }
-  const known = new Set(ENTRY_FIELDS);
+  const known = new Set([...ENTRY_FIELDS, ...ENTRY_OPTIONAL_FIELDS]);
   for (const key of Object.keys(entry)) {
     if (!known.has(key)) errors.push(`unknown field "${key}"`);
   }
@@ -265,10 +274,25 @@ export function validateSurfaceMigrationInventory(inventory, surfaces = []) {
     errors.push('rollbackStrategies must match ROLLBACK_STRATEGIES');
   }
 
-  // Exactly one pilot-available pilot for Issue #241 (single pilot rule).
+  // One pilot PER SLICE. The original rule was "at most one pilot overall", which
+  // was correct while #241 was the only migrated surface and became wrong the
+  // moment #245 added its own. The invariant worth keeping is the one that
+  // actually protects the strangler: one pilot per originating slice, because two
+  // pilots stacked on ONE slice is how a reversible migration stops being
+  // reversible. So every pilot must name the slice it came from, and no slice may
+  // carry two.
   const pilots = entries.filter((e) => e?.migrationStatus === 'pilot-available');
-  if (pilots.length > 1) {
-    errors.push(`exactly zero or one entry may be pilot-available (found ${pilots.length})`);
+  const pilotOwners = new Set();
+  for (const pilot of pilots) {
+    const source = pilot.sourceIssue;
+    if (typeof source !== 'string' || source.length === 0) {
+      errors.push(`pilot "${pilot.inventoryId}" must declare the sourceIssue it came from`);
+      continue;
+    }
+    if (pilotOwners.has(source)) {
+      errors.push(`source issue ${source} carries more than one pilot-available entry`);
+    }
+    pilotOwners.add(source);
   }
 
   // Dependency edges must not cycle (simple DFS on the small graph).

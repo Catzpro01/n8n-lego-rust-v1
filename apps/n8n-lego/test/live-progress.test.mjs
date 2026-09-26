@@ -297,8 +297,14 @@ test('the surgical register writer round-trips the canonical register unchanged'
   // exists for any of them. Prove the writer's fidelity on a slice that is still queued,
   // putting it back in flight (status, merge SHA and pointer together) and installing its
   // checkpoint model, which is also the --init-file path for a slice with no block yet.
+  // The subject is derived rather than read from plannedQueue[0]: the queue is legitimately
+  // empty once every queued slice has been started or blocked, and the writer's fidelity
+  // does not depend on which un-merged slice carries the fixture.
   const seeded = clone();
-  const target = findSlice(seeded, REGISTER.executionPointer.plannedQueue[0]).slice;
+  const subject = seeded.executionPointer.plannedQueue[0]
+    ?? seeded.programs.flatMap((entity) => entity.slices)
+        .find((slice) => slice.status !== 'implemented' && !slice.mergeSha && slice.status !== 'blocked').id;
+  const target = findSlice(seeded, subject).slice;
   target.status = 'in-progress';
   target.updatedAt = '2026-09-26T00:00:00Z';
   // The fixture ADDS its target to the active set instead of replacing it: a slice
