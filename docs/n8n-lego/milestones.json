@@ -4139,7 +4139,9 @@
               "title": "Capability boundary: the principal -> tenant -> capability -> action -> resource -> SecretRef -> provider chain is enforced before the provider call",
               "purpose": "Before any provider call the full capability chain is checked (#223 \u00a719) via an injectable P5 authorization decision. Option visibility does NOT grant permission to execute the resulting action (a visible option still requires the capability). Provider-returned metadata cannot grant itself new authority (authority-elevation fields in a provider result are ignored; the resolved authority is the original scope). A denied capability is a marked CAPABILITY_DENIED / AUTH_REJECTED and the provider is never called.",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "checkCapability enforces the principal -> tenant -> capability -> action -> resource -> SecretRef chain BEFORE the provider call via an injectable P5 decision (fail-closed: a missing authorizer or a denied decision is a marked CAPABILITY_DENIED and the provider is never called); option visibility does not grant permission to execute; the resolved authority is the original scope and provider-returned authority-elevation fields (grantedCapability/tenant) are ignored. Pinned by the 3 CP-03 tests. See docs/n8n-lego/evidence/P7-S06-EVIDENCE.md.",
+              "completedAt": "2026-09-26T20:03:26Z"
             },
             {
               "id": "CP-04",
@@ -4156,7 +4158,7 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-26T20:03:21Z",
+          "updatedAt": "2026-09-26T20:03:26Z",
           "mergeSha": null,
           "issue": 223,
           "evidence": null,
