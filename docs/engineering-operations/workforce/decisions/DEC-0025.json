@@ -6,7 +6,7 @@
   "createdAt": "2026-09-26T18:07:31Z",
   "updatedAt": "2026-09-26T18:07:31Z",
   "events": [],
-  "state": "ACTIVE",
+  "state": "SUPERSEDED",
   "category": "MERGE",
   "title": "Temporary merge gate: the GitHub-hosted n8n-lego Gate is the effective merge gate while the self-hosted runner fleet is offline",
   "problem": "The 10-runner self-hosted fleet is offline: on every PR head the 6 required self-hosted DEC-0015 jobs (Level 0 Check & Format, Level 1 Affected Tests, Level 2 Conformance, Level 2 Workspace linux/windows, Windows worker portability probe) never leave queued, so the full fleet gate cannot be satisfied and delivery merges stall. The owner directed that progress keep moving using GitHub's built-in runners, and that the gate be reverted to the current settings when the self-hosted fleet returns.",
@@ -59,7 +59,7 @@
     "requests": []
   },
   "supersedes": null,
-  "supersededBy": null,
+  "supersededBy": "DEC-0027",
   "promotion": {
     "canonical": false,
     "mainPath": "docs/engineering-operations/workforce/decisions/DEC-0025.json",
@@ -67,5 +67,8 @@
     "promotedAt": null,
     "promotedBy": null
   },
-  "reason": null
+  "reason": {
+    "code": "SUPERSEDED_BY_OWNER_DECISION",
+    "summary": "Superseded by owner decision DEC-0027: the temporary condition (self-hosted fleet offline) has ended \u2014 the fleet runs the full DEC-0015 matrix again (9/9 green on PR #347 head ca128f56; DEC-0015 back-fill 11/11 green on PR #348). The temporary hosted-only merge gate no longer applies; required checks are enforced in full."
+  }
 }
