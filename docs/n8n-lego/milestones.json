@@ -12,11 +12,11 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "f3a86526167033583034eeb26a89bb5ea324c04c",
     "latestCompletedSlice": {
-      "id": "P5-M05",
-      "pr": 357,
-      "mergeSha": "b7fb9ea41811832263458f5c0d150b7063820eae"
+      "id": "P5-M11",
+      "pr": 358,
+      "mergeSha": "3cb5d356f4df93979e35c8e32730f3f219c3606e"
     },
-    "activeSlices": ["P5-M11"],
+    "activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": ["P5-M12", "P5-M13", "P5-M14", "P5-M15", "P5-M16", "P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
@@ -4755,7 +4755,7 @@
           "id": "P5-M11",
           "title": "Project / sharing backing model (P5-M10-A): project, membership and share records for /api/v1/projects",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -4803,14 +4803,16 @@
               "purpose": "Evidence P5-M11-DELIVERY.md (scope mapping + deviations + rollback); full regression battery; delivery PR + CI + merge + post-merge battery + governance reconcile.",
               "weight": 20,
               "status": "completed",
-              "evidence": "docs/n8n-lego/evidence/P5-M11-DELIVERY.md; PR battery records (updated after merge).",
+              "evidence": "docs/n8n-lego/evidence/P5-M11-DELIVERY.md; PR #358 (CI 9/9 on 01cefbbf, merge 3cb5d356) + post-merge battery.",
               "reference": "P5-M11 scope: tests model unit + API contract",
               "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T00:00:00Z",
-          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: project + membership + share-role model over the P8 storage facade (project-sharing-model.mjs) - persistence behind the shared store boundary, CAS for race-sensitive updates, atomic ownership transfer via applyBatch, closed role vocabulary, API surface stays gated (model layer only). Implementation + tests + evidence complete; merge + post-merge verification complete the slice in the delivery follow-up.",
-          "mergeSha": null,
+          "updatedAt": "2026-09-27T11:00:00Z",
+          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: project + membership + share-role model over the P8 storage facade (project-sharing-model.mjs) - persistence behind the shared store boundary, CAS for race-sensitive updates, atomic ownership transfer via applyBatch, closed role vocabulary, API surface stays gated (model layer only). DEPLOYED: PR #358 merged at 3cb5d356f4df93979e35c8e32730f3f219c3606e (CI 9/9 green on head 01cefbbf); post-merge battery on the merge SHA green (lego 2951/2951, engine 49/49, runtime 79/79, lego:gate 0, isolation 0, decisions 0).",
+          "pr": 358,
+          "mergeSha": "3cb5d356f4df93979e35c8e32730f3f219c3606e",
+          "evidence": "docs/n8n-lego/evidence/P5-M11-DELIVERY.md",
           "owner": "manager (unassigned)"
         },
         {
