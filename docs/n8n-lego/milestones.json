@@ -12,11 +12,11 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "72691ca95c2fc4c7d9d7622f83ea465f4e71fbd4",
     "latestCompletedSlice": {
-      "id": "P5-M06",
-      "pr": 367,
-      "mergeSha": "49103ac9524ef4f40d4e7403710cff338a0d0501"
+      "id": "P2-S10",
+      "pr": 368,
+      "mergeSha": "60763a5e55825294fb6b7480bdd5935b199f6e69"
     },
-"activeSlices": ["P2-S10"],
+"activeSlices": [],
     "verifyingSlices": [],
 "plannedQueue": ["P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
@@ -2885,7 +2885,7 @@
           "id": "P2-S10",
           "title": "Settings (Layer 4 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -2933,11 +2933,12 @@
               "completedAt": "2026-09-27T17:27:04Z"
             }
           ],
-          "updatedAt": "2026-09-27T17:27:04Z",
-          "latestUpdate": "DELIVERED: Settings panels pilot (instance + personal) over the hand-over boundary - secret material refused at the entry shape (explicit security error; non-scalar values refused too), closed REGION_STATES + panel/action/request vocabularies, parity fail-closed against shared-rule reference fixtures, a11y derived once, bounded list + explicit failure + degraded mode. ui.settings.pages upgraded reference-only -> pilot-available (rollback pilot-not-primary); settings capability declared (slot settings, degrades native-behavior). 21 focused tests + battery green (lego 3071/3071, engine 19/19, runtime 79/79, frontend 694/694, gates 7/7). Findings recorded: declaration shadows backend advertisement (P2-S09 precedent; fixtures moved to workflow); register writer gate caught START em-dash format drift (repaired). Evidence: docs/n8n-lego/evidence/P2-S10-EVIDENCE.md.",
-          "mergeSha": null,
-          "issue": 240,
-          "evidence": null,
+          "updatedAt": "2026-09-27T18:05:00Z",
+          "latestUpdate": "Implemented (R1, HARD GUARD queue-unchanged pre-write PASSED): P2-S10 delivered as PR #368 merged 60763a5e55825294fb6b7480bdd5935b199f6e69 (CI 9/9). Settings panels pilot (instance + personal) over the hand-over boundary; secret material refused at the entry shape; parity fail-closed; ui.settings.pages upgraded to pilot-available with rollback pilot-not-primary. Findings recorded in the evidence (declaration shadows backend advertisement; START em-dash format drift repaired via the writer round-trip gate). Battery lego 3071/3071, engine 19/19, runtime 79/79, frontend 694/694, gates 7/7. Evidence: docs/n8n-lego/evidence/P2-S10-EVIDENCE.md.",
+      "pr": 368,
+      "mergeSha": "60763a5e55825294fb6b7480bdd5935b199f6e69",
+      "issue": 240,
+      "evidence": "docs/n8n-lego/evidence/P2-S10-EVIDENCE.md",
           "owner": "manager (unassigned)"
         },
         {

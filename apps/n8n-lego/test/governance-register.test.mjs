@@ -436,9 +436,10 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // then P5-M17 (execution retry model) on PR #364 merge b616be84;
   // then P5-M18 (execution annotation/tag model) on PR #365 merge 97f03df9;
   // then P5-M10 (public /api/v1 resources over the backing models) on PR #366 merge c95a0fae;
-  // then P5-M06 (injected mail transport + forgot-password delivery) on PR #367 merge 49103ac9.
-  assert.equal(tally.percent, 85);
-  assert.equal(tally.implemented, 170);
+  // then P5-M06 (injected mail transport + forgot-password delivery) on PR #367 merge 49103ac9;
+  // then P2-S10 (Settings panels pilot) on PR #368 merge 60763a5e.
+  assert.equal(tally.percent, 85.5);
+  assert.equal(tally.implemented, 171);
   assert.equal(tally.total, 200);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
@@ -449,8 +450,8 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
   assert.equal(metrics.current.total, 194);
-  assert.equal(metrics.current.implemented, 169);
-  assert.equal(metrics.current.sliceCompletion, percent1(169, 194));
+  assert.equal(metrics.current.implemented, 170);
+  assert.equal(metrics.current.sliceCompletion, percent1(170, 194));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);
