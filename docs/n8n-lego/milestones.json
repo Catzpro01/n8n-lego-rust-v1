@@ -10,15 +10,15 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "6d5788a7d5937cbf9fc902f9a05ca16fda5aaedd",
+    "lastVerifiedMain": "8d86e6575cfb3d1c36a60354c014a24164e43442",
     "latestCompletedSlice": {
-      "id": "P5-M11",
-      "pr": 358,
-      "mergeSha": "3cb5d356f4df93979e35c8e32730f3f219c3606e"
+      "id": "P5-M12",
+      "pr": 359,
+      "mergeSha": "8d86e6575cfb3d1c36a60354c014a24164e43442"
     },
-    "activeSlices": ["P5-M12"],
+    "activeSlices": [],
     "verifyingSlices": [],
-    "plannedQueue": ["P5-M13", "P5-M14", "P5-M15", "P5-M16", "P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
+    "plannedQueue": ["P5-M14", "P5-M15", "P5-M16", "P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
@@ -4819,7 +4819,7 @@
           "id": "P5-M12",
           "title": "Audit backing model (P5-M10-B): security-audit event generation and store for /api/v1/audit",
           "kind": "maintenance",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -4867,16 +4867,17 @@
               "purpose": "docs/n8n-lego/evidence/P5-M12-DELIVERY.md with scope mapping + deviations; projections regenerated; full battery green on the delivery commit.",
               "weight": 20,
               "status": "completed",
-              "evidence": "Evidence file; PR battery records.",
+              "evidence": "docs/n8n-lego/evidence/P5-M12-DELIVERY.md; PR #359 (CI 9/9 on cd088d22, merge 8d86e657) + post-merge battery.",
               "reference": "P5-M12 scope (audit backing model)",
               "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
-          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): audit: append-only audit-event model with actor/action/target/attestation fields; persistence = shared store (P8); API gated until the model exists; tests: immutability + query contract; rollback: unmount; deps: P8-S01. IN PROGRESS - started per owner marathon prompt (queue-head transition): audit backing model (P5-M10-B): append-only audit-event model (actor/action/target/attestation) over the P8 store; API gated until the model exists; tests immutability + query contract; rollback unmount.",
-          "mergeSha": null,
+          "latestUpdate": "IMPLEMENTED (evidence: docs/n8n-lego/evidence/P5-M12-DELIVERY.md) - audit backing model (P5-M10-B) delivered: append-only audit-event model over the P8 storage facade (audit-event-model.mjs): event {actor, action, target, targetType, occurredAt, attestation, metadata, source}; append-only immutability (duplicate refused, no mutation API, multi-host shared history); query contract for /api/v1/audit (filters, stable ordering, cursor paging, summarize) with the API surface still gated; rollback = unmount (namespace isolation); errors AUDIT_INVALID|CONFLICT closed. 9/9 tests green. Deviations documented: P8 has no atomic create-if-absent (pre-check + put + read-back verify), stateless cursors, closed error set without NOT_FOUND. Delivery branch delivery/p5-m12-audit-model (head cd088d22) -> PR #359 CI 9/9 green -> merge 8d86e657; post-merge battery green (lego 2960/2960, engine 49/49, runtime 79/79, lego:gate 0, isolation 0, decisions 0).",
+          "pr": 359,
+          "mergeSha": "8d86e6575cfb3d1c36a60354c014a24164e43442",
           "issue": 85,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P5-M12-DELIVERY.md",
           "owner": "manager (unassigned)"
         },
         {
