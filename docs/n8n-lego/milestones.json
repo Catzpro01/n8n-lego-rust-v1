@@ -12,10 +12,9 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "413fae7381176f2b4741d330f1fed27133b941e3",
     "latestCompletedSlice": { "id": "P2-S08", "pr": 353, "mergeSha": "8a957ee8c05c10d2820d0319cda56a2247628400" },
-    "activeSlices": [],
+    "activeSlices": ["P2-S09"],
     "verifyingSlices": [],
     "plannedQueue": [
-      "P2-S09",
       "P2-S10",
       "P2-S11",
       "P2-S12",
@@ -2850,46 +2849,56 @@
           "id": "P2-S09",
           "title": "Credentials (Layer 4 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "planned",
+          "status": "in-progress",
           "checkpoints": [
             {
               "id": "CP-01",
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Credentials surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the credential list, create/update/delete and sharing-affordance surfaces; credential values stay behind the P5/P2.27 envelope and never reach the view-model. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-credentials.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Hand-over boundary, value-refusal security rule and closed contract pinned by the boundary tests in test/46-credentials.test.mjs (rows enter only through loadSuccess(); a value-bearing row is refused with an explicit security error; unknown shapes refused; contract states == REGION_STATES exactly; no credential-data mutation). See docs/n8n-lego/evidence/P2-S09-EVIDENCE.md.",
+              "completedAt": "2026-09-27T14:10:00Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Credentials surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "ui.credentials.list upgraded to pilot-available / contractStatus consuming / rollbackStrategy pilot-not-primary in manifest/surface-migrations.json (notes keep the P5 finding-only security-boundary statement); credentials capability declared in manifest/capabilities.json with degradation fallback native-behavior. Pinned by the manifest tests in test/46-credentials.test.mjs. See docs/n8n-lego/evidence/P2-S09-EVIDENCE.md.",
+              "completedAt": "2026-09-27T14:10:00Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Credentials surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Loading/empty/ready/error parity-equivalent to deterministic reference fixtures through compareObservations; a drifted field is migration-required and an incomparable observation throws (fail-closed). Pinned by the state parity, drift and fail-closed tests in test/46-credentials.test.mjs. See docs/n8n-lego/evidence/P2-S09-EVIDENCE.md.",
+              "completedAt": "2026-09-27T14:10:00Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Credentials surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "CREDENTIALS_A11Y derives the a11y intent once so contract and rendered attributes cannot drift; only error is aria-live assertive, only loading is aria-busy. Pinned by the derive-once and assertive/busy exclusivity tests in test/46-credentials.test.mjs. See docs/n8n-lego/evidence/P2-S09-EVIDENCE.md.",
+              "completedAt": "2026-09-27T14:10:00Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Credentials surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Bounded list (maxVisible default 20, hard max 50) with observable truncation; the visibility filter (all/shared/private closed vocabulary) is an observable mutation (narrow/clear; filtered-to-zero is empty/filtered); create/delete/share return explicit closed results and never mutate rows; failure is explicit (error region + refresh retry; loadFailure requires an error object); degraded mode observable; history deterministic. Pinned by the bounds, filter, request, failure and history tests in test/46-credentials.test.mjs. See docs/n8n-lego/evidence/P2-S09-EVIDENCE.md.",
+              "completedAt": "2026-09-27T14:10:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T09:30:00Z",
-          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "updatedAt": "2026-09-27T14:10:00Z",
+          "latestUpdate": "In-progress: P2-S09 delivers the credentials list pilot (Layer 4 surface split out of P2-S03) as a bounded, visibility-filterable view-model; credential values never reach the surface (value-bearing rows refused explicitly) and create/delete/share are declared interactions only. Out of scope per REQ-0004 section 3: P5 credential runtime, SecretRef, broker, persistence, P6 node, P8 storage, Rust. Five checkpoints completed with evidence in test/46-credentials.test.mjs and docs/n8n-lego/evidence/P2-S09-EVIDENCE.md. Promotion to implemented follows the merge (DEC-0014).",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,

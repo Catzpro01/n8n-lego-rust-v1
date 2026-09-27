@@ -192,13 +192,15 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/46-credentials.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [],
-      "notes": "Credential security boundary is P5 (Agent 1) — finding-only, never modified here."
+      "sourceIssue": "240",
+    "slice": "P2-S09",
+    "notes": "P2-S09 Layer 3/4 strangler slice (issue #240): the credentials LIST view-model (bounded, visibility-filterable) plus create/delete/sharing affordances as declared interactions. Credential values never reach the surface - the row shape carries identity metadata only and a value-bearing row is refused explicitly; the value-entry editor, the P5/P2.27 envelope and the credential runtime stay out of this slice. Credential security boundary is P5 (Agent 1) — finding-only, never modified here. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.settings.pages",

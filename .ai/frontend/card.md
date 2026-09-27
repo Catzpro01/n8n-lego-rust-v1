@@ -20,8 +20,8 @@ additive `<meta>` tag, never rewrites the bundle.
 ```
 packages/frontend-lego/
   index.mjs                 the public surface (catalogs, lifecycle, impact, adapter)
-  manifest/                 surfaces.json 12 surfaces + the capability behind each
-                            extension-points.json 15 hooks (1.1.0) + 7 future consumers
+  manifest/                 surfaces.json surfaces + the capability behind each
+                            extension-points.json hooks + future consumers
                             sub-legos.json 19 units · ownership · capabilities · skills
                             context-session.json · memory.json · workspace.json · agent-machine.json
   src/                      one module per concern, no utils dumping ground
@@ -32,9 +32,9 @@ packages/frontend-lego/
     skills.mjs context-session.mjs memory.mjs workspace.mjs agent-machine.mjs lego.mjs
     surface-migration.mjs surface-contract.mjs parity.mjs pilot-status-region.mjs
     notification-surface.mjs workflow-list.mjs dialog-surface.mjs execution-list.mjs
-    node-picker.mjs workflow-editor.mjs
+    node-picker.mjs workflow-editor.mjs credentials.mjs
     adapters/ the framework adapter boundary (Vue; the only framework-aware code)
-  test/                     01-contract … 45-workflow-editor (numbered; 39/40/41/43/44/45 pilots)
+  test/                     01-contract … 46-credentials (numbered; 39/40/41/43/44/45/46 pilots)
 ```
 
 What the odd ones own: `negotiation.mjs` discovery, access, degradation and operation
