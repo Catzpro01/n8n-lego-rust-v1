@@ -9,13 +9,13 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 **Realtime Delivery Progress 75.8%** — 14700/19400 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 25 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 75.3%** — 146/194 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 75.8%** — 147/194 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
 | P0 | 100.0% | 100.0% | 2/2 | complete |
 | P1 | 100.0% | 100.0% | 2/2 | complete |
-| P2 | 61.7% | 60.0% | 36/60 | complete |
+| P2 | 61.7% | 61.7% | 37/60 | complete |
 | P3 | 100.0% | 100.0% | 18/18 | complete |
 | P4 | 100.0% | 100.0% | 10/10 | complete |
 | P5 | 53.8% | 53.8% | 14/26 | complete |
@@ -30,14 +30,14 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 | | |
 | --- | --- |
-| Latest completed slice | `P2-S06` — Executions list (PR #347, merge `b3aba728`) |
-| Active slices | `P2-S07` — Node picker/catalog |
+| Latest completed slice | `P2-S07` — Node picker/catalog (PR #352, merge `0bc35abd`) |
+| Active slices | — (none) |
 | Verifying (merged, post-merge verification pending) | — (none) |
 | Planned queue (in order; planned ≠ authorized) | `P2-S08`, `P2-S09`, `P2-S10`, `P2-S11`, `P2-S12`, `P2-S13`, `P2-S14`, `P2-S15`, `P2-S16`, `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
 | Blocked | `P2-S03` — blocked by Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped.<br>`P5-M02` — blocked by Needs a credential-consuming node in the execution path: engine node-registry.mjs exposes only the manual node set, so there is no legitimate integration consumer. The smallest consumer is scoped as P6-S05 (proposed, not authorized) with the exact acceptance list in docs/n8n-lego/evidence/P5-M02-FOUNDATION.md: SecretRef -> P2.27 Secret Broker -> credential resolution -> execution path -> real node consumer -> full regression suite (REQ-0003 section 7). #116/P6-S04 being proposed is not authorization. Stays blocked until authorization exists.<br>`P5-M05` — blocked by Needs the provider-neutral storage contract to genuinely exist: key/value semantics, namespace, atomicity, TTL, compare-and-set, serialization, failure behavior, consistency, concurrency and recovery expectations are specified in docs/n8n-lego/evidence/P8-S01-FOUNDATION.md and split into P8-S02..P8-S07 (proposed, awaiting authorization). The P8-S01 skeleton is not delivery (REQ-0003 section 8): P5-M05 stays blocked until the contract lands and the persistence boundary exists.<br>`P5-M06` — blocked by Awaits the OWNER decision on the mail-transport proposal in DEC-0028 (PROPOSED; state progression PROPOSED->UNDER_REVIEW->ACTIVE). The Manager must not implement on behalf of the owner. Reversible per-option preparation (no architecture committed) is recorded in docs/n8n-lego/evidence/P5-M06-PREP.md (REQ-0003 section 9).<br>`P5-M10` — blocked by Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped. |
 | Not authorized | planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt REQ-0003 sections 6 and 13): the Layers 3-5 child slices split out of P2-S03 (P2-S07..P2-S29), one surface per slice, pilot mode, rollback pilot-not-primary, parity evidence against the reference editor. NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (needs its own Manager decision after full evidence; #240 authorizes no removal of reference/n8n or n8n-editor-ui); P5-M06 (awaits the OWNER decision on DEC-0028); P5-M02 and P5-M05 (dependency foundations prepared, see their blockedBy); P5-M11..P5-M18 (proposed backing-model foundations); P6-S03, P6-S04, P6-S05 (proposed); P8-S01 and P8-S02..P8-S07 (planned/proposed placeholders that need a Manager Master Prompt); P10-S01 and P11-S01 (placeholders). P5-M04 is implemented and P7-S01/P7-S02 are implemented (P7 is in-progress) - those legacy queue notes are retired. |
 | Historical P2 ladder pointer | `P2.27` (history, not active work) |
-| Last verified main | `09ebface` |
+| Last verified main | `0bc35abd` |
 
 ## Programs P0–P11 (top level)
 
@@ -45,7 +45,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | --- | --- | --- | --- | --- | --- |
 | **P0** | Core Application Bootstrap | **COMPLETE** | 2/2 | 2 | — |
 | **P1** | n8n Compatibility / Behavioral Baseline | **COMPLETE** | 2/2 | 3 | — |
-| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 36/60 | 29 | `P2-S07` (in-progress) |
+| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 37/60 | 29 | `P2-S08` (planned) |
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
 | **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 14/26 | 20 | — |
@@ -201,7 +201,7 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 | `P2-S04` | Dashboard workflow list (first Layer 3 surface split out of P2-S03) | implemented | — | `1cab18c2` | #240 |
 | `P2-S05` | Dialogs / overlays (workflow settings, credential modal, confirmations) — second Layer 3 surface split out of P2-S03 | implemented | — | `1f89499c` | #240 |
 | `P2-S06` | Executions list (third Layer 3 surface split out of P2-S03) | implemented | — | `b3aba728` | #240 |
-| `P2-S07` | Node picker/catalog (Layer 3 surface split out of P2-S03) | in-progress | — | — | #240 |
+| `P2-S07` | Node picker/catalog (Layer 3 surface split out of P2-S03) | implemented | — | `0bc35abd` | #240 |
 | `P2-S08` | Workflow editor (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
 | `P2-S09` | Credentials (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
 | `P2-S10` | Settings (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
