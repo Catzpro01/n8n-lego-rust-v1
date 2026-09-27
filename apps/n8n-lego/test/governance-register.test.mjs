@@ -502,12 +502,28 @@ test('Issue #307: two metrics, status independent, checkpoint weights only where
   const p5Tally = programTally(p5, verifying);
   assert.equal(p5.status, 'complete');
   assert.notEqual(p5Tally.percent, 100, 'program status complete is not numeric 100%');
-  assert.notEqual(p5Tally.realtime, 100);
+  // Realtime is earned/declared and may legitimately reach 100 BEFORE slice
+  // completion does: P5-M06's five checkpoints are all evidenced while the
+  // slice is still in-progress (implemented only lands at R1). The two axes
+  // moving apart is the metric's whole point (see the reopen check above), so
+  // realtime is asserted as the derived ratio, never as a magic inequality —
+  // an earlier `realtime != 100` pin only reflected P5-M06's weights being
+  // unearned at the time and broke the moment the delivery was evidenced.
+  const p5Progress = p5.slices.map((slice) => sliceDeliveryProgress(slice));
+  assert.equal(p5Tally.earned, p5Progress.reduce((sum, item) => sum + item.earned, 0));
+  assert.equal(p5Tally.points, p5Progress.reduce((sum, item) => sum + item.total, 0));
+  assert.equal(p5Tally.realtime, percent1(p5Tally.earned, p5Tally.points), 'realtime is exactly earned/points');
   const m08 = p5.slices.find((slice) => slice.id === 'P5-M08');
   assert.equal(sliceDeliveryProgress(m08).source, 'checkpoints');
   assert.equal(sliceDeliveryProgress(m08).percent, 100, 'CP-01..CP-05 are all evidenced');
   assert.equal(completionContribution(m08), 100, 'an implemented slice contributes fully');
   assert.equal(displayStatus(m08, verifying), 'implemented');
+  // The same independence from the other direction: a slice whose checkpoints
+  // are fully evidenced is still not implemented until the lifecycle says so.
+  const m06 = p5.slices.find((slice) => slice.id === 'P5-M06');
+  assert.equal(sliceDeliveryProgress(m06).source, 'checkpoints');
+  assert.equal(sliceDeliveryProgress(m06).percent, 100, 'P5-M06 CP-01..CP-05 are all evidenced');
+  assert.notEqual(displayStatus(m06, verifying), 'implemented', 'realtime 100 does not implement a slice');
   for (const id of REGISTER.executionPointer.blockedSlices) {
     const slice = slices(REGISTER).find((item) => item.id === id);
     assert.equal(slice.status, 'blocked', id);

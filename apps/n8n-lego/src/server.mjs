@@ -27,6 +27,8 @@ import { HttpError } from './compat/error.mjs';
 import { readBody, sendError, sendJson } from './compat/response.mjs';
 import { createUnsupportedHandler } from './compat/capability.mjs';
 import { authRoutes } from './auth/routes.mjs';
+import { assertMailTransport, createConsoleMailTransport } from './auth/security/mail-transport.mjs';
+import { createPasswordResetDelivery } from './auth/password-reset-delivery.mjs';
 import { handlePublicApiRequest, isPublicApiPath, mountPublicApiOperations } from './auth/public-api-routes.mjs';
 import { backingResourceOperations, createBackingModels } from './auth/public-api-backing.mjs';
 import { createLocalStorage } from './lego/storage/local-provider.mjs';
@@ -40,7 +42,7 @@ import { checkCsrf, createOwner, currentUser, hasOwner } from './auth.mjs';
 const EX_CONFIG = 78;
 const SHUTDOWN_GRACE_MS = 10_000;
 
-export async function startServer({ env = process.env } = {}) {
+export async function startServer({ env = process.env, mailTransport = null } = {}) {
   let config;
   try {
     config = loadConfig(env);
@@ -124,6 +126,18 @@ export async function startServer({ env = process.env } = {}) {
   logger.info('frontend contract', frontend.describe());
   const ui = createUi({ config, logger, frontend });
   const push = createPushServer({ config, logger });
+
+  /* P5-M06 (DEC-0028 rev 2, option A): password-recovery mail goes through an
+   * injected MailTransport — pure values in, frozen values out, the host does
+   * the IO. Default = the console transport (dev-safe: redacted body to the
+   * logger, no network). A deployment injects its SMTP/provider adapter at this
+   * composition root; `mailTransport: false` unplants delivery entirely and the
+   * route answers with the pinned upstream "email not set up" 500 (rollback).
+   * The product bundles no SMTP client and no provider SDK. */
+  const mailTransportHandle = mailTransport === false
+    ? null
+    : assertMailTransport(mailTransport ?? createConsoleMailTransport({ logger }));
+  const mailDelivery = mailTransportHandle ? createPasswordResetDelivery({ transport: mailTransportHandle, logger }) : null;
   // Compatibility boundary: one router mounts the domain modules (auth,
   // settings, the legacy aggregate). Any `/rest/*` path without an owner is
   // answered by the capability handler with the explicit 501 "unsupported"
@@ -131,7 +145,7 @@ export async function startServer({ env = process.env } = {}) {
   const router = createRouter([
     ...settingsRoutes(),
     ...frontendRoutes({ frontend }),
-    ...authRoutes({ logger, vault }),
+    ...authRoutes({ logger, vault, delivery: mailDelivery }),
     ...buildRoutes({ engine, logger, push, vault }),
   ]);
   const unsupported = createUnsupportedHandler(logger);
@@ -392,7 +406,7 @@ export async function startServer({ env = process.env } = {}) {
     logger.error('unhandled promise rejection', { cause: reason instanceof Error ? reason.message : String(reason) });
   });
 
-  return { server, config, logger, store, engine, push, ui, frontend, backing: backingModels };
+  return { server, config, logger, store, engine, push, ui, frontend, backing: backingModels, mailTransport: mailTransportHandle };
 }
 
 function safeUrl(req, config) {

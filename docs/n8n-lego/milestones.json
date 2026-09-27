@@ -4528,44 +4528,54 @@
               "title": "Injected mail transport contract (DEC-0028 option A)",
               "purpose": "Provider-neutral mail transport contract: deterministic, injectable, testable, no hidden provider dependency, explicit closed error model, Rust-friendly surface. Governance state per DEC-0028 (rev 2, option A-injected-transport).",
               "weight": 20,
-              "status": "planned",
-              "reference": "DEC-0028 rev 2 (option A); docs/n8n-lego/evidence/P5-M06-PREP.md"
+              "status": "completed",
+              "reference": "DEC-0028 rev 2 (option A); docs/n8n-lego/evidence/P5-M06-PREP.md",
+              "evidence": "docs/n8n-lego/evidence/P5-M06-DELIVERY.md#cp-01--injected-mail-transport-contract",
+              "completedAt": "2026-09-27T16:19:53Z"
             },
             {
               "id": "CP-02",
               "title": "Password recovery surface over the P5 reset-token primitive",
               "purpose": "Upstream /rest/forgot-password delivery wired to the P5 reset-token primitive (response semantics per pinned upstream: no account-existence leak).",
               "weight": 20,
-              "status": "planned",
-              "reference": "P5-M06 scope (email-based password recovery, split out of P5-M03)"
+              "status": "completed",
+              "reference": "P5-M06 scope (email-based password recovery, split out of P5-M03)",
+              "evidence": "docs/n8n-lego/evidence/P5-M06-DELIVERY.md#cp-02--password-recovery-surface-over-the-p5-reset-token-primitive",
+              "completedAt": "2026-09-27T16:19:53Z"
             },
             {
               "id": "CP-03",
               "title": "Delivery wiring through the injected transport",
               "purpose": "Recovery mail composed deterministically and sent through the injected transport; no secrets in logs or records; explicit failure behavior; no hidden provider fallback.",
               "weight": 20,
-              "status": "planned",
-              "reference": "P5-M06 scope; DEC-0028 option A"
+              "status": "completed",
+              "reference": "P5-M06 scope; DEC-0028 option A",
+              "evidence": "docs/n8n-lego/evidence/P5-M06-DELIVERY.md#cp-03--delivery-wiring-through-the-injected-transport",
+              "completedAt": "2026-09-27T16:19:53Z"
             },
             {
               "id": "CP-04",
               "title": "Tests + rollback",
               "purpose": "Focused tests: transport contract conformance (injection swap), deterministic delivery, closed error mapping, no hidden side effects; rollback = unplug transport / unmount routes (reset-token history untouched).",
               "weight": 20,
-              "status": "planned",
-              "reference": "P5-M06 scope; DEC-0028 option A"
+              "status": "completed",
+              "reference": "P5-M06 scope; DEC-0028 option A",
+              "evidence": "docs/n8n-lego/evidence/P5-M06-DELIVERY.md#cp-04--tests--rollback",
+              "completedAt": "2026-09-27T16:19:53Z"
             },
             {
               "id": "CP-05",
               "title": "Evidence + delivery notes committed; battery green",
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
-              "status": "planned",
-              "reference": "P5-M06 scope"
+              "status": "completed",
+              "reference": "P5-M06 scope",
+              "evidence": "docs/n8n-lego/evidence/P5-M06-DELIVERY.md#cp-05--evidence--delivery-notes-committed-battery-green",
+              "completedAt": "2026-09-27T16:19:53Z"
             }
           ],
-          "updatedAt": "2026-09-27T15:51:01Z",
-          "latestUpdate": "STARTED (queue head -> activeSlices -> in-progress): delivery per DEC-0028 rev 2 option A (provider-neutral injected mail transport) + upstream /rest/forgot-password over the P5 reset-token primitive. 5 checkpoints (CP-01 transport contract; CP-02 recovery surface; CP-03 delivery wiring; CP-04 tests + rollback; CP-05 evidence + battery), weights 20 each. In progress.",
+          "updatedAt": "2026-09-27T16:19:53Z",
+          "latestUpdate": "DELIVERED (DEC-0028 rev 2 option A): provider-neutral injected MailTransport (closed error model over published codes, frozen values, console+recording adapters, redacted logs) + deterministic recovery mail + /rest/forgot-password delivery wired at the composition root (mailTransport option; false = pinned upstream 500 rollback). 18 focused tests + full battery green (lego 3071/3071, engine 19/19, runtime 79/79, frontend 672/0, gates 7/7). Evidence: docs/n8n-lego/evidence/P5-M06-DELIVERY.md.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
