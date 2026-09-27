@@ -10,9 +10,9 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "0bc35abdc3e61ef5084f0f2462f49a4e8cf9b52d",
-    "latestCompletedSlice": { "id": "P2-S07", "pr": 352, "mergeSha": "0bc35abdc3e61ef5084f0f2462f49a4e8cf9b52d" },
-    "activeSlices": ["P2-S08"],
+    "lastVerifiedMain": "8a957ee8c05c10d2820d0319cda56a2247628400",
+    "latestCompletedSlice": { "id": "P2-S08", "pr": 353, "mergeSha": "8a957ee8c05c10d2820d0319cda56a2247628400" },
+    "activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": [
       "P2-S09",
@@ -2791,7 +2791,7 @@
           "id": "P2-S08",
           "title": "Workflow editor (Layer 3 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -2839,11 +2839,11 @@
               "completedAt": "2026-09-27T12:30:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T12:30:00Z",
-          "latestUpdate": "In-progress: P2-S08 delivers the workflow editor host pilot (second P2-S03 Layer 3 strangler slice) as the name/tags/active-state header and workflow-level actions panel around the canvas; the workflow record is handed over read-only and never mutated, and the original editor stays the default path. The canvas/editor rewrite stays out of scope (issue #241 exclusion preserved). Five checkpoints completed with evidence in test/45-workflow-editor.test.mjs and docs/n8n-lego/evidence/P2-S08-EVIDENCE.md. Promotion to implemented follows the merge (DEC-0014).",
-          "mergeSha": null,
+          "updatedAt": "2026-09-27T12:55:00Z",
+          "latestUpdate": "Implemented: P2-S08 delivered the workflow editor host pilot (second P2-S03 Layer 3 strangler slice) as the name/tags/active-state header and workflow-level actions panel around the canvas; the workflow record is handed over read-only and never mutated, and the original editor stays the default path. The canvas/editor rewrite stays out of scope (issue #241 exclusion preserved). Five checkpoints completed with evidence in test/45-workflow-editor.test.mjs and docs/n8n-lego/evidence/P2-S08-EVIDENCE.md. PR #353 merged to main as 8a957ee8 (9/9 checks SUCCESS).",
+          "mergeSha": "8a957ee8c05c10d2820d0319cda56a2247628400",
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S08-EVIDENCE.md",
           "owner": "manager (unassigned)"
         },
         {
