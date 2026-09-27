@@ -12,10 +12,9 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "0bc35abdc3e61ef5084f0f2462f49a4e8cf9b52d",
     "latestCompletedSlice": { "id": "P2-S07", "pr": 352, "mergeSha": "0bc35abdc3e61ef5084f0f2462f49a4e8cf9b52d" },
-    "activeSlices": [],
+    "activeSlices": ["P2-S08"],
     "verifyingSlices": [],
     "plannedQueue": [
-      "P2-S08",
       "P2-S09",
       "P2-S10",
       "P2-S11",
@@ -2792,46 +2791,56 @@
           "id": "P2-S08",
           "title": "Workflow editor (Layer 3 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "planned",
+          "status": "in-progress",
           "checkpoints": [
             {
               "id": "CP-01",
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Workflow editor surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the name/tags/active-state header and workflow-level actions panel around the canvas; workflow JSON handed over read-only, the surface never mutates workflow data. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-workflow-editor.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Read-only hand-over and closed contract pinned by the boundary and closed-vocabulary tests in test/45-workflow-editor.test.mjs (the record enters only through loadSuccess(); unknown record/tag shapes refused; contract states == REGION_STATES exactly; the surface never mutates workflow data - rename/activate return the closed request-result vocabulary against a frozen snapshot). See docs/n8n-lego/evidence/P2-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-27T12:30:00Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Workflow editor surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "ui.editor.workflow upgraded to pilot-available / contractStatus consuming / rollbackStrategy pilot-not-primary in manifest/surface-migrations.json (ui.editor.canvas stays reference-only - the issue #241 exclusion is preserved); workflow-editor capability declared in manifest/capabilities.json with degradation fallback native-behavior. Pinned by the manifest tests in test/45-workflow-editor.test.mjs. See docs/n8n-lego/evidence/P2-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-27T12:30:00Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Workflow editor surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Loading/empty/ready(active)/ready(inactive)/error parity-equivalent to deterministic reference fixtures through compareObservations; a drifted field is migration-required and an incomparable observation throws (fail-closed). Pinned by the state parity, drift and fail-closed tests in test/45-workflow-editor.test.mjs. See docs/n8n-lego/evidence/P2-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-27T12:30:00Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Workflow editor surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "WORKFLOW_EDITOR_A11Y derives the a11y intent once so contract and rendered attributes cannot drift; only error is aria-live assertive, only loading is aria-busy. Pinned by the derive-once and assertive/busy exclusivity tests in test/45-workflow-editor.test.mjs. See docs/n8n-lego/evidence/P2-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-27T12:30:00Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Workflow editor surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Tag chips bounded (maxVisible default 20, hard max 50) with observable truncation; the rename draft is a local bounded mutation (128 chars, refused not truncated) that never touches workflow data and is cleared on a new hand-over; requests return explicit closed results; failure is explicit (error region + refresh retry; loadFailure requires an error object); degraded mode observable. Pinned by the bounds, draft, request, failure and history tests in test/45-workflow-editor.test.mjs. See docs/n8n-lego/evidence/P2-S08-EVIDENCE.md.",
+              "completedAt": "2026-09-27T12:30:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T09:30:00Z",
-          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "updatedAt": "2026-09-27T12:30:00Z",
+          "latestUpdate": "In-progress: P2-S08 delivers the workflow editor host pilot (second P2-S03 Layer 3 strangler slice) as the name/tags/active-state header and workflow-level actions panel around the canvas; the workflow record is handed over read-only and never mutated, and the original editor stays the default path. The canvas/editor rewrite stays out of scope (issue #241 exclusion preserved). Five checkpoints completed with evidence in test/45-workflow-editor.test.mjs and docs/n8n-lego/evidence/P2-S08-EVIDENCE.md. Promotion to implemented follows the merge (DEC-0014).",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,

@@ -487,6 +487,35 @@
       "phase": "P2-S07",
       "owner": "agent-01",
       "notes": "P2-S07 Layer 3: the strangler slice for the node picker palette, a bounded and query-filterable view-model. Node types are handed over (the surface never fetches the node catalog, so it holds no private data path). The four region states reuse REGION_STATES; filtering to zero is empty with reason filtered, not a fifth state. Selecting a node type is a declared interaction with a closed result vocabulary, never executed silently. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
+      "id": "workflow-editor",
+      "lego": "ui-frontend",
+      "title": "Workflow editor host pilot (name/tags/active-state header + actions panel)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/workflow-editor.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "workflow-editor"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "forms",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n workflow editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/45-workflow-editor.test.mjs"
+      ],
+      "phase": "P2-S08",
+      "owner": "agent-01",
+      "notes": "P2-S08 Layer 3: the strangler slice for the editor host chrome around the canvas - the name/tags/active-state header and workflow-level actions panel. The workflow record is handed over read-only (the surface never fetches /rest/workflows/:id and never mutates workflow data; rename/activate are declared interactions returning a closed result vocabulary). The canvas/editor rewrite stays out of scope (issue #241). Four region states reuse REGION_STATES; tag chips are bounded. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     }
   ]
 }

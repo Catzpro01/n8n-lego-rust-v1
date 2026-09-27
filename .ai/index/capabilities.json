@@ -273,6 +273,21 @@
         "node-picker"
       ],
       "operations": []
+    },
+    {
+      "id": "workflow-editor",
+      "lego": "ui-frontend",
+      "title": "Workflow editor host pilot (name/tags/active-state header + actions panel)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "workflow-editor"
+      ],
+      "operations": []
     }
   ],
   "registered": [],
