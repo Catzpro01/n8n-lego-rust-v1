@@ -425,9 +425,10 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // exists so a silently-flipped status cannot pass unnoticed. The tally itself is derived above,
   // so this pin is a tripwire on the register's delivery state, not on the arithmetic.
   // Refresh 2026-09-27: P6-S05 and P5-M02 reconciled to implemented on PR #355 merge d549d40d;
-  // then P8-S01..P8-S07 (storage foundation vertical) on PR #356 merge 3e0f621d.
-  assert.equal(tally.percent, 79.5);
-  assert.equal(tally.implemented, 159);
+  // then P8-S01..P8-S07 (storage foundation vertical) on PR #356 merge 3e0f621d;
+  // then P5-M05 (session + rate-limiter state) on PR #357 merge b7fb9ea4.
+  assert.equal(tally.percent, 80);
+  assert.equal(tally.implemented, 160);
   assert.equal(tally.total, 200);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
@@ -438,8 +439,8 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
   assert.equal(metrics.current.total, 194);
-  assert.equal(metrics.current.implemented, 158);
-  assert.equal(metrics.current.sliceCompletion, percent1(158, 194));
+  assert.equal(metrics.current.implemented, 159);
+  assert.equal(metrics.current.sliceCompletion, percent1(159, 194));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);
