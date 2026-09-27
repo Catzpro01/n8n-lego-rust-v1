@@ -4956,50 +4956,50 @@
               "title": "Data-table records over the storage facade",
               "purpose": "Table record with column schema (closed column types) + row records with typed cells persisted only through the P8 storage facade (namespace data-tables); explicit errors TABLE_INVALID/NOT_FOUND/CONFLICT; STORAGE_* propagated; no memory-local state.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Impl: apps/n8n-lego/src/lego/data-table-model.mjs - table + typed-cell row records, closed column types, TABLE_INVALID/NOT_FOUND/CONFLICT (2026-09-27).",
               "reference": "P5-M14 scope (data-table backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-02",
               "title": "Schema evolution",
               "purpose": "Column add/rename/drop with CAS; type constraints enforced on rows; evolution is versioned and race-safe (lost updates CONFLICT); no silent data reinterpretation.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 3-4: addColumn backfill + required-without-default refusal; renameColumn/dropColumn atomic schema+rows rewrite via applyBatch with per-op expectedVersion (2026-09-27).",
               "reference": "P5-M14 scope (data-table backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-03",
               "title": "Row CRUD",
               "purpose": "create/get/update/delete rows with typed-cell validation; row updates are pure CAS; multi-host shared table consistency.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 2,5,6: row CRUD with typed validation; pure CAS row updates/deletes (token required); multi-host cross-host conflicts (2026-09-27).",
               "reference": "P5-M14 scope (data-table backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-04",
               "title": "Tests + rollback",
               "purpose": "Tests: schema evolution + row CRUD; rollback = unmount (namespace isolation leaves history untouched); multi-host tests over one store; determinism pin.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "9/9 tests green; rollback=unmount namespace isolation (test 8); determinism + surface pin (test 9); 3 test-expectation fixes diagnosed in evidence (2026-09-27).",
               "reference": "P5-M14 scope (data-table backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-05",
               "title": "Evidence + delivery notes committed; battery green",
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
               "reference": "P5-M14 scope (data-table backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
