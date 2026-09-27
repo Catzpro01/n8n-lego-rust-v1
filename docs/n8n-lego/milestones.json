@@ -12,11 +12,11 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "bc28eb69f05bafb3819a2a29c264aebcdcd3e51c",
     "latestCompletedSlice": {
-      "id": "P5-M10",
-      "pr": 366,
-      "mergeSha": "c95a0fae50debb40395e912652ed7b53617ff367"
+      "id": "P5-M06",
+      "pr": 367,
+      "mergeSha": "49103ac9524ef4f40d4e7403710cff338a0d0501"
     },
-    "activeSlices": ["P5-M06"],
+"activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": ["P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
@@ -4521,7 +4521,7 @@
           "id": "P5-M06",
           "title": "Email-based password recovery: needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03)",
           "kind": "maintenance",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -4574,11 +4574,12 @@
               "completedAt": "2026-09-27T16:19:53Z"
             }
           ],
-          "updatedAt": "2026-09-27T16:19:53Z",
-          "latestUpdate": "DELIVERED (DEC-0028 rev 2 option A): provider-neutral injected MailTransport (closed error model over published codes, frozen values, console+recording adapters, redacted logs) + deterministic recovery mail + /rest/forgot-password delivery wired at the composition root (mailTransport option; false = pinned upstream 500 rollback). 18 focused tests + full battery green (lego 3071/3071, engine 19/19, runtime 79/79, frontend 672/0, gates 7/7). Evidence: docs/n8n-lego/evidence/P5-M06-DELIVERY.md.",
-          "mergeSha": null,
+          "updatedAt": "2026-09-27T16:40:00Z",
+          "latestUpdate": "Implemented (R1, HARD GUARD queue-unchanged pre-write PASSED): P5-M06 delivered as PR #367 merged 49103ac9524ef4f40d4e7403710cff338a0d0501 (CI 9/9). Injected MailTransport per DEC-0028 rev 2 option A + deterministic recovery mail + /rest/forgot-password wiring over the P5 reset-token primitive; rollback = mailTransport:false / delivery null (pinned upstream 500), reset history untouched. Battery lego 3071/3071, engine 19/19, runtime 79/79, frontend 672/0, gates 7/7. Evidence: docs/n8n-lego/evidence/P5-M06-DELIVERY.md.",
+          "pr": 367,
+          "mergeSha": "49103ac9524ef4f40d4e7403710cff338a0d0501",
           "issue": 85,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P5-M06-DELIVERY.md",
           "owner": "manager (unassigned)"
         },
         {

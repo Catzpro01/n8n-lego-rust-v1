@@ -435,9 +435,10 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // then P5-M16 (workflow-version backing model) on PR #363 merge b8798bbf;
   // then P5-M17 (execution retry model) on PR #364 merge b616be84;
   // then P5-M18 (execution annotation/tag model) on PR #365 merge 97f03df9;
-  // then P5-M10 (public /api/v1 resources over the backing models) on PR #366 merge c95a0fae.
-  assert.equal(tally.percent, 84.5);
-  assert.equal(tally.implemented, 169);
+  // then P5-M10 (public /api/v1 resources over the backing models) on PR #366 merge c95a0fae;
+  // then P5-M06 (injected mail transport + forgot-password delivery) on PR #367 merge 49103ac9.
+  assert.equal(tally.percent, 85);
+  assert.equal(tally.implemented, 170);
   assert.equal(tally.total, 200);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
@@ -448,8 +449,8 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
   assert.equal(metrics.current.total, 194);
-  assert.equal(metrics.current.implemented, 168);
-  assert.equal(metrics.current.sliceCompletion, percent1(168, 194));
+  assert.equal(metrics.current.implemented, 169);
+  assert.equal(metrics.current.sliceCompletion, percent1(169, 194));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);
@@ -501,7 +502,18 @@ test('Issue #307: two metrics, status independent, checkpoint weights only where
   const p5 = REGISTER.programs.find((program) => program.id === 'P5');
   const p5Tally = programTally(p5, verifying);
   assert.equal(p5.status, 'complete');
-  assert.notEqual(p5Tally.percent, 100, 'program status complete is not numeric 100%');
+  // "Program status complete is not numeric 100%": the status string is a
+  // declared vocabulary value, never computed from the tally — and the tally is
+  // computed from slice statuses, never from the status string. Once every P5
+  // slice is implemented the tally legitimately reaches 100, so the invariant is
+  // proven on a clone instead of by a state pin: reopen one slice and the
+  // numbers move while the declared program status does not.
+  const p5Open = clone();
+  const p5OpenSlice = p5Open.programs[5].slices.find((slice) => slice.id === 'P5-M06');
+  p5OpenSlice.status = 'in-progress';
+  const p5OpenTally = programTally(p5Open.programs[5], verifyingIndex(p5Open));
+  assert.ok(p5OpenTally.percent < 100, 'slice completion follows slice status');
+  assert.equal(p5Open.programs[5].status, 'complete', 'program status is declared vocabulary, never computed from the tally');
   // Realtime is earned/declared and may legitimately reach 100 BEFORE slice
   // completion does: P5-M06's five checkpoints are all evidenced while the
   // slice is still in-progress (implemented only lands at R1). The two axes
@@ -518,12 +530,19 @@ test('Issue #307: two metrics, status independent, checkpoint weights only where
   assert.equal(sliceDeliveryProgress(m08).percent, 100, 'CP-01..CP-05 are all evidenced');
   assert.equal(completionContribution(m08), 100, 'an implemented slice contributes fully');
   assert.equal(displayStatus(m08, verifying), 'implemented');
-  // The same independence from the other direction: a slice whose checkpoints
-  // are fully evidenced is still not implemented until the lifecycle says so.
+  // The same independence from the other direction: full realtime evidence does
+  // not implement a slice — only the lifecycle transition does. Proven on a
+  // clone (status forced back to in-progress) so the check stays valid in any
+  // live register state: before R1 it held directly, after R1 it holds via the
+  // clone, and it can never rot into a state pin again.
   const m06 = p5.slices.find((slice) => slice.id === 'P5-M06');
   assert.equal(sliceDeliveryProgress(m06).source, 'checkpoints');
   assert.equal(sliceDeliveryProgress(m06).percent, 100, 'P5-M06 CP-01..CP-05 are all evidenced');
-  assert.notEqual(displayStatus(m06, verifying), 'implemented', 'realtime 100 does not implement a slice');
+  const m06Open = clone();
+  const m06Clone = m06Open.programs[5].slices.find((slice) => slice.id === 'P5-M06');
+  m06Clone.status = 'in-progress';
+  assert.equal(sliceDeliveryProgress(m06Clone).percent, 100);
+  assert.notEqual(displayStatus(m06Clone, verifying), 'implemented', 'realtime 100 does not implement a slice');
   for (const id of REGISTER.executionPointer.blockedSlices) {
     const slice = slices(REGISTER).find((item) => item.id === id);
     assert.equal(slice.status, 'blocked', id);
