@@ -71,7 +71,7 @@ test('unknown node types and dangling connections become warnings, not errors', 
     {
       nodes: [
         { name: 'Start', type: 'n8n-nodes-base.manualTrigger' },
-        { name: 'HTTP', type: 'n8n-nodes-base.httpRequest' },
+        { name: 'GhostNode', type: 'n8n-nodes-base.notARealNode' },
       ],
       connections: { Start: { main: [[{ node: 'Ghost', type: 'main', index: 0 }]] } },
     },
@@ -80,7 +80,13 @@ test('unknown node types and dangling connections become warnings, not errors', 
   assert.equal(result.ok, true);
   const codes = result.warnings.map((entry) => entry.code).sort();
   assert.deepEqual(codes, ['UNKNOWN_CONNECTION_TARGET', 'UNKNOWN_NODE_TYPE']);
-  assert.equal(result.warnings.find((w) => w.code === 'UNKNOWN_NODE_TYPE').type, 'n8n-nodes-base.httpRequest');
+  assert.equal(result.warnings.find((w) => w.code === 'UNKNOWN_NODE_TYPE').type, 'n8n-nodes-base.notARealNode');
+});
+
+test('httpRequest is a registered built-in since P6-S05 (no longer an unknown type)', () => {
+  const registry = createNodeRegistry();
+  assert.equal(registry.has('n8n-nodes-base.httpRequest'), true);
+  assert.equal(registry.info('n8n-nodes-base.httpRequest').alias, 'httpRequest');
 });
 
 test('malformed connections shape is INVALID_WORKFLOW', () => {

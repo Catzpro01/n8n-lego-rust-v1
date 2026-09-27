@@ -87,16 +87,16 @@ test('unknown node types pass through with a warning by default', async () => {
   const workflow = {
     nodes: [
       { name: 'Manual Trigger', type: 'n8n-nodes-base.manualTrigger', parameters: {} },
-      { name: 'HTTP', type: 'n8n-nodes-base.httpRequest', parameters: {} },
+      { name: 'Ghost', type: 'n8n-nodes-base.notARealNode', parameters: {} },
     ],
-    connections: { 'Manual Trigger': { main: [[{ node: 'HTTP', type: 'main', index: 0 }]] } },
+    connections: { 'Manual Trigger': { main: [[{ node: 'Ghost', type: 'main', index: 0 }]] } },
   };
   const result = await runWorkflowDefinition(workflow, { input: [{ json: { a: 1 } }] });
   assert.equal(result.status, 'COMPLETED');
-  assert.deepEqual(result.data.HTTP, [{ json: { a: 1 } }]);
+  assert.deepEqual(result.data.Ghost, [{ json: { a: 1 } }]);
   assert.equal(result.warnings.length, 1);
   assert.equal(result.warnings[0].code, 'UNKNOWN_NODE_TYPE');
-  assert.equal(result.warnings[0].node, 'HTTP');
+  assert.equal(result.warnings[0].node, 'Ghost');
 });
 
 test('pre-execution failures throw WorkflowRunError, never a partial result', async () => {

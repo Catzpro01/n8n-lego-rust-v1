@@ -1,0 +1,115 @@
+{
+  "contractVersion": "p1",
+  "node": "n8n-nodes-base.httpRequest",
+  "reference": {
+    "component": "n8n packages/nodes-base/nodes/HttpRequest (V2/V3)",
+    "version": "2.9.4",
+    "upstreamCommit": "b6dc2787c45677a29a9612cd27eb911302961a83",
+    "behaviorExtracted": "authentication genericCredentialType tokens httpBearerAuth/httpHeaderAuth; bearer sends Authorization: Bearer <token>; header auth sends name -> value; request failure is an explicit error; credential value never appears in outputs",
+    "intentionalDeviations": [
+      "expressions are not evaluated (registry EXPRESSION policy) and are refused explicitly",
+      "only none/httpBearerAuth/httpHeaderAuth are implemented",
+      "network I/O only through the injected http transport seam"
+    ]
+  },
+  "authModes": ["none", "httpBearerAuth", "httpHeaderAuth"],
+  "errors": {
+    "INVALID_PARAMETERS": "HTTP_REQUEST_INVALID_PARAMETERS",
+    "CREDENTIAL_MISSING": "HTTP_REQUEST_CREDENTIAL_MISSING",
+    "CREDENTIAL_UNAUTHORIZED": "HTTP_REQUEST_CREDENTIAL_UNAUTHORIZED",
+    "CREDENTIAL_INVALID": "HTTP_REQUEST_CREDENTIAL_INVALID",
+    "CREDENTIAL_MALFORMED_REF": "HTTP_REQUEST_CREDENTIAL_MALFORMED_REF",
+    "CREDENTIAL_BROKER_FAILURE": "HTTP_REQUEST_CREDENTIAL_BROKER_FAILURE",
+    "TARGET_REQUEST_FAILURE": "HTTP_REQUEST_TARGET_REQUEST_FAILURE"
+  },
+  "secretSentinel": "P6S05-SENTINEL-SECRET-7c2d",
+  "cases": [
+    {
+      "name": "bearer-success",
+      "parameters": { "method": "GET", "url": "https://api.example.test/v1/ping", "authentication": "httpBearerAuth" },
+      "credential": { "kind": "bearer", "token": "<secretSentinel>" },
+      "transport": { "status": 200, "headers": { "content-type": "application/json" }, "body": "{\"ok\":true}" },
+      "expect": {
+        "sentRequest": { "method": "GET", "url": "https://api.example.test/v1/ping", "headers": { "Authorization": "Bearer <secretSentinel>" }, "body": null },
+        "outputJson": { "statusCode": 200, "headers": { "content-type": "application/json" }, "body": { "ok": true }, "request": { "method": "GET", "url": "https://api.example.test/v1/ping" } }
+      }
+    },
+    {
+      "name": "header-success",
+      "parameters": { "method": "POST", "url": "https://api.example.test/v1/echo", "authentication": "httpHeaderAuth", "headerName": "X-Api-Key", "sendBody": true, "body": "{\"q\":1}" },
+      "credential": { "kind": "header", "token": "<secretSentinel>" },
+      "transport": { "status": 201, "headers": { "content-type": "text/plain", "set-cookie": "session=abc; HttpOnly" }, "body": "created" },
+      "expect": {
+        "sentRequest": { "method": "POST", "url": "https://api.example.test/v1/echo", "headers": { "X-Api-Key": "<secretSentinel>" }, "body": "{\"q\":1}" },
+        "outputJson": { "statusCode": 201, "headers": { "content-type": "text/plain" }, "body": "created", "request": { "method": "POST", "url": "https://api.example.test/v1/echo" } },
+        "note": "set-cookie is stripped from output headers (sensitive response header)"
+      }
+    },
+    {
+      "name": "no-auth-success",
+      "parameters": { "method": "GET", "url": "https://api.example.test/public", "authentication": "none" },
+      "credential": null,
+      "transport": { "status": 204, "headers": {}, "body": "" },
+      "expect": {
+        "sentRequest": { "method": "GET", "url": "https://api.example.test/public", "headers": {}, "body": null },
+        "outputJson": { "statusCode": 204, "headers": {}, "body": "", "request": { "method": "GET", "url": "https://api.example.test/public" } }
+      }
+    },
+    {
+      "name": "credential-missing",
+      "parameters": { "method": "GET", "url": "https://api.example.test/v1/ping", "authentication": "httpBearerAuth" },
+      "credential": "MISSING",
+      "transport": { "status": 200, "headers": {}, "body": "" },
+      "expect": { "errorCode": "HTTP_REQUEST_CREDENTIAL_MISSING" }
+    },
+    {
+      "name": "credential-unauthorized",
+      "parameters": { "method": "GET", "url": "https://api.example.test/v1/ping", "authentication": "httpBearerAuth" },
+      "credential": "UNAUTHORIZED",
+      "transport": { "status": 200, "headers": {}, "body": "" },
+      "expect": { "errorCode": "HTTP_REQUEST_CREDENTIAL_UNAUTHORIZED" }
+    },
+    {
+      "name": "credential-invalid",
+      "parameters": { "method": "GET", "url": "https://api.example.test/v1/ping", "authentication": "httpBearerAuth" },
+      "credential": { "kind": "bearer", "token": "" },
+      "transport": { "status": 200, "headers": {}, "body": "" },
+      "expect": { "errorCode": "HTTP_REQUEST_CREDENTIAL_INVALID" }
+    },
+    {
+      "name": "credential-malformed-ref",
+      "parameters": { "method": "GET", "url": "https://api.example.test/v1/ping", "authentication": "httpBearerAuth" },
+      "credential": "MALFORMED_REF",
+      "transport": { "status": 200, "headers": {}, "body": "" },
+      "expect": { "errorCode": "HTTP_REQUEST_CREDENTIAL_MALFORMED_REF" }
+    },
+    {
+      "name": "broker-failure",
+      "parameters": { "method": "GET", "url": "https://api.example.test/v1/ping", "authentication": "httpBearerAuth" },
+      "credential": "BROKER_FAILURE",
+      "transport": { "status": 200, "headers": {}, "body": "" },
+      "expect": { "errorCode": "HTTP_REQUEST_CREDENTIAL_BROKER_FAILURE" }
+    },
+    {
+      "name": "target-request-failure",
+      "parameters": { "method": "GET", "url": "https://api.example.test/v1/ping", "authentication": "httpBearerAuth" },
+      "credential": { "kind": "bearer", "token": "<secretSentinel>" },
+      "transport": "NETWORK_ERROR",
+      "expect": { "errorCode": "HTTP_REQUEST_TARGET_REQUEST_FAILURE" }
+    },
+    {
+      "name": "invalid-url",
+      "parameters": { "method": "GET", "url": "not-a-url", "authentication": "none" },
+      "credential": null,
+      "transport": { "status": 200, "headers": {}, "body": "" },
+      "expect": { "errorCode": "HTTP_REQUEST_INVALID_PARAMETERS" }
+    },
+    {
+      "name": "invalid-auth-mode",
+      "parameters": { "method": "GET", "url": "https://api.example.test/v1/ping", "authentication": "httpDigestAuth" },
+      "credential": null,
+      "transport": { "status": 200, "headers": {}, "body": "" },
+      "expect": { "errorCode": "HTTP_REQUEST_INVALID_PARAMETERS" }
+    }
+  ]
+}
