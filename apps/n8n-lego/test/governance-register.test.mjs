@@ -585,11 +585,16 @@ test('declared checkpoints move realtime progress and never slice completion or 
   const liveSlice = clone().programs.find((program) => program.id === 'P5').slices.find((slice) => slice.id === 'P5-M08');
   assert.equal(completionContribution(liveSlice), 100);
   assert.equal(sliceDeliveryProgress(liveSlice).percent, 100);
-  // The delta is compared ROUNDED, not by subtracting a decimal from a float: `91.1 - 0.2` is
-  // 90.90000000000001 in IEEE-754, so an exact equality here fails for a reason that has
-  // nothing to do with the fixture. The claim is that reopening CP-05 costs exactly its
-  // 0.2 points and moves nothing else.
-  const realtimeDelta = Math.round((before.current.realtime - headlineMetrics(open).current.realtime) * 10) / 10;
+  // The delta is the TRUE points cost of CP-05 rounded once (percent1 semantics). Subtracting
+  // two already-rounded realtime levels is a measurement bug: where the two halves fall on a
+  // rounding boundary depends on where the register's earned total happens to sit, so an
+  // unrelated checkpoint addition (a new slice declaring its model) moves that value while the
+  // fixture has not changed at all. The claim is unchanged and asserted directly: reopening
+  // CP-05 removes exactly its 30 points, leaves the denominator alone, and costs 0.2 realtime
+  // points at the declared denominator.
+  assert.equal(before.current.earned - openMetrics.earned, 30, 'the fixture removes exactly CP-05 weight points');
+  assert.equal(openMetrics.points, before.current.points, 'the denominator does not move');
+  const realtimeDelta = Math.round(((before.current.earned - openMetrics.earned) / before.current.points) * 100 * 10) / 10;
   assert.equal(realtimeDelta, 0.2, 'the fixture only moves P5-M08 realtime');
 
   const rendered = renderReadmeMilestoneSection(done);

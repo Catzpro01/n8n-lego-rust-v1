@@ -18,8 +18,8 @@
         "parameters": {}
       },
       {
-        "name": "HTTP Request",
-        "type": "n8n-nodes-base.httpRequest",
+        "name": "Not A Real Node",
+        "type": "n8n-nodes-base.notARealNode",
         "typeVersion": 4,
         "parameters": {}
       },
@@ -35,14 +35,14 @@
         "main": [
           [
             {
-              "node": "HTTP Request",
+              "node": "Not A Real Node",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "HTTP Request": {
+      "Not A Real Node": {
         "main": [
           [
             {

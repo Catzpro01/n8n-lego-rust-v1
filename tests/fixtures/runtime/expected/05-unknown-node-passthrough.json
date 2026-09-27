@@ -12,12 +12,11 @@
       "statusText": "Success"
     },
     {
-      "node": "HTTP Request",
-      "type": "n8n-nodes-base.httpRequest",
+      "node": "Not A Real Node",
+      "type": "n8n-nodes-base.notARealNode",
       "inputCount": 1,
       "outputCount": 1,
       "status": "success",
-      "nodeLabel": "HTTP Request",
       "statusText": "Success"
     },
     {
@@ -38,7 +37,7 @@
         }
       }
     ],
-    "HTTP Request": [
+    "Not A Real Node": [
       {
         "json": {
           "a": 1
@@ -56,9 +55,9 @@
   "warnings": [
     {
       "code": "UNKNOWN_NODE_TYPE",
-      "message": "node type \"n8n-nodes-base.httpRequest\" is not registered in this runtime",
-      "node": "HTTP Request",
-      "type": "n8n-nodes-base.httpRequest"
+      "message": "node type \"n8n-nodes-base.notARealNode\" is not registered in this runtime",
+      "node": "Not A Real Node",
+      "type": "n8n-nodes-base.notARealNode"
     }
   ]
 }

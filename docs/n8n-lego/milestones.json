@@ -11,14 +11,8 @@
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "f2ed63bad435db004ac3bdaf9c8cc66e91a77fb7",
-    "latestCompletedSlice": {
-      "id": "P2-S09",
-      "pr": 354,
-      "mergeSha": "edc3e9606d5741bb7bb81bfc2eb33e4dc6801545"
-    },
-    "activeSlices": [
-      "P6-S05"
-    ],
+    "latestCompletedSlice": { "id": "P2-S09", "pr": 354, "mergeSha": "edc3e9606d5741bb7bb81bfc2eb33e4dc6801545" },
+    "activeSlices": ["P6-S05"],
     "verifyingSlices": [],
     "plannedQueue": [
       "P2-S10",
@@ -49,8 +43,8 @@
       "P5-M06",
       "P5-M10"
     ],
-    "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt REQ-0003 = DEC-0028-adjacent v5 authorization): P6-S05 (in-progress, delivery PR), P8-S01 storage contract foundation (section 13 priority 2), P5-M02 runtime credential integration unblock via the P6-S05 canonical chain (sections 6-7), P5-M05 multi-host state (section 10), P5-M11..P5-M18 backing models one by one (sections 11-12), P5-M10 audit after the v1 API (section 12), P5-M06 password recovery with provider-neutral injected mail transport (section 13 + DEC-0028 option A, ACTIVE), P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). DEC-0028 is ACTIVE (option A-injected-transport, decidedBy OWNER): P5-M06 must use a provider-neutral injected mail transport, no vendor lock-in.",
-    "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE \u2014 implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY \u2014 evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
+    "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt REQ-0003 sections 6 and 13): P6-S05 (in-progress, delivery PR); P8-S01 storage contract foundation (priority 2); P5-M02 runtime credential integration unblock via the P6-S05 canonical chain (sections 6-7); P5-M05 multi-host state (section 10); P5-M11..P5-M18 backing models one by one (sections 11-12); P5-M10 audit after the v1 API (section 12); P5-M06 password recovery with provider-neutral injected mail transport (section 13 + DEC-0028 option A, ACTIVE); P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). DEC-0028 is ACTIVE (option A-injected-transport, decidedBy OWNER): P5-M06 must use a provider-neutral injected mail transport, no vendor lock-in.",
+    "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
   },
   "governance": {
     "anchorIssue": 256,
@@ -74,23 +68,9 @@
       "roadmapOwnsStatus": false,
       "pendingReconciliation": "A milestone change that exists only on arena-manager, a local worktree, a handoff, an issue, a PR body or chat is a proposal (pending reconciliation), never authoritative truth. A PR proposes a milestone state; only the merged state on main is authoritative.",
       "rule": "Milestone truth is main-owned. A milestone design found or developed in Manager memory becomes authoritative only when reconciled into main through a PR. arena-manager is not an alternate milestone authority, and its docs/ tree is a stale snapshot that is never copied over main.",
-      "postMergeSequence": [
-        "delivery PR",
-        "merge to main",
-        "post-merge verification",
-        "register status and evidence update",
-        "README milestone projection (generated)",
-        ".ai regeneration",
-        "governance PR",
-        "merge governance PR",
-        "final main verification"
-      ],
+      "postMergeSequence": ["delivery PR", "merge to main", "post-merge verification", "register status and evidence update", "README milestone projection (generated)", ".ai regeneration", "governance PR", "merge governance PR", "final main verification"],
       "noBatching": "Nothing is batched into a later roadmap cleanup. A delivery-state change (planned -> in-progress at slice start, in-progress -> implemented, a split or a new blocker) is recorded by the next governance PR; every evidenced progress event is recorded immediately in its own governance(progress): commit, because the repository is the live project monitor (DEC-0021).",
-      "projections": [
-        "README.md (block between the milestone-governance markers, written by npm run lego:ai)",
-        ".ai/master/MILESTONE_REGISTER.md",
-        ".ai/master/CURRENT_STATUS.md"
-      ]
+      "projections": ["README.md (block between the milestone-governance markers, written by npm run lego:ai)", ".ai/master/MILESTONE_REGISTER.md", ".ai/master/CURRENT_STATUS.md"]
     },
     "programStatusVocabulary": [
       "complete",
@@ -164,23 +144,11 @@
       "futurePrograms": "Future programs stay visible and are excluded from the current-delivery denominator",
       "legacyImplementedWithoutCheckpoints": 100,
       "noCheckpointModel": 0,
-      "completionCounts": [
-        "implemented"
-      ],
-      "activeDenominatorExcludes": [
-        "superseded",
-        "retired",
-        "rejected"
-      ],
+      "completionCounts": ["implemented"],
+      "activeDenominatorExcludes": ["superseded", "retired", "rejected"],
       "examplesAreNotMeasurements": "Illustrations of the status/progress split are not register measurements and must not be copied into slice checkpoints.",
       "checkpointModel": {
-        "statuses": [
-          "planned",
-          "in-progress",
-          "completed",
-          "blocked",
-          "skipped"
-        ],
+        "statuses": ["planned", "in-progress", "completed", "blocked", "skipped"],
         "weightRule": "Weights are positive integers declared once per slice and sum to 100. They come from the slice's declared scope, never from an estimate of effort.",
         "evidenceRule": "A completed checkpoint names evidence. A blocked checkpoint names a blocker. A skipped checkpoint names a reason. A completed checkpoint without evidence is rejected by the validator.",
         "progressRule": "The generator sums the weights of completed checkpoints. Status and progress are two axes. A blocked checkpoint keeps the points already earned and never resets progress to 0.",
@@ -201,7 +169,7 @@
         "scope": "checkpoint progress, checkpoint status, checkpoint evidence, current checkpoint, slice progress, program progress, overall progress, the milestone evidence of a slice still in flight, the README progress dashboard and the generated .ai milestone / current-status projections",
         "deliveryState": "A slice status becoming implemented, with its merge SHA and completion evidence, is delivery state: it is reconciled through the normal governance PR after post-merge verification, never through a telemetry commit",
         "authority": "The Manager may reconcile these paths straight to protected main in a governance(progress): commit. No governance PR is required for telemetry, because the repository is the live project monitor.",
-        "forbidden": "source code, tests, runtime behaviour, API, frontend, backend, contract and schema implementation, dependency and package changes, Rust code, CI workflows, security policy, permissions, infrastructure, database schema and production configuration \u2014 those still go through a delivery PR",
+        "forbidden": "source code, tests, runtime behaviour, API, frontend, backend, contract and schema implementation, dependency and package changes, Rust code, CI workflows, security policy, permissions, infrastructure, database schema and production configuration — those still go through a delivery PR",
         "noBatching": "One measurable event is one commit. Live progress is never batched until a slice ends.",
         "neverBypasses": "DEC-0014 and DEC-0015 completion gates. 100% realtime progress with a 0% completion contribution is a legitimate state, and only implemented moves Slice Completion.",
         "deliveryPath": "implementation -> delivery PR -> merge to main -> post-merge verification -> canonical reconciliation (one governance PR: status, merge SHA, evidence, pointer, projections)",
@@ -313,8 +281,7 @@
         "ci": "7/7",
         "postMergeVerification": "fresh clone of main fc54c8c2: gates 7/7, backend 2397/2397, frontend 452 (451 pass, 0 fail, 1 pre-existing skip), certification selftest exit 0, 0 dirty files"
       }
-    },
-    "recordedAt": "2026-09-27T00:00:00Z"
+    }
   },
   "strategicRoadmap": {
     "source": "apps/n8n-lego/src/lego/manifest/ai-lego-set.json",
@@ -556,7 +523,7 @@
         "agent2Interpretation": "Agent 2 corrected the backend manifest, made session close semantics executable for completed/failed/cancelled outcomes, added declarative transition coverage, and verified the focused backend surface at 18/18.",
         "reason": "The final backend correction closes the identified backend-owned vocabulary discrepancy. A correct cross-agent rerun against the Agent 1 tree at c5ff5870 and Agent 2 fa18ba76 is 66/68 because two Agent 1 assertions still expect the historical registered divergence; Agent 1 must fetch/review and refresh its own evidence. No backend implementation item remains dangling.",
         "requiredDecision": "Manager must still resolve XA-20 publication/locking semantics and perform RECONCILIATION PASS, then MERGE PASS against protected main. XA-21 remains open; its 4,096 KB pin must not be edited.",
-        "blockingTest": "N8N_BACKEND_LEGO_ROOT=/home/user/n8n-rust-v.4/apps/n8n-lego/src/lego node --test packages/frontend-lego/test/29-alignment.test.mjs packages/frontend-lego/test/32-context-session.test.mjs packages/frontend-lego/test/33-milestones.test.mjs \u2014 68 tests, 66 pass, 2 fail; failures are the Agent 1 historical divergence assertions after the backend correction.",
+        "blockingTest": "N8N_BACKEND_LEGO_ROOT=/home/user/n8n-rust-v.4/apps/n8n-lego/src/lego node --test packages/frontend-lego/test/29-alignment.test.mjs packages/frontend-lego/test/32-context-session.test.mjs packages/frontend-lego/test/33-milestones.test.mjs — 68 tests, 66 pass, 2 fail; failures are the Agent 1 historical divergence assertions after the backend correction.",
         "historicalSuperseded": {
           "preFinalBackendCorrection": "The earlier 68/68 result was before fa18ba76 and is not the final backend-correction rerun.",
           "originalConflict": "The earlier 63/68 result is superseded by Agent 1 publication adaptation and is not current alignment evidence."
@@ -726,7 +693,7 @@
         "explicit provider boundary (InMemoryProvider, replaceable)",
         "scope isolation and sensitive-data rejection",
         "backend tests and contract locks",
-        "frontend contract consumption (quoted vocabulary, publication state, refusals) \u2014 no redefinition"
+        "frontend contract consumption (quoted vocabulary, publication state, refusals) — no redefinition"
       ],
       "implementationBoundary": "Memory survives context replacement, scope-isolated and provider-replaceable. Four operations only: remember/recall/list/forget. No vector search, no embedding, no model/Provider dependency, no transcript store, no automatic retention expiry, no memory-to-context auto-injection, no Workspace/MCP/Runtime. Context and Session remain independent.",
       "nonScope": [
@@ -796,13 +763,13 @@
         "baseline": "67e638ef83028bbc69876e2e768181415c7554fa",
         "conflict": "The reconciliation is resolved on this branch, which is now the single P2.14 merge candidate. (1) Both branches ADDed packages/frontend-lego/test/34-memory.test.mjs: the frontend suite is kept and agent-2's unique registry coverage is folded into it as one test; the fixed \"locked @ 1.0.0 / IMPLEMENTED\" assertion was not carried over, because the .ai matrix is generated per tree and that value is false on a tree whose lock carries no ai.memory row. (2) The backend contribution was consumed byte-identical from the frozen branch (git diff against 2dcd8570 for those paths: empty), while agent-2's sandbox recapture of docs/n8n-lego/evidence/frontend-boundary-p25.json was deliberately not consumed: the pinned protected-main artifact (blob 07f93d8f) is what this branch carries.",
         "contract": "ai.memory@1.0.0 is locked exactly once (one contract-lock row, version 1.0.0) with four operations and two permissions, and is quoted verbatim by the frontend. XA-12 remains open-for-manager for the deferred relevance-ranked traversal, edge creation and retention enforcement; the bounded surface does not resolve it and claims no persistence of its own.",
-        "evidence": "agent-2 (frozen): arena/01a0c90d-n8n-rust-v-4 @ 2dcd8570 \u2014 manifest/memory.json, memory.mjs, the ai.memory capability in domains.json and ai-foundation.json, the ai.memory@1.0.0 contract-lock row, the product-manifest LEGO row, apps/n8n-lego/test/lego-memory.test.mjs. agent-1: arena/01a0c90c-n8n-rust-v-4 @ ea7c956f, the reconciliation commit and the consumption commit that carry the frontend consumption, the reconciled register and this evidence.",
+        "evidence": "agent-2 (frozen): arena/01a0c90d-n8n-rust-v-4 @ 2dcd8570 — manifest/memory.json, memory.mjs, the ai.memory capability in domains.json and ai-foundation.json, the ai.memory@1.0.0 contract-lock row, the product-manifest LEGO row, apps/n8n-lego/test/lego-memory.test.mjs. agent-1: arena/01a0c90c-n8n-rust-v-4 @ ea7c956f, the reconciliation commit and the consumption commit that carry the frontend consumption, the reconciled register and this evidence.",
         "agent": "agent-1 + agent-2",
-        "agent1Interpretation": "Agent-1 consumes the published contract \u2014 nine quoted sets, four operations, two permissions, publication state and refusals \u2014 redefines nothing, and reports the collision instead of resolving it alone. Its reconciliation pass folds in the peer registry coverage and writes the register once.",
+        "agent1Interpretation": "Agent-1 consumes the published contract — nine quoted sets, four operations, two permissions, publication state and refusals — redefines nothing, and reports the collision instead of resolving it alone. Its reconciliation pass folds in the peer registry coverage and writes the register once.",
         "agent2Interpretation": "Agent-2 published ai.memory@1.0.0, locked it, registered the capability under ai-foundation and proved the backend surface with 20 tests, including the code/manifest/lock coupling.",
         "reason": "No contract value diverges between the branches and no backend item is dangling: the frozen contribution is consumed without modification, so P2.14 arrives on protected main through one merge.",
-        "requiredDecision": "Manager MERGE PASS on PR #48, which is self-contained: the frozen backend contribution is already consumed, the test/34 collision is resolved, the register is reconciled and the pinned boundary artifact is preserved \u2014 so no cross-branch conflict resolution is needed. Regenerate the .ai pack only if the merge itself changes manifests, then verify protected main post-merge. XA-12 and XA-21 are untouched.",
-        "blockingTest": "npm run lego:ai:check, then node --test packages/frontend-lego/test/29-alignment.test.mjs packages/frontend-lego/test/32-context-session.test.mjs packages/frontend-lego/test/33-milestones.test.mjs packages/frontend-lego/test/34-memory.test.mjs apps/n8n-lego/test/lego-memory.test.mjs \u2014 all on this branch and again on protected main after the merge.",
+        "requiredDecision": "Manager MERGE PASS on PR #48, which is self-contained: the frozen backend contribution is already consumed, the test/34 collision is resolved, the register is reconciled and the pinned boundary artifact is preserved — so no cross-branch conflict resolution is needed. Regenerate the .ai pack only if the merge itself changes manifests, then verify protected main post-merge. XA-12 and XA-21 are untouched.",
+        "blockingTest": "npm run lego:ai:check, then node --test packages/frontend-lego/test/29-alignment.test.mjs packages/frontend-lego/test/32-context-session.test.mjs packages/frontend-lego/test/33-milestones.test.mjs packages/frontend-lego/test/34-memory.test.mjs apps/n8n-lego/test/lego-memory.test.mjs — all on this branch and again on protected main after the merge.",
         "owner": "manager",
         "historicalRecord": {
           "verdict": "RECONCILIATION_REQUIRED",
@@ -810,13 +777,13 @@
           "affected": "ai.memory, Memory frontend vocabulary, capability registry, contract lock, milestone register, packages/frontend-lego/test/34-memory.test.mjs (same-path add on both branches), docs/n8n-lego/evidence/frontend-boundary-p25.json (agent-2 carried a variant that is NOT consumed)",
           "conflict": "The reconciliation is resolved on this branch, which is now the single P2.14 merge candidate. (1) Both branches ADDed packages/frontend-lego/test/34-memory.test.mjs: the frontend suite is kept and agent-2's unique registry coverage is folded into it as one test; the fixed \"locked @ 1.0.0 / IMPLEMENTED\" assertion was not carried over, because the .ai matrix is generated per tree and that value is false on a tree whose lock carries no ai.memory row. (2) The backend contribution was consumed byte-identical from the frozen branch (git diff against 2dcd8570 for those paths: empty), while agent-2's sandbox recapture of docs/n8n-lego/evidence/frontend-boundary-p25.json was deliberately not consumed: the pinned protected-main artifact (blob 07f93d8f) is what this branch carries.",
           "contract": "ai.memory@1.0.0 is locked exactly once (one contract-lock row, version 1.0.0) with four operations and two permissions, and is quoted verbatim by the frontend. XA-12 remains open-for-manager for the deferred relevance-ranked traversal, edge creation and retention enforcement; the bounded surface does not resolve it and claims no persistence of its own.",
-          "evidence": "agent-2 (frozen): arena/01a0c90d-n8n-rust-v-4 @ 2dcd8570 \u2014 manifest/memory.json, memory.mjs, the ai.memory capability in domains.json and ai-foundation.json, the ai.memory@1.0.0 contract-lock row, the product-manifest LEGO row, apps/n8n-lego/test/lego-memory.test.mjs. agent-1: arena/01a0c90c-n8n-rust-v-4 @ ea7c956f, the reconciliation commit and the consumption commit that carry the frontend consumption, the reconciled register and this evidence.",
+          "evidence": "agent-2 (frozen): arena/01a0c90d-n8n-rust-v-4 @ 2dcd8570 — manifest/memory.json, memory.mjs, the ai.memory capability in domains.json and ai-foundation.json, the ai.memory@1.0.0 contract-lock row, the product-manifest LEGO row, apps/n8n-lego/test/lego-memory.test.mjs. agent-1: arena/01a0c90c-n8n-rust-v-4 @ ea7c956f, the reconciliation commit and the consumption commit that carry the frontend consumption, the reconciled register and this evidence.",
           "agent": "agent-1 + agent-2",
-          "agent1Interpretation": "Agent-1 consumes the published contract \u2014 nine quoted sets, four operations, two permissions, publication state and refusals \u2014 redefines nothing, and reports the collision instead of resolving it alone. Its reconciliation pass folds in the peer registry coverage and writes the register once.",
+          "agent1Interpretation": "Agent-1 consumes the published contract — nine quoted sets, four operations, two permissions, publication state and refusals — redefines nothing, and reports the collision instead of resolving it alone. Its reconciliation pass folds in the peer registry coverage and writes the register once.",
           "agent2Interpretation": "Agent-2 published ai.memory@1.0.0, locked it, registered the capability under ai-foundation and proved the backend surface with 20 tests, including the code/manifest/lock coupling.",
           "reason": "No contract value diverges between the branches and no backend item is dangling: the frozen contribution is consumed without modification, so P2.14 arrives on protected main through one merge.",
-          "requiredDecision": "Manager MERGE PASS on PR #48, which is self-contained: the frozen backend contribution is already consumed, the test/34 collision is resolved, the register is reconciled and the pinned boundary artifact is preserved \u2014 so no cross-branch conflict resolution is needed. Regenerate the .ai pack only if the merge itself changes manifests, then verify protected main post-merge. XA-12 and XA-21 are untouched.",
-          "blockingTest": "npm run lego:ai:check, then node --test packages/frontend-lego/test/29-alignment.test.mjs packages/frontend-lego/test/32-context-session.test.mjs packages/frontend-lego/test/33-milestones.test.mjs packages/frontend-lego/test/34-memory.test.mjs apps/n8n-lego/test/lego-memory.test.mjs \u2014 all on this branch and again on protected main after the merge.",
+          "requiredDecision": "Manager MERGE PASS on PR #48, which is self-contained: the frozen backend contribution is already consumed, the test/34 collision is resolved, the register is reconciled and the pinned boundary artifact is preserved — so no cross-branch conflict resolution is needed. Regenerate the .ai pack only if the merge itself changes manifests, then verify protected main post-merge. XA-12 and XA-21 are untouched.",
+          "blockingTest": "npm run lego:ai:check, then node --test packages/frontend-lego/test/29-alignment.test.mjs packages/frontend-lego/test/32-context-session.test.mjs packages/frontend-lego/test/33-milestones.test.mjs packages/frontend-lego/test/34-memory.test.mjs apps/n8n-lego/test/lego-memory.test.mjs — all on this branch and again on protected main after the merge.",
           "owner": "manager"
         },
         "resolution": {
@@ -848,7 +815,7 @@
           "passed": 95,
           "failed": 0,
           "skipped": 1,
-          "notes": "the one skip asserts the OTHER tree \u2014 a tree that publishes no ai.memory row; the publication comparisons now run for real because this branch consumes the frozen contribution"
+          "notes": "the one skip asserts the OTHER tree — a tree that publishes no ai.memory row; the publication comparisons now run for real because this branch consumes the frozen contribution"
         },
         "frontendFull": {
           "command": "node --test packages/frontend-lego/test/*.test.mjs",
@@ -865,7 +832,7 @@
           "passed": 474,
           "failed": 3,
           "skipped": 0,
-          "notes": "the three failures are the node-catalog REST suites (types/nodes.json, node-versions, node-types) \u2014 the catalog is not committed; the same three fail on a pristine protected-main archive and on the frozen branch",
+          "notes": "the three failures are the node-catalog REST suites (types/nodes.json, node-versions, node-types) — the catalog is not committed; the same three fail on a pristine protected-main archive and on the frozen branch",
           "failure": "GET /rest/types/nodes.json, GET /rest/types/node-versions.json, POST /rest/node-types"
         },
         "mergedTreeSimulation": {
@@ -886,7 +853,7 @@
         "scaleOut": "lego:scaleout OK",
         "bootPayload": "18,126 bytes, byte-identical (pinned by test/34); the XA-21 4,096 KB pin was not edited and was not re-measured in this pass",
         "preExistingFailures": "the three node-catalog REST suites listed above; reproduced on a pristine protected-main archive, reported and never relabelled as new",
-        "subLegoAudit": "NOT RUN \u2014 ModuleNotFoundError: yaml in this sandbox; reported as unmeasured, never as PASS"
+        "subLegoAudit": "NOT RUN — ModuleNotFoundError: yaml in this sandbox; reported as unmeasured, never as PASS"
       }
     },
     {
@@ -1026,18 +993,18 @@
           "failed": 0,
           "notes": "The catalog-backed run reproduces the CI environment; the no-catalog local run has only the known node-catalog fixture failures."
         },
-        "contractLock": "PASS \u2014 exactly one ai.workspace@1.0.0 row; total locked rows 19; exports and focused test are real",
-        "capabilityRegistry": "PASS \u2014 workspace.boundary is implemented with four call operations, two permissions and no execute operation",
-        "frontendAlignment": "PASS \u2014 canonical frontend workspace catalog, vocabulary provenance and backend declaration alignment",
-        "aiFreshness": "PASS \u2014 npm run lego:ai:check; generated pack 64, curated 37, total .ai 101",
-        "architecture": "PASS \u2014 lego:arch and lego:arch:selftest 26/26",
-        "foundation": "PASS \u2014 lego:foundation and lego:foundation:selftest 15/15",
-        "capabilities": "PASS \u2014 lego:capabilities",
-        "scaleOut": "PASS \u2014 lego:scaleout; no new process-local coupling",
-        "bootPayload": "PASS \u2014 capture retained pinned P2.5 payload at 18,126 JSON bytes; Workspace is not in boot payload",
+        "contractLock": "PASS — exactly one ai.workspace@1.0.0 row; total locked rows 19; exports and focused test are real",
+        "capabilityRegistry": "PASS — workspace.boundary is implemented with four call operations, two permissions and no execute operation",
+        "frontendAlignment": "PASS — canonical frontend workspace catalog, vocabulary provenance and backend declaration alignment",
+        "aiFreshness": "PASS — npm run lego:ai:check; generated pack 64, curated 37, total .ai 101",
+        "architecture": "PASS — lego:arch and lego:arch:selftest 26/26",
+        "foundation": "PASS — lego:foundation and lego:foundation:selftest 15/15",
+        "capabilities": "PASS — lego:capabilities",
+        "scaleOut": "PASS — lego:scaleout; no new process-local coupling",
+        "bootPayload": "PASS — capture retained pinned P2.5 payload at 18,126 JSON bytes; Workspace is not in boot payload",
         "bootEvidence": "PASS on the existing pinned artifact; temporary recapture was environment-limited by absent editor UI dependency and historical heap probe, with no artifact overwrite",
-        "subLegoAudit": "ENVIRONMENT_BLOCKED \u2014 tools/sublego-audit/audit.py requires unavailable Python yaml module; never reported as PASS",
-        "p214Regression": "PASS \u2014 Memory/Context/Session suites, XA-12, XA-21 and pinned frontend boundary artifact preserved",
+        "subLegoAudit": "ENVIRONMENT_BLOCKED — tools/sublego-audit/audit.py requires unavailable Python yaml module; never reported as PASS",
+        "p214Regression": "PASS — Memory/Context/Session suites, XA-12, XA-21 and pinned frontend boundary artifact preserved",
         "preExistingFailures": "The initial no-catalog backend invocation showed four node-catalog route failures because catalog fixtures were absent; catalog-backed rerun passed all 498 tests. Workflow isolation fast gate remains pre-existing environment-blocked by missing workflow-lego dependencies and was not changed.",
         "ci": "PR #49 core checks passed, including catalog-backed unit/integration, backend architecture, runtime, clean-clone smoke, Rust untouched and Windows portability; queued laptop jobs were runner-capacity delayed when the delegated merge occurred."
       }
@@ -1087,7 +1054,7 @@
       },
       "finishEvidence": {
         "protectedMain": "f21882233c1f4efc5bfb8f3e1b5e1ad4db781d7d",
-        "mergeEvidence": "PR #52 (P2.16 Agent Machine 1.1.0) merged to protected main with merge_method=merge on 2026-09-23; post-merge \u00a714 verification PASS on f2188223 (1 lock row / 9 ops / 5 perms / 23 exports / 8 states / 19 fields / no close / XA-21 unchanged / no P2.17 runtime leak)"
+        "mergeEvidence": "PR #52 (P2.16 Agent Machine 1.1.0) merged to protected main with merge_method=merge on 2026-09-23; post-merge §14 verification PASS on f2188223 (1 lock row / 9 ops / 5 perms / 23 exports / 8 states / 19 fields / no close / XA-21 unchanged / no P2.17 runtime leak)"
       },
       "currentCommitReference": "f21882233c1f4efc5bfb8f3e1b5e1ad4db781d7d",
       "nextMilestone": "P2.17",
@@ -1108,7 +1075,7 @@
       },
       "verificationEvidence": {
         "local": "focused + full backend/frontend suites and all lego gates executed in this workspace (debug evidence)",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner; local post-merge verification on f2188223 PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner; local post-merge verification on f2188223 PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.16-1.1.0-RE-DERIVED-EVIDENCE.md",
         "postMerge": "PASS on protected main f2188223: gates 7/7, backend 552/555, frontend 414/415, focused P2.16 57/57 + 11/11, dirty=0"
       }
@@ -1132,13 +1099,13 @@
         "6 published universal agent event types"
       ],
       "deliverables": [
-        "agent-machine-runtime.mjs \u2014 bounded local execution over the 1.1.0 contract (delegates the 9 lifecycle ops, never invents close)",
-        "\u00a719 conformance test suite for patterns, concurrency, cancellation, deadline, idempotency, backpressure, isolation, events and audit",
+        "agent-machine-runtime.mjs — bounded local execution over the 1.1.0 contract (delegates the 9 lifecycle ops, never invents close)",
+        "§19 conformance test suite for patterns, concurrency, cancellation, deadline, idempotency, backpressure, isolation, events and audit",
         "register + evidence sync; contract stays 1.1.0 frozen and ai-lego-set stays contract-only"
       ],
-      "implementationBoundary": "Bounded local runtime foundation only: level-scheduled graph execution (sequential/parallel/branch/fan-out/fan-in/join/retry via validateAgentGraph), bounded concurrency, bounded retry, deadline \u2192 budget-exhausted, dedupe-key idempotency, backpressure admission, failure isolation, cooperative cancellation, deriveAgentMachineEvents emission, bounded structured audit. DILARANG (fail-closed, no code paths): production external-agent runtime, shell/filesystem executors, credential manager, model inference, MCP, universal bridge, GitHub/Telegram integrations, provider implementations, Arena runtime, unbounded subprocess.",
+      "implementationBoundary": "Bounded local runtime foundation only: level-scheduled graph execution (sequential/parallel/branch/fan-out/fan-in/join/retry via validateAgentGraph), bounded concurrency, bounded retry, deadline → budget-exhausted, dedupe-key idempotency, backpressure admission, failure isolation, cooperative cancellation, deriveAgentMachineEvents emission, bounded structured audit. DILARANG (fail-closed, no code paths): production external-agent runtime, shell/filesystem executors, credential manager, model inference, MCP, universal bridge, GitHub/Telegram integrations, provider implementations, Arena runtime, unbounded subprocess.",
       "testsGates": [
-        "node --test test/lego-agent-machine-runtime.test.mjs (focused \u00a719)",
+        "node --test test/lego-agent-machine-runtime.test.mjs (focused §19)",
         "npm run lego:arch && npm run lego:arch:selftest",
         "npm run lego:foundation && npm run lego:foundation:selftest",
         "npm run lego:capabilities && npm run lego:scaleout",
@@ -1149,7 +1116,7 @@
         "Agent Machine contract and execution ownership"
       ],
       "completionCriteria": [
-        "runtime module + \u00a719 suite green locally",
+        "runtime module + §19 suite green locally",
         "register and evidence synced; mainBaseline tracks the P2.16 merge",
         "contract lock remains single-row 1.1.0; no close, no production runtime parts, ai-lego-set stays contract-only",
         "PUSHED to the agent branch and PR opened (merge remains Manager-ordered)"
@@ -1187,7 +1154,7 @@
       },
       "verificationEvidence": {
         "local": "pre-merge full suites + post-merge verification on 8da4d00c (focused 83/83 + 59/59, guards, target files present, 0 deletions)",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner; local verification on 8da4d00c PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner; local verification on 8da4d00c PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.17-RUNTIME-FOUNDATION-EVIDENCE.md"
       }
     },
@@ -1213,7 +1180,7 @@
         "deterministic codecs with proven round-trip determinism",
         "schema validation on entry: malformed envelopes fail closed",
         "correlation / causation / trace / deadline / cancellation / idempotency / backpressure propagation",
-        "bounded queues with declared limits \u2014 no unbounded queue anywhere",
+        "bounded queues with declared limits — no unbounded queue anywhere",
         "published kernel contract(s) extending the lego.envelope / lego.interaction conventions (no internal HTTP/broker/daemon)"
       ],
       "implementationBoundary": "Bounded, transport-neutral kernel only: deterministic encode/decode over the published envelope shape, validation on entry (fail-closed malformed), STREAM backpressure mandatory, bounded declared buffers, correlation/causation passthrough. Extends lego.envelope/lego.interaction conventions; no internal HTTP, broker or daemon; no P2.19+ scope.",
@@ -1271,7 +1238,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on b3bdaab9: 7/7 gates (ai:check, arch+26/26 selftest, foundation+15/15 selftest, capabilities, scaleout), kernel+comm 91/91, register 59/59, guards clean (agent-machine/XA-21/capabilities/crates untouched)",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner on PR #54; local post-merge on b3bdaab9 PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner on PR #54; local post-merge on b3bdaab9 PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.18-TRANSPORT-KERNEL-EVIDENCE.md"
       }
     },
@@ -1292,7 +1259,7 @@
         "audit scoping rules from the foundation vocabulary"
       ],
       "deliverables": [
-        "bounded artifact references \u2014 opaque, reference-only, no filesystem authority",
+        "bounded artifact references — opaque, reference-only, no filesystem authority",
         "fail-closed approval request/grant/deny lifecycle contract owned here (Agent Machine only carries references)",
         "low-volume architectural audit records with deterministic ids and bounded metadata",
         "artifact + approval contract publication via the contract lock (currently contract-only capabilities)"
@@ -1346,7 +1313,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on 393622e3: 7/7 gates, artifact/approval/audit 40/40, P2.17 regression 83/83, P2.18 regression 91/91, guards clean (agent-machine/XA-21/capabilities/crates/envelope/interaction untouched)",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner on PR #56; local post-merge on 393622e3 PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner on PR #56; local post-merge on 393622e3 PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.19-ARTIFACT-APPROVAL-AUDIT-EVIDENCE.md"
       }
     },
@@ -1369,7 +1336,7 @@
       ],
       "deliverables": [
         "MCP vs agent-control boundary declaration: where interoperability ends and agent control authority begins",
-        "declared state machine for permission-required / exposed / blocked \u2014 never implicit authority",
+        "declared state machine for permission-required / exposed / blocked — never implicit authority",
         "explicit permission gates",
         "fail-closed refusal of unknown servers and capabilities",
         "control plane never delegates to MCP implicitly (no transport claim)"
@@ -1427,7 +1394,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on 84337490: 7/7 gates, mcp-boundary 40/40, P2.19 40/40, P2.17 83/83, P2.18 91/91, register/alignment green, guards clean (agent-machine/XA-21/capabilities/crates/envelope/interaction/artifact/approval/audit untouched)",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner on PR #58; local post-merge on 84337490 PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner on PR #58; local post-merge on 84337490 PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.20-MCP-CONTROL-BOUNDARY-EVIDENCE.md"
       }
     },
@@ -1455,7 +1422,7 @@
         "EXTERNAL executorKind requires explicit provider support (already fail-closed in 1.1.0)",
         "harness coverage of cancel/deadline/backpressure"
       ],
-      "implementationBoundary": "Adapter seam + bounded in-process/simulated harness only: same contract, different locality \u2014 P2.16 contract tests re-run against the adapter unchanged. Adapter selection grants no shell/filesystem authority. No production scheduler, no model inference, no node portability.",
+      "implementationBoundary": "Adapter seam + bounded in-process/simulated harness only: same contract, different locality — P2.16 contract tests re-run against the adapter unchanged. Adapter selection grants no shell/filesystem authority. No production scheduler, no model inference, no node portability.",
       "testsGates": [
         "P2.16 contract tests re-run against the adapter unchanged",
         "harness covers cancel/deadline/backpressure deterministically",
@@ -1504,7 +1471,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on 7d964fd6: 7/7 gates, lego suites 722/725 (3 pre-existing rest.test 404s), P2.21 adapter 38/38, P2.16 83/83 unchanged, FE 414/415 0 fail, register/alignment green, guards clean (agent-machine/XA-21/capabilities/crates/envelope/mcp/artifact/approval/audit untouched)",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner on PR #61; local post-merge on 7d964fd6 PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner on PR #61; local post-merge on 7d964fd6 PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.21-RUNTIME-ADAPTER-HARNESS-EVIDENCE.md"
       }
     },
@@ -1575,7 +1542,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on 389c6b5d: 7/7 gates, node-portability 45/45, backend 767/770 (3 pre-existing rest.test 404s), FE 415/416 0 fail, P2.16-P2.21 slices all 0 fail, register/alignment green, guards clean (agent-machine/XA-21/capabilities/crates/envelope/errors untouched)",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner on PR #65; local post-merge on 389c6b5d PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner on PR #65; local post-merge on 389c6b5d PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.22-NODE-COMPATIBILITY-PORTABILITY-EVIDENCE.md"
       }
     },
@@ -1596,8 +1563,8 @@
         "node creator / translation scope limited to what the Master Prompt declares"
       ],
       "deliverables": [
-        "node creator scope \u2014 declared by the Master Prompt when issued",
-        "translation foundation/runtime scope \u2014 declared by the Master Prompt when issued",
+        "node creator scope — declared by the Master Prompt when issued",
+        "translation foundation/runtime scope — declared by the Master Prompt when issued",
         "consumes node.portability contract without rewriting it"
       ],
       "implementationBoundary": "Node creator + translation runtime only: consumes node.portability@1.0.0 as given. No autonomous publishing, no provider integrations, no model inference, no production distributed runtime. Refined by the Master Prompt P2.23 when issued.",
@@ -1615,7 +1582,7 @@
       ],
       "startEvidence": {
         "commit": "ab4a589821e247ed181a91b54ad8c2d39d83eeb1",
-        "role": "protected main after P2.22 completion transition \u2014 actual P2.23 start baseline (\u00a71 correction)"
+        "role": "protected main after P2.22 completion transition — actual P2.23 start baseline (§1 correction)"
       },
       "finishEvidence": {
         "protectedMain": "82f4d3056deb1c600c563840689187db082505a7",
@@ -1646,7 +1613,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on 82f4d305: 7/7 gates, lego-node-creator 35/35, backend 805/802 (3 pre-existing rest.test 404s), FE 417/416 0 fail, P2.16-P2.22 slices all 0 fail, register/alignment green, guards clean (agent-machine/XA-21/capabilities/crates/boot 18126/errors untouched)",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner on PR #67; local post-merge PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner on PR #67; local post-merge PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.23-NODE-CREATOR-TRANSLATION-EVIDENCE.md"
       }
     },
@@ -1664,13 +1631,13 @@
         "ai-foundation"
       ],
       "inputs": [
-        "XA-17 decision \u2014 which contract publishes token and cost usage",
+        "XA-17 decision — which contract publishes token and cost usage",
         "P2.13 Context & Session vocabulary (token kinds: message, modelInput, output)",
         "P2.23 node creator / translation outputs (unchanged)",
         "token & usage scope limited to what the Master Prompt declares"
       ],
       "deliverables": [
-        "token & usage accounting scope \u2014 declared by the Master Prompt when issued",
+        "token & usage accounting scope — declared by the Master Prompt when issued",
         "honest accounting: a count the source did not report is labelled estimated or not shown",
         "consumes context/session and ai-foundation contracts without rewriting them"
       ],
@@ -1719,7 +1686,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on a409d930: 7/7 gates, token-usage 26/26, backend 831/828 (3 pre-existing rest.test 404s), FE 418/417 0 fail, P2.16-P2.23 slices all 0 fail, register/alignment green, boot 18126 pin, XA-21 untouched",
-        "official": "PENDING \u2014 official validation surface remains the GitHub Actions self-hosted Windows runner on PR #69; local post-merge PASS (debug evidence, not official sign-off)",
+        "official": "PENDING — official validation surface remains the GitHub Actions self-hosted Windows runner on PR #69; local post-merge PASS (debug evidence, not official sign-off)",
         "evidencePath": "docs/n8n-lego/evidence/P2.24-TOKEN-USAGE-EVIDENCE.md"
       }
     },
@@ -1740,13 +1707,13 @@
         "XA-10 application-provider permission names decision",
         "P2.21 EXTERNAL executorKind seam (adapter, never a shell/filesystem grant)",
         "P2.24 ai.token-usage@1.0.0 accounting (unchanged)",
-        "provider configuration handed explicitly at call time \u2014 never discovered, never defaulted"
+        "provider configuration handed explicitly at call time — never discovered, never defaulted"
       ],
       "deliverables": [
         "first model provider adapter behind the declared seam",
         "first tool provider adapter",
         "first external runtime behind the P2.21 seam",
-        "AI Foundation with NO provider configured stays a valid, fully supported state \u2014 never faked inference"
+        "AI Foundation with NO provider configured stays a valid, fully supported state — never faked inference"
       ],
       "implementationBoundary": "Provider adapters only: providers are declared, not assumed; credentials are never stored by LEGO (handed per call by the operator); no standing credential authority, no autonomous publishing, no billing. Refined by the Master Prompt P2.25 when issued.",
       "testsGates": [
@@ -1784,7 +1751,7 @@
         "production distributed scheduler"
       ],
       "reconciliation": {
-        "state": "scoped at P2.25 start against protected main a409d9301247078aaadb4883dd9cb1082928ac82; title/phase/deps indicative from the P2.13 milestone-register proposal (Phase E external providers follows Token & Usage in the register ladder); the roadmap P2.25 section still diagrams Universal Agent Bridge \u2014 pre-existing planning divergence outside the P2.24 \u00a717 mandate, refined only by the Manager via this register (proposal idStatus); refined by the Master Prompt P2.25 when issued",
+        "state": "scoped at P2.25 start against protected main a409d9301247078aaadb4883dd9cb1082928ac82; title/phase/deps indicative from the P2.13 milestone-register proposal (Phase E external providers follows Token & Usage in the register ladder); the roadmap P2.25 section still diagrams Universal Agent Bridge — pre-existing planning divergence outside the P2.24 §17 mandate, refined only by the Manager via this register (proposal idStatus); refined by the Master Prompt P2.25 when issued",
         "contract": "ai.token-usage@1.0.0, node.creator@1.0.0, node.portability@1.0.0, ai.agent-machine@1.1.0, lego.transport-kernel@1.0.0, ai.mcp-boundary, XA-21 all untouched unless the prompt says otherwise",
         "owner": "agent-1",
         "historical": true,
@@ -1795,7 +1762,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on 9cc6ba889790a814cdbf23768f1d4f734306b22e: 7/7 gates, provider-adapters slice 38/38, backend 869/866 (3 pre-existing rest.test 404s), FE 419/418 0 fail, P2.16-P2.24 + P2.25 slices all 0 fail, register/alignment green, boot 18126 pin, XA-21 untouched",
-        "official": "PENDING \u2014 official validation only via the installed GitHub Actions self-hosted Windows runner on the PR",
+        "official": "PENDING — official validation only via the installed GitHub Actions self-hosted Windows runner on the PR",
         "evidencePath": "docs/n8n-lego/evidence/P2.25-EXTERNAL-PROVIDER-INTEGRATION-EVIDENCE.md"
       }
     },
@@ -1816,8 +1783,8 @@
       ],
       "inputs": [
         "readiness checklist definition (roadmap P2.26, reconciled at 94fc4352)",
-        "provider declaration profile \u2014 sim/local/cloud declared, never assumed",
-        "workspace/GitHub integration boundary \u2014 handed-over authorization only, no standing credential",
+        "provider declaration profile — sim/local/cloud declared, never assumed",
+        "workspace/GitHub integration boundary — handed-over authorization only, no standing credential",
         "XA-21 measure-report re-run requirement (readiness gate)"
       ],
       "deliverables": [
@@ -1839,7 +1806,7 @@
       ],
       "startEvidence": {
         "commit": "d15a9538b1899e9fd2ea9d5bd37d3fd26ecc1943",
-        "role": "protected main after P2.25 completion transition (baseline corrected per Master Prompt P2.26 \u00a70; 9cc6ba88 stays P2.25 implementation evidence)"
+        "role": "protected main after P2.25 completion transition (baseline corrected per Master Prompt P2.26 §0; 9cc6ba88 stays P2.25 implementation evidence)"
       },
       "finishEvidence": {
         "protectedMain": "6d70bcfb22b2cea7993d4ce42b59991528a7dc78",
@@ -1866,7 +1833,7 @@
       },
       "verificationEvidence": {
         "local": "post-merge on 6d70bcfb22b2cea7993d4ce42b59991528a7dc78: 7/7 gates, provider-declaration slice 29/29, backend 898/895 (3 pre-existing rest.test 404s), FE 419/418 0 fail, P2.16-P2.25 + P2.26 slices all 0 fail, register/alignment green, boot 18126 pin, XA-21 untouched",
-        "official": "PENDING \u2014 official validation only via the installed GitHub Actions self-hosted Windows runner on the PR",
+        "official": "PENDING — official validation only via the installed GitHub Actions self-hosted Windows runner on the PR",
         "evidencePath": "docs/n8n-lego/evidence/P2.26-PROVIDER-WORKSPACE-GITHUB-READINESS-EVIDENCE.md"
       }
     },
@@ -1878,7 +1845,7 @@
       "owner": "manager",
       "backendOwner": "per milestone assignment",
       "frontendOwner": "agent-1",
-      "purpose": "Everything that is a meaningful system boundary should be replaceable as a Plugin/LEGO; the Core remains tiny, stable, and security-critical. A plugin is an independently meaningful unit with contract, lifecycle, ownership, dependency, capability/security boundary, test boundary, and upgrade path. AUTHORIZED \u2014 dedicated P2.27 Master Prompt issued 2026-09-24; implementation proceeds in slices P2.27.0-P2.27.10.",
+      "purpose": "Everything that is a meaningful system boundary should be replaceable as a Plugin/LEGO; the Core remains tiny, stable, and security-critical. A plugin is an independently meaningful unit with contract, lifecycle, ownership, dependency, capability/security boundary, test boundary, and upgrade path. AUTHORIZED — dedicated P2.27 Master Prompt issued 2026-09-24; implementation proceeds in slices P2.27.0-P2.27.10.",
       "dependencies": [
         "P2.16 Agent Machine / execution foundation",
         "P2.17 Agent Machine Runtime Foundation",
@@ -1891,7 +1858,7 @@
         "P2.26 Provider, Workspace & GitHub Integration + Foundation Readiness"
       ],
       "inputs": [
-        "Master Prompt P2.26 \u00a7\u00a78-38 architecture reservation (Manager decision)",
+        "Master Prompt P2.26 §§8-38 architecture reservation (Manager decision)",
         "docs/n8n-lego/P2.27-PLUGIN-RUNTIME-DESIGN.md (planning-only design document, no code)",
         "P2.16-P2.26 invariant set as verified on protected main d15a9538",
         "existing seams: P2.21 runtime adapter, P2.25 provider adapters, envelope/interaction primitives",
@@ -1909,15 +1876,15 @@
         "side-by-side upgrade/rollback + supply-chain admission",
         "frontend plugin boundary (public extension points vs sandboxed frame/origin + message contract)"
       ],
-      "implementationBoundary": "AUTHORIZED by the dedicated P2.27 Master Prompt (2026-09-24): the reservation is lifted and implementation proceeds only inside P2.27 slices (P2.27.0-P2.27.10) through PRs from branch arena/p2.27-plugin-runtime \u2014 never by direct modification of protected main. In scope now: Plugin Manager/registry, Plugin Supervisor, secret/resource brokers, capability policy, plugin runtime facade, and frontend plugin boundary. Out of scope for this milestone: a full production WASM engine (locality class and admission policy are in scope), Python worker manager, plugin hot-swap beyond the slice set, and any second architecture domain (no new domains or sub-LEGOs). Core must never own workflow, execution, memory, storage implementation, AI provider implementation, Node Registry implementation, GitHub integration, Workspace business logic, translation features or credential implementation. P2.27 is the plugin runtime/security foundation \u2014 not a microservice rewrite and not a rewrite of P2.",
+      "implementationBoundary": "AUTHORIZED by the dedicated P2.27 Master Prompt (2026-09-24): the reservation is lifted and implementation proceeds only inside P2.27 slices (P2.27.0-P2.27.10) through PRs from branch arena/p2.27-plugin-runtime — never by direct modification of protected main. In scope now: Plugin Manager/registry, Plugin Supervisor, secret/resource brokers, capability policy, plugin runtime facade, and frontend plugin boundary. Out of scope for this milestone: a full production WASM engine (locality class and admission policy are in scope), Python worker manager, plugin hot-swap beyond the slice set, and any second architecture domain (no new domains or sub-LEGOs). Core must never own workflow, execution, memory, storage implementation, AI provider implementation, Node Registry implementation, GitHub integration, Workspace business logic, translation features or credential implementation. P2.27 is the plugin runtime/security foundation — not a microservice rewrite and not a rewrite of P2.",
       "nonScope": [
-        "Plugin Manager / Plugin Supervisor implementation (P2.27, future prompt) \u2014 HISTORICAL reservation wording (P2.26 era), preserved verbatim and superseded 2026-09-24: delivered by slices P2.27.2 (manifest + registry) and P2.27.7 (supervisor lifecycle + quarantine)",
-        "plugin sandbox / plugin broker / plugin runtime / WASM runtime / Python worker manager (P2.27) \u2014 HISTORICAL reservation wording (P2.26 era), preserved verbatim and superseded 2026-09-24: plugin runtime facade + locality policy landed (P2.27.1/.4) and the secret broker landed (P2.27.5); a full production WASM engine and a Python worker manager remain out of scope",
-        "plugin hot-swap / plugin rollback engine (P2.27) \u2014 HISTORICAL reservation wording (P2.26 era), preserved verbatim and superseded 2026-09-24: side-by-side upgrade + rollback landed in P2.27.9; hot-swap beyond the slice set remains out of scope",
+        "Plugin Manager / Plugin Supervisor implementation (P2.27, future prompt) — HISTORICAL reservation wording (P2.26 era), preserved verbatim and superseded 2026-09-24: delivered by slices P2.27.2 (manifest + registry) and P2.27.7 (supervisor lifecycle + quarantine)",
+        "plugin sandbox / plugin broker / plugin runtime / WASM runtime / Python worker manager (P2.27) — HISTORICAL reservation wording (P2.26 era), preserved verbatim and superseded 2026-09-24: plugin runtime facade + locality policy landed (P2.27.1/.4) and the secret broker landed (P2.27.5); a full production WASM engine and a Python worker manager remain out of scope",
+        "plugin hot-swap / plugin rollback engine (P2.27) — HISTORICAL reservation wording (P2.26 era), preserved verbatim and superseded 2026-09-24: side-by-side upgrade + rollback landed in P2.27.9; hot-swap beyond the slice set remains out of scope",
         "microservice rewrite / Kubernetes migration / full distributed scheduler",
         "full marketplace / complete third-party plugin ecosystem",
         "rewrite of all P2 components / rewrite to Rust / rewrite to Python",
-        "anything before a dedicated P2.27 Master Prompt \u2014 zero P2.27 implementation now \u2014 HISTORICAL reservation wording (P2.26 era), preserved verbatim and superseded 2026-09-24: the dedicated Master Prompt was issued 2026-09-24 and slices P2.27.0-P2.27.10 are merged and post-merge verified (finishEvidence PR #197 -> 7d4eae8d)"
+        "anything before a dedicated P2.27 Master Prompt — zero P2.27 implementation now — HISTORICAL reservation wording (P2.26 era), preserved verbatim and superseded 2026-09-24: the dedicated Master Prompt was issued 2026-09-24 and slices P2.27.0-P2.27.10 are merged and post-merge verified (finishEvidence PR #197 -> 7d4eae8d)"
       ],
       "testsGates": [
         "dedicated P2.27 test matrix (Master Prompt section 36): registry identity + duplicate rejection, contract resolution + version compatibility, capability deny-by-default + permission scope, trust class boundaries, lifecycle state machine, runtime locality policy, resource budget bounds, secret broker scoping + expiry, side-by-side upgrade + rollback, supply-chain admission rejection, supervisor quarantine, contract replay, frontend plugin boundary, plus security negative tests",
@@ -1925,9 +1892,9 @@
         "evidence recorded per slice in docs/n8n-lego/evidence/P2.27-PLUGIN-RUNTIME-EVIDENCE.md; final report per Master Prompt section 62"
       ],
       "decisionDependencies": [
-        "modules live under apps/n8n-lego/src/lego/ in domain lego-foundation (owner manager) \u2014 no new domain, no sub-LEGO (design section 7)",
+        "modules live under apps/n8n-lego/src/lego/ in domain lego-foundation (owner manager) — no new domain, no sub-LEGO (design section 7)",
         "one published contract row lego.plugin-runtime@<semver> in contracts/contract-lock.json, surface = P2.27 modules (row added with first registry slice)",
-        "error vocabulary reuses existing lego.* codes (capability_unavailable, access_denied, deadline_exceeded, backpressure, version_incompatible, operation_unsupported, unavailable, contract_violation, cancelled) \u2014 zero new error codes unless a proven gap appears",
+        "error vocabulary reuses existing lego.* codes (capability_unavailable, access_denied, deadline_exceeded, backpressure, version_incompatible, operation_unsupported, unavailable, contract_violation, cancelled) — zero new error codes unless a proven gap appears",
         "trust model is dual-axis: plugin trust classes CORE/TRUSTED/ISOLATED/SANDBOXED (design section 8) map onto foundation.json trust levels (core/verified/community/untrusted) for capability defaultGrants; foundation.json remains canonical for provenance+grants",
         "consume, never duplicate: lego.interaction providers, lego.envelope deadlines/cancellation, lego.transport-kernel envelopes, foundation trust/capability checks, ai.runtime-adapter registry, supply-chain provenance/SBOM/revocation, audit/approval artifacts"
       ],
@@ -1950,13 +1917,13 @@
       ],
       "startEvidence": {
         "commit": "d15a9538b1899e9fd2ea9d5bd37d3fd26ecc1943",
-        "role": "protected main where the P2.27 reservation was recorded during P2.26 \u2014 implementation starts only via a future P2.27 Master Prompt"
+        "role": "protected main where the P2.27 reservation was recorded during P2.26 — implementation starts only via a future P2.27 Master Prompt"
       },
       "finishEvidence": {
         "protectedMain": "7d4eae8d34f70eb03ec413486a5f5c5318048d4d",
         "pr": 197,
         "mergeCommit": "7d4eae8d34f70eb03ec413486a5f5c5318048d4d",
-        "mergeEvidence": "slices P2.27.0-P2.27.10 merged via PRs #183, #185, #186, #187, #188, #189, #190, #192, #193, #195, #197; final slice P2.27.10 (frontend boundary) and the completion point = PR #197 \u2192 7d4eae8d, post-merge verified",
+        "mergeEvidence": "slices P2.27.0-P2.27.10 merged via PRs #183, #185, #186, #187, #188, #189, #190, #192, #193, #195, #197; final slice P2.27.10 (frontend boundary) and the completion point = PR #197 → 7d4eae8d, post-merge verified",
         "role": "post-merge verified protected-main completion"
       },
       "currentCommitReference": "arena/p2.27-plugin-runtime",
@@ -1966,13 +1933,13 @@
         "owner": "manager",
         "historical": true,
         "resolution": {
-          "note": "AUTHORIZED 2026-09-24 by the dedicated P2.27 Master Prompt; implemented in slices P2.27.0-P2.27.10, each merged green on protected main and post-merge verified; finishEvidence names PR #197 \u2192 7d4eae8d. The reservation text above is preserved as history, not rewritten.",
+          "note": "AUTHORIZED 2026-09-24 by the dedicated P2.27 Master Prompt; implemented in slices P2.27.0-P2.27.10, each merged green on protected main and post-merge verified; finishEvidence names PR #197 → 7d4eae8d. The reservation text above is preserved as history, not rewritten.",
           "completedVia": "PR #197"
         }
       },
       "verificationEvidence": {
         "local": "post-merge on 7d4eae8d (dirty 0): 7/7 gates, plugin suites 130/130, backend 1791/1794 (FAIL==3 pre-existing types/nodes), frontend 418/419 (1 skipped pre-existing), contract-lock 76 rows with lego.plugin-runtime@0.10.0 zero drift, .ai regen green; every slice P2.27.0-P2.27.10 carries its own post-merge verification in docs/n8n-lego/evidence/P2.27-PLUGIN-RUNTIME-EVIDENCE.md",
-        "official": "P2.27.10 merged via PR #197 \u2192 7d4eae8d: every hard check-run green except the pre-existing Level 0 cargo-fmt (standing exception; crates/ fmt untouched); earlier slice PRs #183-#195 merged with the same standing exception, including the recorded self-hosted runner shutdown flake on #192 (rerun green)",
+        "official": "P2.27.10 merged via PR #197 → 7d4eae8d: every hard check-run green except the pre-existing Level 0 cargo-fmt (standing exception; crates/ fmt untouched); earlier slice PRs #183-#195 merged with the same standing exception, including the recorded self-hosted runner shutdown flake on #192 (rerun green)",
         "evidencePath": "docs/n8n-lego/evidence/P2.27-PLUGIN-RUNTIME-EVIDENCE.md"
       }
     },
@@ -4553,20 +4520,13 @@
               "status": "completed",
               "evidence": "DEC-0015 verification PASS on 2970f78659e8808daa89b07de5202459920bd400: Level 0 (Check & Format) on MDMTEST-n8n-wsl-4 (run 36184852788); Level 1 (Affected Tests) on MDMTEST-n8n-wsl-3 (run 36184852788); Level 2 Workspace Tests (linux) on MDMTEST-n8n-wsl (run 36184852810); Level 2 Workspace Tests (windows) on laptop-build-worker (run 36184852810); Level 2 Conformance LEGO & Node Catalog on MDMTEST-n8n-wsl-5 (run 36184852810); Post-Merge Verification & Branch Cleanup on MDMTEST-n8n-wsl (run 36185118273). Verdict ALL_GREEN (GitHub-hosted 3 pass, self-hosted 7 pass / 0 fail / 0 waiting).",
               "reference": "tools/lego/progress-event.mjs (resolve --fetch)",
-              "requires": [
-                "Level 0 (Check & Format)",
-                "Level 1 (Affected Tests)",
-                "Level 2 Workspace Tests (linux)",
-                "Level 2 Workspace Tests (windows)",
-                "Level 2 Conformance LEGO & Node Catalog",
-                "Post-Merge Verification & Branch Cleanup"
-              ],
+              "requires": ["Level 0 (Check & Format)","Level 1 (Affected Tests)","Level 2 Workspace Tests (linux)","Level 2 Workspace Tests (windows)","Level 2 Conformance LEGO & Node Catalog","Post-Merge Verification & Branch Cleanup"],
               "completedAt": "2026-09-25T20:23:35Z"
             }
           ],
           "updatedAt": "2026-09-25T20:23:35Z",
           "latestUpdate": "P5-M07: service-principal REST surface mounted (create once, redacted list, revoke tombstone, transfer rotates the credential); DEC-0023 closes the member boundary",
-          "checkpointWeightBasis": "Five declared route operations. CP-01 carries 15 for the read pair (list + scopes); CP-02 carries 25 because it is the only route that mints a credential and must enforce the whole P5.7 create policy; CP-03 carries 15 for the tombstone semantics; CP-04 carries 20 for the six transfer invariants; CP-05 carries 15 for the end-to-end proof and manifest registration; CP-06 carries 10 for the DEC-0015 runner gate. 15+25+15+20+15+10 = 100. The weights come from the scope declared in P5-M07-EVIDENCE.md \u00a71, not from effort, commit count or lines of code.",
+          "checkpointWeightBasis": "Five declared route operations. CP-01 carries 15 for the read pair (list + scopes); CP-02 carries 25 because it is the only route that mints a credential and must enforce the whole P5.7 create policy; CP-03 carries 15 for the tombstone semantics; CP-04 carries 20 for the six transfer invariants; CP-05 carries 15 for the end-to-end proof and manifest registration; CP-06 carries 10 for the DEC-0015 runner gate. 15+25+15+20+15+10 = 100. The weights come from the scope declared in P5-M07-EVIDENCE.md §1, not from effort, commit count or lines of code.",
           "mergeSha": "0845c25ff13973ccf09bda6d909be147b2681d02",
           "pr": 317,
           "issue": 85,
@@ -4628,14 +4588,7 @@
               "status": "completed",
               "evidence": "DEC-0015 verification PASS on d520a7401c792bda9e49f5b4503cdc2b414d5887: Level 0 (Check & Format) on MDMTEST-n8n-wsl-2 (run 36166949165); Level 1 (Affected Tests) on MDMTEST-n8n-wsl (run 36166949165); Level 2 Workspace Tests (linux) on MDMTEST-n8n-wsl-3 (run 36166949086); Level 2 Workspace Tests (windows) on laptop-build-worker-3 (run 36166949086); Level 2 Conformance LEGO & Node Catalog on MDMTEST-n8n-wsl-4 (run 36166949086); Post-Merge Verification & Branch Cleanup on MDMTEST-n8n-wsl-3 (run 36167178324). Verdict ALL_GREEN (GitHub-hosted 3 pass, self-hosted 7 pass / 0 fail / 0 waiting).",
               "reference": "docs/n8n-lego/evidence/P5-M08-EVIDENCE.md \u00a76; one environmental retry remains and was not spent",
-              "requires": [
-                "Level 0 (Check & Format)",
-                "Level 1 (Affected Tests)",
-                "Level 2 Workspace Tests (linux)",
-                "Level 2 Workspace Tests (windows)",
-                "Level 2 Conformance LEGO & Node Catalog",
-                "Post-Merge Verification & Branch Cleanup"
-              ],
+              "requires": ["Level 0 (Check & Format)","Level 1 (Affected Tests)","Level 2 Workspace Tests (linux)","Level 2 Workspace Tests (windows)","Level 2 Conformance LEGO & Node Catalog","Post-Merge Verification & Branch Cleanup"],
               "completedAt": "2026-09-25T17:28:30Z"
             }
           ],
@@ -5311,11 +5264,6 @@
           "title": "Minimal credential-consuming node for the SecretRef integration path (smallest consumer for P5-M02, not a native-performance node)",
           "kind": "maintenance",
           "status": "in-progress",
-          "latestUpdate": "Implemented per owner master prompt REQ-0003 section 6. Reference = n8n/n8n@2.9.4 packages/nodes-base/nodes/HttpRequest (V1/V2/V3 + GenericFunctions) and credentials HttpBearerAuth/HttpHeaderAuth, extracted at reference/n8n/. Chain proven with real mock HTTP server: workflow node -> credentialRef -> SecretRef -> P2.27 Secret Broker -> resolve -> HTTP node -> Authorization header -> server. Failure matrix explicit: missing/invalid/unauthorized/malformed/broker/target-request, plus wrong-credential-kind; no empty-success (1 item per input item). Raw secret never present in workflow JSON / execution output / error objects / warnings (sentinel P6S05-SENTINEL-SECRET-7c2d). Deviations (documented in evidence): error codes namespaced HTTP_REQUEST_* (closed set), validate-before-resolve, transport seam injected (registry stays deterministic), response shaping strips auth/set-cookie headers. Reusable credential-runtime glue (apps/n8n-lego/src/lego/credential-runtime.mjs) is the single canonical resolution path P5-M02 must use (no second path). Tests: engine 49/49 (19 new incl. 11 fixture cases in fixtures/http-request-contract.json), lego-credential-chain 15/15 (integration + negative + leak + round-trip + replay + TTL). Evidence: docs/n8n-lego/evidence/P6-S05-EVIDENCE.md. IN-PROGRESS DELIVERY: implementation+tests+evidence complete and green; merge + post-merge verification pending (implemented flip with 40-hex merge SHA lands in the delivery follow-up).",
-          "mergeSha": null,
-          "issue": 85,
-          "evidence": "docs/n8n-lego/evidence/P6-S05-EVIDENCE.md",
-          "owner": "manager (unassigned)",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -5360,15 +5308,19 @@
             {
               "id": "CP-05",
               "title": "Delivery: registry + evidence + regression + merge",
-              "purpose": "No green-only delivery: register checkpoint model, provenance evidence file (reference version, behavior extracted, scope copied, deviations, tests), full regression battery (lego 2909/2909, engine 49/49, frontend 672/672, lego:gate, isolation:check, decisions-check), PR + CI + merge + post-merge verification + pointer reconcile.",
+              "purpose": "No green-only delivery: register checkpoint model, provenance evidence file (reference version, behavior extracted, scope copied, deviations, tests), full regression battery (lego 2909/2909, engine 49/49, frontend 672/672, runtime 79/79, lego:gate, isolation:check, decisions-check), PR + CI + merge + post-merge verification + pointer reconcile.",
               "weight": 15,
               "status": "in-progress",
-              "evidence": "docs/n8n-lego/evidence/P6-S05-EVIDENCE.md; register checkpoint model; full regression battery green pre-merge (lego 2909/2909, engine 49/49, frontend 672/672, lego:gate, isolation:check, decisions-check). Merge + post-merge verification complete this checkpoint in the delivery follow-up (with the real merge SHA).",
-              "reference": "master prompt REQ-0003 section 6 completion list",
-              "completedAt": "2026-09-27T00:00:00Z"
+              "evidence": "docs/n8n-lego/evidence/P6-S05-EVIDENCE.md; register checkpoint model; full regression battery green pre-merge. Merge + post-merge verification complete this checkpoint in the delivery follow-up (with the real merge SHA).",
+              "reference": "master prompt REQ-0003 section 6 completion list"
             }
           ],
-          "updatedAt": "2026-09-27T00:00:00Z"
+          "updatedAt": "2026-09-27T00:00:00Z",
+          "latestUpdate": "Implemented in delivery PR (owner master prompt REQ-0003 section 6). Reference = n8n/n8n@2.9.4 packages/nodes-base/nodes/HttpRequest (V1/V2/V3 + GenericFunctions) and credentials HttpBearerAuth/HttpHeaderAuth, extracted at reference/n8n/. Chain proven with a real mock HTTP server: workflow node -> credentialRef -> SecretRef -> P2.27 Secret Broker -> resolve -> HTTP node -> Authorization header -> server. Failure matrix explicit: missing/invalid/unauthorized/malformed/broker/target-request plus wrong-credential-kind; no empty-success (1 item per input item). Raw secret never present in workflow JSON / execution output / error objects / warnings (sentinel P6S05-SENTINEL-SECRET-7c2d). Deviations documented in evidence: error codes namespaced HTTP_REQUEST_* (closed set), validate-before-resolve, transport seam injected (registry stays deterministic), response shaping strips auth/set-cookie headers. The reusable credential-runtime glue (apps/n8n-lego/src/lego/credential-runtime.mjs) is the single canonical resolution path P5-M02 must use (no second path). Tests: engine 49/49 (19 new incl. 11 fixture cases), lego-credential-chain 15/15 (integration + negative + leak + round-trip + replay + TTL). Evidence: docs/n8n-lego/evidence/P6-S05-EVIDENCE.md. IN-PROGRESS DELIVERY: implementation+tests+evidence complete and green; merge + post-merge verification pending (implemented flip with 40-hex merge SHA lands in the delivery follow-up).",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": "docs/n8n-lego/evidence/P6-S05-EVIDENCE.md",
+          "owner": "manager (unassigned)"
         }
       ]
     },
@@ -5383,7 +5335,7 @@
       "slices": [
         {
           "id": "P7-S01",
-          "title": "Parameter Contract & Compiler: canonical n8n parameter definitions compiled once into an immutable ParameterPlan with stable parameter identity and plan versioning (#223 \u00a74-6, \u00a731, \u00a742 P7.1)",
+          "title": "Parameter Contract & Compiler: canonical n8n parameter definitions compiled once into an immutable ParameterPlan with stable parameter identity and plan versioning (#223 §4-6, §31, §42 P7.1)",
           "kind": "slice",
           "status": "implemented",
           "latestUpdate": "Implemented: DEC-0015 back-fill closed - the self-hosted checks that were WAITING_RUNNER on head 71510167 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe) were re-run against the merged main head and passed 11/11 on back-fill PR #348 (head 03cbf7f79fbafcb3e12675affadfa982d6f28caa, closed unmerged). GitHub-hosted checks were 3/3 green on the original PR #334 head 71510167; merged to main as 8aedbfa2 and re-verified locally (backend 2755/2755, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0). Evidence: docs/n8n-lego/evidence/P7-S01-EVIDENCE.md.",
@@ -5396,7 +5348,7 @@
         },
         {
           "id": "P7-S02",
-          "title": "Visibility & Dependency Graph: displayOptions visibility engine, parameter dependency graph, incremental recomputation of only affected fields, expression boundary (#223 \u00a77-10, \u00a742 P7.2)",
+          "title": "Visibility & Dependency Graph: displayOptions visibility engine, parameter dependency graph, incremental recomputation of only affected fields, expression boundary (#223 §7-10, §42 P7.2)",
           "kind": "slice",
           "status": "implemented",
           "latestUpdate": "Implemented: DEC-0015 back-fill closed - the self-hosted checks that were WAITING_RUNNER on head 3d1dcd02 (Level 0, Level 1, Level 2 linux / windows / Conformance, Windows portability probe) were re-run against the merged main head and passed 11/11 on back-fill PR #348 (head 03cbf7f79fbafcb3e12675affadfa982d6f28caa, closed unmerged). GitHub-hosted checks were 3/3 green on the original PR #336 head 3d1dcd02; merged to main as d58dfaeb and re-verified locally (backend 2769/2769, frontend 451, lego:ai:check / arch / foundation / capabilities / scaleout exit 0). Evidence: docs/n8n-lego/evidence/P7-S02-EVIDENCE.md.",
@@ -5409,7 +5361,7 @@
         },
         {
           "id": "P7-S03",
-          "title": "Local Validation & Normalization: schema validation, normalization, failure vocabulary and the immutable execution-ready parameter snapshot with canonical vs derived representation (#223 \u00a720-21, \u00a727, \u00a729-30, \u00a742 P7.3)",
+          "title": "Local Validation & Normalization: schema validation, normalization, failure vocabulary and the immutable execution-ready parameter snapshot with canonical vs derived representation (#223 §20-21, §27, §29-30, §42 P7.3)",
           "kind": "slice",
           "status": "implemented",
           "checkpoints": [
@@ -5469,7 +5421,7 @@
         },
         {
           "id": "P7-S04",
-          "title": "Dynamic Options Runtime: /rest/dynamic-node-parameters options, bounded dynamic cache classes with stale-while-revalidate, dependent-field race protection, request coalescing, provider backpressure and resource budgets (#223 \u00a711, \u00a714-16, \u00a723-26, \u00a734, \u00a742 P7.4)",
+          "title": "Dynamic Options Runtime: /rest/dynamic-node-parameters options, bounded dynamic cache classes with stale-while-revalidate, dependent-field race protection, request coalescing, provider backpressure and resource budgets (#223 §11, §14-16, §23-26, §34, §42 P7.4)",
           "kind": "slice",
           "status": "implemented",
           "checkpoints": [
@@ -5529,7 +5481,7 @@
         },
         {
           "id": "P7-S05",
-          "title": "Resource Locator & Search: resourceLocator modes, list search with pagination and search (#223 \u00a712-13, \u00a742 P7.5)",
+          "title": "Resource Locator & Search: resourceLocator modes, list search with pagination and search (#223 §12-13, §42 P7.5)",
           "kind": "slice",
           "status": "implemented",
           "checkpoints": [
@@ -5589,7 +5541,7 @@
         },
         {
           "id": "P7-S06",
-          "title": "Credential-Aware Resolution: credential/security composition through scoped SecretRefs and security-sensitive dynamic values that never leak into caches, snapshots or logs (#223 \u00a718, \u00a728, \u00a742 P7.6)",
+          "title": "Credential-Aware Resolution: credential/security composition through scoped SecretRefs and security-sensitive dynamic values that never leak into caches, snapshots or logs (#223 §18, §28, §42 P7.6)",
           "kind": "slice",
           "status": "implemented",
           "checkpoints": [
@@ -5649,7 +5601,7 @@
         },
         {
           "id": "P7-S07",
-          "title": "Plugin/Provider Runtime Boundary: provider boundary, capability boundary, provider-backed schema, community node compatibility, plugin, storage and observability boundaries (#223 \u00a717, \u00a719, \u00a722, \u00a732-33, \u00a735-36, \u00a742 P7.7)",
+          "title": "Plugin/Provider Runtime Boundary: provider boundary, capability boundary, provider-backed schema, community node compatibility, plugin, storage and observability boundaries (#223 §17, §19, §22, §32-33, §35-36, §42 P7.7)",
           "kind": "slice",
           "status": "implemented",
           "checkpoints": [
@@ -5709,7 +5661,7 @@
         },
         {
           "id": "P7-S08",
-          "title": "Differential Certification: differential oracle against pinned n8n-workflow 2.9.1, negative/security test matrix and the low-resource performance target (#223 \u00a737-38, \u00a740-41, \u00a742 P7.8)",
+          "title": "Differential Certification: differential oracle against pinned n8n-workflow 2.9.1, negative/security test matrix and the low-resource performance target (#223 §37-38, §40-41, §42 P7.8)",
           "kind": "slice",
           "status": "implemented",
           "checkpoints": [
