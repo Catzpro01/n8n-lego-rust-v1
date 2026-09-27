@@ -12,10 +12,9 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "09ebface85ff8078dfcf5ff666f345b5925570cb",
     "latestCompletedSlice": { "id": "P2-S06", "pr": 347, "mergeSha": "b3aba7284e37f2365c7689ae53c854d3802b2faf" },
-    "activeSlices": [],
+    "activeSlices": ["P2-S07"],
     "verifyingSlices": [],
     "plannedQueue": [
-      "P2-S07",
       "P2-S08",
       "P2-S09",
       "P2-S10",
@@ -2734,46 +2733,56 @@
           "id": "P2-S07",
           "title": "Node picker/catalog (Layer 3 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "planned",
+          "status": "in-progress",
           "checkpoints": [
             {
               "id": "CP-01",
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Node picker/catalog surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the palette search, category browsing and node-type selection the editor shows when adding a node; closed node-type vocabulary handed over from the node catalog. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-node-picker.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "Hand-over boundary and closed contract pinned by the boundary and closed-vocabulary tests in test/44-node-picker.test.mjs (rows enter only through loadSuccess(); unknown shape/category refused; contract states == REGION_STATES exactly; filtered-to-zero is empty/filtered, no fifth state). See docs/n8n-lego/evidence/P2-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-27T10:45:00Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Node picker/catalog surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "ui.nodes.picker upgraded to pilot-available / contractStatus consuming / rollbackStrategy pilot-not-primary in manifest/surface-migrations.json; node-picker capability declared in manifest/capabilities.json with degradation fallback native-behavior. Pinned by the manifest tests in test/44-node-picker.test.mjs. See docs/n8n-lego/evidence/P2-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-27T10:45:00Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Node picker/catalog surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "All four region states parity-equivalent to deterministic reference fixtures through compareObservations; a drifted field is migration-required and an incomparable observation throws (fail-closed). Pinned by the four-state parity, drift and fail-closed tests in test/44-node-picker.test.mjs. See docs/n8n-lego/evidence/P2-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-27T10:45:00Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Node picker/catalog surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "NODE_PICKER_A11Y derives the a11y intent once so contract and rendered attributes cannot drift; only error is aria-live assertive, only loading is aria-busy. Pinned by the derive-once and assertive/busy exclusivity tests in test/44-node-picker.test.mjs. See docs/n8n-lego/evidence/P2-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-27T10:45:00Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Node picker/catalog surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "maxVisible default 20 with hard max 50 and observable truncation; the query filter is an observable mutation (narrow/clear); failure is explicit (error region + refresh retry; loadFailure requires an error object); selection returns the closed selected/unknown-id/not-ready vocabulary. Pinned by the bounds, query, failure and selection tests in test/44-node-picker.test.mjs. See docs/n8n-lego/evidence/P2-S07-EVIDENCE.md.",
+              "completedAt": "2026-09-27T10:45:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T09:30:00Z",
-          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "updatedAt": "2026-09-27T10:45:00Z",
+          "latestUpdate": "In-progress: P2-S07 delivers the node picker/catalog pilot (first P2-S03 Layer 3 strangler slice) as a bounded, query-filterable view-model; node types are handed over through loadSuccess() only, the surface never fetches the node catalog, and the original editor stays the default path. Five checkpoints completed with evidence in test/44-node-picker.test.mjs and docs/n8n-lego/evidence/P2-S07-EVIDENCE.md. Promotion to implemented follows the merge (DEC-0014).",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,

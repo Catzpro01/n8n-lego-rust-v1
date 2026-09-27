@@ -458,6 +458,35 @@
       "phase": "P2-S03",
       "owner": "agent-01",
       "notes": "P2-S03 Layer 3: the third strangler slice, a bounded and status-filterable view-model of the executions page list. Rows are handed over (the surface never fetches /rest/executions, so it holds no private data path to the execution catalog). The four region states reuse REGION_STATES; filtering to zero is `empty` with reason `filtered`, not a fifth state. Opening an execution is a declared interaction, never executed. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
+      "id": "node-picker",
+      "lego": "ui-frontend",
+      "title": "Node picker / catalog pilot (palette search, closed categories, bounded)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/node-picker.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "node-picker"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "node-menu",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n node picker remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/44-node-picker.test.mjs"
+      ],
+      "phase": "P2-S07",
+      "owner": "agent-01",
+      "notes": "P2-S07 Layer 3: the strangler slice for the node picker palette, a bounded and query-filterable view-model. Node types are handed over (the surface never fetches the node catalog, so it holds no private data path). The four region states reuse REGION_STATES; filtering to zero is empty with reason filtered, not a fifth state. Selecting a node type is a declared interaction with a closed result vocabulary, never executed silently. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     }
   ]
 }
