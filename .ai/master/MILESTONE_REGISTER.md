@@ -7,7 +7,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 ## Delivery progress (same two metrics as README.md)
 
-**Realtime Delivery Progress 82.5%** — 16000/19400 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 14 current-delivery slice(s) have no checkpoint model and contribute 0.
+**Realtime Delivery Progress 83.0%** — 16100/19400 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 13 current-delivery slice(s) have no checkpoint model and contribute 0.
 
 **Slice Completion 82.5%** — 160/194 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
@@ -18,7 +18,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | P2 | 65.0% | 65.0% | 39/60 | complete |
 | P3 | 100.0% | 100.0% | 18/18 | complete |
 | P4 | 100.0% | 100.0% | 10/10 | complete |
-| P5 | 65.4% | 65.4% | 17/26 | complete |
+| P5 | 69.2% | 65.4% | 17/26 | complete |
 | P6 | 94.4% | 94.4% | 34/36 | complete |
 | P7 | 100.0% | 100.0% | 8/8 | in-progress |
 | P8 | 100.0% | 100.0% | 7/7 | planned |
@@ -31,9 +31,9 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | | |
 | --- | --- |
 | Latest completed slice | `P5-M11` — Project / sharing backing model (PR #358, merge `3cb5d356`) |
-| Active slices | — (none) |
+| Active slices | `P5-M12` — Audit backing model |
 | Verifying (merged, post-merge verification pending) | — (none) |
-| Planned queue (in order; planned ≠ authorized) | `P5-M12`, `P5-M13`, `P5-M14`, `P5-M15`, `P5-M16`, `P5-M17`, `P5-M18`, `P5-M06`, `P2-S10`, `P2-S11`, `P2-S12`, `P2-S13`, `P2-S14`, `P2-S15`, `P2-S16`, `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
+| Planned queue (in order; planned ≠ authorized) | `P5-M13`, `P5-M14`, `P5-M15`, `P5-M16`, `P5-M17`, `P5-M18`, `P5-M06`, `P2-S10`, `P2-S11`, `P2-S12`, `P2-S13`, `P2-S14`, `P2-S15`, `P2-S16`, `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
 | Blocked | `P2-S03` — blocked by Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped.<br>`P5-M10` — blocked by Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped. |
 | Not authorized | planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). |
 | Historical P2 ladder pointer | `P2.27` (history, not active work) |
@@ -48,7 +48,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 39/60 | 29 | `P2-S10` (planned) |
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
-| **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 17/26 | 20 | `P5-M06` (planned) |
+| **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 17/26 | 20 | `P5-M12` (in-progress) |
 | **P6** | Node Registry / Node Runtime | **COMPLETE** | 34/36 | 67 | — |
 | **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 8/8 | 29 | — |
 | **P8** | Storage / Data Layer | **PLANNED** | 7/7 | 5 | — |
@@ -407,7 +407,7 @@ Identity, sessions, authorization, credential boundary, key management, account 
 | `P5-M09` | Public /api/v1 credentials (list, create, update, delete, schema; secrets never returned, data validated against the credential type) and users (list, get, create, delete, change role), plus /api/v1/docs (needs a decision on serving Swagger UI without a runtime dependency). Split out of P5-M08 | implemented | — | `c13ba6dc` | #85 |
 | `P5-M10` | Public /api/v1 resources that need a backing model this product does not have yet: projects, audit, source-control, data-tables, workflow and credential transfer, workflow versions, execution retry, execution tags (upstream AnnotationTag). Blocked until those models exist; split out of P5-M08 **Blocked by:** Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped. | blocked | — | — | #85 |
 | `P5-M11` | Project / sharing backing model (P5-M10-A): project, membership and share records for /api/v1/projects | implemented | #358 | `3cb5d356` | — |
-| `P5-M12` | Audit backing model (P5-M10-B): security-audit event generation and store for /api/v1/audit | planned | — | — | #85 |
+| `P5-M12` | Audit backing model (P5-M10-B): security-audit event generation and store for /api/v1/audit | in-progress | — | — | #85 |
 | `P5-M13` | Source-control backing model (P5-M10-C): repository/branch/changeset records for /api/v1/source-control | planned | — | — | #85 |
 | `P5-M14` | Data-table backing model (P5-M10-D): column/row store for /api/v1/data-tables | planned | — | — | #85 |
 | `P5-M15` | Workflow/credential transfer backing model (P5-M10-E): export bundles and transfer records | planned | — | — | #85 |
