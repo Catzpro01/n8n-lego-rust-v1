@@ -2,11 +2,11 @@
   "schemaVersion": "1.0",
   "objectType": "Decision",
   "objectId": "DEC-0028",
-  "revision": 1,
+  "revision": 2,
   "createdAt": "2026-09-27T00:48:45Z",
-  "updatedAt": "2026-09-27T00:48:45Z",
+  "updatedAt": "2026-09-27T15:20:00Z",
   "events": [],
-  "state": "PROPOSED",
+  "state": "ACTIVE",
   "category": "ARCHITECTURE",
   "title": "PROPOSAL (awaiting OWNER authorization): P5-M06 mail transport as an injected MailTransport contract, no bundled SMTP client dependency",
   "problem": "P5-M06 (email-based password recovery) is blocked on 'a mail-transport architecture decision (a dependency, or an injected transport contract); Node has no built-in SMTP'. DEC-0026 recorded the Manager's preferred answer as if the OWNER had decided it, and was revoked (INVALID_AUTHORITY) per REQ-0002 section 15: architecture choices need explicit OWNER authority. This record is the properly-scoped replacement: a MANAGER PROPOSAL with evidence and options, in state PROPOSED. It decides nothing until the OWNER authorizes or rejects it.",
@@ -43,7 +43,7 @@
     ]
   },
   "authority": {
-    "decidedBy": "UNDECIDED",
+    "decidedBy": "OWNER",
     "managerOnly": false,
     "humanEscalation": true,
     "proposedBy": "MANAGER-01"
@@ -74,5 +74,13 @@
     "promotedAt": null,
     "promotedBy": null
   },
-  "reason": null
+  "reason": {
+    "code": "OWNER_AUTHORIZATION_GROUNDING",
+    "summary": "Promoted PROPOSED -> ACTIVE on explicit owner direction in master prompt REQ-0005 (2026-09-27), authorized item 8: P5-M06 password recovery with a provider-neutral injected mail transport contract, without vendor lock-in and without selecting an external provider as a mandatory dependency. That instruction selects option A (injected transport) as the architecture; option B (external SMTP provider) remains an optional injectable binding, never a mandatory dependency.",
+    "actor": "OWNER (Arena user master prompt REQ-0005)",
+    "refs": [
+      "REQ-0005 section 1 item 8",
+      "REQ-0005 section 13"
+    ]
+  }
 }
