@@ -516,6 +516,35 @@
       "phase": "P2-S08",
       "owner": "agent-01",
       "notes": "P2-S08 Layer 3: the strangler slice for the editor host chrome around the canvas - the name/tags/active-state header and workflow-level actions panel. The workflow record is handed over read-only (the surface never fetches /rest/workflows/:id and never mutates workflow data; rename/activate are declared interactions returning a closed result vocabulary). The canvas/editor rewrite stays out of scope (issue #241). Four region states reuse REGION_STATES; tag chips are bounded. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
+      "id": "credentials",
+      "lego": "ui-frontend",
+      "title": "Credentials list pilot (bounded, visibility-filterable, values never on the surface)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/credentials.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "credentials"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "validation-errors",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n credentials page remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/46-credentials.test.mjs"
+      ],
+      "phase": "P2-S09",
+      "owner": "agent-01",
+      "notes": "P2-S09: the strangler slice for the credentials list surface. Rows are handed over as identity metadata only - credential values never reach the surface (a value-bearing row is refused with an explicit security error; the P5/P2.27 envelope and the value-entry editor stay with the reference UI and the credential runtime). The four region states reuse REGION_STATES; visibility filtering to zero is empty with reason filtered, not a fifth state. Create/delete/share are declared interactions with a closed result vocabulary, never executed silently. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }

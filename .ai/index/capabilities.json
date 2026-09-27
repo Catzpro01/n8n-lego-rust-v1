@@ -288,6 +288,21 @@
         "workflow-editor"
       ],
       "operations": []
+    },
+    {
+      "id": "credentials",
+      "lego": "ui-frontend",
+      "title": "Credentials list pilot (bounded, visibility-filterable, values never on the surface)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "credentials"
+      ],
+      "operations": []
     }
   ],
   "registered": [],
