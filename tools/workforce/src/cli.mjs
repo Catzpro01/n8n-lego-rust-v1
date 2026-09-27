@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Matrix trigger: DEC-0027 requires the full DEC-0015 matrix on the exact head being merged, so this governance PR carries a no-op code touch (docs-only diffs are paths-ignored by Level 0/1/2) to run every required check here. No behavior.
+// Matrix trigger (see DEC-0027): docs-only governance diffs are paths-ignored by Level 0/1/2, so this no-op comment forces the full required matrix on the exact head being merged. No behavior.
 // Governance CLI (DEC-0019: the Manager executes every task; there is no task-distribution engine).
 //
 //   node tools/workforce/src/cli.mjs <command>

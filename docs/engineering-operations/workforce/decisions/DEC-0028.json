@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "objectType": "Decision",
+  "objectId": "DEC-0028",
+  "revision": 1,
+  "createdAt": "2026-09-27T00:48:45Z",
+  "updatedAt": "2026-09-27T00:48:45Z",
+  "events": [],
+  "state": "PROPOSED",
+  "category": "ARCHITECTURE",
+  "title": "PROPOSAL (awaiting OWNER authorization): P5-M06 mail transport as an injected MailTransport contract, no bundled SMTP client dependency",
+  "problem": "P5-M06 (email-based password recovery) is blocked on 'a mail-transport architecture decision (a dependency, or an injected transport contract); Node has no built-in SMTP'. DEC-0026 recorded the Manager's preferred answer as if the OWNER had decided it, and was revoked (INVALID_AUTHORITY) per REQ-0002 section 15: architecture choices need explicit OWNER authority. This record is the properly-scoped replacement: a MANAGER PROPOSAL with evidence and options, in state PROPOSED. It decides nothing until the OWNER authorizes or rejects it.",
+  "options": [
+    {
+      "id": "A-injected-transport",
+      "summary": "Manager-recommended: define MailTransport as an injected host contract in the repo's standard split (pure values in, frozen values out; the host does the IO). The product ships no SMTP client and no mail-provider SDK. P5-M06 sends recovery mail by calling the injected transport; tests use a recording fake transport; operators wire SMTP or provider-API adapters outside the product bundle."
+    },
+    {
+      "id": "B-bundled-smtp-dependency",
+      "summary": "Bundle a mature SMTP client dependency and own the SMTP conversation, TLS, auth and retry inside the product."
+    },
+    {
+      "id": "C-provider-sdk",
+      "summary": "Bundle one mail provider's HTTP SDK and send mail through that provider's API."
+    }
+  ],
+  "selectedOption": "A-injected-transport",
+  "rationale": "selectedOption records the Manager's RECOMMENDED option on this PROPOSAL; it is NOT a decision. decidedBy is UNDECIDED and state is PROPOSED: only the OWNER may accept or change the selection when authorizing this record. The Manager's recommendation is option A, for these reasons, offered as evidence for the owner's choice: (1) every contract in the codebase uses the same split - pure values in, frozen values out, the host does the IO - and mail transport is host IO; (2) the repo is deliberately dependency-averse (the catalog fetcher exists to avoid a 70 MB dependency tree the runtime never executes), and an SMTP client would add TLS, auth and retry machinery the product would then own; (3) option C is the same IO problem with vendor lock-in; (4) an injected transport is fully testable in CI via a recording fake transport; (5) operators keep freedom to run SMTP, a provider API, or a corporate relay without a product release. Scope wall: this proposal covers the transport question only; the recovery flow remains P5-M06 delivery work and must not be started while the slice is blocked and unauthorized (REQ-0002 sections 15, 19, 20).",
+  "scope": {
+    "programs": [
+      "P5",
+      "GOVERNANCE"
+    ],
+    "slices": [
+      "P5-M06"
+    ],
+    "domains": [
+      "auth.identity",
+      "credentials"
+    ],
+    "surfaces": [
+      "/rest/forgot-password"
+    ]
+  },
+  "authority": {
+    "decidedBy": "UNDECIDED",
+    "managerOnly": false,
+    "humanEscalation": true,
+    "proposedBy": "MANAGER-01"
+  },
+  "evidence": [],
+  "evidenceRefs": [
+    "docs/engineering-operations/workforce/decisions/DEC-0026.json (revoked predecessor, INVALID_AUTHORITY)",
+    "docs/n8n-lego/milestones.json (P5-M06 blockedBy text: the decision this awaits)",
+    "docs/n8n-lego/evidence/P5.8-CERTIFICATION-EVIDENCE.md section 7 (P5-M06 debt source)",
+    "REQ-0002 (owner master prompt 2026-09-27): sections 15 (authority rule), 19 (owner-decision blockers get proposals), 20 (planned is not authorized)"
+  ],
+  "sources": {
+    "issues": [
+      85
+    ],
+    "prs": [],
+    "commits": [],
+    "requests": [
+      "REQ-0002"
+    ]
+  },
+  "supersedes": "DEC-0026",
+  "supersededBy": null,
+  "promotion": {
+    "canonical": false,
+    "mainPath": "docs/engineering-operations/workforce/decisions/DEC-0028.json",
+    "mainCommitSha": null,
+    "promotedAt": null,
+    "promotedBy": null
+  },
+  "reason": null
+}

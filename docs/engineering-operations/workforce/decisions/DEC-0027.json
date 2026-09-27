@@ -2,9 +2,9 @@
   "schemaVersion": "1.0",
   "objectType": "Decision",
   "objectId": "DEC-0027",
-  "revision": 1,
+  "revision": 2,
   "createdAt": "2026-09-26T23:53:08Z",
-  "updatedAt": "2026-09-26T23:53:08Z",
+  "updatedAt": "2026-09-27T00:48:45Z",
   "events": [],
   "state": "ACTIVE",
   "category": "MERGE",
@@ -25,7 +25,7 @@
     }
   ],
   "selectedOption": "A-retire",
-  "rationale": "Option A follows the established supersession chain (DEC-0010 -> DEC-0017 -> DEC-0019): a temporary decision whose condition ended is retired by a successor decision, not deleted, so the history stays readable (C is history erasure and would remove the record of why a temporary gate existed). B would leave standing permission to merge without required checks whenever a runner stalls, which conflicts with the rule that every required check must be success on the current head and with the WAITING_RUNNER-is-never-PASS discipline of DEC-0015; a future outage is handled by a fresh, explicit temporary decision scoped to that outage, not by a dormant license. The merge gate from this point on is the full DEC-0015 matrix (Level 0, Level 1, Level 2 linux/windows, Conformance, Windows worker portability probe) plus the GitHub-hosted checks, on the exact head being merged.",
+  "rationale": "Option A follows the established supersession chain (DEC-0010 -> DEC-0017 -> DEC-0019): a temporary decision whose condition ended is retired by a successor decision, not deleted, so the history stays readable (C is history erasure and would remove the record of why a temporary gate existed). B would leave standing permission to merge without required checks whenever a runner stalls, which conflicts with the rule that every required check must be success on the current head and with the WAITING_RUNNER-is-never-PASS discipline of DEC-0015; a future outage is handled by a fresh, explicit temporary decision scoped to that outage, not by a dormant license. The merge gate from this point on is the full DEC-0015 matrix (Level 0, Level 1, Level 2 linux/windows, Conformance, Windows worker portability probe) plus the GitHub-hosted checks, on the exact head being merged. AUTHORITY GROUNDING (revision 2, REQ-0002 section 15 clarification): this record does not create merge-gate policy. Its authority rests on explicit owner instruction and on the owner decisions it merely restores: (1) the retirement procedure itself is the owner's documented instruction (REQ-0002 section 17: an expired temporary decision goes ACTIVE -> SUPERSEDED with a successor DEC carrying supersedes, supersededBy, reason and condition-end evidence); (2) the gate that comes back into force is DEC-0015's standing owner policy, unchanged; (3) DEC-0025's own terms scoped it to 'while the self-hosted runner fleet is offline', so its expiry follows from its wording plus the condition-end evidence (9/9 on PR #347 head ca128f56; DEC-0015 back-fill 11/11 on PR #348). The Manager selected no policy option here; decidedBy OWNER reflects the owner instruction and owner policy being restored, not a Manager-made choice attributed to the owner.",
   "scope": {
     "programs": [
       "GOVERNANCE"
@@ -67,5 +67,14 @@
     "promotedAt": null,
     "promotedBy": null
   },
-  "reason": null
+  "reason": {
+    "code": "AUTHORITY_GROUNDING",
+    "summary": "revision 2: authority explicitly grounded on REQ-0002 section 17 (owner-instructed retirement procedure) and on DEC-0015/DEC-0025's own owner terms; no new policy chosen by the Manager.",
+    "actor": "MANAGER-01",
+    "refs": [
+      "REQ-0002 (owner master prompt 2026-09-27, sections 15, 17)",
+      "docs/engineering-operations/workforce/decisions/DEC-0015.json",
+      "docs/engineering-operations/workforce/decisions/DEC-0025.json"
+    ]
+  }
 }

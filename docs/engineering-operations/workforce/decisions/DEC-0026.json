@@ -2,11 +2,11 @@
   "schemaVersion": "1.0",
   "objectType": "Decision",
   "objectId": "DEC-0026",
-  "revision": 1,
+  "revision": 2,
   "createdAt": "2026-09-26T23:53:08Z",
-  "updatedAt": "2026-09-26T23:53:08Z",
+  "updatedAt": "2026-09-27T00:48:45Z",
   "events": [],
-  "state": "ACTIVE",
+  "state": "REVOKED",
   "category": "ARCHITECTURE",
   "title": "P5-M06 mail transport is an injected MailTransport contract: the product ships no SMTP client dependency",
   "problem": "P5-M06 (email-based password recovery, split out of P5-M03, upstream /rest/forgot-password over the P5 reset-token primitive) is blocked on exactly one thing: 'a mail-transport architecture decision (a dependency, or an injected transport contract); Node has no built-in SMTP'. The P5 reset-token primitive already covers token issue and verification; the open question is only how the recovery mail leaves the process. Bundling an SMTP client is a dependency decision; leaving the question open blocks the slice indefinitely. This decision answers the transport question so P5-M06 can be planned.",
@@ -73,5 +73,13 @@
     "promotedAt": null,
     "promotedBy": null
   },
-  "reason": null
+  "reason": {
+    "code": "INVALID_AUTHORITY",
+    "summary": "Revoked by authority remediation (REQ-0002 owner master prompt section 15): this record was written as ACTIVE with decidedBy OWNER, but the mail-transport architecture choice is a Manager-made selection, not an owner decision - no owner instruction chose among the options. Section 15 forbids claiming decidedBy OWNER on that basis. History is preserved (revocation preserves history, #265 section 15); the substance is re-proposed as DEC-0028 in state PROPOSED, awaiting OWNER authorization.",
+    "actor": "MANAGER-01",
+    "refs": [
+      "REQ-0002 (owner master prompt 2026-09-27, section 15)",
+      "docs/engineering-operations/workforce/decisions/DEC-0028.json"
+    ]
+  }
 }
