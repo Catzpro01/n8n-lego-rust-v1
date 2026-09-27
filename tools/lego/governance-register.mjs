@@ -377,6 +377,72 @@ export function inActiveCompletionTotal(slice) {
   return true;
 }
 
+/* ------------------------------------------------- progress accounting (PPA)
+ * Global accounting repair 2026-09-28 (evidence:
+ * docs/n8n-lego/evidence/PROGRESS-ACCOUNTING-AUDIT.md). Rules, derived from the
+ * canonical schema only - no parallel counters:
+ *
+ * PPA-1 AGGREGATE PARENTS. A row that other rows name as `parentSlice` is an
+ *   aggregate of its children (its pr/mergeSha is the children's delivery, so
+ *   counting both parent and children would count one delivery twice). The
+ *   aggregate parent is EXCLUDED from the progress denominator; the children
+ *   are the counted leaves. A row may opt back in with an explicit
+ *   `countedInProgress: true`, or out with `countedInProgress: false`.
+ * PPA-2 every other row is a leaf and is counted exactly once (ids unique;
+ *   range/rollup rows like `P2.1-P2.4` are the sole representation of their
+ *   historical milestones and count once).
+ * PPA-3 VERIFIED is a tracked subset of implemented: a row carrying a 40-hex
+ *   `postMergeVerified` verification SHA. The completion numerator stays
+ *   `implemented` (DEC-0014/0015): post-merge verification is the R1 GATE for
+ *   reaching implemented (updateRule), not a second competing numerator.
+ * PPA-4 shared deliveries (several rows with one pr/mergeSha) are legitimate
+ *   multi-item PRs when the scopes differ; only the aggregate case (PPA-1)
+ *   double counts.
+ */
+
+/** Ids of aggregate parent rows within this slice list (PPA-1). */
+export function aggregateParentIds(slices) {
+  const parents = new Set(slices.map((slice) => slice?.parentSlice).filter(Boolean));
+  for (const slice of slices) {
+    if (slice?.countedInProgress === true) parents.delete(slice.id);
+  }
+  return parents;
+}
+
+/** The accounting role of one row: aggregate-parent | excluded-explicit | leaf. */
+export function progressRoleOf(slice, aggregates) {
+  if (slice?.countedInProgress === false) return 'excluded-explicit';
+  if (aggregates.has(slice?.id)) return 'aggregate-parent';
+  return 'leaf';
+}
+
+/** The rows that take part in progress: active leaves only (PPA-1/PPA-2). */
+export function accountingRows(slices) {
+  const aggregates = aggregateParentIds(slices);
+  return slices.filter((slice) => inActiveCompletionTotal(slice) && progressRoleOf(slice, aggregates) === 'leaf');
+}
+
+/** The rows excluded from the denominator, each with its explicit reason (PPA-1). */
+export function excludedRows(slices) {
+  const aggregates = aggregateParentIds(slices);
+  return slices
+    .filter((slice) => !inActiveCompletionTotal(slice) || progressRoleOf(slice, aggregates) !== 'leaf')
+    .map((slice) => ({
+      id: slice.id,
+      reason: !inActiveCompletionTotal(slice)
+        ? `status ${slice.status} is outside the active denominator`
+        : progressRoleOf(slice, aggregates) === 'aggregate-parent'
+          ? 'aggregate parent of its parentSlice children (delivery represented by the children)'
+          : 'explicit countedInProgress: false',
+    }));
+}
+
+/** Verified subset (PPA-3): implemented rows carrying a 40-hex verification SHA. */
+const VERIFICATION_SHA = /^[0-9a-f]{40}$/;
+export function isVerifiedRow(slice) {
+  return slice?.status === 'implemented' && VERIFICATION_SHA.test(String(slice?.postMergeVerified ?? ''));
+}
+
 export function percent1(numerator, denominator) {
   if (!denominator) return 0;
   return Math.round((numerator / denominator) * 1000) / 10;
@@ -575,7 +641,7 @@ export function completionContribution(slice) {
 }
 
 export function completionTally(slices) {
-  const counted = slices.filter(inActiveCompletionTotal);
+  const counted = accountingRows(slices);
   const implemented = counted.filter(countsTowardCompletion).length;
   const byStatus = {};
   for (const slice of counted) byStatus[slice.status] = (byStatus[slice.status] ?? 0) + 1;
@@ -589,7 +655,7 @@ export function completionTally(slices) {
 
 function deliverySummary(slices) {
   const tally = completionTally(slices);
-  const active = slices.filter(inActiveCompletionTotal);
+  const active = accountingRows(slices);
   const progress = active.map((slice) => sliceDeliveryProgress(slice));
   const earned = progress.reduce((sum, item) => sum + item.earned, 0);
   const points = progress.reduce((sum, item) => sum + item.total, 0);
@@ -624,6 +690,40 @@ export function programTally(entity, verifying) {
     proposed: slices.filter((slice) => slice.status === 'proposed').length,
     remaining: summary.total - summary.implemented,
   };
+}
+
+/**
+ * The deterministic per-program accounting breakdown (progress-accounting
+ * repair, evidence docs/n8n-lego/evidence/PROGRESS-ACCOUNTING-AUDIT.md).
+ * Every counted item is listed by id; every non-counted item carries an
+ * explicit reason. No manual numbers anywhere.
+ */
+export function accountingBreakdown(register) {
+  const records = sliceRecords(register);
+  const all = records.map((record) => record.slice);
+  const aggregates = aggregateParentIds(all);
+  const programs = [];
+  for (const entity of [...(register.programs ?? []), ...(register.futurePrograms ?? [])]) {
+    const rows = entity.slices ?? [];
+    const counted = rows.filter((slice) => inActiveCompletionTotal(slice) && progressRoleOf(slice, aggregates) === 'leaf');
+    const tally = completionTally(rows);
+    programs.push(Object.freeze({
+      id: entity.id,
+      future: (register.futurePrograms ?? []).includes(entity),
+      totalRows: rows.length,
+      counted: tally.total,
+      implemented: tally.implemented,
+      verified: rows.filter(isVerifiedRow).length,
+      inProgress: rows.filter((slice) => slice.status === 'in-progress').length,
+      planned: rows.filter((slice) => slice.status === 'planned').length,
+      blocked: rows.filter((slice) => slice.status === 'blocked').length,
+      unauthorized: rows.filter((slice) => slice.status === 'proposed').length,
+      percent: tally.percent,
+      countedIds: Object.freeze(counted.map((slice) => slice.id)),
+      excluded: Object.freeze(excludedRows(rows)),
+    }));
+  }
+  return Object.freeze({ programs: Object.freeze(programs), global: completionTally(all) });
 }
 
 function tallyLine(tally) {

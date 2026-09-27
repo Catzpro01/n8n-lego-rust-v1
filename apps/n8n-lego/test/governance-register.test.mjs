@@ -12,7 +12,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
+import { accountingRows,
   validateGovernanceRegister, TOP_LEVEL_PROGRAMS, EXPECTED_PROGRAM_STATUS, LEGACY_FUTURE_MILESTONES, countBy,
   README_MARKERS, renderReadmeMilestoneSection, syncReadmeMilestoneSection,
   completionTally, sliceRecords, percent1, completionPercentForStatus, displayStatus, verifyingIndex,
@@ -418,8 +418,12 @@ test('README projection lists current state, P5 ladder, recent slices and future
 test('completion KPI is implemented/total and never counts verifying or blocked', () => {
   const slices = sliceRecords(REGISTER).map((record) => record.slice);
   const tally = completionTally(slices);
-  assert.equal(tally.implemented, slices.filter((slice) => slice.status === 'implemented').length);
-  assert.equal(tally.total, slices.length);
+  // Accounting rule PPA-1 (2026-09-28): aggregate parent rows (named as
+  // parentSlice by other rows) are excluded - their delivery is represented by
+  // their children. See test/progress-accounting.test.mjs for the full rules.
+  const counted = accountingRows(slices);
+  assert.equal(tally.implemented, counted.filter((slice) => slice.status === 'implemented').length);
+  assert.equal(tally.total, counted.length);
   assert.equal(tally.percent, percent1(tally.implemented, tally.total));
   // Pin of the reconciled register. Refresh it when a slice's delivery state is reconciled; it
   // exists so a silently-flipped status cannot pass unnoticed. The tally itself is derived above,
@@ -438,9 +442,13 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // then P5-M10 (public /api/v1 resources over the backing models) on PR #366 merge c95a0fae;
   // then P5-M06 (injected mail transport + forgot-password delivery) on PR #367 merge 49103ac9;
   // then P2-S10 (Settings panels pilot) on PR #368 merge 60763a5e.
-  assert.equal(tally.percent, 85.5);
-  assert.equal(tally.implemented, 171);
-  assert.equal(tally.total, 200);
+  // Refresh 2026-09-28: accounting repair PPA-1 - P2.27 reclassified as the
+  // aggregate ladder row of P2.27.0..P2.27.10 and excluded from the denominator
+  // (before 171/200 = 85.5; after 170/199 = 85.4; P2 40/60 -> 39/59). Evidence:
+  // docs/n8n-lego/evidence/PROGRESS-ACCOUNTING-AUDIT.md.
+  assert.equal(tally.percent, 85.4);
+  assert.equal(tally.implemented, 170);
+  assert.equal(tally.total, 199);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
   assert.equal(displayStatus(m08, verifying), 'implemented');
@@ -449,9 +457,9 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('blocked'), 0);
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
-  assert.equal(metrics.current.total, 194);
-  assert.equal(metrics.current.implemented, 170);
-  assert.equal(metrics.current.sliceCompletion, percent1(170, 194));
+    assert.equal(metrics.current.total, 193);
+  assert.equal(metrics.current.implemented, 169);
+  assert.equal(metrics.current.sliceCompletion, percent1(169, 193));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);

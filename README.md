@@ -39,7 +39,7 @@ Status is not progress. Both percentages below are generated from [`docs/n8n-leg
 
 `██████████████████░░ 87.6%`
 
-Checkpoint-weighted earned points / current-delivery points: 17000 / 19400. Denominator: programs P0–P11 only (194 active slices). Future programs are excluded. 60 slice(s) declare checkpoints. 129 implemented slice(s) have no checkpoint list and contribute 100 each. 5 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
+Checkpoint-weighted earned points / current-delivery points: 16900 / 19300. Denominator: programs P0–P11 only (193 active slices). Future programs are excluded. 60 slice(s) declare checkpoints. 128 implemented slice(s) have no checkpoint list and contribute 100 each. 5 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
 
 ### Slice Completion
 
@@ -47,12 +47,12 @@ Checkpoint-weighted earned points / current-delivery points: 17000 / 19400. Deno
 
 `██████████████████░░ 87.6%`
 
-**170 / 194 slices implemented** in the same P0–P11 denominator. Only `implemented` increases this numerator. Verifying, blocked, in-progress, planned, proposed and deferred contribute 0. Superseded, retired and rejected stay out of the denominator.
+**169 / 193 slices implemented** in the same P0–P11 denominator. Only `implemented` increases this numerator. Verifying, blocked, in-progress, planned, proposed and deferred contribute 0. Superseded, retired and rejected stay out of the denominator.
 
 | | |
 | --- | ---: |
-| Current-delivery slices | 194 |
-| Implemented (completion numerator) | 170 |
+| Current-delivery slices | 193 |
+| Implemented (completion numerator) | 169 |
 | Verifying (display status; completion contribution 0) | 0 |
 | In progress, not verifying | 1 |
 | Planned | 20 |
@@ -64,7 +64,7 @@ Checkpoint-weighted earned points / current-delivery points: 17000 / 19400. Deno
 ```text
 P0   realtime ████████████████████ 100.0%  completion 100.0%  2/2  status complete
 P1   realtime ████████████████████ 100.0%  completion 100.0%  2/2  status complete
-P2   realtime █████████████░░░░░░░  66.7%  completion  66.7%  40/60  status complete
+P2   realtime █████████████░░░░░░░  66.1%  completion  66.1%  39/59  status complete
 P3   realtime ████████████████████ 100.0%  completion 100.0%  18/18  status complete
 P4   realtime ████████████████████ 100.0%  completion 100.0%  10/10  status complete
 P5   realtime ████████████████████ 100.0%  completion 100.0%  26/26  status complete
@@ -82,7 +82,7 @@ P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0
 | --- | --- | ---: | ---: | ---: | --- |
 | P0 | Core Application Bootstrap | 100.0% | 100.0% | 2/2 | complete |
 | P1 | n8n Compatibility / Behavioral Baseline | 100.0% | 100.0% | 2/2 | complete |
-| P2 | LEGO / AI / Plugin Foundation | 66.7% | 66.7% | 40/60 | complete |
+| P2 | LEGO / AI / Plugin Foundation | 66.1% | 66.1% | 39/59 | complete |
 | P3 | Workflow + Execution + Unlimited Nodes | 100.0% | 100.0% | 18/18 | complete |
 | P4 | Trigger / Webhook / Ingress | 100.0% | 100.0% | 10/10 | complete |
 | P5 | Identity / Authentication / Authorization / Credentials (Security) | 100.0% | 100.0% | 26/26 | complete |
@@ -183,13 +183,13 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 
 ## P2 — LEGO / AI / Plugin Foundation
 
-- **Realtime Delivery Progress:** **66.7%** `█████████████░░░░░░░ 66.7%`
-- **Slice Completion:** **66.7%** (40 / 60 implemented). Remaining 20. 40 implemented, 1 in progress, 18 planned, 1 blocked.
+- **Realtime Delivery Progress:** **66.1%** `█████████████░░░░░░░ 66.1%`
+- **Slice Completion:** **66.1%** (39 / 59 implemented). Remaining 20. 39 implemented, 1 in progress, 18 planned, 1 blocked.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent Machine, Context/Session/Memory, Workspace, MCP boundary, portability, Node Creator, translation, usage integrity, provider adapters, readiness, P2.27 pluggable runtime/security foundation (#90).
-- **Checkpoint model:** 27 slice(s) declare checkpoints; 32 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 27 slice(s) declare checkpoints; 31 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (60)</summary>
+<details><summary>Slices (59)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
