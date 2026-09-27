@@ -35,29 +35,29 @@ Status is not progress. Both percentages below are generated from [`docs/n8n-leg
 
 ### Realtime Delivery Progress
 
-**78.4%**
+**81.4%**
 
-`████████████████░░░░ 78.4%`
+`████████████████░░░░ 81.4%`
 
-Checkpoint-weighted earned points / current-delivery points: 15200 / 19400. Denominator: programs P0–P11 only (194 active slices). Future programs are excluded. 43 slice(s) declare checkpoints. 129 implemented slice(s) have no checkpoint list and contribute 100 each. 22 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
+Checkpoint-weighted earned points / current-delivery points: 15800 / 19400. Denominator: programs P0–P11 only (194 active slices). Future programs are excluded. 49 slice(s) declare checkpoints. 129 implemented slice(s) have no checkpoint list and contribute 100 each. 16 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
 
 ### Slice Completion
 
-**77.8%**
+**81.4%**
 
-`████████████████░░░░ 77.8%`
+`████████████████░░░░ 81.4%`
 
-**151 / 194 slices implemented** in the same P0–P11 denominator. Only `implemented` increases this numerator. Verifying, blocked, in-progress, planned, proposed and deferred contribute 0. Superseded, retired and rejected stay out of the denominator.
+**158 / 194 slices implemented** in the same P0–P11 denominator. Only `implemented` increases this numerator. Verifying, blocked, in-progress, planned, proposed and deferred contribute 0. Superseded, retired and rejected stay out of the denominator.
 
 | | |
 | --- | ---: |
 | Current-delivery slices | 194 |
-| Implemented (completion numerator) | 151 |
+| Implemented (completion numerator) | 158 |
 | Verifying (display status; completion contribution 0) | 0 |
-| In progress, not verifying | 1 |
-| Planned | 23 |
-| Blocked | 3 |
-| Proposed | 16 |
+| In progress, not verifying | 0 |
+| Planned | 24 |
+| Blocked | 2 |
+| Proposed | 10 |
 | Deferred | 0 |
 | Future-program slices excluded from both denominators | 6 |
 
@@ -70,7 +70,7 @@ P4   realtime ████████████████████ 100.0
 P5   realtime ████████████░░░░░░░░  57.7%  completion  57.7%  15/26  status complete
 P6   realtime ███████████████████░  94.4%  completion  94.4%  34/36  status complete
 P7   realtime ████████████████████ 100.0%  completion 100.0%  8/8  status in-progress
-P8   realtime ███░░░░░░░░░░░░░░░░░  14.3%  completion   0.0%  0/7  status planned
+P8   realtime ████████████████████ 100.0%  completion 100.0%  7/7  status planned
 P9   realtime ████████████████████ 100.0%  completion 100.0%  23/23  status complete
 P10  realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
 P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
@@ -88,7 +88,7 @@ P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0
 | P5 | Identity / Authentication / Authorization / Credentials (Security) | 57.7% | 57.7% | 15/26 | complete |
 | P6 | Node Registry / Node Runtime | 94.4% | 94.4% | 34/36 | complete |
 | P7 | Dynamic Parameters / Schema Runtime | 100.0% | 100.0% | 8/8 | in-progress |
-| P8 | Storage / Data Layer | 14.3% | 0.0% | 0/7 | planned |
+| P8 | Storage / Data Layer | 100.0% | 100.0% | 7/7 | planned |
 | P9 | Observability / Diagnostics / Operations | 100.0% | 100.0% | 23/23 | complete |
 | P10 | Multi-Tenant / Isolation / Quota | 0.0% | 0.0% | 0/1 | planned |
 | P11 | Worker / Distributed Scaling / HA | 0.0% | 0.0% | 0/1 | planned |
@@ -102,7 +102,7 @@ A program state of `complete` is not numeric 100%. Read the two percentage colum
 The queue is `executionPointer` only. Historical `P2.27` is not the next slice, and there is no `P2.28`.
 
 ```text
- 1. `P8-S01` in-progress; realtime 100.0%; completion contribution 0.0%; updated 2026-09-27T00:00:00Z
+ 1. `P5-M05` planned; realtime 0.0%; completion contribution 0.0%
  2. `P5-M06` planned; realtime 0.0%; completion contribution 0.0%
  3. `P2-S10` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
  4. `P2-S11` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
@@ -126,17 +126,16 @@ The queue is `executionPointer` only. Historical `P2.27` is not the next slice, 
 22. `P2-S29` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
 ```
 
-Latest completed slice: `P6-S05` (PR #355, merge `d549d40d`).
+Latest completed slice: `P8-S01` (PR #356, merge `3e0f621d`).
 
 _No verifying slice._
 
 ### Blocked
 
 - 🔴 **P2-S03** — Frontend Evolution layers 3-6. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped.. Last progress update: —. Completion contribution: 0%.
-- 🔴 **P5-M05** — Multi-host key storage and shared session + rate-limiter state. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Needs the provider-neutral storage contract to genuinely exist: key/value semantics, namespace, atomicity, TTL, compare-and-set, serialization, failure behavior, consistency, concurrency and recovery expectations are specified in docs/n8n-lego/evidence/P8-S01-FOUNDATION.md and split into P8-S02..P8-S07 (proposed, awaiting authorization). The P8-S01 skeleton is not delivery (REQ-0003 section 8): P5-M05 stays blocked until the contract lands and the persistence boundary exists.. Last progress update: —. Completion contribution: 0%.
 - 🔴 **P5-M10** — Public /api/v1 resources that need a backing model this product does not have yet. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped.. Last progress update: —. Completion contribution: 0%.
 
-Planned queue (planned ≠ authorized): `P5-M06` → `P2-S10` → `P2-S11` → `P2-S12` → `P2-S13` → `P2-S14` → `P2-S15` → `P2-S16` → `P2-S17` → `P2-S18` → `P2-S19` → `P2-S20` → `P2-S21` → `P2-S22` → `P2-S23` → `P2-S24` → `P2-S25` → `P2-S26` → `P2-S27` → `P2-S28` → `P2-S29`.
+Planned queue (planned ≠ authorized): `P5-M05` → `P5-M06` → `P2-S10` → `P2-S11` → `P2-S12` → `P2-S13` → `P2-S14` → `P2-S15` → `P2-S16` → `P2-S17` → `P2-S18` → `P2-S19` → `P2-S20` → `P2-S21` → `P2-S22` → `P2-S23` → `P2-S24` → `P2-S25` → `P2-S26` → `P2-S27` → `P2-S28` → `P2-S29`.
 
 Not authorized: planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).
 
@@ -322,7 +321,7 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 ## P5 — Identity / Authentication / Authorization / Credentials (Security)
 
 - **Realtime Delivery Progress:** **57.7%** `████████████░░░░░░░░ 57.7%`
-- **Slice Completion:** **57.7%** (15 / 26 implemented). Remaining 11. 15 implemented, 1 planned, 2 blocked, 8 proposed.
+- **Slice Completion:** **57.7%** (15 / 26 implemented). Remaining 11. 15 implemented, 2 planned, 1 blocked, 8 proposed.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Identity, sessions, authorization, credential boundary, key management, account security, API keys/service identity, certification (#85, #90).
 - **Checkpoint model:** 5 slice(s) declare checkpoints; 10 implemented slice(s) use the legacy 100 rule; 11 slice(s) have no checkpoint model and stay at 0.0%.
@@ -343,7 +342,7 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 | `P5-M02` | Credential runtime integration | execution path resolves credentials via SecretRef over the P2.27 broker | ✅ Implemented | 100.0% | 100.0% | — | CP-04 Integration regression before and after + round-trips + lifetime (completed, 25) | — |
 | `P5-M03` | Public /api/v1 first surface | API-key boundary in upstream order (recorded 401 goldens), key scopes always enforced through the P5.3 kernel, offset-cursor pagination, workflows resource (9 operations). Re-planned by the Manager: email recovery moved to P5-M06, service-principal REST/UI to P5-M07, remaining /api/v1 resources to P5-M08 (one delivery PR per slice) | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P5-M04` | Key-rotation work list without an O(n) scan | measure first (per-batch scan vs the O(n) replaceAll persist), index only if the scan dominates | ✅ Implemented | 100.0% | 100.0% | — | CP-03 Decision + evidence + debt clarification: encode the shouldIndex rule, document NO index (scan does not dominate), record the real bottleneck (full-file rewrite per batch, O(n^2/batchSize)) as the actual remaining P5.5 rotation debt. (completed, 30) | — |
-| `P5-M05` | Multi-host key storage and shared session + rate-limiter state | Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, not authorized) | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | Needs the provider-neutral storage contract to genuinely exist: key/value semantics, namespace, atomicity, TTL, compare-and-set, serialization, failure behavior, consistency, concurrency and recovery expectations are specified in docs/n8n-lego/evidence/P8-S01-FOUNDATION.md and split into P8-S02..P8-S07 (proposed, awaiting authorization). The P8-S01 skeleton is not delivery (REQ-0003 section 8): P5-M05 stays blocked until the contract lands and the persistence boundary exists. |
+| `P5-M05` | Multi-host key storage and shared session + rate-limiter state | Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, not authorized) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 | `P5-M06` | Email-based password recovery | needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 | `P5-M07` | Service-principal REST + UI management over the P5.7 programmatic lifecycle | Service-principal REST + UI management over the P5.7 programmatic lifecycle (create shown once, redacted list, revoke with tombstone) (split out of P5-M03) | ✅ Implemented | 100.0% | 100.0% | — | CP-06 DEC-0015 required self-hosted runner verification (completed, 10) | — |
 | `P5-M08` | Public /api/v1 second surface | tags (5 operations), variables (4, licence-gated 403 like the community edition), executions list/get/delete (lastId cursor), GET /api/v1/openapi.yml of exactly the mounted operations. Re-planned by the Manager: credentials, users and /docs to P5-M09; resources without a backing model to P5-M10 (one delivery PR per slice) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 DEC-0015 self-hosted runner verification on main (Level 0, Level 1, Level 2 linux, post-merge verification) (completed, 30) | — |
@@ -436,23 +435,23 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 
 ## P8 — Storage / Data Layer
 
-- **Realtime Delivery Progress:** **14.3%** `███░░░░░░░░░░░░░░░░░ 14.3%`
-- **Slice Completion:** **0.0%** (0 / 7 implemented). Remaining 7. 0 implemented, 1 in progress, 6 proposed.
+- **Realtime Delivery Progress:** **100.0%** `████████████████████ 100.0%`
+- **Slice Completion:** **100.0%** (7 / 7 implemented). Remaining 0. 7 implemented.
 - **Program status:** planned. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Provider-neutral storage contracts, workflow/execution persistence, graph segments, indexes, transactions, migrations, backup/recovery, SQLite/PostgreSQL/object-store providers (#90).
-- **Checkpoint model:** 1 slice(s) declare checkpoints; 0 implemented slice(s) use the legacy 100 rule; 6 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 7 slice(s) declare checkpoints; 0 implemented slice(s) use the legacy 100 rule; 0 slice(s) have no checkpoint model and stay at 0.0%.
 
 <details><summary>Slices (7)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
-| `P8-S01` | Storage contract foundation | Storage contract foundation (not authorized) | 🔵 In progress | 100.0% | 0.0% | — | CP-05 Conformance harness + delivery (completed, 20) | — |
-| `P8-S02` | Storage contract | provider-neutral key/value semantics (namespace, serialization, failure behavior, consistency) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
-| `P8-S03` | Storage TTL semantics | Storage TTL semantics (expiry, refresh, eviction contract) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
-| `P8-S04` | Storage atomic operations | Storage atomic operations (compare-and-set, atomic counters, batch atomicity) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
-| `P8-S05` | Storage concurrency semantics | Storage concurrency semantics (race behavior, isolation expectations) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
-| `P8-S06` | Local reference provider | Local reference provider (in-memory/local implementation of the storage contract) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
-| `P8-S07` | Storage test harness | Storage test harness (contract conformance suite every provider must pass) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P8-S01` | Storage contract foundation | Storage contract foundation (not authorized) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Conformance harness + delivery (completed, 20) | — |
+| `P8-S02` | Storage contract | provider-neutral key/value semantics (namespace, serialization, failure behavior, consistency) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Storage contract: provider-neutral key/value semantics (namespace, serialization, failure behavior, consistency) (completed, 100) | — |
+| `P8-S03` | Storage TTL semantics | Storage TTL semantics (expiry, refresh, eviction contract) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Storage TTL semantics (expiry, refresh, eviction contract) (completed, 100) | — |
+| `P8-S04` | Storage atomic operations | Storage atomic operations (compare-and-set, atomic counters, batch atomicity) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Storage atomic operations (compare-and-set, atomic counters, batch atomicity) (completed, 100) | — |
+| `P8-S05` | Storage concurrency semantics | Storage concurrency semantics (race behavior, isolation expectations) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Storage concurrency semantics (race behavior, isolation expectations) (completed, 100) | — |
+| `P8-S06` | Local reference provider | Local reference provider (in-memory/local implementation of the storage contract) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Local reference provider (in-memory/local implementation of the storage contract) (completed, 100) | — |
+| `P8-S07` | Storage test harness | Storage test harness (contract conformance suite every provider must pass) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Storage test harness (contract conformance suite every provider must pass) (completed, 100) | — |
 
 </details>
 
@@ -609,7 +608,7 @@ Excluded from the current-delivery denominator. Realtime **0.0%**. Slice complet
 - **Live progress (DEC-0021, LIVE-MILESTONE EXCEPTION):** checkpoint progress, checkpoint status, checkpoint evidence, current checkpoint, slice / program / overall progress and the milestone evidence of a slice still in flight are operational telemetry. The Manager may reconcile them straight to `main` in a `governance(progress):` commit, without a governance PR, with `node tools/lego/progress-event.mjs record --slice <id> --checkpoint <CP-nn> --status <status> --evidence <reference>`. The tool runs the whole atomic chain: validate evidence and weights → write the register → regenerate `README.md` and `.ai` → run `npm run lego:ai:check` → commit → push → verify `main`. One measurable event is one commit; live progress is never batched and a partial state is never published. The Manager never types a percentage: `resolve` derives the state from evidence — `--fetch` reads the DEC-0015 jobs and the runner availability from the GitHub API, `--jobs <file.json>` reads an export, and `verify --cmd` derives completed / blocked from a verification command's exit code. A checkpoint that declares `requires` is earned only when every named check has passed; an absent self-hosted check is never PASS and `WAITING_RUNNER` is never PASS, so a head that never ran the suite cannot look green. Two paths, never mixed: delivery state is implementation → delivery PR → merge → post-merge verification → one governance PR reconciling status, merge SHA, evidence and projections; telemetry is evidence → checkpoint update → register → README → .ai → a `governance(progress):` commit → main. A slice status becoming `implemented` is delivery state and is never telemetry. The exception never covers source code, tests, runtime behaviour, API / frontend / backend / contract / schema implementation, dependencies, packages, Rust code, CI workflows, security policy, permissions, infrastructure, database schema or production configuration — those still go through a delivery PR. Live telemetry never bypasses a completion gate: 100% realtime progress with a completion contribution of 0% is a legitimate state, and only `implemented` (DEC-0014 + DEC-0015) moves Slice Completion.
 - **Rule:** Milestone truth is main-owned. A milestone design found or developed in Manager memory becomes authoritative only when reconciled into main through a PR. arena-manager is not an alternate milestone authority, and its docs/ tree is a stale snapshot that is never copied over main.
 - **Pending reconciliation:** A milestone change that exists only on arena-manager, a local worktree, a handoff, an issue, a PR body or chat is a proposal (pending reconciliation), never authoritative truth. A PR proposes a milestone state; only the merged state on main is authoritative.
-- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `8576204ce5de1060`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
+- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `dde261586b10806e`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
 - **Progress model (Issue #307):** Realtime Delivery Progress is checkpoint-weighted across P0-P11. Slice Completion is implemented / active in that same denominator. Future programs stay visible and are excluded from the current-delivery denominator. Illustrations of the status/progress split are not register measurements and must not be copied into slice checkpoints. The generator counts only weights declared on slice.checkpoints. It does not invent weights. A completed checkpoint requires evidence. Weights on a slice must sum to 100. A slice with no checkpoint model stays at 0 unless it is implemented, in which case the legacy rule contributes 100. This projection is not canonical until the change is on main.
 - **Completion KPI:** Slice Completion is implemented slices / active slices in P0–P11. A verifying or blocked slice never increases that numerator. Realtime Delivery Progress is a separate checkpoint-weighted figure and can move while Slice Completion stays still.
 - **Purpose field:** a slice purpose is `slice.purpose` when present, otherwise the text after the first `: ` in the canonical title, otherwise the title. No purpose is invented.
