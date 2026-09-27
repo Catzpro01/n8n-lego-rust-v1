@@ -5,6 +5,16 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 16 — P5-M10 SELESAI (pr 366, merge c95a0fae) + P5-M06 STARTED
+
+- **P5-M10 full cycle (delivery `324fd724`, PR #366, CI 9/9 tanpa insiden, merge `c95a0fae`)**: API mounting framework `public-api-backing.mjs` (26 route /api/v1 di atas model M11..M18; closed mapping INVALID->400/NOT_FOUND->404/CONFLICT->409/storage UNAVAILABLE|TIMEOUT->503; satu facade P8; BACKING_RESOURCE_ROUTES = satu sumber kebenaran utk mount+extractor+spec test) + rollback=unmount (models+history utuh, teruji). Surface: projects/audit/source-control/data-tables (rows filter engine fail-closed)/transfer/versions/retry/execution-tags. 39 focused tests baru; 5 fixture 'not mounted' basi di suite M08/M09 dipindah berdiagnosis (transfer/retry kini 405-utk-method-salah; spec equality 57 operasi); surface pin M11/M13/M14 diperpanjang utk 3 list verb + deleteTable (all-or-nothing applyBatch). Governance: 8 model factory dipublish di lego-foundation.public; 2 temuan scale-out dideklarasikan (S1 mount table, S3 persistence adapter).
+- **Ekstensi model terdeklarasi**: M11 `listProjects`, M13 `listRepositories`, M14 `listTables`+`deleteTable`.
+- **Post-merge hijau**: lego 3053/3053, engine 49/49, runtime 79/79, validate 0/0. **R1 `bc28eb69`** (HARD GUARD queue-unchanged in-memory sebelum write LULUS; pins 169/200=84.5, current 168/194; insiden bedah: tail generik null-null mengenai P5-M06 lebih dulu — TERTANGKAP assert pasca-tulis, direvert sebelum commit) + **R2 `5e0ab0f7`** (tail pointer-only). Queue head TETAP P5-M06 sampai START (guardrail owner).
+- **P5-M06 STARTED `1c5ed9b3`** (PRE/POST assert: pop q0 P5-M06 -> activeSlices -> in-progress + 5 CP w20; q0 kini P2-S10; blocked [P2-S03]). Scope: /rest/forgot-password atas reset-token primitive + mail transport injected (DEC-0028 A).
+- **NEXT**: delivery P5-M06 -> P2-S10..S29 (urutan kanonik) -> evaluasi final P2-S03 (gated, TIDAK otomatis).
+
+---
+
 ## Update 15 — START P5-M10: execution API surface (2026-09-27)
 
 - **P5-M18 terkunci penuh**: R1 `340d39f1` (latestCompletedSlice=P5-M18, pin 168/200=84%, HARD GUARD queue-unchanged in-memory sebelum write) + R2 `c2f43d74` (tail pointer-only).
