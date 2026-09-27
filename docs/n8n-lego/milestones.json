@@ -16,9 +16,9 @@
       "pr": 364,
       "mergeSha": "b616be841e30b1700193c34228d6f07ce01575f0"
     },
-    "activeSlices": [],
+    "activeSlices": ["P5-M18"],
     "verifyingSlices": [],
-    "plannedQueue": ["P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
+    "plannedQueue": ["P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
@@ -5209,8 +5209,61 @@
           "id": "P5-M18",
           "title": "Execution annotation/tag model (P5-M10-H): upstream-equivalent AnnotationTag entities",
           "kind": "maintenance",
-          "status": "planned",
-          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): execution annotation tags: AnnotationTag-equivalent entity + attach/detach on executions (upstream parity); persistence = store extension; API gated; tests: tag lifecycle + orphan cleanup; rollback: unmount; deps: execution records (exists). PLANNED - authorized in the execution plan (owner marathon prompt): queue admission after P5-M05 and before the P5-M10 phase; not started.",
+          "status": "in-progress",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "AnnotationTag entity + attach/detach over the store extension",
+              "purpose": "AnnotationTag-equivalent entity {tagId, name, kind, color?} and execution attachment records persisted only through the P8 storage facade (namespace exec-tags); attach/detach keyed by (executionId, tagId); explicit errors TAG_INVALID/NOT_FOUND/CONFLICT; upstream-parity field set.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M18 scope (execution annotation/tag model)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-02",
+              "title": "Tag lifecycle",
+              "purpose": "createTag/getTag/listTags; attach is idempotent (re-attach is a no-op result, never a duplicate record); detach removes the attachment explicitly; multi-host shared state.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M18 scope (execution annotation/tag model)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-03",
+              "title": "Orphan cleanup",
+              "purpose": "Attachments whose execution no longer exists are orphans: detected via dependency-injected executionLookup; cleanupGarbage removes orphan attachments in one pass (counted, deterministic); deleting a tag detaches it everywhere (no dangling attachments).",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M18 scope (execution annotation/tag model)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-04",
+              "title": "Tests + rollback",
+              "purpose": "Tests: tag lifecycle + orphan cleanup; rollback = unmount (namespace isolation leaves history untouched); determinism + surface pin.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M18 scope (execution annotation/tag model)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-05",
+              "title": "Evidence + delivery notes committed; battery green",
+              "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M18 scope (execution annotation/tag model)",
+              "completedAt": null
+            }
+          ],
+          "updatedAt": "2026-09-27T00:00:00Z",
+          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: execution annotation/tag model (P5-M10-H) - AnnotationTag-equivalent entity + attach/detach on executions (upstream parity) over the store extension (namespace exec-tags); tag lifecycle + orphan cleanup tests; API surface stays gated (model layer only); rollback = unmount; deps: execution records exist. In progress.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
