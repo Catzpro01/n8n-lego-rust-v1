@@ -127,15 +127,17 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/44-node-picker.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.editor.workflow"
       ],
-      "notes": "Backend node-registry capability remains authoritative for node types."
+      "sourceIssue": "240",
+    "slice": "P2-S07",
+    "notes": "P2-S07 Layer 3 strangler slice (issue #240). A bounded, query-filterable view-model of the node picker palette: node types are handed over (the surface never fetches /rest/types/nodes.json, so it holds no private path to the node catalog), the four region states reuse REGION_STATES, filtering to zero is empty with reason filtered rather than a fifth state, and selecting a node type is a declared interaction returning a closed result vocabulary. Backend node-registry capability remains authoritative for node types. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.nodes.parameters",
