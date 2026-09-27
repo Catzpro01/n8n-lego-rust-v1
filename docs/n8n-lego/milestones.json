@@ -10,13 +10,13 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "079b9c7c9eab94760a47ef0e0ab5c36759a8cfa7",
+    "lastVerifiedMain": "b616be841e30b1700193c34228d6f07ce01575f0",
     "latestCompletedSlice": {
-      "id": "P5-M16",
-      "pr": 363,
-      "mergeSha": "b8798bbffd02f379378c08b18ee342a0c601ec48"
+      "id": "P5-M17",
+      "pr": 364,
+      "mergeSha": "b616be841e30b1700193c34228d6f07ce01575f0"
     },
-    "activeSlices": ["P5-M17"],
+    "activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": ["P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
@@ -5144,7 +5144,7 @@
           "id": "P5-M17",
           "title": "Execution retry model (P5-M10-G): retry path over execution records",
           "kind": "maintenance",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -5192,16 +5192,17 @@
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
               "status": "completed",
-              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
+              "evidence": "docs/n8n-lego/evidence/P5-M17-DELIVERY.md; PR #364 (CI 9/9 on c03b037f, merge b616be84) + post-merge battery.",
               "reference": "P5-M17 scope (execution retry model)",
               "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
-          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: execution retry model (P5-M10-G) - retry-request record bound to an original execution over the execution-store extension (namespace exec-retry); idempotency + terminal-state rules (no silent second run); API surface stays gated (model layer only); rollback = unmount; deps: engine execution records exist. In progress.",
-          "mergeSha": null,
+          "latestUpdate": "IMPLEMENTED (evidence: docs/n8n-lego/evidence/P5-M17-DELIVERY.md) - execution retry model (P5-M10-G) delivered: retry-request record bound to the original execution over the execution-store extension (execution-retry-model.mjs); double-retry refusal (at most one retry per execution EVER - no silent second run); terminal-state rules (retry-eligible = failed|cancelled; running/succeeded refused); lifecycle created->approved->executed|rejected|aborted (executed exactly once, end states terminal); CAS transitions (token required); dependency-injected executionLookup; rollback = unmount; errors RETRY_INVALID|NOT_FOUND|CONFLICT closed. 9/9 tests green (1 impl bug fixed pre-commit: createRetry missing version token). Delivery branch delivery/p5-m17-execution-retry (head c03b037f) -> PR #364 CI 9/9 green (runner-incident recovery: 5 jobs stranded on offline self-hosted runners, cancelled + re-run - infra, not code) -> merge b616be84; post-merge battery green (lego 3005/3005, engine 49/49, runtime 79/79, lego:gate 0, isolation 0, decisions 0).",
+          "pr": 364,
+          "mergeSha": "b616be841e30b1700193c34228d6f07ce01575f0",
           "issue": 85,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P5-M17-DELIVERY.md",
           "owner": "manager (unassigned)"
         },
         {
