@@ -5151,50 +5151,50 @@
               "title": "Retry-request record bound to an execution",
               "purpose": "Retry-request record {retryId, originalExecutionId, requestedBy, reason, state} persisted only through the P8 storage facade as an execution-store extension (namespace exec-retry); explicit errors RETRY_INVALID/NOT_FOUND/CONFLICT; linkage to the original execution is enforced.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Impl: apps/n8n-lego/src/lego/execution-retry-model.mjs - retry record bound to original execution (single authoritative key x:<execId> + retryId pointer); RETRY_INVALID/NOT_FOUND/CONFLICT (2026-09-27).",
               "reference": "P5-M17 scope (execution retry model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-02",
               "title": "Idempotency rules",
               "purpose": "Double-retry refusal: at most one active retry request per original execution (create-only + unique active link); duplicate requests surface RETRY_CONFLICT, never a silent second run; multi-host shared state.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Test 2: double-retry refusal (max one retry per execution ever) same-host + cross-host; no silent second run (2026-09-27).",
               "reference": "P5-M17 scope (execution retry model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-03",
               "title": "Terminal-state rules",
               "purpose": "Retry request lifecycle created->approved->executed|rejected|aborted with closed vocabulary and pure CAS transitions (token required, stale -> CONFLICT); the executed state is recorded exactly once (idempotent terminal).",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 3-5: retry-eligible = failed|cancelled only (running/succeeded refused); lifecycle created->approved->executed exactly once; end states terminal; CAS token required (2026-09-27).",
               "reference": "P5-M17 scope (execution retry model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-04",
               "title": "Tests + rollback",
               "purpose": "Tests: double-retry refusal + linkage; rollback = unmount (namespace isolation leaves history untouched); determinism + surface pin.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "9/9 tests green; 1 impl bug fixed pre-commit (createRetry missing version token); rollback=unmount (test 8); surface pin + determinism (test 9) (2026-09-27).",
               "reference": "P5-M17 scope (execution retry model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-05",
               "title": "Evidence + delivery notes committed; battery green",
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
               "reference": "P5-M17 scope (execution retry model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
