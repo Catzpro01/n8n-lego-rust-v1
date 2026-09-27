@@ -10,9 +10,9 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "413fae7381176f2b4741d330f1fed27133b941e3",
-    "latestCompletedSlice": { "id": "P2-S08", "pr": 353, "mergeSha": "8a957ee8c05c10d2820d0319cda56a2247628400" },
-    "activeSlices": ["P2-S09"],
+    "lastVerifiedMain": "edc3e9606d5741bb7bb81bfc2eb33e4dc6801545",
+    "latestCompletedSlice": { "id": "P2-S09", "pr": 354, "mergeSha": "edc3e9606d5741bb7bb81bfc2eb33e4dc6801545" },
+    "activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": [
       "P2-S10",
@@ -2849,7 +2849,7 @@
           "id": "P2-S09",
           "title": "Credentials (Layer 4 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -2897,11 +2897,11 @@
               "completedAt": "2026-09-27T14:10:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T14:10:00Z",
-          "latestUpdate": "In-progress: P2-S09 delivers the credentials list pilot (Layer 4 surface split out of P2-S03) as a bounded, visibility-filterable view-model; credential values never reach the surface (value-bearing rows refused explicitly) and create/delete/share are declared interactions only. Out of scope per REQ-0004 section 3: P5 credential runtime, SecretRef, broker, persistence, P6 node, P8 storage, Rust. Five checkpoints completed with evidence in test/46-credentials.test.mjs and docs/n8n-lego/evidence/P2-S09-EVIDENCE.md. Promotion to implemented follows the merge (DEC-0014).",
-          "mergeSha": null,
+          "updatedAt": "2026-09-27T14:45:00Z",
+          "latestUpdate": "Implemented: P2-S09 delivered the credentials list pilot (Layer 4 surface split out of P2-S03) as a bounded, visibility-filterable view-model; credential values never reach the surface (value-bearing rows refused with an explicit security error) and create/delete/share are declared interactions only. Out of scope per REQ-0004 section 3 (P5 runtime, SecretRef, broker, persistence, P6 node, P8 storage, Rust) - stated, not touched. Five checkpoints completed with evidence in test/46-credentials.test.mjs and docs/n8n-lego/evidence/P2-S09-EVIDENCE.md. PR #354 merged to main as edc3e960 (9/9 checks SUCCESS).",
+          "mergeSha": "edc3e9606d5741bb7bb81bfc2eb33e4dc6801545",
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S09-EVIDENCE.md",
           "owner": "manager (unassigned)"
         },
         {
