@@ -143,7 +143,7 @@ const MUTATIONS = [
       .filter((entry) => entry.id !== subject.id);
   }, /is neither active nor verifying/],
   ['a queued slice that is not planned', (r) => { r.executionPointer.plannedQueue.push('P5-M03'); }, /queued slice P5-M03 is implemented/],
-  ['a blocked slice without blockedBy', (r) => { delete r.programs[5].slices.find((x) => x.id === 'P5-M10').blockedBy; }, /P5-M10 does not record blockedBy/],
+  ['a blocked slice without blockedBy', (r) => { delete r.programs.flatMap((p) => p.slices).find((x) => x.id === 'P2-S03').blockedBy; }, /P2-S03 does not record blockedBy/],
   ['a blocked slice missing from blockedSlices', (r) => { r.executionPointer.blockedSlices = []; }, /blocked slice P2-S03 is missing/],
   ['a latest completed slice that is not implemented', (r) => {
     // Any slice that is not implemented will do; the queue may legitimately be

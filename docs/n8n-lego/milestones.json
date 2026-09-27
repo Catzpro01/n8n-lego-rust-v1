@@ -16,10 +16,10 @@
       "pr": 365,
       "mergeSha": "97f03df9b4bbef73c4c552fdb411f5441039ddc6"
     },
-    "activeSlices": [],
+    "activeSlices": ["P5-M10"],
     "verifyingSlices": [],
     "plannedQueue": ["P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
-    "blockedSlices": ["P2-S03", "P5-M10"],
+    "blockedSlices": ["P2-S03"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
   },
@@ -4743,8 +4743,61 @@
           "id": "P5-M10",
           "title": "Public /api/v1 resources that need a backing model this product does not have yet: projects, audit, source-control, data-tables, workflow and credential transfer, workflow versions, execution retry, execution tags (upstream AnnotationTag). Blocked until those models exist; split out of P5-M08",
           "kind": "maintenance",
-          "status": "blocked",
-          "blockedBy": "Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped.",
+          "status": "in-progress",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "API mounting framework",
+              "purpose": "/api/v1 route -> backing-model wiring with uniform envelope and closed model-error -> HTTP mapping (INVALID->400, NOT_FOUND->404, CONFLICT->409, storage errors -> 5xx); routes were gated until this slice.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-02",
+              "title": "Resources on P5-M11..P5-M14 models",
+              "purpose": "projects, audit, source-control, data-tables resource surfaces mounted on their backing models; API contract per resource.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-03",
+              "title": "Resources on P5-M15..P5-M18 models",
+              "purpose": "workflow/credential transfer, workflow versions, execution retry, execution tags (AnnotationTag) resource surfaces mounted on their backing models.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-04",
+              "title": "Tests + rollback",
+              "purpose": "Tests: API contract per resource + error mapping; rollback = unmount routes (backing models and history untouched); no hidden side effects.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-05",
+              "title": "Evidence + delivery notes committed; battery green",
+              "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
+              "completedAt": null
+            }
+          ],
+          "updatedAt": "2026-09-27T00:00:00Z",
+          "latestUpdate": "STARTED via the recovery path (blocked -> planned -> plannedQueue -> activeSlices -> in-progress) in one START act: the declared blocker is cleared - backing models P5-M11..P5-M18 are ALL implemented. Scope: public /api/v1 resources mounted on the backing models (projects, audit, source-control, data-tables, workflow/credential transfer, workflow versions, execution retry, execution tags); uniform error mapping; rollback = unmount routes (models untouched). In progress.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,

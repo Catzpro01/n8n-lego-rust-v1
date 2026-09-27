@@ -571,7 +571,11 @@ test('the live state is readable from the register alone: status, checkpoint, ev
   assert.match(slice.updatedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/, 'the slice records when it last moved');
   assert.match(String(slice.latestUpdate), /Implemented by PR #304 \(merge 600a2145[0-9a-f]*\)/,
     'the slice headline names the delivery PR and merge');
-  assert.match(rendered, /- 🔴 \*\*P5-M10\*\*[^\n]*Last progress update: —/);
+  // Derived, not pinned: whichever slice is currently blocked renders this row
+  // (P5-M10 was pinned here while it was the blocked umbrella; it is now in-progress).
+  const blockedId = REGISTER.executionPointer.blockedSlices[0];
+  assert.ok(blockedId, 'a blocked slice exists for the blocked-row check');
+  assert.match(rendered, new RegExp(`- 🔴 \\*\\*${blockedId}\\*\\*[^\\n]*Last progress update: —`));
   assert.match(rendered, /governance\(progress\):/);
   assert.match(rendered, /LIVE-MILESTONE EXCEPTION/);
   assert.match(formatPercent(headlineMetrics(REGISTER).current.realtime), /^\d+\.\d%$/);
