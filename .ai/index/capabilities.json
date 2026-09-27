@@ -318,6 +318,21 @@
         "settings"
       ],
       "operations": []
+    },
+    {
+      "id": "webhooks",
+      "lego": "ui-frontend",
+      "title": "Webhooks surface pilot (URL/method/registration shown with a node or workflow)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "webhooks"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

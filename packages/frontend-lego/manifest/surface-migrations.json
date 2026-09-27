@@ -224,6 +224,27 @@
       "notes": "P2-S10 Layer 3/4 strangler slice (issue #240): the settings PANELS view-model (instance + personal), bounded and panel-switchable. Settings values are handed over through declared settings capabilities only; an entry carrying a secret-bearing field is refused with an explicit security error (P2.27/P5 secret boundary is finding-only here) and the surface never mutates settings data - save/reset are declared interactions with a closed result vocabulary. Localization and theme stay later authorized slices. Mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
+      "inventoryId": "ui.webhooks.registrations",
+      "category": "workflow-editor",
+      "title": "Webhook URL/method/registration surface (shown with a node or workflow)",
+      "surfaceIds": [
+        "webhooks"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/48-webhooks.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.shell.navigation"
+      ],
+      "sourceIssue": "240",
+      "slice": "P2-S11",
+      "notes": "P2-S11 Layer 3/4 strangler slice (issue #240): the webhook URL/method/registration surface shown with a node or a workflow, bounded and resource-switchable. Registrations are handed over through declared capabilities only; the surface ISSUES NO REGISTER CALL and a registration carrying auth material is refused with an explicit security error (Webhook node + Credentials runtime own auth, finding-only here). Mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
       "inventoryId": "ui.projects.workspace",
       "category": "projects-workspace",
       "title": "Projects / workspace surfaces",

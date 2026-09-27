@@ -574,6 +574,35 @@
       "phase": "P2-S10",
       "owner": "agent-01",
       "notes": "P2-S10: the strangler slice for the settings surface (instance + personal panels). Entries are handed over through declared settings capabilities only; a secret-bearing entry is refused with an explicit security error (P2.27/P5 secret boundary is finding-only here) and a non-scalar value is refused for the same reason. The four region states reuse REGION_STATES; a panel filtered to zero is empty with reason filtered, not a fifth state. Save/reset are declared interactions with a closed result vocabulary, never executed silently. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "webhooks",
+      "lego": "ui-frontend",
+      "title": "Webhooks surface pilot (URL/method/registration shown with a node or workflow)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/webhooks.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "webhooks"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "webhooks",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n webhook surfaces remain primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/48-webhooks.test.mjs"
+      ],
+      "phase": "P2-S11",
+      "owner": "agent-01",
+      "notes": "P2-S11: the strangler slice for the webhook URL/method/registration surface shown with a node or a workflow. Registrations are handed over through declared capabilities only; the surface issues no register call and a registration carrying auth material is refused with an explicit security error (Webhook node + Credentials runtime own auth). The four region states reuse REGION_STATES; a resource filter to zero is empty with reason filtered, not a fifth state. Copy-url is a declared interaction with a closed result vocabulary, never executed silently. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }

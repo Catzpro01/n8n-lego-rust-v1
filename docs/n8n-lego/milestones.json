@@ -2952,39 +2952,49 @@
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Webhooks surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the webhook URL/method/registration surfaces shown with a node or workflow; webhook registration is handed over, the surface issues no register call. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-webhooks.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/48-webhooks.test.mjs group A (hand-over boundary, issues no register call, secret-bearing refusal, closed vocabularies)",
+              "completedAt": "2026-09-27T20:00:00Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Webhooks surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/48-webhooks.test.mjs group B (manifest pins ui.webhooks.registrations + webhooks capability, pilot-not-primary)",
+              "completedAt": "2026-09-27T20:00:00Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Webhooks surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/48-webhooks.test.mjs group C (parity fail-closed against shared-rule reference fixtures)",
+              "completedAt": "2026-09-27T20:00:00Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Webhooks surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/48-webhooks.test.mjs group D (a11y derived once, assertive/busy exclusivity)",
+              "completedAt": "2026-09-27T20:00:00Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Webhooks surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/48-webhooks.test.mjs group E (bounds + truncation, explicit requests/failure, degraded mode)",
+              "completedAt": "2026-09-27T20:00:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T19:30:00Z",
-          "latestUpdate": "STARTED P2-S11 (Webhooks surface): PRE/POST asserts passed; queue popped P2-S11 -> activeSlices [P2-S11] -> in-progress. CP model already installed (CP-01 contract 20 / CP-02 pilot 20 / CP-03 parity 25 / CP-04 a11y 20 / CP-05 budget 15), verified not reinstalled. Scope: the webhook URL/method/registration surface shown with a node or workflow over the hand-over boundary; registration is handed over, the surface issues no register call.",
+          "updatedAt": "2026-09-27T20:00:00Z",
+          "latestUpdate": "DELIVERED: Webhooks surface pilot (URL/method/registration shown with a node or workflow) over the hand-over boundary - the surface issues no register call and auth material is refused at the entry shape (explicit security error), closed REGION_STATES + method/resource/urlKind/action/request vocabularies, parity fail-closed against shared-rule reference fixtures, a11y derived once, bounded list + explicit failure + degraded mode. ui.webhooks.registrations registered pilot-available (rollback pilot-not-primary); webhooks capability declared (slot webhooks, degrades native-behavior). 20 focused tests; battery lego 3071+, engine 19/19, runtime 79/79, frontend 714/0. Evidence: docs/n8n-lego/evidence/P2-S11-EVIDENCE.md.",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,
