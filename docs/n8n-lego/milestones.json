@@ -4891,50 +4891,50 @@
               "title": "Source-control records over the storage facade",
               "purpose": "Repository/branch/changeset records with provider-neutral fields persisted only through the P8 storage facade (namespace source-control); closed record shapes; explicit errors SOURCE_INVALID/NOT_FOUND/CONFLICT; STORAGE_* propagated; no memory-local state.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Impl: apps/n8n-lego/src/lego/source-control-model.mjs - repository/branch/changeset records, provider-neutral fields, closed shapes + SOURCE_INVALID/NOT_FOUND/CONFLICT (2026-09-27).",
               "reference": "P5-M13 scope (source-control backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-02",
               "title": "Conflict semantics",
               "purpose": "CAS on race-sensitive updates (rename, branch pointer move, changeset apply); concurrent lost updates surface CONFLICT; multi-host shared state consistency.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 4,6: CAS on rename/head-move/state-transition; lost updates CONFLICT across hosts (2026-09-27).",
               "reference": "P5-M13 scope (source-control backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-03",
               "title": "Round-trip fidelity",
               "purpose": "Record round-trip through the store is byte-stable; get/list surface for /api/v1/source-control backing with stable ordering; determinism pin.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 5,7,9: byte-stable round-trip; filter-aware cursor lists; determinism + surface pin (2026-09-27).",
               "reference": "P5-M13 scope (source-control backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-04",
               "title": "Tests + rollback",
               "purpose": "Tests: round-trip + conflict semantics; rollback = unmount (namespace isolation leaves history untouched); multi-host tests over one store.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "9/9 tests green; rollback=unmount namespace isolation (test 8); deviations in docs/n8n-lego/evidence/P5-M13-DELIVERY.md (2026-09-27).",
               "reference": "P5-M13 scope (source-control backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-05",
               "title": "Evidence + delivery notes committed; battery green",
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
               "reference": "P5-M13 scope (source-control backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
