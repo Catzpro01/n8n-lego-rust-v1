@@ -35,42 +35,42 @@ Status is not progress. Both percentages below are generated from [`docs/n8n-leg
 
 ### Realtime Delivery Progress
 
-**93.6%**
+**75.3%**
 
-`███████████████████░ 93.6%`
+`███████████████░░░░░ 75.3%`
 
-Checkpoint-weighted earned points / current-delivery points: 14600 / 15600. Denominator: programs P0–P11 only (156 active slices). Future programs are excluded. 17 slice(s) declare checkpoints. 129 implemented slice(s) have no checkpoint list and contribute 100 each. 10 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
+Checkpoint-weighted earned points / current-delivery points: 14600 / 19400. Denominator: programs P0–P11 only (194 active slices). Future programs are excluded. 40 slice(s) declare checkpoints. 129 implemented slice(s) have no checkpoint list and contribute 100 each. 25 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
 
 ### Slice Completion
 
-**93.6%**
+**75.3%**
 
-`███████████████████░ 93.6%`
+`███████████████░░░░░ 75.3%`
 
-**146 / 156 slices implemented** in the same P0–P11 denominator. Only `implemented` increases this numerator. Verifying, blocked, in-progress, planned, proposed and deferred contribute 0. Superseded, retired and rejected stay out of the denominator.
+**146 / 194 slices implemented** in the same P0–P11 denominator. Only `implemented` increases this numerator. Verifying, blocked, in-progress, planned, proposed and deferred contribute 0. Superseded, retired and rejected stay out of the denominator.
 
 | | |
 | --- | ---: |
-| Current-delivery slices | 156 |
+| Current-delivery slices | 194 |
 | Implemented (completion numerator) | 146 |
 | Verifying (display status; completion contribution 0) | 0 |
 | In progress, not verifying | 0 |
-| Planned | 3 |
+| Planned | 26 |
 | Blocked | 5 |
-| Proposed | 2 |
+| Proposed | 17 |
 | Deferred | 0 |
 | Future-program slices excluded from both denominators | 6 |
 
 ```text
 P0   realtime ████████████████████ 100.0%  completion 100.0%  2/2  status complete
 P1   realtime ████████████████████ 100.0%  completion 100.0%  2/2  status complete
-P2   realtime ███████████████████░  97.3%  completion  97.3%  36/37  status complete
+P2   realtime ████████████░░░░░░░░  60.0%  completion  60.0%  36/60  status complete
 P3   realtime ████████████████████ 100.0%  completion 100.0%  18/18  status complete
 P4   realtime ████████████████████ 100.0%  completion 100.0%  10/10  status complete
-P5   realtime ████████████████░░░░  77.8%  completion  77.8%  14/18  status complete
-P6   realtime ███████████████████░  94.3%  completion  94.3%  33/35  status complete
+P5   realtime ███████████░░░░░░░░░  53.8%  completion  53.8%  14/26  status complete
+P6   realtime ██████████████████░░  91.7%  completion  91.7%  33/36  status complete
 P7   realtime ████████████████████ 100.0%  completion 100.0%  8/8  status in-progress
-P8   realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
+P8   realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/7  status planned
 P9   realtime ████████████████████ 100.0%  completion 100.0%  23/23  status complete
 P10  realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
 P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
@@ -82,13 +82,13 @@ P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0
 | --- | --- | ---: | ---: | ---: | --- |
 | P0 | Core Application Bootstrap | 100.0% | 100.0% | 2/2 | complete |
 | P1 | n8n Compatibility / Behavioral Baseline | 100.0% | 100.0% | 2/2 | complete |
-| P2 | LEGO / AI / Plugin Foundation | 97.3% | 97.3% | 36/37 | complete |
+| P2 | LEGO / AI / Plugin Foundation | 60.0% | 60.0% | 36/60 | complete |
 | P3 | Workflow + Execution + Unlimited Nodes | 100.0% | 100.0% | 18/18 | complete |
 | P4 | Trigger / Webhook / Ingress | 100.0% | 100.0% | 10/10 | complete |
-| P5 | Identity / Authentication / Authorization / Credentials (Security) | 77.8% | 77.8% | 14/18 | complete |
-| P6 | Node Registry / Node Runtime | 94.3% | 94.3% | 33/35 | complete |
+| P5 | Identity / Authentication / Authorization / Credentials (Security) | 53.8% | 53.8% | 14/26 | complete |
+| P6 | Node Registry / Node Runtime | 91.7% | 91.7% | 33/36 | complete |
 | P7 | Dynamic Parameters / Schema Runtime | 100.0% | 100.0% | 8/8 | in-progress |
-| P8 | Storage / Data Layer | 0.0% | 0.0% | 0/1 | planned |
+| P8 | Storage / Data Layer | 0.0% | 0.0% | 0/7 | planned |
 | P9 | Observability / Diagnostics / Operations | 100.0% | 100.0% | 23/23 | complete |
 | P10 | Multi-Tenant / Isolation / Quota | 0.0% | 0.0% | 0/1 | planned |
 | P11 | Worker / Distributed Scaling / HA | 0.0% | 0.0% | 0/1 | planned |
@@ -102,7 +102,29 @@ A program state of `complete` is not numeric 100%. Read the two percentage colum
 The queue is `executionPointer` only. Historical `P2.27` is not the next slice, and there is no `P2.28`.
 
 ```text
-
+ 1. `P2-S07` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 2. `P2-S08` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 3. `P2-S09` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 4. `P2-S10` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 5. `P2-S11` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 6. `P2-S12` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 7. `P2-S13` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 8. `P2-S14` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 9. `P2-S15` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+10. `P2-S16` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+11. `P2-S17` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+12. `P2-S18` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+13. `P2-S19` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+14. `P2-S20` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+15. `P2-S21` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+16. `P2-S22` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+17. `P2-S23` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+18. `P2-S24` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+19. `P2-S25` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+20. `P2-S26` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+21. `P2-S27` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+22. `P2-S28` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+23. `P2-S29` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
 ```
 
 Latest completed slice: `P2-S06` (PR #347, merge `b3aba728`).
@@ -111,15 +133,15 @@ _No verifying slice._
 
 ### Blocked
 
-- 🔴 **P2-S03** — Frontend Evolution layers 3-6. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - "Implementation must be split into dedicated milestone tasks with Manager Master Prompts." So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. The third Layer 3 surface (executions list) has now been split out as P2-S06 and is in progress on delivery/p2-s06-executions-surface; this umbrella covers the remaining Layer 3-5 surfaces (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6.. Last progress update: —. Completion contribution: 0%.
-- 🔴 **P5-M02** — Credential runtime integration. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145). Last progress update: —. Completion contribution: 0%.
-- 🔴 **P5-M05** — Multi-host key storage and shared session + rate-limiter state. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs. Last progress update: —. Completion contribution: 0%.
-- 🔴 **P5-M06** — Email-based password recovery. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: OWNER authorization of the DEC-0028 mail-transport proposal (Manager recommends A-injected-transport; no owner decision yet - REQ-0002 section 15). Last progress update: —. Completion contribution: 0%.
-- 🔴 **P5-M10** — Public /api/v1 resources that need a backing model this product does not have yet. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: backing models this product does not have: projects/sharing, security audit, source control, data tables, workflow versions, a retry execution path, execution annotation tags (see P5-M08-EVIDENCE.md §1). Last progress update: —. Completion contribution: 0%.
+- 🔴 **P2-S03** — Frontend Evolution layers 3-6. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped.. Last progress update: —. Completion contribution: 0%.
+- 🔴 **P5-M02** — Credential runtime integration. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Needs a credential-consuming node in the execution path: engine node-registry.mjs exposes only the manual node set, so there is no legitimate integration consumer. The smallest consumer is scoped as P6-S05 (proposed, not authorized) with the exact acceptance list in docs/n8n-lego/evidence/P5-M02-FOUNDATION.md: SecretRef -> P2.27 Secret Broker -> credential resolution -> execution path -> real node consumer -> full regression suite (REQ-0003 section 7). #116/P6-S04 being proposed is not authorization. Stays blocked until authorization exists.. Last progress update: —. Completion contribution: 0%.
+- 🔴 **P5-M05** — Multi-host key storage and shared session + rate-limiter state. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Needs the provider-neutral storage contract to genuinely exist: key/value semantics, namespace, atomicity, TTL, compare-and-set, serialization, failure behavior, consistency, concurrency and recovery expectations are specified in docs/n8n-lego/evidence/P8-S01-FOUNDATION.md and split into P8-S02..P8-S07 (proposed, awaiting authorization). The P8-S01 skeleton is not delivery (REQ-0003 section 8): P5-M05 stays blocked until the contract lands and the persistence boundary exists.. Last progress update: —. Completion contribution: 0%.
+- 🔴 **P5-M06** — Email-based password recovery. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Awaits the OWNER decision on the mail-transport proposal in DEC-0028 (PROPOSED; state progression PROPOSED->UNDER_REVIEW->ACTIVE). The Manager must not implement on behalf of the owner. Reversible per-option preparation (no architecture committed) is recorded in docs/n8n-lego/evidence/P5-M06-PREP.md (REQ-0003 section 9).. Last progress update: —. Completion contribution: 0%.
+- 🔴 **P5-M10** — Public /api/v1 resources that need a backing model this product does not have yet. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped.. Last progress update: —. Completion contribution: 0%.
 
-Planned queue (planned ≠ authorized): —.
+Planned queue (planned ≠ authorized): `P2-S07` → `P2-S08` → `P2-S09` → `P2-S10` → `P2-S11` → `P2-S12` → `P2-S13` → `P2-S14` → `P2-S15` → `P2-S16` → `P2-S17` → `P2-S18` → `P2-S19` → `P2-S20` → `P2-S21` → `P2-S22` → `P2-S23` → `P2-S24` → `P2-S25` → `P2-S26` → `P2-S27` → `P2-S28` → `P2-S29`.
 
-Not authorized: planned is not authorized: the Manager starts a queued slice by moving it to in-progress in a PR on main. P5-M04 is planned and measure-first. P7-S01, P8-S01, P10-S01 and P11-S01 are placeholders that need a Manager Master Prompt before any work.
+Not authorized: planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt REQ-0003 sections 6 and 13): the Layers 3-5 child slices split out of P2-S03 (P2-S07..P2-S29), one surface per slice, pilot mode, rollback pilot-not-primary, parity evidence against the reference editor. NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (needs its own Manager decision after full evidence; #240 authorizes no removal of reference/n8n or n8n-editor-ui); P5-M06 (awaits the OWNER decision on DEC-0028); P5-M02 and P5-M05 (dependency foundations prepared, see their blockedBy); P5-M11..P5-M18 (proposed backing-model foundations); P6-S03, P6-S04, P6-S05 (proposed); P8-S01 and P8-S02..P8-S07 (planned/proposed placeholders that need a Manager Master Prompt); P10-S01 and P11-S01 (placeholders). P5-M04 is implemented and P7-S01/P7-S02 are implemented (P7 is in-progress) - those legacy queue notes are retired.
 
 ## Status Legend
 
@@ -169,13 +191,13 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 
 ## P2 — LEGO / AI / Plugin Foundation
 
-- **Realtime Delivery Progress:** **97.3%** `███████████████████░ 97.3%`
-- **Slice Completion:** **97.3%** (36 / 37 implemented). Remaining 1. 36 implemented, 1 blocked.
+- **Realtime Delivery Progress:** **60.0%** `████████████░░░░░░░░ 60.0%`
+- **Slice Completion:** **60.0%** (36 / 60 implemented). Remaining 24. 36 implemented, 23 planned, 1 blocked.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent Machine, Context/Session/Memory, Workspace, MCP boundary, portability, Node Creator, translation, usage integrity, provider adapters, readiness, P2.27 pluggable runtime/security foundation (#90).
-- **Checkpoint model:** 4 slice(s) declare checkpoints; 32 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 27 slice(s) declare checkpoints; 32 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (37)</summary>
+<details><summary>Slices (60)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
@@ -212,10 +234,33 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 | `P2.27.10` | frontend plugin boundary | frontend plugin boundary (final implementation slice) | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P2-S01` | Frontend LEGO migration foundation + parity harness + status-region pilot | Frontend LEGO migration foundation + parity harness + status-region pilot | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P2-S02` | Frontend LEGO shared notification surface + accessibility parity | Frontend LEGO shared notification surface + accessibility parity | ✅ Implemented | 100.0% | 100.0% | — | CP-06 Gate staleness fixed and the single-pilot rule generalized (completed, 10) | — |
-| `P2-S03` | Frontend Evolution layers 3-6 | Frontend Evolution layers 3-6 (core workflow, platform, AI surfaces, legacy UI decommission) | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - "Implementation must be split into dedicated milestone tasks with Manager Master Prompts." So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. The third Layer 3 surface (executions list) has now been split out as P2-S06 and is in progress on delivery/p2-s06-executions-surface; this umbrella covers the remaining Layer 3-5 surfaces (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. |
+| `P2-S03` | Frontend Evolution layers 3-6 | Frontend Evolution layers 3-6 (core workflow, platform, AI surfaces, legacy UI decommission) | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped. |
 | `P2-S04` | Dashboard workflow list | Dashboard workflow list (first Layer 3 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-06 Parity equivalent against reference fixtures, fail-closed (completed, 15) | — |
 | `P2-S05` | Dialogs / overlays | Dialogs / overlays (workflow settings, credential modal, confirmations) — second Layer 3 surface split out of P2-S03 | ✅ Implemented | 100.0% | 100.0% | — | CP-06 Parity equivalent against reference fixtures, fail-closed (completed, 15) | — |
 | `P2-S06` | Executions list | Executions list (third Layer 3 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-06 Parity equivalent against reference fixtures, fail-closed (completed, 15) | — |
+| `P2-S07` | Node picker/catalog | Node picker/catalog (Layer 3 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S08` | Workflow editor | Workflow editor (Layer 3 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S09` | Credentials | Credentials (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S10` | Settings | Settings (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S11` | Webhooks | Webhooks (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S12` | Auth | Auth (users/identity) (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S13` | Navigation | Navigation (Layer 3 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S14` | Canvas | Canvas (Layer 3 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S15` | Node configuration | Node configuration (Layer 3 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S16` | Connections | Connections (Layer 3 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S17` | Import/export | Import/export (Layer 3 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S18` | Environments | Environments (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S19` | Integrations | Integrations (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S20` | Execution management | Execution management (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S21` | Project/workspace administration | Project/workspace administration (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S22` | AI Assistant | AI Assistant (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S23` | AI Copilot | AI Copilot (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S24` | AI Node surfaces | AI Node surfaces (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S25` | Work Trace | Work Trace (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S26` | Memory/Context/Session views | Memory/Context/Session views (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S27` | Skills/Capabilities | Skills/Capabilities (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S28` | Agent/Runtime views | Agent/Runtime views (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S29` | Approvals and artifacts | Approvals and artifacts (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
 
 </details>
 
@@ -279,13 +324,13 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 
 ## P5 — Identity / Authentication / Authorization / Credentials (Security)
 
-- **Realtime Delivery Progress:** **77.8%** `████████████████░░░░ 77.8%`
-- **Slice Completion:** **77.8%** (14 / 18 implemented). Remaining 4. 14 implemented, 4 blocked.
+- **Realtime Delivery Progress:** **53.8%** `███████████░░░░░░░░░ 53.8%`
+- **Slice Completion:** **53.8%** (14 / 26 implemented). Remaining 12. 14 implemented, 4 blocked, 8 proposed.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Identity, sessions, authorization, credential boundary, key management, account security, API keys/service identity, certification (#85, #90).
-- **Checkpoint model:** 4 slice(s) declare checkpoints; 10 implemented slice(s) use the legacy 100 rule; 4 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 4 slice(s) declare checkpoints; 10 implemented slice(s) use the legacy 100 rule; 12 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (18)</summary>
+<details><summary>Slices (26)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
@@ -298,27 +343,35 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 | `P5.7` | API keys | API keys (hashed), service principals, tenant policy, agent delegation | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P5.8` | security plane certification, operator credential CLI, benchmark, runbook | security plane certification, operator credential CLI, benchmark, runbook | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P5-M01` | Security hardening | soft-revoke API keys and service principals (bounded tombstones, REVOKED verdict, audit row kept); REST decision cache deferred on measured evidence (P5.8 finding 1: warm hit 438 ns p50 is not faster than uncached authorize 384 ns p50) | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
-| `P5-M02` | Credential runtime integration | execution path resolves credentials via SecretRef over the P2.27 broker | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145) |
+| `P5-M02` | Credential runtime integration | execution path resolves credentials via SecretRef over the P2.27 broker | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | Needs a credential-consuming node in the execution path: engine node-registry.mjs exposes only the manual node set, so there is no legitimate integration consumer. The smallest consumer is scoped as P6-S05 (proposed, not authorized) with the exact acceptance list in docs/n8n-lego/evidence/P5-M02-FOUNDATION.md: SecretRef -> P2.27 Secret Broker -> credential resolution -> execution path -> real node consumer -> full regression suite (REQ-0003 section 7). #116/P6-S04 being proposed is not authorization. Stays blocked until authorization exists. |
 | `P5-M03` | Public /api/v1 first surface | API-key boundary in upstream order (recorded 401 goldens), key scopes always enforced through the P5.3 kernel, offset-cursor pagination, workflows resource (9 operations). Re-planned by the Manager: email recovery moved to P5-M06, service-principal REST/UI to P5-M07, remaining /api/v1 resources to P5-M08 (one delivery PR per slice) | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P5-M04` | Key-rotation work list without an O(n) scan | measure first (per-batch scan vs the O(n) replaceAll persist), index only if the scan dominates | ✅ Implemented | 100.0% | 100.0% | — | CP-03 Decision + evidence + debt clarification: encode the shouldIndex rule, document NO index (scan does not dominate), record the real bottleneck (full-file rewrite per batch, O(n^2/batchSize)) as the actual remaining P5.5 rotation debt. (completed, 30) | — |
-| `P5-M05` | Multi-host key storage and shared session + rate-limiter state | Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, not authorized) | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs |
-| `P5-M06` | Email-based password recovery | needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03) | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | OWNER authorization of the DEC-0028 mail-transport proposal (Manager recommends A-injected-transport; no owner decision yet - REQ-0002 section 15) |
+| `P5-M05` | Multi-host key storage and shared session + rate-limiter state | Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, not authorized) | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | Needs the provider-neutral storage contract to genuinely exist: key/value semantics, namespace, atomicity, TTL, compare-and-set, serialization, failure behavior, consistency, concurrency and recovery expectations are specified in docs/n8n-lego/evidence/P8-S01-FOUNDATION.md and split into P8-S02..P8-S07 (proposed, awaiting authorization). The P8-S01 skeleton is not delivery (REQ-0003 section 8): P5-M05 stays blocked until the contract lands and the persistence boundary exists. |
+| `P5-M06` | Email-based password recovery | needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03) | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | Awaits the OWNER decision on the mail-transport proposal in DEC-0028 (PROPOSED; state progression PROPOSED->UNDER_REVIEW->ACTIVE). The Manager must not implement on behalf of the owner. Reversible per-option preparation (no architecture committed) is recorded in docs/n8n-lego/evidence/P5-M06-PREP.md (REQ-0003 section 9). |
 | `P5-M07` | Service-principal REST + UI management over the P5.7 programmatic lifecycle | Service-principal REST + UI management over the P5.7 programmatic lifecycle (create shown once, redacted list, revoke with tombstone) (split out of P5-M03) | ✅ Implemented | 100.0% | 100.0% | — | CP-06 DEC-0015 required self-hosted runner verification (completed, 10) | — |
 | `P5-M08` | Public /api/v1 second surface | tags (5 operations), variables (4, licence-gated 403 like the community edition), executions list/get/delete (lastId cursor), GET /api/v1/openapi.yml of exactly the mounted operations. Re-planned by the Manager: credentials, users and /docs to P5-M09; resources without a backing model to P5-M10 (one delivery PR per slice) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 DEC-0015 self-hosted runner verification on main (Level 0, Level 1, Level 2 linux, post-merge verification) (completed, 30) | — |
 | `P5-M09` | Public /api/v1 credentials | Public /api/v1 credentials (list, create, update, delete, schema; secrets never returned, data validated against the credential type) and users (list, get, create, delete, change role), plus /api/v1/docs (needs a decision on serving Swagger UI without a runtime dependency). Split out of P5-M08 | ✅ Implemented | 100.0% | 100.0% | — | CP-05 /api/v1/docs decision and the OpenAPI spec of exactly the mounted operations (completed, 15) | — |
-| `P5-M10` | Public /api/v1 resources that need a backing model this product does not have yet | projects, audit, source-control, data-tables, workflow and credential transfer, workflow versions, execution retry, execution tags (upstream AnnotationTag). Blocked until those models exist; split out of P5-M08 | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | backing models this product does not have: projects/sharing, security audit, source control, data tables, workflow versions, a retry execution path, execution annotation tags (see P5-M08-EVIDENCE.md §1) |
+| `P5-M10` | Public /api/v1 resources that need a backing model this product does not have yet | projects, audit, source-control, data-tables, workflow and credential transfer, workflow versions, execution retry, execution tags (upstream AnnotationTag). Blocked until those models exist; split out of P5-M08 | 🔴 Blocked | 0.0% | 0.0% | none declared | none declared | Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped. |
+| `P5-M11` | Project / sharing backing model | project, membership and share records for /api/v1/projects | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P5-M12` | Audit backing model | security-audit event generation and store for /api/v1/audit | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P5-M13` | Source-control backing model | repository/branch/changeset records for /api/v1/source-control | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P5-M14` | Data-table backing model | column/row store for /api/v1/data-tables | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P5-M15` | Workflow/credential transfer backing model | export bundles and transfer records | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P5-M16` | Workflow-version backing model | immutable workflow version records for /api/v1/workflow-versions | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P5-M17` | Execution retry model | retry path over execution records | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P5-M18` | Execution annotation/tag model | upstream-equivalent AnnotationTag entities | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
 ## P6 — Node Registry / Node Runtime
 
-- **Realtime Delivery Progress:** **94.3%** `███████████████████░ 94.3%`
-- **Slice Completion:** **94.3%** (33 / 35 implemented). Remaining 2. 33 implemented, 2 proposed.
+- **Realtime Delivery Progress:** **91.7%** `██████████████████░░ 91.7%`
+- **Slice Completion:** **91.7%** (33 / 36 implemented). Remaining 3. 33 implemented, 3 proposed.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Node registry, lifecycle, installation/admission, runtime selection, official/community compatibility, plugin trust/runtime locality, native node migration where beneficial (#90, #100).
-- **Checkpoint model:** 2 slice(s) declare checkpoints; 31 implemented slice(s) use the legacy 100 rule; 2 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 2 slice(s) declare checkpoints; 31 implemented slice(s) use the legacy 100 rule; 3 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (35)</summary>
+<details><summary>Slices (36)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
@@ -357,6 +410,7 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 | `P6-S02` | Production WASM node/plugin sandbox engine | Production WASM node/plugin sandbox engine (P6.26 compilation cache and P2.27.4 locality are the foundation) | ✅ Implemented | 100.0% | 100.0% | — | CP-06 DEC-0015 required self-hosted runner verification (completed, 10) | — |
 | `P6-S03` | Universal resilient scraper node | Universal resilient scraper node (candidate sub-slices S1-S21 in #115) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
 | `P6-S04` | Native high-performance node catalog | Native high-performance node catalog (candidates N1-N12 in #116) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P6-S05` | Minimal credential-consuming node for the SecretRef integration path | Minimal credential-consuming node for the SecretRef integration path (smallest consumer for P5-M02, not a native-performance node) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
@@ -386,16 +440,22 @@ Not authorized: planned is not authorized: the Manager starts a queued slice by 
 ## P8 — Storage / Data Layer
 
 - **Realtime Delivery Progress:** **0.0%** `░░░░░░░░░░░░░░░░░░░░ 0.0%`
-- **Slice Completion:** **0.0%** (0 / 1 implemented). Remaining 1. 0 implemented, 1 planned.
+- **Slice Completion:** **0.0%** (0 / 7 implemented). Remaining 7. 0 implemented, 1 planned, 6 proposed.
 - **Program status:** planned. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Provider-neutral storage contracts, workflow/execution persistence, graph segments, indexes, transactions, migrations, backup/recovery, SQLite/PostgreSQL/object-store providers (#90).
-- **Checkpoint model:** 0 slice(s) declare checkpoints; 0 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 0 slice(s) declare checkpoints; 0 implemented slice(s) use the legacy 100 rule; 7 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (7)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
 | `P8-S01` | Storage contract foundation | Storage contract foundation (not authorized) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
+| `P8-S02` | Storage contract | provider-neutral key/value semantics (namespace, serialization, failure behavior, consistency) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P8-S03` | Storage TTL semantics | Storage TTL semantics (expiry, refresh, eviction contract) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P8-S04` | Storage atomic operations | Storage atomic operations (compare-and-set, atomic counters, batch atomicity) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P8-S05` | Storage concurrency semantics | Storage concurrency semantics (race behavior, isolation expectations) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P8-S06` | Local reference provider | Local reference provider (in-memory/local implementation of the storage contract) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
+| `P8-S07` | Storage test harness | Storage test harness (contract conformance suite every provider must pass) | ⚪ Proposed | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
@@ -552,7 +612,7 @@ Excluded from the current-delivery denominator. Realtime **0.0%**. Slice complet
 - **Live progress (DEC-0021, LIVE-MILESTONE EXCEPTION):** checkpoint progress, checkpoint status, checkpoint evidence, current checkpoint, slice / program / overall progress and the milestone evidence of a slice still in flight are operational telemetry. The Manager may reconcile them straight to `main` in a `governance(progress):` commit, without a governance PR, with `node tools/lego/progress-event.mjs record --slice <id> --checkpoint <CP-nn> --status <status> --evidence <reference>`. The tool runs the whole atomic chain: validate evidence and weights → write the register → regenerate `README.md` and `.ai` → run `npm run lego:ai:check` → commit → push → verify `main`. One measurable event is one commit; live progress is never batched and a partial state is never published. The Manager never types a percentage: `resolve` derives the state from evidence — `--fetch` reads the DEC-0015 jobs and the runner availability from the GitHub API, `--jobs <file.json>` reads an export, and `verify --cmd` derives completed / blocked from a verification command's exit code. A checkpoint that declares `requires` is earned only when every named check has passed; an absent self-hosted check is never PASS and `WAITING_RUNNER` is never PASS, so a head that never ran the suite cannot look green. Two paths, never mixed: delivery state is implementation → delivery PR → merge → post-merge verification → one governance PR reconciling status, merge SHA, evidence and projections; telemetry is evidence → checkpoint update → register → README → .ai → a `governance(progress):` commit → main. A slice status becoming `implemented` is delivery state and is never telemetry. The exception never covers source code, tests, runtime behaviour, API / frontend / backend / contract / schema implementation, dependencies, packages, Rust code, CI workflows, security policy, permissions, infrastructure, database schema or production configuration — those still go through a delivery PR. Live telemetry never bypasses a completion gate: 100% realtime progress with a completion contribution of 0% is a legitimate state, and only `implemented` (DEC-0014 + DEC-0015) moves Slice Completion.
 - **Rule:** Milestone truth is main-owned. A milestone design found or developed in Manager memory becomes authoritative only when reconciled into main through a PR. arena-manager is not an alternate milestone authority, and its docs/ tree is a stale snapshot that is never copied over main.
 - **Pending reconciliation:** A milestone change that exists only on arena-manager, a local worktree, a handoff, an issue, a PR body or chat is a proposal (pending reconciliation), never authoritative truth. A PR proposes a milestone state; only the merged state on main is authoritative.
-- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `4e139da4b3e95704`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
+- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `c924c5c312b12823`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
 - **Progress model (Issue #307):** Realtime Delivery Progress is checkpoint-weighted across P0-P11. Slice Completion is implemented / active in that same denominator. Future programs stay visible and are excluded from the current-delivery denominator. Illustrations of the status/progress split are not register measurements and must not be copied into slice checkpoints. The generator counts only weights declared on slice.checkpoints. It does not invent weights. A completed checkpoint requires evidence. Weights on a slice must sum to 100. A slice with no checkpoint model stays at 0 unless it is implemented, in which case the legacy rule contributes 100. This projection is not canonical until the change is on main.
 - **Completion KPI:** Slice Completion is implemented slices / active slices in P0–P11. A verifying or blocked slice never increases that numerator. Realtime Delivery Progress is a separate checkpoint-weighted figure and can move while Slice Completion stays still.
 - **Purpose field:** a slice purpose is `slice.purpose` when present, otherwise the text after the first `: ` in the canonical title, otherwise the title. No purpose is invented.
