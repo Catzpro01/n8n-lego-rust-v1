@@ -16,9 +16,9 @@
       "pr": 355,
       "mergeSha": "d549d40d83d29276fb2a6c565f68cb93bfc2d6e4"
     },
-    "activeSlices": [],
+    "activeSlices": ["P8-S01"],
     "verifyingSlices": [],
-    "plannedQueue": ["P8-S01", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
+    "plannedQueue": ["P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M05", "P5-M10"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
@@ -5756,10 +5756,62 @@
           "id": "P8-S01",
           "title": "Storage contract foundation (not authorized)",
           "kind": "slice",
-          "status": "planned",
+          "status": "in-progress",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Contract core: kv semantics, namespace, serialization, failure taxonomy, consistency",
+              "purpose": "Provider-neutral contract module with facade boundary: get/put/delete/list (bounded), closed namespace pattern, opaque byte values, closed typed error codes STORAGE_TIMEOUT|UNAVAILABLE|CONFLICT|NOT_FOUND|INVALID, miss is a result ({found:false}) never an error, unmapped provider throws become UNAVAILABLE at the facade. Consumers hold only the facade handle (surface pinned by test).",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "apps/n8n-lego/src/lego/storage/contract.mjs; test/lego-storage-contract.test.mjs validation+boundary cases.",
+              "reference": "P8-S01-FOUNDATION.md items 1,2,6,7,8",
+              "completedAt": "2026-09-27T00:00:00Z"
+            },
+            {
+              "id": "CP-02",
+              "title": "TTL semantics: expiry, refresh, contract-defined visibility",
+              "purpose": "ttlSeconds at put; touch refreshes from the injected clock; expired keys are absent for get/touch/CAS and excluded from list; no-ttl keys never expire. Deterministic: the clock is injected (createLocalStorage without a clock throws).",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "test/lego-storage-contract.test.mjs + conformance ttl cases (3); local-provider.mjs expiry visibility.",
+              "reference": "P8-S01-FOUNDATION.md item 4",
+              "completedAt": "2026-09-27T00:00:00Z"
+            },
+            {
+              "id": "CP-03",
+              "title": "Atomic operations: CAS + batch all-or-nothing",
+              "purpose": "putIfVersion/deleteIfVersion with opaque monotonic version tokens; conflict/absent are first-class results (never errors to swallow); applyBatch is all-or-nothing - a mid-batch CAS conflict returns {applied:false, failedOpIndex, reason} and NOTHING lands (tested), a persistence fault rolls back the whole batch and throws UNAVAILABLE (tested).",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "test/lego-storage-contract.test.mjs + conformance cas/batch cases (5).",
+              "reference": "P8-S01-FOUNDATION.md items 3,5",
+              "completedAt": "2026-09-27T00:00:00Z"
+            },
+            {
+              "id": "CP-04",
+              "title": "Local reference provider: capability honesty, durability, recovery",
+              "purpose": "createLocalStorage({clock, persistence}): multiHost=false always (owner condition - local storage must not claim multi-host); durable only with a persistence adapter; acknowledged writes survive restart iff durable (tested with a restart over the same payload); {v:1,namespaces} persistence payload is version-tagged and foreign shapes are rejected (upgrade compatibility); last-writer-wins + version bump per key.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "apps/n8n-lego/src/lego/storage/local-provider.mjs; test/lego-storage-contract.test.mjs provider/recovery/upgrade cases.",
+              "reference": "P8-S01-FOUNDATION.md items 9,10",
+              "completedAt": "2026-09-27T00:00:00Z"
+            },
+            {
+              "id": "CP-05",
+              "title": "Conformance harness + delivery",
+              "purpose": "P8-S07 harness (15 named cases) is the acceptance gate for every provider, including future shared/Rust providers; meta-proof that a broken provider FAILS the harness (not a vacuous green). Evidence P8-S01-DELIVERY.md; full regression battery; delivery PR + CI + merge + post-merge verification.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "apps/n8n-lego/src/lego/storage/conformance.mjs; test/lego-storage-conformance.test.mjs; docs/n8n-lego/evidence/P8-S01-DELIVERY.md; PR #356 battery records.",
+              "reference": "P8-S01-FOUNDATION.md test-harness section",
+              "completedAt": "2026-09-27T00:00:00Z"
+            }
+          ],
+          "updatedAt": "2026-09-27T00:00:00Z",
+          "latestUpdate": "IN-PROGRESS DELIVERY (owner authorization: marathon BLOCKER-ZERO prompt section 6; REQ-0003 section 8 path). Foundation vertical lands as real delivery: provider-neutral contract + local reference provider + conformance harness (the smallest testable vertical P8-S01-FOUNDATION.md requested). Implementation + tests + evidence complete and green; merge + post-merge verification complete the slice in the delivery follow-up (implemented flip with the real merge SHA).",
           "mergeSha": null,
-          "issue": 90,
-          "evidence": null,
           "owner": "manager (unassigned)"
         },
         {
