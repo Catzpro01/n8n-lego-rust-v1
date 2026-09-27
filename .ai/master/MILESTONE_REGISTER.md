@@ -7,21 +7,21 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 ## Delivery progress (same two metrics as README.md)
 
-**Realtime Delivery Progress 93.6%** — 14600/15600 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 10 current-delivery slice(s) have no checkpoint model and contribute 0.
+**Realtime Delivery Progress 75.3%** — 14600/19400 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 25 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 93.6%** — 146/156 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 75.3%** — 146/194 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
 | P0 | 100.0% | 100.0% | 2/2 | complete |
 | P1 | 100.0% | 100.0% | 2/2 | complete |
-| P2 | 97.3% | 97.3% | 36/37 | complete |
+| P2 | 60.0% | 60.0% | 36/60 | complete |
 | P3 | 100.0% | 100.0% | 18/18 | complete |
 | P4 | 100.0% | 100.0% | 10/10 | complete |
-| P5 | 77.8% | 77.8% | 14/18 | complete |
-| P6 | 94.3% | 94.3% | 33/35 | complete |
+| P5 | 53.8% | 53.8% | 14/26 | complete |
+| P6 | 91.7% | 91.7% | 33/36 | complete |
 | P7 | 100.0% | 100.0% | 8/8 | in-progress |
-| P8 | 0.0% | 0.0% | 0/1 | planned |
+| P8 | 0.0% | 0.0% | 0/7 | planned |
 | P9 | 100.0% | 100.0% | 23/23 | complete |
 | P10 | 0.0% | 0.0% | 0/1 | planned |
 | P11 | 0.0% | 0.0% | 0/1 | planned |
@@ -33,9 +33,9 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | Latest completed slice | `P2-S06` — Executions list (PR #347, merge `b3aba728`) |
 | Active slices | — (none) |
 | Verifying (merged, post-merge verification pending) | — (none) |
-| Planned queue (in order; planned ≠ authorized) | — |
-| Blocked | `P2-S03` — blocked by Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - "Implementation must be split into dedicated milestone tasks with Manager Master Prompts." So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. The third Layer 3 surface (executions list) has now been split out as P2-S06 and is in progress on delivery/p2-s06-executions-surface; this umbrella covers the remaining Layer 3-5 surfaces (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6.<br>`P5-M02` — blocked by P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145)<br>`P5-M05` — blocked by P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs<br>`P5-M06` — blocked by OWNER authorization of the DEC-0028 mail-transport proposal (Manager recommends A-injected-transport; no owner decision yet - REQ-0002 section 15)<br>`P5-M10` — blocked by backing models this product does not have: projects/sharing, security audit, source control, data tables, workflow versions, a retry execution path, execution annotation tags (see P5-M08-EVIDENCE.md §1) |
-| Not authorized | planned is not authorized: the Manager starts a queued slice by moving it to in-progress in a PR on main. P5-M04 is planned and measure-first. P7-S01, P8-S01, P10-S01 and P11-S01 are placeholders that need a Manager Master Prompt before any work. |
+| Planned queue (in order; planned ≠ authorized) | `P2-S07`, `P2-S08`, `P2-S09`, `P2-S10`, `P2-S11`, `P2-S12`, `P2-S13`, `P2-S14`, `P2-S15`, `P2-S16`, `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
+| Blocked | `P2-S03` — blocked by Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped.<br>`P5-M02` — blocked by Needs a credential-consuming node in the execution path: engine node-registry.mjs exposes only the manual node set, so there is no legitimate integration consumer. The smallest consumer is scoped as P6-S05 (proposed, not authorized) with the exact acceptance list in docs/n8n-lego/evidence/P5-M02-FOUNDATION.md: SecretRef -> P2.27 Secret Broker -> credential resolution -> execution path -> real node consumer -> full regression suite (REQ-0003 section 7). #116/P6-S04 being proposed is not authorization. Stays blocked until authorization exists.<br>`P5-M05` — blocked by Needs the provider-neutral storage contract to genuinely exist: key/value semantics, namespace, atomicity, TTL, compare-and-set, serialization, failure behavior, consistency, concurrency and recovery expectations are specified in docs/n8n-lego/evidence/P8-S01-FOUNDATION.md and split into P8-S02..P8-S07 (proposed, awaiting authorization). The P8-S01 skeleton is not delivery (REQ-0003 section 8): P5-M05 stays blocked until the contract lands and the persistence boundary exists.<br>`P5-M06` — blocked by Awaits the OWNER decision on the mail-transport proposal in DEC-0028 (PROPOSED; state progression PROPOSED->UNDER_REVIEW->ACTIVE). The Manager must not implement on behalf of the owner. Reversible per-option preparation (no architecture committed) is recorded in docs/n8n-lego/evidence/P5-M06-PREP.md (REQ-0003 section 9).<br>`P5-M10` — blocked by Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped. |
+| Not authorized | planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt REQ-0003 sections 6 and 13): the Layers 3-5 child slices split out of P2-S03 (P2-S07..P2-S29), one surface per slice, pilot mode, rollback pilot-not-primary, parity evidence against the reference editor. NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (needs its own Manager decision after full evidence; #240 authorizes no removal of reference/n8n or n8n-editor-ui); P5-M06 (awaits the OWNER decision on DEC-0028); P5-M02 and P5-M05 (dependency foundations prepared, see their blockedBy); P5-M11..P5-M18 (proposed backing-model foundations); P6-S03, P6-S04, P6-S05 (proposed); P8-S01 and P8-S02..P8-S07 (planned/proposed placeholders that need a Manager Master Prompt); P10-S01 and P11-S01 (placeholders). P5-M04 is implemented and P7-S01/P7-S02 are implemented (P7 is in-progress) - those legacy queue notes are retired. |
 | Historical P2 ladder pointer | `P2.27` (history, not active work) |
 | Last verified main | `dfcb256c` |
 
@@ -45,13 +45,13 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | --- | --- | --- | --- | --- | --- |
 | **P0** | Core Application Bootstrap | **COMPLETE** | 2/2 | 2 | — |
 | **P1** | n8n Compatibility / Behavioral Baseline | **COMPLETE** | 2/2 | 3 | — |
-| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 36/37 | 29 | — |
+| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 36/60 | 29 | `P2-S07` (planned) |
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
-| **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 14/18 | 20 | — |
-| **P6** | Node Registry / Node Runtime | **COMPLETE** | 33/35 | 67 | — |
+| **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 14/26 | 20 | — |
+| **P6** | Node Registry / Node Runtime | **COMPLETE** | 33/36 | 67 | — |
 | **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 8/8 | 29 | — |
-| **P8** | Storage / Data Layer | **PLANNED** | 0/1 | 5 | `P8-S01` (planned) |
+| **P8** | Storage / Data Layer | **PLANNED** | 0/7 | 5 | `P8-S01` (planned) |
 | **P9** | Observability / Diagnostics / Operations | **COMPLETE** | 23/23 | 23 | — |
 | **P10** | Multi-Tenant / Isolation / Quota | **PLANNED** | 0/1 | 5 | `P10-S01` (planned) |
 | **P11** | Worker / Distributed Scaling / HA | **PLANNED** | 0/1 | 3 | `P11-S01` (planned) |
@@ -160,7 +160,7 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 
 **Source issues:** #90, #83, #86, #87, #88, #240
 
-<details><summary>Slices (37)</summary>
+<details><summary>Slices (60)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
@@ -197,10 +197,33 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 | `P2.27.10` | frontend plugin boundary (final implementation slice) | implemented | #197 | `7d4eae8d` | #83 |
 | `P2-S01` | Frontend LEGO migration foundation + parity harness + status-region pilot | implemented | #244 | `c77c3dba` | #241 |
 | `P2-S02` | Frontend LEGO shared notification surface + accessibility parity | implemented | — | `0c2c5a7c` | #245 |
-| `P2-S03` | Frontend Evolution layers 3-6 (core workflow, platform, AI surfaces, legacy UI decommission) **Blocked by:** Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - "Implementation must be split into dedicated milestone tasks with Manager Master Prompts." So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. The third Layer 3 surface (executions list) has now been split out as P2-S06 and is in progress on delivery/p2-s06-executions-surface; this umbrella covers the remaining Layer 3-5 surfaces (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. | blocked | — | — | #240 |
+| `P2-S03` | Frontend Evolution layers 3-6 (core workflow, platform, AI surfaces, legacy UI decommission) **Blocked by:** Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped. | blocked | — | — | #240 |
 | `P2-S04` | Dashboard workflow list (first Layer 3 surface split out of P2-S03) | implemented | — | `1cab18c2` | #240 |
 | `P2-S05` | Dialogs / overlays (workflow settings, credential modal, confirmations) — second Layer 3 surface split out of P2-S03 | implemented | — | `1f89499c` | #240 |
 | `P2-S06` | Executions list (third Layer 3 surface split out of P2-S03) | implemented | — | `b3aba728` | #240 |
+| `P2-S07` | Node picker/catalog (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S08` | Workflow editor (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S09` | Credentials (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S10` | Settings (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S11` | Webhooks (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S12` | Auth (users/identity) (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S13` | Navigation (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S14` | Canvas (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S15` | Node configuration (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S16` | Connections (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S17` | Import/export (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S18` | Environments (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S19` | Integrations (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S20` | Execution management (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S21` | Project/workspace administration (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S22` | AI Assistant (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S23` | AI Copilot (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S24` | AI Node surfaces (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S25` | Work Trace (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S26` | Memory/Context/Session views (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S27` | Skills/Capabilities (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S28` | Agent/Runtime views (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S29` | Approvals and artifacts (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
 
 </details>
 
@@ -361,7 +384,7 @@ Identity, sessions, authorization, credential boundary, key management, account 
 
 **Source issues:** #85, #78, #214, #215, #216, #217, #218, #219, #220, #221
 
-<details><summary>Slices (18)</summary>
+<details><summary>Slices (26)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
@@ -374,15 +397,23 @@ Identity, sessions, authorization, credential boundary, key management, account 
 | `P5.7` | API keys (hashed), service principals, tenant policy, agent delegation | implemented | #252 | `5310bf31` | #220 |
 | `P5.8` | security plane certification, operator credential CLI, benchmark, runbook | implemented | #253 | `87099dc0` | #221 |
 | `P5-M01` | Security hardening: soft-revoke API keys and service principals (bounded tombstones, REVOKED verdict, audit row kept); REST decision cache deferred on measured evidence (P5.8 finding 1: warm hit 438 ns p50 is not faster than uncached authorize 384 ns p50) | implemented | #289 | `27191091` | #85 |
-| `P5-M02` | Credential runtime integration: execution path resolves credentials via SecretRef over the P2.27 broker **Blocked by:** P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145) | blocked | — | — | #85 |
+| `P5-M02` | Credential runtime integration: execution path resolves credentials via SecretRef over the P2.27 broker **Blocked by:** Needs a credential-consuming node in the execution path: engine node-registry.mjs exposes only the manual node set, so there is no legitimate integration consumer. The smallest consumer is scoped as P6-S05 (proposed, not authorized) with the exact acceptance list in docs/n8n-lego/evidence/P5-M02-FOUNDATION.md: SecretRef -> P2.27 Secret Broker -> credential resolution -> execution path -> real node consumer -> full regression suite (REQ-0003 section 7). #116/P6-S04 being proposed is not authorization. Stays blocked until authorization exists. | blocked | — | — | #85 |
 | `P5-M03` | Public /api/v1 first surface: API-key boundary in upstream order (recorded 401 goldens), key scopes always enforced through the P5.3 kernel, offset-cursor pagination, workflows resource (9 operations). Re-planned by the Manager: email recovery moved to P5-M06, service-principal REST/UI to P5-M07, remaining /api/v1 resources to P5-M08 (one delivery PR per slice) | implemented | #291 | `cf52701c` | #85 |
 | `P5-M04` | Key-rotation work list without an O(n) scan: measure first (per-batch scan vs the O(n) replaceAll persist), index only if the scan dominates | implemented | — | `3ba8f339` | #85 |
-| `P5-M05` | Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, not authorized) **Blocked by:** P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs | blocked | — | — | #85 |
-| `P5-M06` | Email-based password recovery: needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03) **Blocked by:** OWNER authorization of the DEC-0028 mail-transport proposal (Manager recommends A-injected-transport; no owner decision yet - REQ-0002 section 15) | blocked | — | — | #85 |
+| `P5-M05` | Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, not authorized) **Blocked by:** Needs the provider-neutral storage contract to genuinely exist: key/value semantics, namespace, atomicity, TTL, compare-and-set, serialization, failure behavior, consistency, concurrency and recovery expectations are specified in docs/n8n-lego/evidence/P8-S01-FOUNDATION.md and split into P8-S02..P8-S07 (proposed, awaiting authorization). The P8-S01 skeleton is not delivery (REQ-0003 section 8): P5-M05 stays blocked until the contract lands and the persistence boundary exists. | blocked | — | — | #85 |
+| `P5-M06` | Email-based password recovery: needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03) **Blocked by:** Awaits the OWNER decision on the mail-transport proposal in DEC-0028 (PROPOSED; state progression PROPOSED->UNDER_REVIEW->ACTIVE). The Manager must not implement on behalf of the owner. Reversible per-option preparation (no architecture committed) is recorded in docs/n8n-lego/evidence/P5-M06-PREP.md (REQ-0003 section 9). | blocked | — | — | #85 |
 | `P5-M07` | Service-principal REST + UI management over the P5.7 programmatic lifecycle (create shown once, redacted list, revoke with tombstone) (split out of P5-M03) | implemented | #317 | `0845c25f` | #85 |
 | `P5-M08` | Public /api/v1 second surface: tags (5 operations), variables (4, licence-gated 403 like the community edition), executions list/get/delete (lastId cursor), GET /api/v1/openapi.yml of exactly the mounted operations. Re-planned by the Manager: credentials, users and /docs to P5-M09; resources without a backing model to P5-M10 (one delivery PR per slice) | implemented | #304 | `600a2145` | #85 |
 | `P5-M09` | Public /api/v1 credentials (list, create, update, delete, schema; secrets never returned, data validated against the credential type) and users (list, get, create, delete, change role), plus /api/v1/docs (needs a decision on serving Swagger UI without a runtime dependency). Split out of P5-M08 | implemented | — | `c13ba6dc` | #85 |
-| `P5-M10` | Public /api/v1 resources that need a backing model this product does not have yet: projects, audit, source-control, data-tables, workflow and credential transfer, workflow versions, execution retry, execution tags (upstream AnnotationTag). Blocked until those models exist; split out of P5-M08 **Blocked by:** backing models this product does not have: projects/sharing, security audit, source control, data tables, workflow versions, a retry execution path, execution annotation tags (see P5-M08-EVIDENCE.md §1) | blocked | — | — | #85 |
+| `P5-M10` | Public /api/v1 resources that need a backing model this product does not have yet: projects, audit, source-control, data-tables, workflow and credential transfer, workflow versions, execution retry, execution tags (upstream AnnotationTag). Blocked until those models exist; split out of P5-M08 **Blocked by:** Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped. | blocked | — | — | #85 |
+| `P5-M11` | Project / sharing backing model (P5-M10-A): project, membership and share records for /api/v1/projects | proposed | — | — | #85 |
+| `P5-M12` | Audit backing model (P5-M10-B): security-audit event generation and store for /api/v1/audit | proposed | — | — | #85 |
+| `P5-M13` | Source-control backing model (P5-M10-C): repository/branch/changeset records for /api/v1/source-control | proposed | — | — | #85 |
+| `P5-M14` | Data-table backing model (P5-M10-D): column/row store for /api/v1/data-tables | proposed | — | — | #85 |
+| `P5-M15` | Workflow/credential transfer backing model (P5-M10-E): export bundles and transfer records | proposed | — | — | #85 |
+| `P5-M16` | Workflow-version backing model (P5-M10-F): immutable workflow version records for /api/v1/workflow-versions | proposed | — | — | #85 |
+| `P5-M17` | Execution retry model (P5-M10-G): retry path over execution records | proposed | — | — | #85 |
+| `P5-M18` | Execution annotation/tag model (P5-M10-H): upstream-equivalent AnnotationTag entities | proposed | — | — | #85 |
 
 </details>
 
@@ -419,7 +450,7 @@ Node registry, lifecycle, installation/admission, runtime selection, official/co
 
 **Source issues:** #95, #100, #115, #116
 
-<details><summary>Slices (35)</summary>
+<details><summary>Slices (36)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
@@ -458,6 +489,7 @@ Node registry, lifecycle, installation/admission, runtime selection, official/co
 | `P6-S02` | Production WASM node/plugin sandbox engine (P6.26 compilation cache and P2.27.4 locality are the foundation) | implemented | — | `d3c35c73` | #224 |
 | `P6-S03` | Universal resilient scraper node (candidate sub-slices S1-S21 in #115) | proposed | — | — | #115 |
 | `P6-S04` | Native high-performance node catalog (candidates N1-N12 in #116) | proposed | — | — | #116 |
+| `P6-S05` | Minimal credential-consuming node for the SecretRef integration path (smallest consumer for P5-M02, not a native-performance node) | proposed | — | — | #85 |
 
 </details>
 
@@ -598,11 +630,17 @@ Provider-neutral storage contracts, workflow/execution persistence, graph segmen
 
 **Source issues:** #90, #78
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (7)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
 | `P8-S01` | Storage contract foundation (not authorized) | planned | — | — | #90 |
+| `P8-S02` | Storage contract: provider-neutral key/value semantics (namespace, serialization, failure behavior, consistency) | proposed | — | — | #90 |
+| `P8-S03` | Storage TTL semantics (expiry, refresh, eviction contract) | proposed | — | — | #90 |
+| `P8-S04` | Storage atomic operations (compare-and-set, atomic counters, batch atomicity) | proposed | — | — | #90 |
+| `P8-S05` | Storage concurrency semantics (race behavior, isolation expectations) | proposed | — | — | #90 |
+| `P8-S06` | Local reference provider (in-memory/local implementation of the storage contract) | proposed | — | — | #90 |
+| `P8-S07` | Storage test harness (contract conformance suite every provider must pass) | proposed | — | — | #90 |
 
 </details>
 

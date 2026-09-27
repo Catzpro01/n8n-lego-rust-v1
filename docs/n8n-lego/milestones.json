@@ -14,7 +14,31 @@
     "latestCompletedSlice": { "id": "P2-S06", "pr": 347, "mergeSha": "b3aba7284e37f2365c7689ae53c854d3802b2faf" },
     "activeSlices": [],
     "verifyingSlices": [],
-    "plannedQueue": [],
+    "plannedQueue": [
+      "P2-S07",
+      "P2-S08",
+      "P2-S09",
+      "P2-S10",
+      "P2-S11",
+      "P2-S12",
+      "P2-S13",
+      "P2-S14",
+      "P2-S15",
+      "P2-S16",
+      "P2-S17",
+      "P2-S18",
+      "P2-S19",
+      "P2-S20",
+      "P2-S21",
+      "P2-S22",
+      "P2-S23",
+      "P2-S24",
+      "P2-S25",
+      "P2-S26",
+      "P2-S27",
+      "P2-S28",
+      "P2-S29"
+    ],
     "blockedSlices": [
       "P2-S03",
       "P5-M02",
@@ -22,7 +46,7 @@
       "P5-M06",
       "P5-M10"
     ],
-    "notAuthorized": "planned is not authorized: the Manager starts a queued slice by moving it to in-progress in a PR on main. P5-M04 is planned and measure-first. P7-S01, P8-S01, P10-S01 and P11-S01 are placeholders that need a Manager Master Prompt before any work.",
+    "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt REQ-0003 sections 6 and 13): the Layers 3-5 child slices split out of P2-S03 (P2-S07..P2-S29), one surface per slice, pilot mode, rollback pilot-not-primary, parity evidence against the reference editor. NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (needs its own Manager decision after full evidence; #240 authorizes no removal of reference/n8n or n8n-editor-ui); P5-M06 (awaits the OWNER decision on DEC-0028); P5-M02 and P5-M05 (dependency foundations prepared, see their blockedBy); P5-M11..P5-M18 (proposed backing-model foundations); P6-S03, P6-S04, P6-S05 (proposed); P8-S01 and P8-S02..P8-S07 (planned/proposed placeholders that need a Manager Master Prompt); P10-S01 and P11-S01 (placeholders). P5-M04 is implemented and P7-S01/P7-S02 are implemented (P7 is in-progress) - those legacy queue notes are retired.",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
   },
   "governance": {
@@ -2485,7 +2509,7 @@
           "issue": 240,
           "evidence": null,
           "owner": "manager (unassigned)",
-          "blockedBy": "Authorized for Layers 3-5, blocked on task splitting. CORRECTION to an earlier recording that said this slice was not authorized: that was wrong. The Manager Master Prompt names P2-S03 in its authorized queue, and issue #240 asks for exactly that - \"Implementation must be split into dedicated milestone tasks with Manager Master Prompts.\" So Layers 3-5 (core workflow surfaces, platform surfaces, AI surfaces) ARE authorized. What is NOT authorized is the Layer 6 component the slice title carries, legacy UI decommission: the #240 scope boundary says the issue does not authorize removal of reference/n8n or n8n-editor-ui, permanent invariant 1 forbids a big-bang rewrite, invariant 2 keeps original workflow JSON compatibility mandatory, and Layer 6 is gated on every required surface having parity, compatibility, performance, accessibility and migration/rollback evidence first. The slice is therefore blocked on being SPLIT, not on authorization: Layers 3-5 must become dedicated per-surface milestone tasks in the #241/#245 strangler shape - one additional low-risk surface per slice, mode pilot, rollback pilot-not-primary, parity evidence against the reference, original editor still the default path - and Layer 6 needs its own Manager decision once that evidence exists. Splitting a slice and re-scoping its title is a Manager action, not a delivery action, so it is recorded here rather than performed. The first Layer 3 surface (dashboard workflow list) has now been split out as P2-S04 and is in progress on delivery/p2-s03-dashboard; this umbrella covers the remaining Layers 3-5 surfaces and the not-authorized Layer 6. The second Layer 3 surface (dialogs / overlays) has now been split out as P2-S05 and is in progress on delivery/p2-s05-dialogs; this umbrella covers the remaining Layer 3-5 surfaces (executions, node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6. The third Layer 3 surface (executions list) has now been split out as P2-S06 and is in progress on delivery/p2-s06-executions-surface; this umbrella covers the remaining Layer 3-5 surfaces (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation) and the not-authorized Layer 6."
+          "blockedBy": "Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped."
         },
         {
           "id": "P2-S04",
@@ -2705,6 +2729,1133 @@
           "evidence": "docs/n8n-lego/evidence/P2-S06-EVIDENCE.md",
           "owner": "agent-1",
           "note": "P2-S03 Layer 3 third strangler slice; split out per #240 under the Manager continuation directive. Advances the already-declared ui.executions.history surface from reference-only to pilot-available. Rows are handed over (the surface never fetches, so it holds no private path to the execution catalog). One module, one manifest entry, one test suite, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+        },
+        {
+          "id": "P2-S07",
+          "title": "Node picker/catalog (Layer 3 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Node picker/catalog surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the palette search, category browsing and node-type selection the editor shows when adding a node; closed node-type vocabulary handed over from the node catalog. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-node-picker.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Node picker/catalog surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Node picker/catalog surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Node picker/catalog surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Node picker/catalog surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S08",
+          "title": "Workflow editor (Layer 3 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Workflow editor surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the name/tags/active-state header and workflow-level actions panel around the canvas; workflow JSON handed over read-only, the surface never mutates workflow data. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-workflow-editor.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Workflow editor surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Workflow editor surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Workflow editor surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Workflow editor surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S09",
+          "title": "Credentials (Layer 4 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Credentials surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the credential list, create/update/delete and sharing-affordance surfaces; credential values stay behind the P5/P2.27 envelope and never reach the view-model. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-credentials.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Credentials surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Credentials surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Credentials surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Credentials surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S10",
+          "title": "Settings (Layer 4 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Settings surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the instance and personal settings panels; settings values arrive through declared settings capabilities only. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-settings.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Settings surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Settings surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Settings surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Settings surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S11",
+          "title": "Webhooks (Layer 4 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Webhooks surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the webhook URL/method/registration surfaces shown with a node or workflow; webhook registration is handed over, the surface issues no register call. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-webhooks.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Webhooks surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Webhooks surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Webhooks surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Webhooks surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S12",
+          "title": "Auth (users/identity) (Layer 4 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Auth (users/identity) surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the sign-in, user-management and membership surfaces; identity state comes from the auth capability and cannot be re-derived locally. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-auth.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Auth (users/identity) surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Auth (users/identity) surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Auth (users/identity) surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Auth (users/identity) surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S13",
+          "title": "Navigation (Layer 3 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Navigation surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the primary navigation, breadcrumbs and route switching shell; route table handed over, the surface owns no routing authority. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-navigation.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Navigation surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Navigation surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Navigation surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Navigation surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S14",
+          "title": "Canvas (Layer 3 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Canvas surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the node-graph rendering surface (nodes, edges, viewport, selection); graph model handed over, the surface performs no engine calls. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-canvas.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Canvas surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Canvas surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Canvas surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Canvas surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S15",
+          "title": "Node configuration (Layer 3 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Node configuration surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the parameter panel that edits one node type parameters through the parameter contract; parameter values handed over, expression evaluation stays behind the declared boundary. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-node-config.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Node configuration surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Node configuration surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Node configuration surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Node configuration surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S16",
+          "title": "Connections (Layer 3 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Connections surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the connection creation/removal affordances and connection inspector; connection mutations go through the workflow contract, never direct store writes. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-connections.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Connections surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Connections surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Connections surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Connections surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S17",
+          "title": "Import/export (Layer 3 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Import/export surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the workflow import and export dialogs and clipboard path; original workflow JSON compatibility is mandatory (invariant 2), the surface round-trips bytes unchanged. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-import-export.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Import/export surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Import/export surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Import/export surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Import/export surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S18",
+          "title": "Environments (Layer 4 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Environments surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the environment selection and variable-scoping surfaces; environment values handed over, no second source of truth. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-environments.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Environments surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Environments surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Environments surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Environments surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S19",
+          "title": "Integrations (Layer 4 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Integrations surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the external integration management surfaces (community/private/custom sources view); install actions stay behind the P6 admission path. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-integrations.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Integrations surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Integrations surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Integrations surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Integrations surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S20",
+          "title": "Execution management (Layer 4 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Execution management surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the retry/stops/bulk actions around executions beyond the P2-S06 list; execution records handed over, actions go through the execution capability. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-execution-mgmt.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Execution management surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Execution management surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Execution management surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Execution management surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S21",
+          "title": "Project/workspace administration (Layer 4 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Project/workspace administration surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the project and workspace administration panels; membership and project data handed over, the surface holds no project model of its own until P5-M11 exists. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-project-admin.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Project/workspace administration surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Project/workspace administration surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Project/workspace administration surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Project/workspace administration surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S22",
+          "title": "AI Assistant (Layer 5 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The AI Assistant surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the conversational assistant surface; assistant turns handed over as events, the surface never fabricates assistant output. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-ai-assistant.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The AI Assistant surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the AI Assistant surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The AI Assistant surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The AI Assistant surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S23",
+          "title": "AI Copilot (Layer 5 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The AI Copilot surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the inline copilot suggestion surface; suggestions arrive as declared AI capability events with explicit accept/reject, never applied silently. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-ai-copilot.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The AI Copilot surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the AI Copilot surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The AI Copilot surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The AI Copilot surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S24",
+          "title": "AI Node surfaces (Layer 5 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The AI Node surfaces surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the AI-node parameter and model-picker surfaces; model catalog handed over from the node/parameter contracts. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-ai-node.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The AI Node surfaces surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the AI Node surfaces surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The AI Node surfaces surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The AI Node surfaces surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S25",
+          "title": "Work Trace (Layer 5 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Work Trace surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the work-trace timeline surface; trace events handed over through the observability capability, the surface is read-only. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-work-trace.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Work Trace surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Work Trace surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Work Trace surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Work Trace surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S26",
+          "title": "Memory/Context/Session views (Layer 5 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Memory/Context/Session views surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the memory, context and session inspection surfaces; session state handed over, no direct session store access. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-memory-views.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Memory/Context/Session views surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Memory/Context/Session views surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Memory/Context/Session views surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Memory/Context/Session views surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S27",
+          "title": "Skills/Capabilities (Layer 5 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Skills/Capabilities surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the skills and capability catalog surfaces; capability records handed over from the capability registry, the surface grants nothing. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-skills-capabilities.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Skills/Capabilities surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Skills/Capabilities surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Skills/Capabilities surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Skills/Capabilities surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S28",
+          "title": "Agent/Runtime views (Layer 5 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Agent/Runtime views surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the agent and runtime supervision views; runtime events handed over, the surface cannot start or stop runtimes. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-agent-runtime.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Agent/Runtime views surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Agent/Runtime views surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Agent/Runtime views surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Agent/Runtime views surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-S29",
+          "title": "Approvals and artifacts (Layer 5 surface split out of P2-S03)",
+          "kind": "slice",
+          "status": "planned",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Declared contract and handed-over input boundary",
+              "purpose": "The Approvals and artifacts surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the approval queue and artifact review surfaces; approval state handed over through the approval capability, approve/reject go through the declared action path. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-approvals-artifacts.test.mjs) pins the boundary and closed shapes.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-02",
+              "title": "Pilot mode with rollback (pilot-not-primary)",
+              "purpose": "The Approvals and artifacts surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-03",
+              "title": "Parity evidence against the reference UI",
+              "purpose": "Differential/parity evidence for the Approvals and artifacts surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
+              "weight": 25,
+              "status": "planned"
+            },
+            {
+              "id": "CP-04",
+              "title": "Accessibility and interaction behavior",
+              "purpose": "The Approvals and artifacts surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
+              "weight": 20,
+              "status": "planned"
+            },
+            {
+              "id": "CP-05",
+              "title": "Performance/resource budget and failure behavior",
+              "purpose": "The Approvals and artifacts surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
+              "weight": 15,
+              "status": "planned"
+            }
+          ],
+          "updatedAt": "2026-09-27T09:30:00Z",
+          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "mergeSha": null,
+          "issue": 240,
+          "evidence": null,
+          "owner": "manager (unassigned)"
         }
       ]
     },
@@ -3195,7 +4346,7 @@
           "title": "Credential runtime integration: execution path resolves credentials via SecretRef over the P2.27 broker",
           "kind": "maintenance",
           "status": "blocked",
-          "blockedBy": "P6-S04 (proposed, #116): the engine has no credential-consuming node. packages/reconstructed-engine/node-registry.mjs implements only manualTrigger, start, noOp, set, code, function and functionItem, so SecretRef resolution in the execution path has no consumer (Manager finding, verified against main 600a2145)",
+          "blockedBy": "Needs a credential-consuming node in the execution path: engine node-registry.mjs exposes only the manual node set, so there is no legitimate integration consumer. The smallest consumer is scoped as P6-S05 (proposed, not authorized) with the exact acceptance list in docs/n8n-lego/evidence/P5-M02-FOUNDATION.md: SecretRef -> P2.27 Secret Broker -> credential resolution -> execution path -> real node consumer -> full regression suite (REQ-0003 section 7). #116/P6-S04 being proposed is not authorization. Stays blocked until authorization exists.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
@@ -3258,7 +4409,7 @@
           "title": "Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, not authorized)",
           "kind": "maintenance",
           "status": "blocked",
-          "blockedBy": "P8-S01 (planned, not authorized): the P8 storage contract that shared key/session/rate-limiter state needs",
+          "blockedBy": "Needs the provider-neutral storage contract to genuinely exist: key/value semantics, namespace, atomicity, TTL, compare-and-set, serialization, failure behavior, consistency, concurrency and recovery expectations are specified in docs/n8n-lego/evidence/P8-S01-FOUNDATION.md and split into P8-S02..P8-S07 (proposed, awaiting authorization). The P8-S01 skeleton is not delivery (REQ-0003 section 8): P5-M05 stays blocked until the contract lands and the persistence boundary exists.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
@@ -3271,7 +4422,7 @@
           "kind": "maintenance",
           "status": "blocked",
           "latestUpdate": "Authority remediation (REQ-0002 section 15): DEC-0026 was REVOKED (INVALID_AUTHORITY - it recorded decidedBy OWNER on a Manager-made architecture choice) and its substance re-proposed as DEC-0028 (state PROPOSED, decidedBy UNDECIDED, awaiting OWNER authorization or rejection). P5-M06 is therefore blocked again: the mail-transport decision it needs does not exist yet. The earlier blocked -> planned transition in this file rested on DEC-0026 and is withdrawn (no batched progress: state follows evidence). Delivery must not start (planned/queued is not authorized).",
-          "blockedBy": "OWNER authorization of the DEC-0028 mail-transport proposal (Manager recommends A-injected-transport; no owner decision yet - REQ-0002 section 15)",
+          "blockedBy": "Awaits the OWNER decision on the mail-transport proposal in DEC-0028 (PROPOSED; state progression PROPOSED->UNDER_REVIEW->ACTIVE). The Manager must not implement on behalf of the owner. Reversible per-option preparation (no architecture committed) is recorded in docs/n8n-lego/evidence/P5-M06-PREP.md (REQ-0003 section 9).",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
@@ -3494,12 +4645,100 @@
           "title": "Public /api/v1 resources that need a backing model this product does not have yet: projects, audit, source-control, data-tables, workflow and credential transfer, workflow versions, execution retry, execution tags (upstream AnnotationTag). Blocked until those models exist; split out of P5-M08",
           "kind": "maintenance",
           "status": "blocked",
-          "blockedBy": "backing models this product does not have: projects/sharing, security audit, source control, data tables, workflow versions, a retry execution path, execution annotation tags (see P5-M08-EVIDENCE.md \u00a71)",
+          "blockedBy": "Backing models are decomposed into P5-M11..P5-M18 (proposed) with per-model definitions (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies) in docs/n8n-lego/evidence/P5-M10-DECOMPOSITION.md (REQ-0003 section 10). The umbrella stays blocked until the declared resource scope is delivered or formally re-scoped.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
           "owner": "manager (unassigned)",
           "debtSource": "docs/n8n-lego/evidence/P5.8-CERTIFICATION-EVIDENCE.md \u00a77"
+        },
+        {
+          "id": "P5-M11",
+          "title": "Project / sharing backing model (P5-M10-A): project, membership and share records for /api/v1/projects",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): projects/sharing: project, membership, share-role semantics; persistence = shared store boundary (P8); API surface gated until the model exists; tests: model unit + API contract; rollback: drop the resource mount; deps: P8-S01 storage contract. PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P5-M12",
+          "title": "Audit backing model (P5-M10-B): security-audit event generation and store for /api/v1/audit",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): audit: append-only audit-event model with actor/action/target/attestation fields; persistence = shared store (P8); API gated until the model exists; tests: immutability + query contract; rollback: unmount; deps: P8-S01. PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P5-M13",
+          "title": "Source-control backing model (P5-M10-C): repository/branch/changeset records for /api/v1/source-control",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): source-control: repository, branch, changeset records with provider-neutral fields; persistence = shared store (P8); API gated; tests: round-trip + conflict semantics; rollback: unmount; deps: P8-S01. PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P5-M14",
+          "title": "Data-table backing model (P5-M10-D): column/row store for /api/v1/data-tables",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): data-tables: column schema + row records with typed cells; persistence = shared store (P8); API gated; tests: schema evolution + row CRUD; rollback: unmount; deps: P8-S01. PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P5-M15",
+          "title": "Workflow/credential transfer backing model (P5-M10-E): export bundles and transfer records",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): workflow/credential transfer: versioned export bundle + transfer record (never raw secrets: credential transfer moves envelopes/refs only); persistence = shared store (P8); API gated; tests: bundle round-trip + secret-free invariant; rollback: unmount; deps: P8-S01, P5 credential envelope. PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P5-M16",
+          "title": "Workflow-version backing model (P5-M10-F): immutable workflow version records for /api/v1/workflow-versions",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): workflow versions: immutable version records with parent links and diff metadata; persistence = shared store (P8); API gated; tests: immutability + ancestry; rollback: unmount; deps: P8-S01. PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P5-M17",
+          "title": "Execution retry model (P5-M10-G): retry path over execution records",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): execution retry: retry-request record bound to an original execution, with idempotency and terminal-state rules (no silent second run); persistence = execution store extension; API gated; tests: double-retry refusal + linkage; rollback: unmount; deps: engine execution records (exists), retry semantics contract. PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P5-M18",
+          "title": "Execution annotation/tag model (P5-M10-H): upstream-equivalent AnnotationTag entities",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): execution annotation tags: AnnotationTag-equivalent entity + attach/detach on executions (upstream parity); persistence = store extension; API gated; tests: tag lifecycle + orphan cleanup; rollback: unmount; deps: execution records (exists). PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
         }
       ]
     },
@@ -3992,6 +5231,17 @@
           "issue": 116,
           "evidence": null,
           "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P6-S05",
+          "title": "Minimal credential-consuming node for the SecretRef integration path (smallest consumer for P5-M02, not a native-performance node)",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Smallest legitimate credential-consuming node scoped for the P5-M02 integration path per owner master prompt REQ-0003 section 7: a dedicated minimal consumer (not under P6-S04 native-catalog scope) that resolves a request-bound SecretRef through the P2.27 Secret Broker at execution, fails explicitly on missing/invalid/unauthorized references, and never places raw secrets in workflow data or logs. Acceptance list and existing-node audit: docs/n8n-lego/evidence/P5-M02-FOUNDATION.md. PROPOSED - not authorized, not started.",
+          "mergeSha": null,
+          "issue": 85,
+          "evidence": null,
+          "owner": "manager (unassigned)"
         }
       ]
     },
@@ -4407,6 +5657,72 @@
           "title": "Storage contract foundation (not authorized)",
           "kind": "slice",
           "status": "planned",
+          "mergeSha": null,
+          "issue": 90,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P8-S02",
+          "title": "Storage contract: provider-neutral key/value semantics (namespace, serialization, failure behavior, consistency)",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Storage foundation decomposition prepared per owner master prompt REQ-0003 section 8; contract spec: docs/n8n-lego/evidence/P8-S01-FOUNDATION.md. Scope: contract: namespaced key/value get/put/delete with provider-neutral semantics; serialization rules; explicit failure behavior (no silent retry); read-your-writes consistency baseline. PROPOSED - P8 placeholders need a Manager Master Prompt / owner authorization before any work.",
+          "mergeSha": null,
+          "issue": 90,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P8-S03",
+          "title": "Storage TTL semantics (expiry, refresh, eviction contract)",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Storage foundation decomposition prepared per owner master prompt REQ-0003 section 8; contract spec: docs/n8n-lego/evidence/P8-S01-FOUNDATION.md. Scope: TTL: per-key expiry with explicit refresh and eviction behavior observable to callers. PROPOSED - P8 placeholders need a Manager Master Prompt / owner authorization before any work.",
+          "mergeSha": null,
+          "issue": 90,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P8-S04",
+          "title": "Storage atomic operations (compare-and-set, atomic counters, batch atomicity)",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Storage foundation decomposition prepared per owner master prompt REQ-0003 section 8; contract spec: docs/n8n-lego/evidence/P8-S01-FOUNDATION.md. Scope: atomicity: compare-and-set where needed, atomic increment, all-or-nothing batch apply. PROPOSED - P8 placeholders need a Manager Master Prompt / owner authorization before any work.",
+          "mergeSha": null,
+          "issue": 90,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P8-S05",
+          "title": "Storage concurrency semantics (race behavior, isolation expectations)",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Storage foundation decomposition prepared per owner master prompt REQ-0003 section 8; contract spec: docs/n8n-lego/evidence/P8-S01-FOUNDATION.md. Scope: concurrency: defined read/write race outcomes and isolation expectations across hosts. PROPOSED - P8 placeholders need a Manager Master Prompt / owner authorization before any work.",
+          "mergeSha": null,
+          "issue": 90,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P8-S06",
+          "title": "Local reference provider (in-memory/local implementation of the storage contract)",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Storage foundation decomposition prepared per owner master prompt REQ-0003 section 8; contract spec: docs/n8n-lego/evidence/P8-S01-FOUNDATION.md. Scope: local reference provider: single-host implementation used by tests and dev; explicitly NOT multi-host (no fake multi-host behavior on local-only storage). PROPOSED - P8 placeholders need a Manager Master Prompt / owner authorization before any work.",
+          "mergeSha": null,
+          "issue": 90,
+          "evidence": null,
+          "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P8-S07",
+          "title": "Storage test harness (contract conformance suite every provider must pass)",
+          "kind": "maintenance",
+          "status": "proposed",
+          "latestUpdate": "Storage foundation decomposition prepared per owner master prompt REQ-0003 section 8; contract spec: docs/n8n-lego/evidence/P8-S01-FOUNDATION.md. Scope: test harness: conformance suite any provider must pass (TTL, CAS, batch, concurrency, failure injection). PROPOSED - P8 placeholders need a Manager Master Prompt / owner authorization before any work.",
           "mergeSha": null,
           "issue": 90,
           "evidence": null,
