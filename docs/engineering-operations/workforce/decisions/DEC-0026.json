@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "objectType": "Decision",
+  "objectId": "DEC-0026",
+  "revision": 1,
+  "createdAt": "2026-09-26T23:53:08Z",
+  "updatedAt": "2026-09-26T23:53:08Z",
+  "events": [],
+  "state": "ACTIVE",
+  "category": "ARCHITECTURE",
+  "title": "P5-M06 mail transport is an injected MailTransport contract: the product ships no SMTP client dependency",
+  "problem": "P5-M06 (email-based password recovery, split out of P5-M03, upstream /rest/forgot-password over the P5 reset-token primitive) is blocked on exactly one thing: 'a mail-transport architecture decision (a dependency, or an injected transport contract); Node has no built-in SMTP'. The P5 reset-token primitive already covers token issue and verification; the open question is only how the recovery mail leaves the process. Bundling an SMTP client is a dependency decision; leaving the question open blocks the slice indefinitely. This decision answers the transport question so P5-M06 can be planned.",
+  "options": [
+    {
+      "id": "A-injected-transport",
+      "summary": "Define MailTransport as an injected host contract in the repo's standard split (pure values in, frozen values out; the host does the IO). The product ships no SMTP client and no mail-provider SDK. P5-M06 sends recovery mail by calling the injected transport; tests use a recording fake transport; operators wire SMTP or provider-API adapters outside the product bundle."
+    },
+    {
+      "id": "B-bundled-smtp-dependency",
+      "summary": "Bundle a mature SMTP client dependency and own the SMTP conversation, TLS, auth and retry inside the product."
+    },
+    {
+      "id": "C-provider-sdk",
+      "summary": "Bundle one mail provider's HTTP SDK and send mail through that provider's API."
+    }
+  ],
+  "selectedOption": "A-injected-transport",
+  "rationale": "Option A is the only choice consistent with how this repo is built. (1) Every contract in the codebase uses the same split: pure values in, frozen values out, the host does the IO; mail transport is host IO, so it belongs behind an injected contract. (2) The repo is deliberately dependency-averse: the catalog fetcher exists specifically to avoid a 70 MB dependency tree 'that a workflow runtime never executes', and an SMTP client would add TLS, auth and retry machinery the product would then own, patch and support. (3) Option C is the same IO problem with vendor lock-in on top. (4) An injected transport is the only variant that is fully testable in CI: a recording fake transport lets the recovery flow be tested deterministically with no network, no fixture mailbox and no credentials. (5) The operator keeps freedom to run SMTP, a provider API, or a corporate relay without a product release. (6) The blocker text itself enumerates the option space as 'a dependency, or an injected transport contract'; the owner's standing mandate instructs the Manager to remove removable blockers, and this is the option that removes the blocker without importing new supply-chain surface. Scope wall: this decision answers the transport question only. The recovery flow (endpoints, token timing, enumeration resistance, rate limiting) remains P5-M06's own delivery work and is NOT made complete, started or authorized for execution by this decision; it only moves from blocked to planned. REQ-0002 records the owner master prompt of 2026-09-27 that instructs the Manager to remove removable blockers and to give every kept blocker a concrete resolution path.",
+  "scope": {
+    "programs": [
+      "P5",
+      "GOVERNANCE"
+    ],
+    "slices": [
+      "P5-M06"
+    ],
+    "domains": [
+      "auth.identity",
+      "credentials"
+    ],
+    "surfaces": [
+      "/rest/forgot-password"
+    ]
+  },
+  "authority": {
+    "decidedBy": "OWNER",
+    "managerOnly": false,
+    "humanEscalation": true,
+    "proposedBy": "MANAGER-01"
+  },
+  "evidence": [],
+  "evidenceRefs": [
+    "docs/n8n-lego/milestones.json (P5-M06 blockedBy text: the decision this resolves)",
+    "docs/n8n-lego/evidence/P5.8-CERTIFICATION-EVIDENCE.md \u00a77 (P5-M06 debt source)",
+    "REQ-0002 (Arena Manager master prompt 2026-09-27): remove removable blockers; classify and give every kept blocker a concrete resolution path"
+  ],
+  "sources": {
+    "issues": [
+      85
+    ],
+    "prs": [],
+    "commits": [],
+    "requests": [
+      "REQ-0002"
+    ]
+  },
+  "supersedes": null,
+  "supersededBy": null,
+  "promotion": {
+    "canonical": false,
+    "mainPath": "docs/engineering-operations/workforce/decisions/DEC-0026.json",
+    "mainCommitSha": null,
+    "promotedAt": null,
+    "promotedBy": null
+  },
+  "reason": null
+}

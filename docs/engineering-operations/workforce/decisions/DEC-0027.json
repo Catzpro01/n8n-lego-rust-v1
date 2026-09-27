@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0",
+  "objectType": "Decision",
+  "objectId": "DEC-0027",
+  "revision": 1,
+  "createdAt": "2026-09-26T23:53:08Z",
+  "updatedAt": "2026-09-26T23:53:08Z",
+  "events": [],
+  "state": "ACTIVE",
+  "category": "MERGE",
+  "title": "The temporary hosted-only merge gate is retired: the full DEC-0015 matrix is the merge gate again",
+  "problem": "DEC-0025 temporarily made the GitHub-hosted n8n-lego Gate the effective merge gate while the 10-runner self-hosted fleet was offline, because the six required self-hosted DEC-0015 jobs never left queued. That condition has ended: the fleet is back and running the full matrix (9/9 checks green on PR #347 head ca128f56, including Level 0, Level 1, Level 2 linux/windows, Conformance and the Windows worker portability probe), and the DEC-0015 back-fill re-ran every deferred self-hosted check against the merged main head (11/11 green on back-fill PR #348, head 03cbf7f7). Left ACTIVE, DEC-0025 would keep licensing merges that skip the required self-hosted checks \u2014 exactly the class of hidden failure its temporary rule tolerated.",
+  "options": [
+    {
+      "id": "A-retire",
+      "summary": "Supersede DEC-0025 through the repo's decision chain (state SUPERSEDED, supersededBy DEC-0027) and let the full DEC-0015 matrix stand as the merge gate again."
+    },
+    {
+      "id": "B-keep-temporary",
+      "summary": "Keep DEC-0025 active indefinitely as a fallback gate for future fleet outages."
+    },
+    {
+      "id": "C-delete-file",
+      "summary": "Delete DEC-0025 as if it never existed."
+    }
+  ],
+  "selectedOption": "A-retire",
+  "rationale": "Option A follows the established supersession chain (DEC-0010 -> DEC-0017 -> DEC-0019): a temporary decision whose condition ended is retired by a successor decision, not deleted, so the history stays readable (C is history erasure and would remove the record of why a temporary gate existed). B would leave standing permission to merge without required checks whenever a runner stalls, which conflicts with the rule that every required check must be success on the current head and with the WAITING_RUNNER-is-never-PASS discipline of DEC-0015; a future outage is handled by a fresh, explicit temporary decision scoped to that outage, not by a dormant license. The merge gate from this point on is the full DEC-0015 matrix (Level 0, Level 1, Level 2 linux/windows, Conformance, Windows worker portability probe) plus the GitHub-hosted checks, on the exact head being merged.",
+  "scope": {
+    "programs": [
+      "GOVERNANCE"
+    ],
+    "slices": [],
+    "domains": [],
+    "surfaces": []
+  },
+  "authority": {
+    "decidedBy": "OWNER",
+    "managerOnly": false,
+    "humanEscalation": true,
+    "proposedBy": "MANAGER-01"
+  },
+  "evidence": [],
+  "evidenceRefs": [
+    "docs/engineering-operations/workforce/decisions/DEC-0025.json (the temporary gate being retired)",
+    "docs/engineering-operations/workforce/decisions/DEC-0015.json (the standing gate that resumes)",
+    "docs/engineering-operations/workforce/decisions/DEC-0024.json (option A cites the same 9/9 full-matrix evidence)",
+    "REQ-0002 (Arena Manager master prompt 2026-09-27): hidden failure sweep - a temporary license to skip required checks is a standing hidden-failure risk once its condition ends"
+  ],
+  "sources": {
+    "issues": [],
+    "prs": [
+      347,
+      348
+    ],
+    "commits": [],
+    "requests": [
+      "REQ-0002"
+    ]
+  },
+  "supersedes": "DEC-0025",
+  "supersededBy": null,
+  "promotion": {
+    "canonical": false,
+    "mainPath": "docs/engineering-operations/workforce/decisions/DEC-0027.json",
+    "mainCommitSha": null,
+    "promotedAt": null,
+    "promotedBy": null
+  },
+  "reason": null
+}
