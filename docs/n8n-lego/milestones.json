@@ -16,9 +16,9 @@
       "pr": 357,
       "mergeSha": "b7fb9ea41811832263458f5c0d150b7063820eae"
     },
-    "activeSlices": [],
+    "activeSlices": ["P5-M11"],
     "verifyingSlices": [],
-    "plannedQueue": ["P5-M11", "P5-M12", "P5-M13", "P5-M14", "P5-M15", "P5-M16", "P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
+    "plannedQueue": ["P5-M12", "P5-M13", "P5-M14", "P5-M15", "P5-M16", "P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
@@ -4754,12 +4754,63 @@
         {
           "id": "P5-M11",
           "title": "Project / sharing backing model (P5-M10-A): project, membership and share records for /api/v1/projects",
-          "kind": "maintenance",
-          "status": "planned",
-          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): projects/sharing: project, membership, share-role semantics; persistence = shared store boundary (P8); API surface gated until the model exists; tests: model unit + API contract; rollback: drop the resource mount; deps: P8-S01 storage contract. PLANNED - authorized in the execution plan (owner marathon prompt): queue admission after P5-M05 and before the P5-M10 phase; not started.",
+          "kind": "slice",
+          "status": "in-progress",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Project records over the storage facade",
+              "purpose": "createProject/getProject/renameProject/archiveProject with project records persisted only through the P8 storage facade (namespace project-share); closed record shape {tag:1, projectId, name, ownerId, createdAt, archived}; explicit errors PROJECT_INVALID/NOT_FOUND/CONFLICT; STORAGE_* propagated; no memory-local state.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "apps/n8n-lego/src/lego/project-sharing-model.mjs; test/lego-project-sharing-model.test.mjs lifecycle cases.",
+              "reference": "P5-M11 scope: project records, persistence = P8 shared store boundary",
+              "completedAt": "2026-09-27T00:00:00Z"
+            },
+            {
+              "id": "CP-02",
+              "title": "Membership + share-role semantics",
+              "purpose": "Membership/share records m:{project}:{principal} with closed role vocabulary owner|editor|viewer (hierarchy owner>editor>viewer, roleAtLeast helper); addMember/changeMemberRole/removeMember/getMember/listMembers (bounded); one owner per project invariant; role validation typed.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "project-sharing-model.mjs role vocabulary + membership ops; tests role/membership cases.",
+              "reference": "P5-M11 scope: membership, share-role semantics",
+              "completedAt": "2026-09-27T00:00:00Z"
+            },
+            {
+              "id": "CP-03",
+              "title": "CAS race-safety + atomic ownership transfer",
+              "purpose": "Race-sensitive updates (rename, archive, role change, ownership transfer) go through CAS (putIfVersion); ownership transfer uses applyBatch all-or-nothing (owner membership + both role records + project.ownerId change land together or not at all); two logical hosts over one storage: concurrent role changes have exactly one winner + explicit PROJECT_CONFLICT for the loser.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "tests: multi-host CAS races + transfer atomicity (mid-batch conflict applies nothing).",
+              "reference": "P5-M11 acceptance: race-sensitive state via CAS; multi-host behavior follows the storage contract",
+              "completedAt": "2026-09-27T00:00:00Z"
+            },
+            {
+              "id": "CP-04",
+              "title": "Boundary + Rust-friendly",
+              "purpose": "Facade-only imports (no provider internals; surface pinned), injected clock+idFactory, JSON records tag:1 (upgrade compatibility), closed stable error model, deterministic given injected deps; API surface stays gated (model layer only, no route mounting).",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "tests: surface pin + determinism; module header contract.",
+              "reference": "P5-M11 scope: API surface gated until the model exists; rollback: drop the resource mount",
+              "completedAt": "2026-09-27T00:00:00Z"
+            },
+            {
+              "id": "CP-05",
+              "title": "Delivery: evidence + regression + merge",
+              "purpose": "Evidence P5-M11-DELIVERY.md (scope mapping + deviations + rollback); full regression battery; delivery PR + CI + merge + post-merge battery + governance reconcile.",
+              "weight": 20,
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P5-M11-DELIVERY.md; PR battery records (updated after merge).",
+              "reference": "P5-M11 scope: tests model unit + API contract",
+              "completedAt": "2026-09-27T00:00:00Z"
+            }
+          ],
+          "updatedAt": "2026-09-27T00:00:00Z",
+          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: project + membership + share-role model over the P8 storage facade (project-sharing-model.mjs) - persistence behind the shared store boundary, CAS for race-sensitive updates, atomic ownership transfer via applyBatch, closed role vocabulary, API surface stays gated (model layer only). Implementation + tests + evidence complete; merge + post-merge verification complete the slice in the delivery follow-up.",
           "mergeSha": null,
-          "issue": 85,
-          "evidence": null,
           "owner": "manager (unassigned)"
         },
         {
