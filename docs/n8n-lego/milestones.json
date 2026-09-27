@@ -10,13 +10,13 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "9dec7ad69bf749953efe2cfc7dfb9f25d53fb724",
+    "lastVerifiedMain": "b8798bbffd02f379378c08b18ee342a0c601ec48",
     "latestCompletedSlice": {
-      "id": "P5-M15",
-      "pr": 362,
-      "mergeSha": "5cb23602f0ba1d2e3cbc1eb54a4278178106414b"
+      "id": "P5-M16",
+      "pr": 363,
+      "mergeSha": "b8798bbffd02f379378c08b18ee342a0c601ec48"
     },
-    "activeSlices": ["P5-M16"],
+    "activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": ["P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
@@ -5079,7 +5079,7 @@
           "id": "P5-M16",
           "title": "Workflow-version backing model (P5-M10-F): immutable workflow version records for /api/v1/workflow-versions",
           "kind": "maintenance",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -5127,16 +5127,17 @@
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
               "status": "completed",
-              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
+              "evidence": "docs/n8n-lego/evidence/P5-M16-DELIVERY.md; PR #363 (CI 9/9 on a7eab947, merge b8798bbf) + post-merge battery.",
               "reference": "P5-M16 scope (workflow-version backing model)",
               "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
-          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: workflow-version backing model (P5-M10-F) - immutable version records with parent links and diff metadata over the P8 storage facade (namespace workflow-versions); immutability + ancestry tests; API surface stays gated (model layer only); rollback = unmount; deps P8-S01 delivered. In progress.",
-          "mergeSha": null,
+          "latestUpdate": "IMPLEMENTED (evidence: docs/n8n-lego/evidence/P5-M16-DELIVERY.md) - workflow-version backing model (P5-M10-F) delivered: immutable version records with parent links + diff metadata over the P8 storage facade (workflow-version-model.mjs); create-only (duplicate refused across hosts, no mutation API); DAG ancestry by construction (existing parents only, self-parent/unknown parent refused); deterministic ancestors/descendants walks defensive against corrupted cycles (VERSION_CONFLICT); per-workflow monotonic sequence; filter-aware cursor lists; rollback = unmount; errors VERSION_INVALID|NOT_FOUND|CONFLICT closed. 9/9 tests green (2 impl bugs fixed pre-commit: walk direction, cursor shape). Delivery branch delivery/p5-m16-workflow-versions (head a7eab947) -> PR #363 CI 9/9 green -> merge b8798bbf; post-merge battery green (lego 2996/2996, engine 49/49, runtime 79/79, lego:gate 0, isolation 0, decisions 0).",
+          "pr": 363,
+          "mergeSha": "b8798bbffd02f379378c08b18ee342a0c601ec48",
           "issue": 85,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P5-M16-DELIVERY.md",
           "owner": "manager (unassigned)"
         },
         {
