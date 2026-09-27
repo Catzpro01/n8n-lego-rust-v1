@@ -16,9 +16,9 @@
       "pr": 363,
       "mergeSha": "b8798bbffd02f379378c08b18ee342a0c601ec48"
     },
-    "activeSlices": [],
+    "activeSlices": ["P5-M17"],
     "verifyingSlices": [],
-    "plannedQueue": ["P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
+    "plannedQueue": ["P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
@@ -5144,8 +5144,61 @@
           "id": "P5-M17",
           "title": "Execution retry model (P5-M10-G): retry path over execution records",
           "kind": "maintenance",
-          "status": "planned",
-          "latestUpdate": "Backing-model foundation split out of P5-M10 per owner master prompt REQ-0003 section 10. Scope definition (model, contract, persistence boundary, API gating, compatibility, tests, rollback, dependencies): execution retry: retry-request record bound to an original execution, with idempotency and terminal-state rules (no silent second run); persistence = execution store extension; API gated; tests: double-retry refusal + linkage; rollback: unmount; deps: engine execution records (exists), retry semantics contract. PLANNED - authorized in the execution plan (owner marathon prompt): queue admission after P5-M05 and before the P5-M10 phase; not started.",
+          "status": "in-progress",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Retry-request record bound to an execution",
+              "purpose": "Retry-request record {retryId, originalExecutionId, requestedBy, reason, state} persisted only through the P8 storage facade as an execution-store extension (namespace exec-retry); explicit errors RETRY_INVALID/NOT_FOUND/CONFLICT; linkage to the original execution is enforced.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M17 scope (execution retry model)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-02",
+              "title": "Idempotency rules",
+              "purpose": "Double-retry refusal: at most one active retry request per original execution (create-only + unique active link); duplicate requests surface RETRY_CONFLICT, never a silent second run; multi-host shared state.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M17 scope (execution retry model)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-03",
+              "title": "Terminal-state rules",
+              "purpose": "Retry request lifecycle created->approved->executed|rejected|aborted with closed vocabulary and pure CAS transitions (token required, stale -> CONFLICT); the executed state is recorded exactly once (idempotent terminal).",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M17 scope (execution retry model)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-04",
+              "title": "Tests + rollback",
+              "purpose": "Tests: double-retry refusal + linkage; rollback = unmount (namespace isolation leaves history untouched); determinism + surface pin.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M17 scope (execution retry model)",
+              "completedAt": null
+            },
+            {
+              "id": "CP-05",
+              "title": "Evidence + delivery notes committed; battery green",
+              "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
+              "weight": 20,
+              "status": "planned",
+              "evidence": null,
+              "reference": "P5-M17 scope (execution retry model)",
+              "completedAt": null
+            }
+          ],
+          "updatedAt": "2026-09-27T00:00:00Z",
+          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: execution retry model (P5-M10-G) - retry-request record bound to an original execution over the execution-store extension (namespace exec-retry); idempotency + terminal-state rules (no silent second run); API surface stays gated (model layer only); rollback = unmount; deps: engine execution records exist. In progress.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
