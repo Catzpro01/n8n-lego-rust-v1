@@ -144,7 +144,7 @@ const MUTATIONS = [
   }, /is neither active nor verifying/],
   ['a queued slice that is not planned', (r) => { r.executionPointer.plannedQueue.push('P5-M03'); }, /queued slice P5-M03 is implemented/],
   ['a blocked slice without blockedBy', (r) => { delete r.programs[5].slices.find((x) => x.id === 'P5-M10').blockedBy; }, /P5-M10 does not record blockedBy/],
-  ['a blocked slice missing from blockedSlices', (r) => { r.executionPointer.blockedSlices = []; }, /blocked slice P5-M02 is missing/],
+  ['a blocked slice missing from blockedSlices', (r) => { r.executionPointer.blockedSlices = []; }, /blocked slice P2-S03 is missing/],
   ['a latest completed slice that is not implemented', (r) => {
     // Any slice that is not implemented will do; the queue may legitimately be
     // empty once every queued slice has been started or blocked.
@@ -424,8 +424,9 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // Pin of the reconciled register. Refresh it when a slice's delivery state is reconciled; it
   // exists so a silently-flipped status cannot pass unnoticed. The tally itself is derived above,
   // so this pin is a tripwire on the register's delivery state, not on the arithmetic.
-  assert.equal(tally.percent, 75);
-  assert.equal(tally.implemented, 150);
+  // Refresh 2026-09-27: P6-S05 and P5-M02 reconciled to implemented on PR #355 merge d549d40d.
+  assert.equal(tally.percent, 76);
+  assert.equal(tally.implemented, 152);
   assert.equal(tally.total, 200);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
@@ -436,8 +437,8 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
   assert.equal(metrics.current.total, 194);
-  assert.equal(metrics.current.implemented, 149);
-  assert.equal(metrics.current.sliceCompletion, percent1(149, 194));
+  assert.equal(metrics.current.implemented, 151);
+  assert.equal(metrics.current.sliceCompletion, percent1(151, 194));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);

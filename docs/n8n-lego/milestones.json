@@ -10,9 +10,9 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "f2ed63bad435db004ac3bdaf9c8cc66e91a77fb7",
+    "lastVerifiedMain": "d549d40d83d29276fb2a6c565f68cb93bfc2d6e4",
     "latestCompletedSlice": { "id": "P2-S09", "pr": 354, "mergeSha": "edc3e9606d5741bb7bb81bfc2eb33e4dc6801545" },
-    "activeSlices": ["P6-S05"],
+    "activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": [
       "P2-S10",
@@ -38,12 +38,11 @@
     ],
     "blockedSlices": [
       "P2-S03",
-      "P5-M02",
       "P5-M05",
       "P5-M06",
       "P5-M10"
     ],
-    "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt REQ-0003 sections 6 and 13): P6-S05 (in-progress, delivery PR); P8-S01 storage contract foundation (priority 2); P5-M02 runtime credential integration unblock via the P6-S05 canonical chain (sections 6-7); P5-M05 multi-host state (section 10); P5-M11..P5-M18 backing models one by one (sections 11-12); P5-M10 audit after the v1 API (section 12); P5-M06 password recovery with provider-neutral injected mail transport (section 13 + DEC-0028 option A, ACTIVE); P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). DEC-0028 is ACTIVE (option A-injected-transport, decidedBy OWNER): P5-M06 must use a provider-neutral injected mail transport, no vendor lock-in.",
+    "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt REQ-0003 sections 6 and 13): P8-S01 storage contract foundation (priority 2); P5-M05 multi-host state (section 10); P5-M11..P5-M18 backing models one by one (sections 11-12); P5-M10 audit after the v1 API (section 12); P5-M06 password recovery with provider-neutral injected mail transport (section 13 + DEC-0028 option A, ACTIVE); P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED THIS CYCLE: P6-S05 (PR #355, merge d549d40d) and P5-M02 (unblocked and implemented on the same chain, evidence docs/n8n-lego/evidence/P5-M02-UNBLOCK.md). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). DEC-0028 is ACTIVE (option A-injected-transport, decidedBy OWNER): P5-M06 must use a provider-neutral injected mail transport, no vendor lock-in.",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
   },
   "governance": {
@@ -4372,11 +4371,55 @@
           "id": "P5-M02",
           "title": "Credential runtime integration: execution path resolves credentials via SecretRef over the P2.27 broker",
           "kind": "maintenance",
-          "status": "blocked",
-          "blockedBy": "Needs a credential-consuming node in the execution path: engine node-registry.mjs exposes only the manual node set, so there is no legitimate integration consumer. The smallest consumer is scoped as P6-S05 (proposed, not authorized) with the exact acceptance list in docs/n8n-lego/evidence/P5-M02-FOUNDATION.md: SecretRef -> P2.27 Secret Broker -> credential resolution -> execution path -> real node consumer -> full regression suite (REQ-0003 section 7). #116/P6-S04 being proposed is not authorization. Stays blocked until authorization exists.",
-          "mergeSha": null,
+          "status": "implemented",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Success path: SecretRef -> broker -> resolution -> consumer header",
+              "purpose": "The execution path resolves a request-bound SecretRef through the P2.27 Secret Broker at execution and the credential material lands only in the outgoing HTTP request header (Authorization: Bearer / named header), proven at a real mock server.",
+              "weight": 25,
+              "status": "completed",
+              "evidence": "apps/n8n-lego/test/lego-credential-chain.test.mjs bearer + header auth cases (server-seen header assertions); P5-M02-FOUNDATION.md acceptance 1-2.",
+              "reference": "REQ-0003 section 7 completion rule",
+              "completedAt": "2026-09-27T07:20:00Z"
+            },
+            {
+              "id": "CP-02",
+              "title": "Failure matrix: missing, invalid, unauthorized (and broker/target)",
+              "purpose": "Every failure is explicit and distinguishable: missing ref, missing material, empty token, unauthorized capability grant, malformed ref, broker failure, target transport failure, wrong credential kind. No empty success (one result or one explicit error per input item).",
+              "weight": 25,
+              "status": "completed",
+              "evidence": "lego-credential-chain.test.mjs negative-matrix cases (8 explicit codes); engine HTTP_REQUEST_* closed set unit tests.",
+              "reference": "P5-M02-FOUNDATION.md acceptance 3",
+              "completedAt": "2026-09-27T07:20:00Z"
+            },
+            {
+              "id": "CP-03",
+              "title": "Secret redaction: raw secret never in workflow/execution/logs",
+              "purpose": "Sentinel secret P6S05-SENTINEL-SECRET-7c2d proven absent from workflow JSON, execution output, error objects and warnings (it appears only in the server-seen request header). Material is single-use: liveCount returns to baseline, replay denied ref.already_redeemed.",
+              "weight": 25,
+              "status": "completed",
+              "evidence": "lego-credential-chain.test.mjs leak sweep + single-use + replay cases; P6-S05-EVIDENCE.md section 5.",
+              "reference": "P5-M02-FOUNDATION.md acceptance 4",
+              "completedAt": "2026-09-27T07:20:00Z"
+            },
+            {
+              "id": "CP-04",
+              "title": "Integration regression before and after + round-trips + lifetime",
+              "purpose": "Integration regression runs before the change (PR head c657f2e4 battery) and after (main d549d40d battery), both green. Workflow JSON and execution JSON round-trips preserve the safe shape; TTL expiry refused at authority level.",
+              "weight": 25,
+              "status": "completed",
+              "evidence": "PR #355 pre-merge battery and post-merge battery records; lego-credential-chain.test.mjs round-trip + TTL cases; P5-M02-UNBLOCK.md sections 4-5.",
+              "reference": "REQ-0003 section 7 items 1-4",
+              "completedAt": "2026-09-27T07:20:00Z"
+            }
+          ],
+          "updatedAt": "2026-09-27T07:20:00Z",
+          "latestUpdate": "UNBLOCKED AND IMPLEMENTED per owner master prompt REQ-0003 sections 6-7 (\"P5-M02 must use exactly this path ... when it is wired through the chain above, unblock immediately\"). Root cause eliminated: a credential-consuming node now exists in the execution path (P6-S05 n8n-nodes-base.httpRequest, merged d549d40d) and the authorization gap closed by REQ-0003 section 6. Single canonical resolution path: workflow node -> credentialRef -> SecretRef -> P2.27 Secret Broker -> resolve -> HTTP node -> Authorization header (apps/n8n-lego/src/lego/credential-runtime.mjs); no second credential-resolution path. Acceptance list P5-M02-FOUNDATION.md 1-6 covered; chain suite 15/15 (success/missing/unauthorized/invalid/broker/target + redaction + workflow/execution round-trips + single-use/replay/TTL); integration regression green before (c657f2e4) and after (d549d40d). Implementation landed via the P6-S05 delivery PR #355 (the same chain is P5-M02's integration); post-merge SHA d549d40d83d29276fb2a6c565f68cb93bfc2d6e4. Evidence: docs/n8n-lego/evidence/P5-M02-UNBLOCK.md.",
+          "pr": 355,
+          "mergeSha": "d549d40d83d29276fb2a6c565f68cb93bfc2d6e4",
           "issue": 85,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P5-M02-UNBLOCK.md",
           "owner": "manager (unassigned)",
           "debtSource": "docs/n8n-lego/evidence/P5.8-CERTIFICATION-EVIDENCE.md \u00a77"
         },
@@ -5263,7 +5306,7 @@
           "id": "P6-S05",
           "title": "Minimal credential-consuming node for the SecretRef integration path (smallest consumer for P5-M02, not a native-performance node)",
           "kind": "maintenance",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -5310,14 +5353,16 @@
               "title": "Delivery: registry + evidence + regression + merge",
               "purpose": "No green-only delivery: register checkpoint model, provenance evidence file (reference version, behavior extracted, scope copied, deviations, tests), full regression battery (lego 2909/2909, engine 49/49, frontend 672/672, runtime 79/79, lego:gate, isolation:check, decisions-check), PR + CI + merge + post-merge verification + pointer reconcile.",
               "weight": 15,
-              "status": "in-progress",
-              "evidence": "docs/n8n-lego/evidence/P6-S05-EVIDENCE.md; register checkpoint model; full regression battery green pre-merge. Merge + post-merge verification complete this checkpoint in the delivery follow-up (with the real merge SHA).",
-              "reference": "master prompt REQ-0003 section 6 completion list"
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P6-S05-EVIDENCE.md; PR #355 (CI 11/11 green on head c657f2e4) merged at d549d40d; post-merge battery on main d549d40d green (lego 2909/2909, engine 49/49, runtime 79/79, lego:gate 0, isolation:check 0, decisions-check 0, ai:check 0); register checkpoint model + projections reconciled in this governance reconcile.",
+              "reference": "master prompt REQ-0003 section 6 completion list",
+              "completedAt": "2026-09-27T07:20:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T00:00:00Z",
-          "latestUpdate": "Implemented in delivery PR (owner master prompt REQ-0003 section 6). Reference = n8n/n8n@2.9.4 packages/nodes-base/nodes/HttpRequest (V1/V2/V3 + GenericFunctions) and credentials HttpBearerAuth/HttpHeaderAuth, extracted at reference/n8n/. Chain proven with a real mock HTTP server: workflow node -> credentialRef -> SecretRef -> P2.27 Secret Broker -> resolve -> HTTP node -> Authorization header -> server. Failure matrix explicit: missing/invalid/unauthorized/malformed/broker/target-request plus wrong-credential-kind; no empty-success (1 item per input item). Raw secret never present in workflow JSON / execution output / error objects / warnings (sentinel P6S05-SENTINEL-SECRET-7c2d). Deviations documented in evidence: error codes namespaced HTTP_REQUEST_* (closed set), validate-before-resolve, transport seam injected (registry stays deterministic), response shaping strips auth/set-cookie headers. The reusable credential-runtime glue (apps/n8n-lego/src/lego/credential-runtime.mjs) is the single canonical resolution path P5-M02 must use (no second path). Tests: engine 49/49 (19 new incl. 11 fixture cases), lego-credential-chain 15/15 (integration + negative + leak + round-trip + replay + TTL). Evidence: docs/n8n-lego/evidence/P6-S05-EVIDENCE.md. IN-PROGRESS DELIVERY: implementation+tests+evidence complete and green; merge + post-merge verification pending (implemented flip with 40-hex merge SHA lands in the delivery follow-up).",
-          "mergeSha": null,
+          "updatedAt": "2026-09-27T07:20:00Z",
+          "latestUpdate": "Implemented in delivery PR (owner master prompt REQ-0003 section 6). Reference = n8n/n8n@2.9.4 packages/nodes-base/nodes/HttpRequest (V1/V2/V3 + GenericFunctions) and credentials HttpBearerAuth/HttpHeaderAuth, extracted at reference/n8n/. Chain proven with a real mock HTTP server: workflow node -> credentialRef -> SecretRef -> P2.27 Secret Broker -> resolve -> HTTP node -> Authorization header -> server. Failure matrix explicit: missing/invalid/unauthorized/malformed/broker/target-request plus wrong-credential-kind; no empty-success (1 item per input item). Raw secret never present in workflow JSON / execution output / error objects / warnings (sentinel P6S05-SENTINEL-SECRET-7c2d). Deviations documented in evidence: error codes namespaced HTTP_REQUEST_* (closed set), validate-before-resolve, transport seam injected (registry stays deterministic), response shaping strips auth/set-cookie headers. The reusable credential-runtime glue (apps/n8n-lego/src/lego/credential-runtime.mjs) is the single canonical resolution path P5-M02 must use (no second path). Tests: engine 49/49 (19 new incl. 11 fixture cases), lego-credential-chain 15/15 (integration + negative + leak + round-trip + replay + TTL). Evidence: docs/n8n-lego/evidence/P6-S05-EVIDENCE.md. DELIVERED: PR #355 merged at d549d40d83d29276fb2a6c565f68cb93bfc2d6e4 (CI 11/11 green on head c657f2e4); post-merge battery on the merge SHA green. Also delivered runtime fixes in the same PR: runtime-suite unknown-type examples moved to n8n-nodes-base.notARealNode (httpRequest became a real node; intent preserved) and the readiness nodeTypes pin 7 -> 8.",
+          "pr": 355,
+          "mergeSha": "d549d40d83d29276fb2a6c565f68cb93bfc2d6e4",
           "issue": 85,
           "evidence": "docs/n8n-lego/evidence/P6-S05-EVIDENCE.md",
           "owner": "manager (unassigned)"
