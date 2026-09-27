@@ -7,7 +7,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 ## Delivery progress (same two metrics as README.md)
 
-**Realtime Delivery Progress 86.6%** — 16800/19400 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 6 current-delivery slice(s) have no checkpoint model and contribute 0.
+**Realtime Delivery Progress 86.6%** — 16800/19400 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 5 current-delivery slice(s) have no checkpoint model and contribute 0.
 
 **Slice Completion 86.6%** — 168/194 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
@@ -31,13 +31,13 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | | |
 | --- | --- |
 | Latest completed slice | `P5-M10` — Public /api/v1 resources that need a backing model this product does not have yet (PR #366, merge `c95a0fae`) |
-| Active slices | — (none) |
+| Active slices | `P5-M06` — Email-based password recovery |
 | Verifying (merged, post-merge verification pending) | — (none) |
-| Planned queue (in order; planned ≠ authorized) | `P5-M06`, `P2-S10`, `P2-S11`, `P2-S12`, `P2-S13`, `P2-S14`, `P2-S15`, `P2-S16`, `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
+| Planned queue (in order; planned ≠ authorized) | `P2-S10`, `P2-S11`, `P2-S12`, `P2-S13`, `P2-S14`, `P2-S15`, `P2-S16`, `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
 | Blocked | `P2-S03` — blocked by Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped. |
 | Not authorized | planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). |
 | Historical P2 ladder pointer | `P2.27` (history, not active work) |
-| Last verified main | `340d39f1` |
+| Last verified main | `bc28eb69` |
 
 ## Programs P0–P11 (top level)
 
@@ -48,7 +48,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 39/60 | 29 | `P2-S10` (planned) |
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
-| **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 25/26 | 20 | `P5-M06` (planned) |
+| **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 25/26 | 20 | `P5-M06` (in-progress) |
 | **P6** | Node Registry / Node Runtime | **COMPLETE** | 34/36 | 67 | — |
 | **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 8/8 | 29 | — |
 | **P8** | Storage / Data Layer | **PLANNED** | 7/7 | 5 | — |
@@ -401,7 +401,7 @@ Identity, sessions, authorization, credential boundary, key management, account 
 | `P5-M03` | Public /api/v1 first surface: API-key boundary in upstream order (recorded 401 goldens), key scopes always enforced through the P5.3 kernel, offset-cursor pagination, workflows resource (9 operations). Re-planned by the Manager: email recovery moved to P5-M06, service-principal REST/UI to P5-M07, remaining /api/v1 resources to P5-M08 (one delivery PR per slice) | implemented | #291 | `cf52701c` | #85 |
 | `P5-M04` | Key-rotation work list without an O(n) scan: measure first (per-batch scan vs the O(n) replaceAll persist), index only if the scan dominates | implemented | — | `3ba8f339` | #85 |
 | `P5-M05` | Multi-host key storage and shared session + rate-limiter state; depends on the P8 storage contract (P8-S01, delivered: PR #356, merge 3e0f621d) | implemented | #357 | `b7fb9ea4` | #85 |
-| `P5-M06` | Email-based password recovery: needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03) | planned | — | — | #85 |
+| `P5-M06` | Email-based password recovery: needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03) | in-progress | — | — | #85 |
 | `P5-M07` | Service-principal REST + UI management over the P5.7 programmatic lifecycle (create shown once, redacted list, revoke with tombstone) (split out of P5-M03) | implemented | #317 | `0845c25f` | #85 |
 | `P5-M08` | Public /api/v1 second surface: tags (5 operations), variables (4, licence-gated 403 like the community edition), executions list/get/delete (lastId cursor), GET /api/v1/openapi.yml of exactly the mounted operations. Re-planned by the Manager: credentials, users and /docs to P5-M09; resources without a backing model to P5-M10 (one delivery PR per slice) | implemented | #304 | `600a2145` | #85 |
 | `P5-M09` | Public /api/v1 credentials (list, create, update, delete, schema; secrets never returned, data validated against the credential type) and users (list, get, create, delete, change role), plus /api/v1/docs (needs a decision on serving Swagger UI without a runtime dependency). Split out of P5-M08 | implemented | — | `c13ba6dc` | #85 |

@@ -16,9 +16,9 @@
       "pr": 366,
       "mergeSha": "c95a0fae50debb40395e912652ed7b53617ff367"
     },
-    "activeSlices": [],
+    "activeSlices": ["P5-M06"],
     "verifyingSlices": [],
-    "plannedQueue": ["P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
+    "plannedQueue": ["P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
@@ -4521,8 +4521,51 @@
           "id": "P5-M06",
           "title": "Email-based password recovery: needs a mail transport decision first (Node has no built-in SMTP: a dependency or an injected transport contract), then upstream /rest/forgot-password delivery over the P5 reset-token primitive (split out of P5-M03)",
           "kind": "maintenance",
-          "status": "planned",
-          "latestUpdate": "UNBLOCKED - stale blocker removed (no artificial blocker): DEC-0028 is ACTIVE (rev 2, decidedBy OWNER, selectedOption A-injected-transport, reason OWNER_AUTHORIZATION_GROUNDING quoting REQ-0005 section 1 item 8 / section 13). The blockedBy text claiming DEC-0028 was PROPOSED/undecided was stale governance and is withdrawn. Per the owner master prompt (P0 governance repair + section 10): P5-M06 returns to the execution plan and will be delivered with a provider-neutral injected mail transport (deterministic, injectable, testable, no hidden provider dependency, explicit error model, Rust-friendly), governance state per DEC-0028. Reversible per-option preparation remains in docs/n8n-lego/evidence/P5-M06-PREP.md (Option A basis).",
+          "status": "in-progress",
+          "checkpoints": [
+            {
+              "id": "CP-01",
+              "title": "Injected mail transport contract (DEC-0028 option A)",
+              "purpose": "Provider-neutral mail transport contract: deterministic, injectable, testable, no hidden provider dependency, explicit closed error model, Rust-friendly surface. Governance state per DEC-0028 (rev 2, option A-injected-transport).",
+              "weight": 20,
+              "status": "planned",
+              "reference": "DEC-0028 rev 2 (option A); docs/n8n-lego/evidence/P5-M06-PREP.md"
+            },
+            {
+              "id": "CP-02",
+              "title": "Password recovery surface over the P5 reset-token primitive",
+              "purpose": "Upstream /rest/forgot-password delivery wired to the P5 reset-token primitive (response semantics per pinned upstream: no account-existence leak).",
+              "weight": 20,
+              "status": "planned",
+              "reference": "P5-M06 scope (email-based password recovery, split out of P5-M03)"
+            },
+            {
+              "id": "CP-03",
+              "title": "Delivery wiring through the injected transport",
+              "purpose": "Recovery mail composed deterministically and sent through the injected transport; no secrets in logs or records; explicit failure behavior; no hidden provider fallback.",
+              "weight": 20,
+              "status": "planned",
+              "reference": "P5-M06 scope; DEC-0028 option A"
+            },
+            {
+              "id": "CP-04",
+              "title": "Tests + rollback",
+              "purpose": "Focused tests: transport contract conformance (injection swap), deterministic delivery, closed error mapping, no hidden side effects; rollback = unplug transport / unmount routes (reset-token history untouched).",
+              "weight": 20,
+              "status": "planned",
+              "reference": "P5-M06 scope; DEC-0028 option A"
+            },
+            {
+              "id": "CP-05",
+              "title": "Evidence + delivery notes committed; battery green",
+              "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
+              "weight": 20,
+              "status": "planned",
+              "reference": "P5-M06 scope"
+            }
+          ],
+          "updatedAt": "2026-09-27T15:51:01Z",
+          "latestUpdate": "STARTED (queue head -> activeSlices -> in-progress): delivery per DEC-0028 rev 2 option A (provider-neutral injected mail transport) + upstream /rest/forgot-password over the P5 reset-token primitive. 5 checkpoints (CP-01 transport contract; CP-02 recovery surface; CP-03 delivery wiring; CP-04 tests + rollback; CP-05 evidence + battery), weights 20 each. In progress.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,
