@@ -234,7 +234,15 @@
         "src/lego/manifest",
         "src/lego/envelope.mjs",
         "src/lego/interaction.mjs",
-        "src/lego/negotiation.mjs"
+        "src/lego/negotiation.mjs",
+        "src/lego/project-sharing-model.mjs",
+        "src/lego/audit-event-model.mjs",
+        "src/lego/source-control-model.mjs",
+        "src/lego/data-table-model.mjs",
+        "src/lego/transfer-model.mjs",
+        "src/lego/workflow-version-model.mjs",
+        "src/lego/execution-retry-model.mjs",
+        "src/lego/execution-tag-model.mjs"
       ],
       "dependsOn": [],
       "mustNotDependOn": [
@@ -6446,6 +6454,26 @@
         "severity": "accepted",
         "reason": "P5.8 (#221): `n8n-lego credentials backup <file>` writes the encrypted credential backup to a file the OPERATOR names (0600, tmp + rename, never over an existing file). It is an offline CLI export, not runtime state: the server never reads it, and no second worker needs to see it. The command refuses to run mutating verbs while the server is up.",
         "resolution": "Accepted: an operator export is local by definition. The runtime state it snapshots (credentials + keyring) is already declared under src/store.mjs S3 and src/auth/security/key-provider.mjs S3."
+      },
+      {
+        "file": "src/auth/public-api-routes.mjs",
+        "probe": "S1",
+        "domain": "auth",
+        "owner": "manager",
+        "resolveBy": "P11",
+        "severity": "benign",
+        "reason": "P5-M10: the public-API mount table (MOUNTED_OPERATIONS + its compiled cache) is the rollback mechanism - unmount removes the /api/v1 backing routes without touching their models or history. It is per-process lifecycle state, populated identically by every worker at boot from pure data + closures over injected storage, so two workers cannot diverge on it.",
+        "resolution": "When multi-process lands, move the mount/unmount handle behind the runtime-host boundary (the route table itself is already pure descriptors + injected handlers). Rollback semantics stay unchanged."
+      },
+      {
+        "file": "src/server.mjs",
+        "probe": "S3",
+        "domain": "runtime-host",
+        "owner": "manager",
+        "resolveBy": "-",
+        "severity": "accepted",
+        "reason": "P5-M10: the /api/v1 backing models persist through the P8 storage facade with a write-through file adapter (public-api-backing.json, tmp + rename) supplied at boot. The adapter is injected - the facade, not this file, owns persistence semantics - and the models never touch the filesystem themselves.",
+        "resolution": "Accepted exactly like src/store.mjs S3's plan: swapping the P8 provider for a shared backend retires this adapter without touching the models or the API layer (the facade contract already allows it)."
       }
     ],
     "verdict": "NOT scale-out ready. Two class-A blockers remain in src/store.mjs. P2.9 did not change this.",

@@ -138,9 +138,11 @@ test('list: members paginate with the storage cursor; invalid inputs are typed',
 
 test('boundary: surface exposes no provider internals; storage failures propagate', () => {
   const { hostA } = setup();
+  // P5-M10 extends the surface with `listProjects` (GET /projects needs a read
+  // verb; every sibling model exposes its list). Still closed: enumerated.
   assert.deepEqual(Object.keys(hostA).sort(), [
     'addMember', 'capabilities', 'changeMemberRole', 'createProject', 'getMember', 'getProject',
-    'listMembers', 'removeMember', 'renameProject', 'setArchived', 'transferOwnership',
+    'listMembers', 'listProjects', 'removeMember', 'renameProject', 'setArchived', 'transferOwnership',
   ]);
   const clock = createTestClock();
   let explode = false;

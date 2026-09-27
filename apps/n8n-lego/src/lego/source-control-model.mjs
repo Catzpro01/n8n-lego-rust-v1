@@ -307,6 +307,14 @@ export function createSourceControlModel(storage, { clock, idFactory, namespace 
 
     /* -------------------------------------------------------------- lists */
 
+    /**
+     * Bounded listing over repositories (P5-M10: /source-control/pull needs to
+     * discover the connected repository). Stable key order, opaque cursor.
+     */
+    listRepositories({ cursor = null, limit = 100 } = {}) {
+      return listFiltered({ prefix: 'r:', kind: 'repository', cursor, limit, field: 'repositories' });
+    },
+
     /** Bounded listing over the filtered result set: stable key order, opaque
      *  cursor = key of the last returned item (stateless, filter-aware). */
     listBranches(repoId, { cursor = null, limit = 100 } = {}) {

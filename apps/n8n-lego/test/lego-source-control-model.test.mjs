@@ -153,10 +153,12 @@ test('8. rollback = unmount: namespace isolation leaves history untouched but hi
 
 test('9. surface pin + determinism: closed model keys and stable serialization', () => {
   const { hostA } = setup('t9');
+  // P5-M10 extends the surface with `listRepositories` (/source-control/pull
+  // must discover the connected repository). Still closed: enumerated.
   assert.deepEqual(Object.keys(hostA).sort(), [
     'archiveRepository', 'capabilities', 'createBranch', 'createChangeset', 'createRepository',
     'getBranch', 'getRepository', 'getChangeset', 'listBranches', 'listChangesets',
-    'moveBranchHead', 'namespace', 'renameRepository', 'setChangesetState',
+    'listRepositories', 'moveBranchHead', 'namespace', 'renameRepository', 'setChangesetState',
   ].sort(), 'model surface is closed');
 
   const clock = createTestClock();

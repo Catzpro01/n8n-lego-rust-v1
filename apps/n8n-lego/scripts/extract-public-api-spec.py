@@ -69,8 +69,8 @@ def inline(node, base, stack=()):
 
 def mounted():
     script = (
-        "import('./src/auth/public-api-routes.mjs').then((m) => "
-        "console.log(JSON.stringify(m.PUBLIC_API_OPERATIONS.map((o) => [o.method, o.path]))))"
+        "Promise.all([import('./src/auth/public-api-routes.mjs'), import('./src/auth/public-api-backing.mjs')]).then(([routes, backing]) => "
+        "console.log(JSON.stringify(routes.PUBLIC_API_OPERATIONS.concat(backing.BACKING_RESOURCE_ROUTES).map((o) => [o.method, o.path]))))"
     )
     out = subprocess.run(['node', '-e', script], cwd=APP, check=True, capture_output=True, text=True).stdout
     return [(method.lower(), re.sub(r':([A-Za-z]+)', r'{\1}', path)) for method, path in json.loads(out)]

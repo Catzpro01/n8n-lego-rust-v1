@@ -1132,13 +1132,39 @@ function compile(template) {
 
 const COMPILED = PUBLIC_API_OPERATIONS.map((operation) => ({ operation, ...compile(operation.path) }));
 
+/* ------------------------------------------------- P5-M10 runtime mount table
+ *
+ * The backing resources (projects, audit, source-control, data-tables,
+ * transfer, workflow versions, execution retry, execution tags) are mounted at
+ * server start and can be UNMOUNTED without touching their backing models or
+ * the history they wrote — rollback = unmount routes (P5-M10 CP-04).
+ * matchPublicApiRoute sees base + mounted; the served OpenAPI document covers
+ * the full build (specOperations below).
+ */
+const MOUNTED_OPERATIONS = [];
+let COMPILED_MOUNTED = [];
+
+export function mountPublicApiOperations(operations) {
+  if (!Array.isArray(operations)) throw new TypeError('mountPublicApiOperations expects an operation array');
+  MOUNTED_OPERATIONS.splice(0, MOUNTED_OPERATIONS.length, ...operations);
+  COMPILED_MOUNTED = MOUNTED_OPERATIONS.map((operation) => ({ operation, ...compile(operation.path) }));
+  return function unmountPublicApiOperations() {
+    MOUNTED_OPERATIONS.splice(0);
+    COMPILED_MOUNTED = [];
+  };
+}
+
+export function mountedOperations() {
+  return [...PUBLIC_API_OPERATIONS, ...MOUNTED_OPERATIONS];
+}
+
 /**
  * Route match in express-openapi-validator order. `path` is relative to
  * `/api/v1`. Returns `{ operation, params }`, or throws 404/405.
  */
 export function matchPublicApiRoute(method, path) {
   let pathKnown = false;
-  for (const { operation, regex, names } of COMPILED) {
+  for (const { operation, regex, names } of [...COMPILED, ...COMPILED_MOUNTED]) {
     const found = regex.exec(path);
     if (!found) continue;
     pathKnown = true;
@@ -1244,7 +1270,9 @@ export async function handlePublicApiRequest(ctx) {
     ctx.user = verified.owner;
     if (operation.body) {
       ctx.body = await readJsonBody(req, config.maxBodyBytes);
-      if (ctx.body === undefined) throw invalid('request/body must be object');
+      // bodyOptional (P5-M10): upstream allows an absent body on some POST/PUT
+      // routes (POST /audit, POST /executions/{id}/retry, POST /source-control/pull).
+      if (ctx.body === undefined && !operation.bodyOptional) throw invalid('request/body must be object');
     }
 
     if (operation.validate) operation.validate(ctx);

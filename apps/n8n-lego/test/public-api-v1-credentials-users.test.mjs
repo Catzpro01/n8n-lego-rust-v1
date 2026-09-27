@@ -26,6 +26,7 @@ import {
   PUBLIC_API_OPERATIONS,
   credentialTypeJsonSchema,
 } from '../src/auth/public-api-routes.mjs';
+import { BACKING_RESOURCE_ROUTES } from '../src/auth/public-api-backing.mjs';
 import { loadApiKeyScopes } from '../src/compat/api-key-scopes.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -176,16 +177,19 @@ const theOwner = () => store.users.all().find((user) => user.role === 'global:ow
 /* --------------------------------------------------------------- mounting */
 
 describe('mounting and the operation table', () => {
-  test('credentials and users are mounted; transfer and projects are not', () => {
-    const mounted = new Set(PUBLIC_API_OPERATIONS.map((op) => `${op.method} ${op.path}`));
+  test('credentials, users, transfer and projects are mounted; credential PUT/GET-one stay out', () => {
+    // P5-M10: transfer and projects ride the backing resources now (the
+    // earlier fixture asserted they were unmounted).
+    const mounted = new Set([...PUBLIC_API_OPERATIONS, ...BACKING_RESOURCE_ROUTES].map((op) => `${op.method} ${op.path}`));
     for (const wanted of [
       'GET /credentials', 'POST /credentials', 'PATCH /credentials/:id', 'DELETE /credentials/:id',
       'GET /credentials/schema/:credentialTypeName',
       'GET /users', 'POST /users', 'GET /users/:id', 'DELETE /users/:id', 'PATCH /users/:id/role',
+      'PUT /credentials/:id/transfer', 'GET /projects', 'POST /projects',
     ]) {
       assert.ok(mounted.has(wanted), wanted);
     }
-    for (const unwanted of ['PUT /credentials/:id', 'POST /credentials/:id/transfer', 'GET /projects', 'POST /projects']) {
+    for (const unwanted of ['PUT /credentials/:id', 'POST /credentials/:id/transfer']) {
       assert.ok(!mounted.has(unwanted), unwanted);
     }
     // Upstream updates a credential with PATCH, never PUT.

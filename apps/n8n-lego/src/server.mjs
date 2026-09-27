@@ -11,6 +11,9 @@
  * 0 clean shutdown.
  */
 import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
+import { readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { loadConfig, ConfigError, APP_NAME, VERSION, describeConfig } from './config.mjs';
 import { createLogger } from './logger.mjs';
 import { createStore, seedExecutionCounter } from './store.mjs';
@@ -24,7 +27,9 @@ import { HttpError } from './compat/error.mjs';
 import { readBody, sendError, sendJson } from './compat/response.mjs';
 import { createUnsupportedHandler } from './compat/capability.mjs';
 import { authRoutes } from './auth/routes.mjs';
-import { handlePublicApiRequest, isPublicApiPath } from './auth/public-api-routes.mjs';
+import { handlePublicApiRequest, isPublicApiPath, mountPublicApiOperations } from './auth/public-api-routes.mjs';
+import { backingResourceOperations, createBackingModels } from './auth/public-api-backing.mjs';
+import { createLocalStorage } from './lego/storage/local-provider.mjs';
 import { settingsRoutes } from './settings/routes.mjs';
 import { buildRoutes } from './rest/routes.mjs';
 import { bootCredentialVault } from './auth/security/credential-vault.mjs';
@@ -55,6 +60,51 @@ export async function startServer({ env = process.env } = {}) {
   logger.debug('effective configuration', describeConfig(config));
 
   const store = createStore(config);
+
+  /* P5-M10: the /api/v1 backing resources (projects, audit, source-control,
+   * data-tables, transfer, workflow versions, execution retry, execution tags)
+   * mount over the P8 storage facade. ONE facade handle backs all eight models;
+   * write-through persistence makes it durable under the instance data dir; the
+   * API layer holds no shadow state. Rollback = unmount the routes only —
+   * mountPublicApiOperations() returns the unmount handle; the models and their
+   * history stay intact. */
+  const backingPersistenceFile = join(config.dataDir, 'public-api-backing.json');
+  const backingStorage = createLocalStorage({
+    clock: { now: () => Date.now() },
+    persistence: {
+      load() {
+        try {
+          return readFileSync(backingPersistenceFile);
+        } catch {
+          return null;
+        }
+      },
+      save(bytes) {
+        const tmp = `${backingPersistenceFile}.tmp`;
+        writeFileSync(tmp, bytes);
+        renameSync(tmp, backingPersistenceFile);
+      },
+    },
+  });
+  const executionStatusState = {
+    new: 'running', running: 'running', waiting: 'running', unknown: 'running',
+    success: 'succeeded', succeeded: 'succeeded',
+    error: 'failed', failed: 'failed', crashed: 'failed',
+    canceled: 'cancelled', cancelled: 'cancelled',
+  };
+  const backingModels = createBackingModels({
+    storage: backingStorage,
+    clock: { now: () => Date.now() },
+    idFactory: () => randomUUID(),
+    executionLookup: (id) => {
+      // route params are strings; the collection may key numeric ids (the
+      // P5-M08 execution handlers do the same coercion in loadExecution)
+      const execution = store.executions.get(id) ?? store.executions.get(Number(id));
+      if (!execution) return null;
+      return { state: executionStatusState[String(execution.status ?? '').toLowerCase()] ?? 'running' };
+    },
+  });
+  mountPublicApiOperations(backingResourceOperations(backingModels, { store }));
   // P5.5: credential secrets are sealed at rest. A vault that cannot start
   // (missing/unreadable keyring while sealed records exist) leaves the editor up
   // but makes every secret operation fail closed with 503 — never plaintext.
@@ -342,7 +392,7 @@ export async function startServer({ env = process.env } = {}) {
     logger.error('unhandled promise rejection', { cause: reason instanceof Error ? reason.message : String(reason) });
   });
 
-  return { server, config, logger, store, engine, push, ui, frontend };
+  return { server, config, logger, store, engine, push, ui, frontend, backing: backingModels };
 }
 
 function safeUrl(req, config) {

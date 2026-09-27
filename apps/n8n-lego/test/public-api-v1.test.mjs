@@ -25,6 +25,7 @@ import {
   matchPublicApiRoute,
   validateWorkflowBody,
 } from '../src/auth/public-api-routes.mjs';
+import { BACKING_RESOURCE_ROUTES } from '../src/auth/public-api-backing.mjs';
 import { loadApiKeyScopes } from '../src/compat/api-key-scopes.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -152,7 +153,10 @@ describe('boundary: upstream goldens and pipeline order', () => {
     assert.deepEqual([(await api(undefined, 'GET', '/nope')).status, (await api(undefined, 'GET', '/nope')).body], [404, { message: 'not found' }]);
     const wrong = await api(fullKey, 'PATCH', '/workflows');
     assert.deepEqual([wrong.status, wrong.body], [405, { message: 'PATCH method not allowed' }]);
-    assert.equal((await api(fullKey, 'POST', '/workflows/abc/transfer', { destinationProjectId: 'p' })).status, 404, 'transfer is not mounted: no project model');
+    // P5-M10 mounted transfer as PUT (the upstream method); POST on the known
+    // path is 405 — the earlier 404 fixture was pinned to "not mounted".
+    const transferViaPost = await api(fullKey, 'POST', '/workflows/abc/transfer', { destinationProjectId: 'p' });
+    assert.deepEqual([transferViaPost.status, transferViaPost.body], [405, { message: 'POST method not allowed' }]);
   });
 
   test('a session cookie is not an API credential', async () => {
@@ -335,7 +339,7 @@ describe('workflows resource', () => {
 describe('pure pieces', () => {
   test('every mounted operation is guarded by a scope from the pinned API-key vocabulary', () => {
     const vocabulary = new Set(loadApiKeyScopes({}).all);
-    for (const op of PUBLIC_API_OPERATIONS) {
+    for (const op of [...PUBLIC_API_OPERATIONS, ...BACKING_RESOURCE_ROUTES]) {
       // `public` is the one operation upstream mounts with no scope guard at
       // all: GET /credentials/schema/{type} publishes a schema, never a secret.
       if (op.scope === 'public') continue;
@@ -343,6 +347,8 @@ describe('pure pieces', () => {
     }
     assert.equal(PUBLIC_API_OPERATIONS.length, 31,
       'P5-M03 workflows (9) + P5-M08 tags (5), variables (4), executions (3) + P5-M09 credentials (5), users (5)');
+    assert.equal(BACKING_RESOURCE_ROUTES.length, 26,
+      'P5-M10 backing resources (26 routes over the 8 backing models)');
   });
 
   test('cursor encoding matches upstream encodeNextCursor', () => {
@@ -356,7 +362,9 @@ describe('pure pieces', () => {
 
   test('route matcher distinguishes 404 from 405', () => {
     assert.equal(matchPublicApiRoute('GET', '/workflows/abc').params.id, 'abc');
-    assert.throws(() => matchPublicApiRoute('GET', '/projects'), (e) => e.status === 404);
+    // P5-M10 mounted /projects; /docs stays unmounted (DEC-0022) and is the
+    // representative unknown path here.
+    assert.throws(() => matchPublicApiRoute('GET', '/docs'), (e) => e.status === 404);
     assert.throws(() => matchPublicApiRoute('PATCH', '/workflows/abc'), (e) => e.status === 405);
     // A known path with an unmounted method is 405, not 404: upstream mounts
     // no GET on /credentials/{id}, and no PUT either (the update is PATCH).

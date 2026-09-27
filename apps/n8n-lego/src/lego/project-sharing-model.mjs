@@ -238,6 +238,38 @@ export function createProjectSharingModel(storage, { clock, idFactory, namespace
     },
 
     /**
+     * Bounded listing over projects (P5-M10: GET /projects needs a read verb;
+     * every sibling model already exposes its list). Stable key order,
+     * opaque cursor = project key of the last returned item.
+     */
+    listProjects({ cursor = null, limit = 100 } = {}) {
+      if (cursor !== null && (typeof cursor !== 'string' || cursor.length === 0 || cursor.length > 256)) {
+        throw invalid('cursor must be an opaque token issued by a previous list call');
+      }
+      if (!Number.isInteger(limit) || limit <= 0) throw invalid('limit must be a positive integer');
+      const collected = [];
+      let scan;
+      for (;;) {
+        const page = storage.list(namespace, { cursor: scan, limit: 1000 });
+        for (const entry of page.keys) {
+          if (!entry.key.startsWith('p:')) continue;
+          const found = readJson(entry.key, 'project');
+          if (found) collected.push({ ...found.record, version: entry.version });
+        }
+        if (!page.nextCursor) break;
+        scan = page.nextCursor;
+      }
+      collected.sort((a, b) => (projectKey(a.projectId) < projectKey(b.projectId) ? -1 : 1));
+      const after = cursor === null ? collected : collected.filter((r) => projectKey(r.projectId) > cursor);
+      const items = after.slice(0, limit);
+      const last = items[items.length - 1];
+      return Object.freeze({
+        projects: Object.freeze(items),
+        nextCursor: after.length > items.length && last ? projectKey(last.projectId) : null,
+      });
+    },
+
+    /**
      * Atomic ownership transfer (single-owner invariant): demote the current
      * owner, promote the new owner, and rewrite project.ownerId - all inside one
      * applyBatch, so a mid-batch conflict applies NOTHING (storage item 3).

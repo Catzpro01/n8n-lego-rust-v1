@@ -186,9 +186,12 @@ test('8. rollback = unmount: namespace isolation leaves history untouched but hi
 
 test('9. surface pin + determinism: closed model keys and stable serialization', () => {
   const { hostA } = setup('t9');
+  // P5-M10 extends the surface with `listTables` (GET /data-tables) and
+  // `deleteTable` (DELETE /data-tables/{id}: upstream deletes the rows with the
+  // table - one all-or-nothing batch). Still closed: enumerated.
   assert.deepEqual(Object.keys(hostA).sort(), [
-    'addColumn', 'capabilities', 'createRow', 'createTable', 'deleteRow', 'dropColumn',
-    'getRow', 'getTable', 'listRows', 'namespace', 'renameColumn', 'renameTable', 'updateRow',
+    'addColumn', 'capabilities', 'createRow', 'createTable', 'deleteRow', 'deleteTable', 'dropColumn',
+    'getRow', 'getTable', 'listRows', 'listTables', 'namespace', 'renameColumn', 'renameTable', 'updateRow',
   ].sort(), 'model surface is closed');
 
   const clock = createTestClock();

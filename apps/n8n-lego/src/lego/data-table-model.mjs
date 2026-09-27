@@ -430,6 +430,60 @@ export function createDataTableModel(storage, { clock, idFactory, namespace = 'd
     },
 
     /** Filter-aware cursor paging over rows (stable key order, opaque cursor). */
+    /**
+     * Bounded listing over tables (P5-M10: GET /data-tables). Stable key
+     * order, opaque cursor = table key of the last returned item.
+     */
+    listTables({ cursor = null, limit = 100 } = {}) {
+      if (cursor !== null && (typeof cursor !== 'string' || cursor.length === 0 || cursor.length > 256)) {
+        throw invalid('cursor must be an opaque token issued by a previous list call');
+      }
+      if (!Number.isInteger(limit) || limit <= 0) throw invalid('limit must be a positive integer');
+      const collected = [];
+      let scan;
+      for (;;) {
+        const page = storage.list(namespace, { cursor: scan, limit: 1000 });
+        for (const entry of page.keys) {
+          if (!entry.key.startsWith('t:')) continue;
+          const found = readJson(entry.key, TABLE_TAG, 'table');
+          if (found) collected.push({ ...found.record, version: entry.version });
+        }
+        if (!page.nextCursor) break;
+        scan = page.nextCursor;
+      }
+      collected.sort((a, b) => (tableKey(a.tableId) < tableKey(b.tableId) ? -1 : 1));
+      const after = cursor === null ? collected : collected.filter((r) => tableKey(r.tableId) > cursor);
+      const items = after.slice(0, limit);
+      const last = items[items.length - 1];
+      return Object.freeze({
+        tables: Object.freeze(items),
+        nextCursor: after.length > items.length && last ? tableKey(last.tableId) : null,
+      });
+    },
+
+    /**
+     * Delete a table with all of its rows in ONE all-or-nothing batch (P5-M10
+     * DELETE /data-tables/{id}: upstream "also deletes all rows"). Pure CAS:
+     * the table's version token is required; every row delete carries its own
+     * expectedVersion, so a mid-batch conflict applies NOTHING.
+     */
+    deleteTable(tableId, { version } = {}) {
+      assertId(tableId, 'tableId');
+      requireVersion(version);
+      const rows = allRows(tableId);
+      const ops = [
+        { type: 'delete', namespace, key: tableKey(tableId), expectedVersion: version },
+        ...rows.map((entry) => ({ type: 'delete', namespace, key: entry.key, expectedVersion: entry.version })),
+      ];
+      const result = storage.applyBatch(ops);
+      if (!result.applied) {
+        throw conflict('table delete lost a concurrent update (all-or-nothing batch aborted)', {
+          failedOpIndex: result.failedOpIndex, reason: result.reason,
+        });
+      }
+      return Object.freeze({ deleted: true, rows: rows.length });
+    },
+
     listRows(tableId, { cursor = null, limit = 100 } = {}) {
       assertId(tableId, 'tableId');
       readTable(tableId);

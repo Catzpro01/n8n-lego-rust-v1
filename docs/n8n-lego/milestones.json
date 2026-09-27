@@ -4750,54 +4750,54 @@
               "title": "API mounting framework",
               "purpose": "/api/v1 route -> backing-model wiring with uniform envelope and closed model-error -> HTTP mapping (INVALID->400, NOT_FOUND->404, CONFLICT->409, storage errors -> 5xx); routes were gated until this slice.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P5-M10-DELIVERY.md (CP-01: mounting framework, closed error mapping, static route table)",
               "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
-              "completedAt": null
+              "completedAt": "2026-09-27T15:36:30Z"
             },
             {
               "id": "CP-02",
               "title": "Resources on P5-M11..P5-M14 models",
               "purpose": "projects, audit, source-control, data-tables resource surfaces mounted on their backing models; API contract per resource.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P5-M10-DELIVERY.md (CP-02: projects, audit, source-control, data-tables resources)",
               "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
-              "completedAt": null
+              "completedAt": "2026-09-27T15:36:30Z"
             },
             {
               "id": "CP-03",
               "title": "Resources on P5-M15..P5-M18 models",
               "purpose": "workflow/credential transfer, workflow versions, execution retry, execution tags (AnnotationTag) resource surfaces mounted on their backing models.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P5-M10-DELIVERY.md (CP-03: transfer, versions, retry, execution tags)",
               "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
-              "completedAt": null
+              "completedAt": "2026-09-27T15:36:30Z"
             },
             {
               "id": "CP-04",
               "title": "Tests + rollback",
               "purpose": "Tests: API contract per resource + error mapping; rollback = unmount routes (backing models and history untouched); no hidden side effects.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "test/public-api-backing-framework.test.mjs + test/public-api-v1-backing.test.mjs (39 focused tests; rollback = unmount proven)",
               "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
-              "completedAt": null
+              "completedAt": "2026-09-27T15:36:30Z"
             },
             {
               "id": "CP-05",
               "title": "Evidence + delivery notes committed; battery green",
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P5-M10-DELIVERY.md (battery: lego 3053/3053, engine 49/49, runtime 79/79, gates green)",
               "reference": "P5-M10 scope (public /api/v1 resources over the backing models)",
-              "completedAt": null
+              "completedAt": "2026-09-27T15:36:30Z"
             }
           ],
-          "updatedAt": "2026-09-27T00:00:00Z",
-          "latestUpdate": "STARTED via the recovery path (blocked -> planned -> plannedQueue -> activeSlices -> in-progress) in one START act: the declared blocker is cleared - backing models P5-M11..P5-M18 are ALL implemented. Scope: public /api/v1 resources mounted on the backing models (projects, audit, source-control, data-tables, workflow/credential transfer, workflow versions, execution retry, execution tags); uniform error mapping; rollback = unmount routes (models untouched). In progress.",
+          "updatedAt": "2026-09-27T15:36:30Z",
+          "latestUpdate": "CP-05 done: evidence + delivery notes committed; full battery green on the delivery commit.",
           "mergeSha": null,
           "issue": 85,
           "evidence": null,

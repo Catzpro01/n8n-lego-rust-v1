@@ -31,6 +31,14 @@
 - `src/lego/envelope.mjs`
 - `src/lego/interaction.mjs`
 - `src/lego/negotiation.mjs`
+- `src/lego/project-sharing-model.mjs`
+- `src/lego/audit-event-model.mjs`
+- `src/lego/source-control-model.mjs`
+- `src/lego/data-table-model.mjs`
+- `src/lego/transfer-model.mjs`
+- `src/lego/workflow-version-model.mjs`
+- `src/lego/execution-retry-model.mjs`
+- `src/lego/execution-tag-model.mjs`
 
 ## May call
 

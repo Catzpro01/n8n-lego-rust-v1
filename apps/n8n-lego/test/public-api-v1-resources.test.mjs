@@ -22,6 +22,7 @@ import {
   featureNotLicensedMessage,
   toYaml,
 } from '../src/auth/public-api-routes.mjs';
+import { BACKING_RESOURCE_ROUTES } from '../src/auth/public-api-backing.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(HERE, '..');
@@ -139,10 +140,13 @@ describe('openapi.yml', () => {
     const fromSpec = Object.entries(SPEC.paths)
       .flatMap(([path, item]) => Object.keys(item).map((method) => `${method.toUpperCase()} ${path}`))
       .sort();
-    const mounted = PUBLIC_API_OPERATIONS.map((op) => `${op.method} ${op.path.replace(/:([A-Za-z]+)/g, '{$1}')}`).sort();
+    // P5-M10: the spec covers the FULL build — base operations plus the backing
+    // resources (the earlier fixture listed those paths as unmounted).
+    const mounted = [...PUBLIC_API_OPERATIONS, ...BACKING_RESOURCE_ROUTES]
+      .map((op) => `${op.method} ${op.path.replace(/:([A-Za-z]+)/g, '{$1}')}`).sort();
     assert.deepEqual(fromSpec, mounted);
-    assert.equal(SPEC['x-n8n-lego'].operations, PUBLIC_API_OPERATIONS.length);
-    for (const unmounted of ['/projects', '/audit', '/executions/{id}/retry', '/workflows/{id}/transfer', '/credentials/{id}/transfer']) {
+    assert.equal(SPEC['x-n8n-lego'].operations, PUBLIC_API_OPERATIONS.length + BACKING_RESOURCE_ROUTES.length);
+    for (const unmounted of ['/docs', '/securityAudit', '/metrics']) {
       assert.equal(SPEC.paths[unmounted], undefined, unmounted);
     }
     const text = JSON.stringify(SPEC);
@@ -377,7 +381,9 @@ describe('executions', () => {
     assert.equal(deleted.body.data, undefined, 'no run data in the delete response');
     assert.equal(store.executions.get('9001'), null);
     assert.equal((await api(fullKey, 'DELETE', '/executions/9001')).status, 404);
-    assert.equal((await api(fullKey, 'GET', '/executions/1/retry')).status, 404, 'retry is not mounted (P5-M10)');
+    // P5-M10 mounted retry as POST (the upstream method); GET on the known
+    // path is 405 — the earlier 404 fixture was pinned to "not mounted".
+    assert.equal((await api(fullKey, 'GET', '/executions/1/retry')).status, 405, 'retry is mounted as POST only');
   });
 });
 
