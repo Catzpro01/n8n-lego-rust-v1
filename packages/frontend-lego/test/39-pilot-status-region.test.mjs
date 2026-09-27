@@ -56,8 +56,8 @@ test('every pilot-available entry is a declared pilot with a capability and a te
   const pilots = inv.entries.filter((e) => e.migrationStatus === 'pilot-available');
   assert.deepEqual(
     pilots.map((e) => e.inventoryId).sort(),
-    [PILOT_ID, 'ui.executions.history', 'ui.nodes.picker', 'ui.primitives.dialogs', 'ui.primitives.notification-surface', 'ui.pages.dashboard'].sort(),
-    'the pilot set is exactly the status region (#241), the notification surface (#245) and the P2-S03 Layer 3 splits (dashboard P2-S04, dialogs P2-S05, executions P2-S06, node picker P2-S07)',
+    [PILOT_ID, 'ui.editor.workflow', 'ui.executions.history', 'ui.nodes.picker', 'ui.primitives.dialogs', 'ui.primitives.notification-surface', 'ui.pages.dashboard'].sort(),
+    'the pilot set is exactly the status region (#241), the notification surface (#245) and the P2-S03 Layer 3 splits (dashboard P2-S04, dialogs P2-S05, executions P2-S06, node picker P2-S07, workflow editor P2-S08)',
   );
   for (const pilot of pilots) {
     // A pilot declares the capability it was built from; that id is a dot-segment of the

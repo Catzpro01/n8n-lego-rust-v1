@@ -89,15 +89,17 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/45-workflow-editor.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.shell.navigation"
       ],
-      "notes": "Not a pilot candidate; canvas/editor rewrite is explicitly out of Issue #241 scope."
+      "sourceIssue": "240",
+    "slice": "P2-S08",
+    "notes": "P2-S08 Layer 3 strangler slice (issue #240): the editor HOST header and workflow-level actions panel around the canvas (name/tags/active-state). The workflow record is handed over read-only and never mutated - rename/activate are declared interactions with explicit results. The canvas/editor rewrite itself stays OUT of scope (ui.editor.canvas reference-only, issue #241 exclusion preserved). Bounded tag chips, closed vocabularies, REGION_STATES reused. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.editor.canvas",
