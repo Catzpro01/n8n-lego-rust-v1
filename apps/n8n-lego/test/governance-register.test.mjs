@@ -428,9 +428,10 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // then P8-S01..P8-S07 (storage foundation vertical) on PR #356 merge 3e0f621d;
   // then P5-M05 (session + rate-limiter state) on PR #357 merge b7fb9ea4;
   // then P5-M11 (project/sharing model) on PR #358 merge 3cb5d356;
-  // then P5-M12 (audit backing model) on PR #359 merge 8d86e657.
-  assert.equal(tally.percent, 81);
-  assert.equal(tally.implemented, 162);
+  // then P5-M12 (audit backing model) on PR #359 merge 8d86e657;
+  // then P5-M13 (source-control backing model) on PR #360 merge cb4143d6.
+  assert.equal(tally.percent, 81.5);
+  assert.equal(tally.implemented, 163);
   assert.equal(tally.total, 200);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
@@ -441,8 +442,8 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
   assert.equal(metrics.current.total, 194);
-  assert.equal(metrics.current.implemented, 161);
-  assert.equal(metrics.current.sliceCompletion, percent1(161, 194));
+  assert.equal(metrics.current.implemented, 162);
+  assert.equal(metrics.current.sliceCompletion, percent1(162, 194));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);

@@ -10,13 +10,13 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "6d23e76005053ce08113f2f5f1b85419789ab1d7",
+    "lastVerifiedMain": "cb4143d6fe866cc872385d7b59aa20951852a5c8",
     "latestCompletedSlice": {
-      "id": "P5-M12",
-      "pr": 359,
-      "mergeSha": "8d86e6575cfb3d1c36a60354c014a24164e43442"
+      "id": "P5-M13",
+      "pr": 360,
+      "mergeSha": "cb4143d6fe866cc872385d7b59aa20951852a5c8"
     },
-    "activeSlices": ["P5-M13"],
+    "activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": ["P5-M14", "P5-M15", "P5-M16", "P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
@@ -4884,7 +4884,7 @@
           "id": "P5-M13",
           "title": "Source-control backing model (P5-M10-C): repository/branch/changeset records for /api/v1/source-control",
           "kind": "maintenance",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -4932,16 +4932,17 @@
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
               "status": "completed",
-              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
+              "evidence": "docs/n8n-lego/evidence/P5-M13-DELIVERY.md; PR #360 (CI 9/9 on 6a0e2edb, merge cb4143d6) + post-merge battery.",
               "reference": "P5-M13 scope (source-control backing model)",
               "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
-          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: source-control backing model (P5-M10-C) - repository/branch/changeset records with provider-neutral fields over the P8 storage facade (namespace source-control); round-trip + conflict semantics; API surface stays gated (model layer only); rollback = unmount; deps P8-S01 delivered. In progress.",
-          "mergeSha": null,
+          "latestUpdate": "IMPLEMENTED (evidence: docs/n8n-lego/evidence/P5-M13-DELIVERY.md) - source-control backing model (P5-M10-C) delivered: repository/branch/changeset records with provider-neutral fields over the P8 storage facade (source-control-model.mjs); closed record shapes + closed changeset vocabulary open|merged|closed; conflict semantics = pure CAS (version token required; stale -> SOURCE_CONFLICT); byte-stable round-trip; filter-aware cursor lists; rollback = unmount; errors SOURCE_INVALID|NOT_FOUND|CONFLICT closed. 9/9 tests green. Deviations documented (create-if-absent pattern; explicit CAS token; result-set cursors). Delivery branch delivery/p5-m13-source-control (head 6a0e2edb) -> PR #360 CI 9/9 green -> merge cb4143d6; post-merge battery green (lego 2969/2969, engine 49/49, runtime 79/79, lego:gate 0, isolation 0, decisions 0).",
+          "pr": 360,
+          "mergeSha": "cb4143d6fe866cc872385d7b59aa20951852a5c8",
           "issue": 85,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P5-M13-DELIVERY.md",
           "owner": "manager (unassigned)"
         },
         {
