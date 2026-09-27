@@ -13,12 +13,12 @@ document is right and the prose is stale.
 | Protected main baseline | `fc54c8c2bfc2557ddecf466e662869f197fc9595` |
 | Agent 1 branch | `main` |
 | Agent 2 branch | `main` |
-| **Latest completed slice** | **P2-S09** |
+| **Latest completed slice** | **P6-S05** |
 | **Realtime Delivery Progress** | **77.8%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
 | **Slice Completion** | **77.8%** (151/194 implemented; verifying and blocked contribute 0) |
 | **Active / verifying slices** | **—** |
-| Planned queue | P2-S10, P2-S11, P2-S12, P2-S13, P2-S14, P2-S15, P2-S16, P2-S17, P2-S18, P2-S19, P2-S20, P2-S21, P2-S22, P2-S23, P2-S24, P2-S25, P2-S26, P2-S27, P2-S28, P2-S29 |
-| Blocked slices | P2-S03, P5-M05, P5-M06, P5-M10 |
+| Planned queue | P8-S01, P5-M06, P2-S10, P2-S11, P2-S12, P2-S13, P2-S14, P2-S15, P2-S16, P2-S17, P2-S18, P2-S19, P2-S20, P2-S21, P2-S22, P2-S23, P2-S24, P2-S25, P2-S26, P2-S27, P2-S28, P2-S29 |
+| Blocked slices | P2-S03, P5-M05, P5-M10 |
 | Historical P2 ladder pointer | P2.27 (history, not active work) |
 | Previous completed P2 milestone | P2.26 |
 | Current branch state | `main` (implementation branch; not protected main) |

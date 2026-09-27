@@ -1,6 +1,8 @@
 # P5-M06 Preparation - Mail Transport Options Outlines (REQ-0003 section 9)
 
-**Status:** reversible preparation only. DEC-0028 stays **PROPOSED**. No architecture
+**Status:** DEC-0028 is now **ACTIVE** (rev 2, decidedBy OWNER, selectedOption A-injected-transport).
+This preparation is the implementation basis for P5-M06 delivery (provider-neutral injected mail
+transport). (Historical note: at preparation time DEC-0028 was still PROPOSED. No architecture
 is committed; no transport is implemented. These outlines exist so the owner can
 decide on concrete trade-offs and so an authorized implementation can start without
 re-doing discovery.
@@ -44,6 +46,7 @@ suites. Zero silent failure: every send outcome is an explicit result.
 
 ## What this document is NOT
 
-It is not a decision. DEC-0028 remains PROPOSED with decidedBy "UNDECIDED"; only the
+At preparation time this was not a decision. DEC-0028 has since become ACTIVE (rev 2,
+decidedBy OWNER, selectedOption A-injected-transport); only the
 owner selects an option (or directs the Manager in chat to record that choice). Any
 implementation before ACTIVE state is an invalid-authority error.
