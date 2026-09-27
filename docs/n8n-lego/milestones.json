@@ -10,7 +10,7 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "8d86e6575cfb3d1c36a60354c014a24164e43442",
+    "lastVerifiedMain": "6d23e76005053ce08113f2f5f1b85419789ab1d7",
     "latestCompletedSlice": {
       "id": "P5-M12",
       "pr": 359,
