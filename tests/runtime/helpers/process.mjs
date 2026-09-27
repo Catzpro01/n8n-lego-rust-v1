@@ -213,7 +213,7 @@ export const nodes = {
   manualTrigger: (name = 'Manual Trigger') => ({ name, type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, parameters: {} }),
   noOp: (name = 'Done') => ({ name, type: 'n8n-nodes-base.noOp', typeVersion: 1, parameters: {} }),
   setFields: (name, values) => ({ name, type: 'n8n-nodes-base.set', typeVersion: 1, parameters: { values } }),
-  unknown: (name = 'HTTP Request', type = 'n8n-nodes-base.httpRequest') => ({ name, type, typeVersion: 1, parameters: {} }),
+  unknown: (name = 'Not A Real Node', type = 'n8n-nodes-base.notARealNode') => ({ name, type, typeVersion: 1, parameters: {} }),
 };
 
 export const linearConnections = (from, to) => ({ [from]: { main: [[{ node: to, type: 'main', index: 0 }]] } });

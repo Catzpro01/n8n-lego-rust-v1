@@ -10,11 +10,17 @@
  * NOT IMPLEMENTED in the baseline (documented, not silently wrong):
  *   - expression evaluation (`= {{ ... }}`) — literals are used verbatim and a
  *     EXPRESSION_NOT_EVALUATED warning is emitted
- *   - router/conditional nodes (`if`, `switch`, `merge`), HTTP/credential nodes
+ *   - router/conditional nodes (`if`, `switch`, `merge`)
  *   - webhook/schedule triggers (no listener is started by this package)
+ * IMPLEMENTED with an injected seam (P6-S05): `httpRequest` performs real
+ * requests through `context.httpTransport` and resolves credentials through
+ * `context.credentials.resolve` (the one canonical SecretRef/P2.27 path).
+ * The registry itself stays deterministic — no network without an injected
+ * transport.
  */
 import vm from 'node:vm';
 import { getNodeCatalogEntry, nodeAliasOf } from './node-catalog.mjs';
+import { httpRequestHandler } from './http-request.mjs';
 
 export const NODE_REGISTRY_VERSION = '1.0.0';
 
@@ -286,6 +292,14 @@ const BUILTIN_HANDLER_DEFS = Object.freeze([
     description: 'Legacy per-item code node — same restrictions as the Code node.',
     handler: codeHandler,
   },
+  {
+    type: 'n8n-nodes-base.httpRequest',
+    alias: 'httpRequest',
+    group: 'input',
+    label: 'HTTP Request',
+    description: 'Performs an HTTP request with Bearer/Header credential authentication through the injected transport and the canonical SecretRef/P2.27 credential path (P6-S05).',
+    handler: httpRequestHandler,
+  },
 ]);
 
 function localizeInfo(def, locale) {
@@ -303,7 +317,7 @@ function localizeInfo(def, locale) {
 /**
  * Create a node handler registry with the built-in handlers registered.
  *
- * @param {{ locale?: string, allowCodeEval?: boolean, onWarning?: (w: object) => void }} [options]
+ * @param {{ locale?: string, allowCodeEval?: boolean, onWarning?: (w: object) => void, httpTransport?: object, credentials?: object }} [options]
  */
 export function createNodeRegistry(options = {}) {
   const locale = typeof options.locale === 'string' && options.locale ? options.locale : 'en';
@@ -321,7 +335,16 @@ export function createNodeRegistry(options = {}) {
     return entry;
   };
 
-  const context = { allowCodeEval, emitWarning, locale };
+  // P6-S05 seams: injected network transport and the canonical credential
+  // resolver. The registry never performs I/O itself; a missing seam is an
+  // explicit failure in the handler, never a silent stub.
+  const context = {
+    allowCodeEval,
+    emitWarning,
+    locale,
+    httpTransport: options.httpTransport ?? null,
+    credentials: options.credentials ?? null,
+  };
 
   const register = (type, handler, info = {}) => {
     if (typeof type !== 'string' || type.trim() === '') throw new TypeError('register(type, handler): type is required');

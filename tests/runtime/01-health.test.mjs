@@ -35,7 +35,7 @@ test('/healthz/readiness reports checks and is 200 when healthy', async () => {
   assert.equal(checks.shuttingDown, false);
   assert.equal(checks.dataDirWritable, true);
   assert.equal(checks.storage, 'file');
-  assert.equal(checks.nodeTypes, 7);
+  assert.equal(checks.nodeTypes, 8);
   assert.equal(typeof checks.uptimeSec, 'number');
   assert.equal(checks.engine.package, '@lego/reconstructed-engine');
 });
