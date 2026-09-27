@@ -5216,50 +5216,50 @@
               "title": "AnnotationTag entity + attach/detach over the store extension",
               "purpose": "AnnotationTag-equivalent entity {tagId, name, kind, color?} and execution attachment records persisted only through the P8 storage facade (namespace exec-tags); attach/detach keyed by (executionId, tagId); explicit errors TAG_INVALID/NOT_FOUND/CONFLICT; upstream-parity field set.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Impl: apps/n8n-lego/src/lego/execution-tag-model.mjs - AnnotationTag-equivalent entity + attach/detach records over the store extension (namespace exec-tags); TAG_INVALID/NOT_FOUND/CONFLICT (2026-09-27).",
               "reference": "P5-M18 scope (execution annotation/tag model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-02",
               "title": "Tag lifecycle",
               "purpose": "createTag/getTag/listTags; attach is idempotent (re-attach is a no-op result, never a duplicate record); detach removes the attachment explicitly; multi-host shared state.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 1-3,7: name uniqueness case-insensitive; attach/detach idempotent (results, not errors); multi-host shared state (2026-09-27).",
               "reference": "P5-M18 scope (execution annotation/tag model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-03",
               "title": "Orphan cleanup",
               "purpose": "Attachments whose execution no longer exists are orphans: detected via dependency-injected executionLookup; cleanupGarbage removes orphan attachments in one pass (counted, deterministic); deleting a tag detaches it everywhere (no dangling attachments).",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 5-6: deleteTag detaches everywhere in one all-or-nothing CAS batch; explicit cleanupGarbage for orphans (counted, deterministic, never automatic) (2026-09-27).",
               "reference": "P5-M18 scope (execution annotation/tag model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-04",
               "title": "Tests + rollback",
               "purpose": "Tests: tag lifecycle + orphan cleanup; rollback = unmount (namespace isolation leaves history untouched); determinism + surface pin.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "9/9 tests green; 2 test-expectation fixes diagnosed (fixture miss; name-freed-after-delete); rollback=unmount (test 8); surface pin + determinism (test 9) (2026-09-27).",
               "reference": "P5-M18 scope (execution annotation/tag model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-05",
               "title": "Evidence + delivery notes committed; battery green",
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
               "reference": "P5-M18 scope (execution annotation/tag model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
