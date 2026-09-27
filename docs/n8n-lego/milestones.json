@@ -10,13 +10,13 @@
   "executionPointer": {
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
-    "lastVerifiedMain": "e2f033df3223102500f226ffee9e87121648bf32",
+    "lastVerifiedMain": "5cb23602f0ba1d2e3cbc1eb54a4278178106414b",
     "latestCompletedSlice": {
-      "id": "P5-M14",
-      "pr": 361,
-      "mergeSha": "a6daad8a2c5fd3eadea2eef19d2bc9b20489746f"
+      "id": "P5-M15",
+      "pr": 362,
+      "mergeSha": "5cb23602f0ba1d2e3cbc1eb54a4278178106414b"
     },
-    "activeSlices": ["P5-M15"],
+    "activeSlices": [],
     "verifyingSlices": [],
     "plannedQueue": ["P5-M16", "P5-M17", "P5-M18", "P5-M06", "P2-S10", "P2-S11", "P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03", "P5-M10"],
@@ -5014,7 +5014,7 @@
           "id": "P5-M15",
           "title": "Workflow/credential transfer backing model (P5-M10-E): export bundles and transfer records",
           "kind": "maintenance",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -5062,16 +5062,17 @@
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
               "status": "completed",
-              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
+              "evidence": "docs/n8n-lego/evidence/P5-M15-DELIVERY.md; PR #362 (CI 9/9 on 1cd50a50, merge 5cb23602) + post-merge battery.",
               "reference": "P5-M15 scope (workflow/credential transfer backing model)",
               "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
-          "latestUpdate": "STARTED per the queue-state transition rule (queue head -> activeSlices -> in-progress). Delivery: workflow/credential transfer backing model (P5-M10-E) - versioned export bundle + transfer record over the P8 storage facade (namespace transfer); secret-free invariant (credential material moves as envelopes/refs only, never raw secrets); bundle round-trip + transfer lifecycle; API surface stays gated (model layer only); rollback = unmount; deps P8-S01 delivered. In progress.",
-          "mergeSha": null,
+          "latestUpdate": "IMPLEMENTED (evidence: docs/n8n-lego/evidence/P5-M15-DELIVERY.md) - workflow/credential transfer backing model (P5-M10-E) delivered: versioned export bundle + transfer record over the P8 storage facade (transfer-model.mjs); secret-free invariant enforced on write (credential material as envelope refs only; forbidden secret-bearing keys refused at any depth; credential-ref requires envelopeRef); closed transfer lifecycle created|sealed|completed|aborted with legal transitions; seal pins deterministic bundle digest; CAS transitions (token required); byte-stable bundle round-trip; rollback = unmount; errors TRANSFER_INVALID|NOT_FOUND|CONFLICT closed. 9/9 tests green first run. Delivery branch delivery/p5-m15-transfer (head 1cd50a50) -> PR #362 CI 9/9 green -> merge 5cb23602; post-merge battery green (lego 2987/2987, engine 49/49, runtime 79/79, lego:gate 0, isolation 0, decisions 0).",
+          "pr": 362,
+          "mergeSha": "5cb23602f0ba1d2e3cbc1eb54a4278178106414b",
           "issue": 85,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P5-M15-DELIVERY.md",
           "owner": "manager (unassigned)"
         },
         {
