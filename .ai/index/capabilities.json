@@ -303,6 +303,21 @@
         "credentials"
       ],
       "operations": []
+    },
+    {
+      "id": "settings",
+      "lego": "ui-frontend",
+      "title": "Settings panels pilot (instance + personal, secret material never on the surface)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "settings"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

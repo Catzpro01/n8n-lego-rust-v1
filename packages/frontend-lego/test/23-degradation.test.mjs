@@ -105,8 +105,11 @@ test('unsupported: the instance does not implement it, and the UI is told to fal
 });
 
 test('incompatible: a major difference is named, with the compatibility state attached', () => {
-  const { negotiator } = assembly({ overrides: { settings: { status: 'implemented', contractVersion: '2.0.0', owner: 'settings' } } });
-  const verdict = negotiator.negotiate({ capabilityId: 'settings', requireVersion: '1.0.0' });
+  // `workflow` stays backend-advertised only; the settings pilot declared
+  // `settings` in the frontend catalog (P2-S10) and a declaration shadows the
+  // backend advertisement in the resolve order (same as `credentials`/P2-S09).
+  const { negotiator } = assembly({ overrides: { workflow: { status: 'implemented', contractVersion: '2.0.0', owner: 'workflow' } } });
+  const verdict = negotiator.negotiate({ capabilityId: 'workflow', requireVersion: '1.0.0' });
   assert.equal(verdict.state, 'version-incompatible');
   assert.equal(verdict.ok, false);
   assert.equal(verdict.compatibility.kind, 'breaking');
@@ -116,8 +119,8 @@ test('incompatible: a major difference is named, with the compatibility state at
 });
 
 test('degraded: a partial backend, or a missing required operation, is not available', () => {
-  const partial = assembly({ overrides: { settings: { status: 'partial', owner: 'settings' } } });
-  const partialVerdict = partial.negotiator.negotiate({ capabilityId: 'settings' });
+  const partial = assembly({ overrides: { workflow: { status: 'partial', owner: 'workflow' } } });
+  const partialVerdict = partial.negotiator.negotiate({ capabilityId: 'workflow' });
   assert.equal(partialVerdict.state, 'degraded');
   assert.equal(partialVerdict.ok, true, 'degraded still lets the UI proceed');
   assert.equal(partialVerdict.degradation.usable, true);

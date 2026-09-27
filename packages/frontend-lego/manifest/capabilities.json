@@ -545,6 +545,35 @@
       "phase": "P2-S09",
       "owner": "agent-01",
       "notes": "P2-S09: the strangler slice for the credentials list surface. Rows are handed over as identity metadata only - credential values never reach the surface (a value-bearing row is refused with an explicit security error; the P5/P2.27 envelope and the value-entry editor stay with the reference UI and the credential runtime). The four region states reuse REGION_STATES; visibility filtering to zero is empty with reason filtered, not a fifth state. Create/delete/share are declared interactions with a closed result vocabulary, never executed silently. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "settings",
+      "lego": "ui-frontend",
+      "title": "Settings panels pilot (instance + personal, secret material never on the surface)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/settings.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "settings"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "settings",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n settings pages remain primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/47-settings.test.mjs"
+      ],
+      "phase": "P2-S10",
+      "owner": "agent-01",
+      "notes": "P2-S10: the strangler slice for the settings surface (instance + personal panels). Entries are handed over through declared settings capabilities only; a secret-bearing entry is refused with an explicit security error (P2.27/P5 secret boundary is finding-only here) and a non-scalar value is refused for the same reason. The four region states reuse REGION_STATES; a panel filtered to zero is empty with reason filtered, not a fifth state. Save/reset are declared interactions with a closed result vocabulary, never executed silently. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }

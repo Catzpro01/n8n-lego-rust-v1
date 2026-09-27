@@ -211,15 +211,17 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/47-settings.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.shell.navigation"
       ],
-      "notes": "Settings remain stock; localization and theme are later authorized slices."
+      "sourceIssue": "240",
+      "slice": "P2-S10",
+      "notes": "P2-S10 Layer 3/4 strangler slice (issue #240): the settings PANELS view-model (instance + personal), bounded and panel-switchable. Settings values are handed over through declared settings capabilities only; an entry carrying a secret-bearing field is refused with an explicit security error (P2.27/P5 secret boundary is finding-only here) and the surface never mutates settings data - save/reset are declared interactions with a closed result vocabulary. Localization and theme stay later authorized slices. Mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.projects.workspace",

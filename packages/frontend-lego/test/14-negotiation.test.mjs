@@ -73,10 +73,10 @@ test('a consumer can discover identity, version, operations and origin', () => {
   assert.deepEqual(described.operations, [], 'no operation contract is published yet');
   assert.equal(described.contracts.length, 2);
 
-  const backendCapability = translation.negotiator.describe('settings');
+  const backendCapability = translation.negotiator.describe('workflow');
   assert.equal(backendCapability.origin, 'backend-advertised');
-  assert.equal(backendCapability.owner, 'settings');
-  assert.deepEqual(backendCapability.surfaces, ['navigation', 'settings']);
+  assert.equal(backendCapability.owner, 'workflow');
+  assert.deepEqual(backendCapability.surfaces, ['dashboard', 'workflow-editor']);
   assert.throws(() => translation.negotiator.describe('nothing-here'), (error) => {
     assert.ok(error instanceof NegotiationError);
     assert.equal(error.code, 'frontend.capability.unknown');
@@ -174,16 +174,20 @@ test('operations are negotiated by name, and a missing operation degrades', () =
 });
 
 test('a version mismatch is named, not swallowed', () => {
-  const mismatched = assembly({ backendOverrides: { settings: { status: 'implemented', contractVersion: '2.0.0', owner: 'settings' } } });
-  const verdict = mismatched.negotiator.negotiate({ capabilityId: 'settings', requireVersion: '1.0.0' });
+  // `workflow` is still backend-advertised only (the settings pilot declared
+  // `settings` in the frontend catalog with P2-S10, the same way the credentials
+  // pilot declared `credentials` in P2-S09 - a declaration shadows the backend
+  // advertisement in the resolve order, so these fixtures need an unshadowed id).
+  const mismatched = assembly({ backendOverrides: { workflow: { status: 'implemented', contractVersion: '2.0.0', owner: 'workflow' } } });
+  const verdict = mismatched.negotiator.negotiate({ capabilityId: 'workflow', requireVersion: '1.0.0' });
   assert.equal(verdict.state, 'version-incompatible');
   assert.equal(verdict.ok, false);
   assert.equal(verdict.compatibility.kind, 'breaking', 'a 2.0.0 provider breaks a 1.0.0 consumer');
   assert.equal(verdict.compatibility.satisfied, false);
   assert.match(verdict.reasons.join(' '), /major 1 → 2/);
 
-  const additive = assembly({ backendOverrides: { settings: { status: 'implemented', contractVersion: '1.4.0', owner: 'settings' } } });
-  const fine = additive.negotiator.negotiate({ capabilityId: 'settings', requireVersion: '1.0.0' });
+  const additive = assembly({ backendOverrides: { workflow: { status: 'implemented', contractVersion: '1.4.0', owner: 'workflow' } } });
+  const fine = additive.negotiator.negotiate({ capabilityId: 'workflow', requireVersion: '1.0.0' });
   assert.equal(fine.state, 'available');
   assert.equal(fine.compatibility.kind, 'compatible');
   assert.equal(fine.compatibility.move, 'minor');

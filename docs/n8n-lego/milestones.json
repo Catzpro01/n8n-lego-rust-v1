@@ -2892,39 +2892,49 @@
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Settings surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the instance and personal settings panels; settings values arrive through declared settings capabilities only. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-settings.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P2-S10-EVIDENCE.md#what-shipped-one-surface--one-delivery-scope",
+              "completedAt": "2026-09-27T17:27:04Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Settings surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P2-S10-EVIDENCE.md#what-shipped-one-surface--one-delivery-scope",
+              "completedAt": "2026-09-27T17:27:04Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Settings surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P2-S10-EVIDENCE.md#what-shipped-one-surface--one-delivery-scope",
+              "completedAt": "2026-09-27T17:27:04Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Settings surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P2-S10-EVIDENCE.md#what-shipped-one-surface--one-delivery-scope",
+              "completedAt": "2026-09-27T17:27:04Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Settings surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "docs/n8n-lego/evidence/P2-S10-EVIDENCE.md#what-shipped-one-surface--one-delivery-scope",
+              "completedAt": "2026-09-27T17:27:04Z"
             }
           ],
-          "updatedAt": "2026-09-27T16:52:00Z",
-          "latestUpdate": "STARTED (queue head -> activeSlices -> in-progress): Settings surface (Layer 4, split out of P2-S03) per REQ-0003 section 6 — one surface = one delivery scope, pilot mode, rollback pilot-not-primary, parity against the reference editor. The detailed checkpoint model installed at split (CP-01 contract 20; CP-02 pilot+rollback 20; CP-03 parity 25; CP-04 accessibility 20; CP-05 budget+failure 15) stays as declared. In progress.",
+          "updatedAt": "2026-09-27T17:27:04Z",
+          "latestUpdate": "DELIVERED: Settings panels pilot (instance + personal) over the hand-over boundary - secret material refused at the entry shape (explicit security error; non-scalar values refused too), closed REGION_STATES + panel/action/request vocabularies, parity fail-closed against shared-rule reference fixtures, a11y derived once, bounded list + explicit failure + degraded mode. ui.settings.pages upgraded reference-only -> pilot-available (rollback pilot-not-primary); settings capability declared (slot settings, degrades native-behavior). 21 focused tests + battery green (lego 3071/3071, engine 19/19, runtime 79/79, frontend 694/694, gates 7/7). Findings recorded: declaration shadows backend advertisement (P2-S09 precedent; fixtures moved to workflow); register writer gate caught START em-dash format drift (repaired). Evidence: docs/n8n-lego/evidence/P2-S10-EVIDENCE.md.",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,
