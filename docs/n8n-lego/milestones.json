@@ -5021,50 +5021,50 @@
               "title": "Export bundle + transfer records over the storage facade",
               "purpose": "Versioned export bundle (workflow-neutral payload + manifest) and transfer record persisted only through the P8 storage facade (namespace transfer); explicit errors TRANSFER_INVALID/NOT_FOUND/CONFLICT; STORAGE_* propagated; no memory-local state.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Impl: apps/n8n-lego/src/lego/transfer-model.mjs - versioned export bundle + transfer record, closed shapes, TRANSFER_INVALID/NOT_FOUND/CONFLICT (2026-09-27).",
               "reference": "P5-M15 scope (workflow/credential transfer backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-02",
               "title": "Secret-free invariant",
               "purpose": "Credential material travels ONLY as envelope metadata/refs (never raw secret values) in bundles AND transfer records; the invariant is enforced on write and pinned by tests (round-trip never widens exposure).",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Test 2: secret-free invariant enforced on write (forbidden keys any depth; credential-ref requires envelopeRef, refuses raw fields) (2026-09-27).",
               "reference": "P5-M15 scope (workflow/credential transfer backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-03",
               "title": "Transfer lifecycle",
               "purpose": "create -> seal (bundle version pinned) -> complete/abort, closed state vocabulary, pure CAS transitions (stale -> CONFLICT, token required); multi-host shared state.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 3-6: created->sealed->completed/aborted closed lifecycle; seal pins bundle digest; CAS transitions token-required; multi-host conflicts (2026-09-27).",
               "reference": "P5-M15 scope (workflow/credential transfer backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-04",
               "title": "Tests + rollback",
               "purpose": "Tests: bundle round-trip + secret-free invariant; rollback = unmount (namespace isolation leaves history untouched); determinism + surface pin.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "9/9 tests green first run; bundle round-trip byte-stable + deterministic digest; rollback=unmount (test 8); surface pin + determinism (test 9) (2026-09-27).",
               "reference": "P5-M15 scope (workflow/credential transfer backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-05",
               "title": "Evidence + delivery notes committed; battery green",
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
               "reference": "P5-M15 scope (workflow/credential transfer backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
