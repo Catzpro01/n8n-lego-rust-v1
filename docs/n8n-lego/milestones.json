@@ -5086,50 +5086,50 @@
               "title": "Immutable version records over the storage facade",
               "purpose": "Workflow version record {workflowId, versionId, parentIds, diff metadata, author, createdAt} persisted only through the P8 storage facade (namespace workflow-versions); closed record shape; explicit errors VERSION_INVALID/NOT_FOUND/CONFLICT; STORAGE_* propagated; no memory-local state.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Impl: apps/n8n-lego/src/lego/workflow-version-model.mjs - immutable version records (parent links + diff metadata) over the P8 storage facade; VERSION_INVALID/NOT_FOUND/CONFLICT (2026-09-27).",
               "reference": "P5-M16 scope (workflow-version backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-02",
               "title": "Immutability guarantees",
               "purpose": "Version records are create-only: no mutation or deletion of published versions (duplicate id refused; model exposes no update API); multi-host shared history immutable across hosts.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Test 2: create-only, duplicate refused across hosts, no mutation API (2026-09-27).",
               "reference": "P5-M16 scope (workflow-version backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-03",
               "title": "Ancestry",
               "purpose": "Parent links with lineage walk (ancestors/descendants); cycles and unknown parents refused explicitly; ancestry query deterministic across hosts.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Tests 3-4: deterministic DAG walks (diamond), self-parent/unknown-parent refused, corrupted cycle refused explicitly (2026-09-27).",
               "reference": "P5-M16 scope (workflow-version backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-04",
               "title": "Tests + rollback",
               "purpose": "Tests: immutability + ancestry; rollback = unmount (namespace isolation leaves history untouched); determinism + surface pin.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "9/9 tests green; 2 impl bugs fixed pre-commit (walk direction, cursor shape) with tests unchanged; rollback=unmount (test 8); surface pin + determinism (test 9) (2026-09-27).",
               "reference": "P5-M16 scope (workflow-version backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             },
             {
               "id": "CP-05",
               "title": "Evidence + delivery notes committed; battery green",
               "purpose": "Evidence + delivery notes committed; full battery green on the delivery commit.",
               "weight": 20,
-              "status": "planned",
-              "evidence": null,
+              "status": "completed",
+              "evidence": "Evidence + delivery notes committed; battery green (2026-09-27).",
               "reference": "P5-M16 scope (workflow-version backing model)",
-              "completedAt": null
+              "completedAt": "2026-09-27T00:00:00Z"
             }
           ],
           "updatedAt": "2026-09-27T00:00:00Z",
