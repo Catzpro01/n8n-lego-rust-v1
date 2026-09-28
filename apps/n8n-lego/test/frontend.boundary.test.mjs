@@ -116,7 +116,9 @@ test('the frontend LEGO is present and loaded by the app', () => {
   assert.equal(started.frontend.available, true);
   const description = started.frontend.describe();
   assert.equal(description.contractVersion, '1.0.0');
-  assert.equal(description.surfaces, 12);
+  // Refresh 2026-09-28 (P2-S14): the declared surface catalog grows by the canvas
+  // surface (manifest/surfaces.json): 12 -> 13.
+  assert.equal(description.surfaces, 13);
   assert.equal(description.capabilities, 0, 'P2.5 registers no capability');
   assert.equal(description.backendUntouched, true);
   assert.equal(description.editorVersion, '2.9.4');

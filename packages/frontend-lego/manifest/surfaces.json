@@ -193,6 +193,28 @@
       "extensionPoints": ["ui:error:render", "ui:notification:render"],
       "status": "present",
       "notes": "The single place where a backend error code becomes a displayable message; today the fallback text, later the localized one."
+    },
+    {
+      "id": "canvas",
+      "title": "Workflow canvas \u2014 nodes, edges, viewport and selection",
+      "kind": "panel",
+      "routes": [],
+      "messageSlots": [
+        "node-descriptions",
+        "notifications",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "workflow",
+        "contract": "contracts/workflow.contract.md",
+        "endpoints": [
+          "/rest/workflows/:id"
+        ],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S14 Layer 3 strangler slice (issue #240): composite region of the workflow editor delivered as its own pilot. The graph model is handed over to the frontend-lego canvas surface; the frontend never fetches a graph, performs no engine call and never mutates the workflow document."
     }
   ]
 }

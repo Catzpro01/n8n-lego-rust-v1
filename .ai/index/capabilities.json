@@ -363,6 +363,21 @@
         "navigation"
       ],
       "operations": []
+    },
+    {
+      "id": "canvas",
+      "lego": "ui-frontend",
+      "title": "Canvas surface pilot (node graph, edges, viewport and selection over a handed-over graph model)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "canvas"
+      ],
+      "operations": []
     }
   ],
   "registered": [],
