@@ -28,7 +28,8 @@
     "notifications-shared-surface",
     "dialogs-overlay-surface",
     "memory-session-views",
-    "skills-capabilities"
+    "skills-capabilities",
+    "approvals-artifacts"
   ],
   "migrationStatuses": [
     "reference-only",
@@ -685,6 +686,25 @@
       "sourceIssue": "240",
       "notes": "P2-S28 Layer 5 strangler slice (issue #240): the agent and runtime supervision surfaces. Supervision state is handed over from the runtime - the surface cannot start or stop runtimes and holds no second source of truth; request-open-agent is declared with closed results and the route never moves locally; agent status and event type are the QUOTED vocabularies agentSessionState and agentEventType and a supervision view with no records is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "slice": "P2-S28"
+    },
+    {
+      "inventoryId": "ui.approvals.artifacts",
+      "category": "approvals-artifacts",
+      "title": "Approval queue and artifact review - handed-over state",
+      "surfaceIds": [
+        "approvals-artifacts"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/66-approvals-artifacts.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "notes": "P2-S29 Layer 5 strangler slice (issue #240): the approval queue and artifact review surfaces. Approval and artifact state is handed over from the approval capability - the surface never writes a decision and holds no second source of truth; request-approve/request-reject are declared with closed results and the route never moves locally; approval status, artifact kind and retention are the QUOTED vocabularies decisionApprovalState, artifactKind and artifactRetention and an empty review is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S29"
     }
   ]
 }

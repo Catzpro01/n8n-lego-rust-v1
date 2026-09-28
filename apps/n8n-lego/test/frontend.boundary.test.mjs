@@ -131,7 +131,8 @@ test('the frontend LEGO is present and loaded by the app', () => {
     // Refresh 2026-09-29 (P2-S26): + the memory-views surface: 23 -> 24.
     // Refresh 2026-09-29 (P2-S27): + the skills-capabilities surface: 24 -> 25.
     // Refresh 2026-09-29 (P2-S28): + the agent-runtime surface: 25 -> 26.
-  assert.equal(description.surfaces, 26);
+    // Refresh 2026-09-29 (P2-S29): + the approvals-artifacts surface: 26 -> 27.
+  assert.equal(description.surfaces, 27);
   assert.equal(description.capabilities, 0, 'P2.5 registers no capability');
   assert.equal(description.backendUntouched, true);
   assert.equal(description.editorVersion, '2.9.4');

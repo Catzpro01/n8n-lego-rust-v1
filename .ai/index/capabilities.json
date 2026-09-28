@@ -589,6 +589,21 @@
         "agent-runtime"
       ],
       "operations": []
+    },
+    {
+      "id": "approvals-artifacts",
+      "lego": "ui-frontend",
+      "title": "Approvals/Artifacts pilot (hand-over review, decisions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "approvals-artifacts"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

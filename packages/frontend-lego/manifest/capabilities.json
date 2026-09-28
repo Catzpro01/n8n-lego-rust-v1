@@ -1097,6 +1097,35 @@
       "phase": "P2-S28",
       "owner": "agent-01",
       "notes": "P2-S28: the strangler slice for the agent and runtime supervision surfaces (split out of P2-S03, Layer 5). Supervision state is handed over through declared capabilities only - the surface cannot start or stop runtimes: no control verb, no direct runtime access, no fetch, no record mutation; request-open-agent is a declared interaction with closed results (accepted, unknown-agent, not-ready) and the capability that owns navigation performs it. Vocabularies are quoted (agentSessionState, agentEventType), never redefined. The pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "approvals-artifacts",
+      "lego": "ui-frontend",
+      "title": "Approvals/Artifacts pilot (hand-over review, decisions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/approvals-artifacts.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "approvals-artifacts"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "approvals-artifacts",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/66-approvals-artifacts.test.mjs"
+      ],
+      "phase": "P2-S29",
+      "owner": "agent-01",
+      "notes": "P2-S29: the strangler slice for the approval queue and artifact review surfaces (split out of P2-S03, Layer 5). Approval and artifact state is handed over through declared capabilities only - the surface never writes a decision: request-approve/request-reject are declared interactions routed through the declared action path with closed results (accepted, unknown-approval, invalid-state, not-ready) and the outcome arrives via a fresh hand-over. Vocabularies are quoted (decisionApprovalState, artifactKind, artifactRetention), never redefined. The pilot degrades by keeping the reference behaviour."
     }
   ]
 }

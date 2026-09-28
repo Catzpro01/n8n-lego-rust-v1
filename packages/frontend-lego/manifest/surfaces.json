@@ -513,6 +513,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S28 Layer 5 strangler slice (issue #240): the agent and runtime supervision surfaces. Supervision state is handed over from the runtime; the surface holds no private data path and CANNOT START OR STOP RUNTIMES - no direct runtime access, no fetch, no record mutation, no navigation. request-open-agent is declared with closed results and the owning capability performs the navigation."
+    },
+    {
+      "id": "approvals-artifacts",
+      "title": "Approvals/Artifacts - handed-over review queue (read-only decisions)",
+      "kind": "page",
+      "routes": [
+        "/approvals"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S29 Layer 5 strangler slice (issue #240): the approval queue and artifact review surfaces. Approval state is handed over from the approval capability; the surface holds no private data path and NEVER WRITES A DECISION - request-approve/request-reject route through the declared action path and the outcome arrives via a fresh hand-over; no fetch, no store access, no record mutation, no navigation."
     }
   ]
 }
