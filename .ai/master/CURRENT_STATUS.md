@@ -15,7 +15,7 @@ document is right and the prose is stale.
 | Agent 2 branch | `main` |
 | **Latest completed slice** | **P2-S10** |
 | **Realtime Delivery Progress** | **88.1%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
-| **Slice Completion** | **87.6%** (170/194 implemented; verifying and blocked contribute 0) |
+| **Slice Completion** | **87.6%** (169/193 implemented; verifying and blocked contribute 0) |
 | **Active / verifying slices** | **P2-S11** |
 | Planned queue | P2-S12, P2-S13, P2-S14, P2-S15, P2-S16, P2-S17, P2-S18, P2-S19, P2-S20, P2-S21, P2-S22, P2-S23, P2-S24, P2-S25, P2-S26, P2-S27, P2-S28, P2-S29 |
 | Blocked slices | P2-S03 |
