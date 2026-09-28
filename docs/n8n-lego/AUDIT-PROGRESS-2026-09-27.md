@@ -5,6 +5,14 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 33 — P2-S24 SELESAI (PR 386, merge fff829ad) + R1/R2
+
+- **START `9b030ac5`** (PRE/POST assert lulus: pop q0 P2-S24 -> activeSlices [P2-S24]; queue 6 -> 5, q0 kini P2-S25; blocked [P2-S03] tak berubah) + state-pin test G 6 -> 5.
+- **Delivery `01494532`** (AI Node surfaces pilot — strangler slice AI-node parameter + model-picker (issue #240); payload handed-over {models, selectedModelId} bentuk tertutup {id,name,provider} provider subset hosted|local|custom; model catalog dari kontrak node/parameter; **selection TIDAK PERNAH ditulis lokal** — `request-select-model` DECLARED hasil closed (accepted/unknown-model/not-ready), nilai baru datang via fresh hand-over; tanpa fetch/mutate/persist; secret ditolak; parity via shared aiNodeActionsFor; AI_NODE_A11Y sekali derive (focus model ids stable); bounds 30/100; measured 200 x20 <250 ms; 18 tests A–E). Manifest: surface `ai-node` (22nd, route /nodes/ai); inventory BARU `ui.ai.node` (27th, ai-surfaces); capability `ai-node` (30th); `ai-agent-node` vocabulary TETAP declared (test26+A20 hijau); curated 30; boot 21.262 -> **21.589** (terukur); boundary 21 -> 22; card 8.353/8.704. Evidence: docs/n8n-lego/evidence/P2-S24-EVIDENCE.md (4 divergences).
+- **Provenance PR #386**: 1 commit `01494532`, **17 file persis scope**; **CI 9/9 ALL GREEN** bersih pertama (~18 mnt) → merge squash `fff829ad`.
+- **Post-merge battery**: lego 3088/3088, frontend 951/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `7257e0ae`** (HARD GUARD queue-5 membership byte-identical PASSED; activeSlices -> []; lvc {P2-S24,386,fff829ad}; pins: tally 183->184/199=92.5, P2 52->53/59, current 182->183/193=94.8, H-fixture flip('P2-S25')) + **R2 `db254198`** (pointer-only: lastVerifiedMain -> R1 7257e0ae) — pushed, tree clean.
+
 ## Update 32 — P2-S23 SELESAI (PR 385, merge 6ecfdd95) + R1/R2
 
 - **START `0daf5fe0`** (PRE/POST assert lulus: pop q0 P2-S23 -> activeSlices [P2-S23]; queue 7 -> 6, q0 kini P2-S24; blocked [P2-S03] tak berubah) + state-pin test G 7 -> 6.
