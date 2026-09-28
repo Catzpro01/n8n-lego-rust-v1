@@ -109,6 +109,11 @@ pub enum ExprAst {
         name: String,
         args: Vec<ExprAst>,
     },
+    /// `$runIndex` — the run number of the current evaluation. Context-supplied
+    /// (not a literal), and the reason a `run_index` accessor exists on the
+    /// expression-side context resolver; the ratified `EvaluationContext` trait
+    /// cannot express it, so it is resolved by downcast in `evaluator.rs`.
+    RunIndex,
     /// `$('Node Name')` handle. Must be followed by a member access
     /// (`.json`, `.first()`, …) before it can become a JSON value.
     NodeHandle(String),

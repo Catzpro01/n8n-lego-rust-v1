@@ -75,6 +75,17 @@ impl StandardExpressionEvaluator {
                 context.get_item_index().into(),
             ))),
 
+            // `$runIndex` is not expressible through the ratified
+            // `EvaluationContext` trait, so `ContextResolver` binds it for the
+            // duration of a resolver-driven evaluation. Any other context keeps
+            // the fail-closed behaviour instead of silently evaluating to 0.
+            ExprAst::RunIndex => crate::context::active_run_index()
+                .map(|run| RuntimeValue::Json(Value::Number(run.into())))
+                .ok_or_else(|| ExpressionError::UnresolvedReference {
+                    path: "$runIndex (evaluate via ContextResolver to bind a run index)"
+                        .to_string(),
+                }),
+
             ExprAst::Variable(k) => context
                 .get_variable(k)
                 .cloned()
@@ -673,5 +684,326 @@ fn num_result(f: f64) -> Result<Value, ExpressionError> {
                 expected: "finite float".into(),
                 actual: "NaN or Infinite".into(),
             })
+    }
+}
+
+#[cfg(test)]
+mod staged3_sandboxed_evaluator {
+    //! `expression-engine/m7-03-sandboxed-evaluator` verification.
+    //!
+    //! Acceptance criteria from `docs/architecture/n8n-rust-project-decomposition.md`
+    //! ("Menghitung ekspresi aritmetika, logika string, dan boolean dengan
+    //! determinisme 100%", goal "tanpa alokasi berlebih") turned into executable
+    //! checks. Every assertion here is deterministic and hardware-independent:
+    //! allocation *counts* are measured through the test-only counting
+    //! allocator in `lib.rs`, never wall-clock nanoseconds.
+
+    use super::*;
+    use crate::alloc_snapshot;
+    use n8n_common::expression_contract::{ExpressionEvaluator, SimpleEvaluationContext};
+    use serde_json::{json, Value};
+
+    fn payload() -> Value {
+        json!({
+            "a": 7, "b": 2, "big": 9007199254740991i64, "s": "n8n",
+            "t": "a b c", "tags": ["x","y","z"], "nums": [1,2,3],
+            "flag": true, "off": false, "emptyStr": "", "zero": 0
+        })
+    }
+
+    fn ctx() -> SimpleEvaluationContext {
+        SimpleEvaluationContext::new().with_json(payload())
+    }
+
+    /// Every operator class the criteria names, plus the fail-closed edges.
+    fn corpus() -> Vec<(&'static str, &'static str)> {
+        vec![
+            // arithmetic
+            ("arith-add", "={{ $json.a + $json.b }}"),
+            ("arith-sub", "={{ $json.a - $json.b }}"),
+            ("arith-mul", "={{ $json.a * $json.b }}"),
+            ("arith-div", "={{ $json.a / $json.b }}"),
+            ("arith-mod", "={{ $json.a % $json.b }}"),
+            ("arith-precedence", "={{ $json.a + $json.b * 3 - 1 }}"),
+            ("arith-paren", "={{ ($json.a + $json.b) * 3 }}"),
+            ("arith-float", "={{ 1 / 3 }}"),
+            ("arith-mod-sign", "={{ 0 - $json.a % $json.b }}"),
+            ("arith-div-zero", "={{ $json.a / $json.zero }}"),
+            ("arith-mod-zero", "={{ $json.a % $json.zero }}"),
+            ("arith-huge", "={{ $json.big + $json.big }}"),
+            ("arith-neg", "={{ -$json.a }}"),
+            // string logic
+            ("str-concat", "={{ $json.s + '-x' }}"),
+            ("str-arith-string", "={{ $json.a + $json.s }}"),
+            ("str-upper", "={{ $json.s.toUpperCase() }}"),
+            ("str-lower", "={{ $json.t.toLowerCase().split(' ') }}"),
+            ("str-len", "={{ $json.s.length }}"),
+            ("str-cmp-lt", "={{ $json.s < 'o' }}"),
+            ("str-cmp-gt", "={{ $json.s > 'o' }}"),
+            ("str-eq", "={{ $json.s === 'n8n' }}"),
+            ("str-neq", "={{ $json.s !== 'n8n' }}"),
+            ("str-isEmpty", "={{ $json.emptyStr.isEmpty() }}"),
+            ("str-notEmpty", "={{ $json.s.isNotEmpty() }}"),
+            // boolean logic
+            ("bool-and", "={{ $json.flag && $json.off }}"),
+            ("bool-or", "={{ $json.flag || $json.off }}"),
+            ("bool-not", "={{ !$json.off }}"),
+            ("bool-ternary", "={{ $json.a > 5 ? 'yes' : 'no' }}"),
+            ("bool-short-circuit", "={{ $json.flag || $missing }}"),
+            ("bool-short-circuit-2", "={{ $json.off && $missing }}"),
+            (
+                "bool-mixed",
+                "={{ ($json.a > 5) && ($json.s.length == 3) }}",
+            ),
+            // array/numeric type preservation
+            ("arr-index", "={{ $json.nums[1] }}"),
+            ("arr-method", "={{ $json.nums.sum() }}"),
+            ("arr-unique", "={{ $json.tags.unique().join(',') }}"),
+            // sandboxed: hostile source must never reach the evaluator
+            ("sandbox-constructor", "={{ $json.a.constructor }}"),
+            ("sandbox-proto", "={{ $json.__proto__ }}"),
+            ("sandbox-with", "={{ with (a) { b } }}"),
+            ("sandbox-class", "={{ class Evil {} }}"),
+            // unknown node reference: fail-closed, not a panic
+            ("missing-node", "={{ $('Nope').first().json.x }}"),
+        ]
+    }
+
+    /// Canonical, byte-level rendering of a result (value or error).
+    fn canonical(expr: &str) -> String {
+        match StandardExpressionEvaluator::new().evaluate(expr, &ctx()) {
+            Ok(v) => format!("V:{}", serde_json::to_string(&v).expect("serialisable")),
+            Err(e) => format!("E:{e}"),
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Determinism
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn determinism_identical_runs_bit_for_bit() {
+        let mut reported = 0usize;
+        for (label, expr) in corpus() {
+            let first = canonical(expr);
+            for _ in 0..499 {
+                assert_eq!(
+                    canonical(expr),
+                    first,
+                    "`{label}` drifted across repeat runs"
+                );
+            }
+            assert!(!first.starts_with("V:null"), "`{label}` produced a null");
+            reported += 1;
+        }
+        println!("determinism: {reported} expressions x 500 identical evaluations");
+    }
+
+    #[test]
+    fn determinism_across_threads() {
+        let exprs: Vec<(&'static str, &'static str)> = vec![
+            ("arith", "={{ $json.a / $json.b }}"),
+            ("float", "={{ 1 / 3 }}"),
+            ("concat", "={{ $json.a + $json.s }}"),
+            ("chain", "={{ $json.nums.sum() * 2 - 1 }}"),
+        ];
+        let expected: Vec<String> = exprs.iter().map(|(_, e)| canonical(e)).collect();
+        let handles: Vec<_> = (0..8)
+            .map(|_| {
+                let es = exprs.clone();
+                std::thread::spawn(move || {
+                    let mut out = Vec::new();
+                    for _ in 0..200 {
+                        for (_, e) in &es {
+                            out.push(canonical(e));
+                        }
+                    }
+                    out
+                })
+            })
+            .collect();
+        for (i, h) in handles.into_iter().enumerate() {
+            let out = h.join().expect("thread must not panic");
+            for (k, got) in out.iter().enumerate() {
+                assert_eq!(
+                    got,
+                    &expected[k % expected.len()],
+                    "thread {i} produced a different result at {k}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn determinism_independent_of_evaluation_order() {
+        // A shared mutable cache would make the result depend on what ran first.
+        let all: Vec<&'static str> = corpus().iter().map(|(_, e)| *e).collect();
+        let fwd: Vec<String> = all.iter().map(|e| canonical(e)).collect();
+        let rev: Vec<String> = all.iter().rev().map(|e| canonical(e)).collect();
+        for (i, e) in all.iter().rev().enumerate() {
+            assert_eq!(
+                canonical(e),
+                fwd[all.iter().position(|x| x == e).unwrap()],
+                "result of {e} depends on evaluation order"
+            );
+            let _ = i;
+        }
+        for (i, got) in rev.iter().enumerate() {
+            let j = all.len() - 1 - i;
+            assert_eq!(got, &fwd[j], "reverse-order sweep differs at {j}");
+        }
+    }
+
+    #[test]
+    fn no_non_finite_floats_ever_escape() {
+        // Division that leaves the exact-integer path, overflow past i64, and
+        // division/modulo by zero must all be deterministic *and* must never
+        // yield NaN/Infinity inside a result, nor panic.
+        for (_, expr) in corpus() {
+            // Any *structured* error is an acceptable fail-closed outcome for this
+            // criterion (TypeError, SyntaxError, NodeNotFound, UnresolvedReference,
+            // …). What must never happen is a panic, a non-finite float, or a
+            // non-deterministic result.
+            if let Ok(v) = StandardExpressionEvaluator::new().evaluate(expr, &ctx()) {
+                let s = serde_json::to_string(&v).unwrap_or_default();
+                assert!(
+                    !s.contains("NaN") && !s.contains("null") && !s.contains("Infinity"),
+                    "`{expr}` leaked a non-finite/null value: {s}"
+                );
+                if let Some(f) = v.as_f64() {
+                    assert!(f.is_finite(), "`{expr}` produced non-finite {f}");
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Allocation budget ("without excessive allocation")
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn allocations_per_evaluation_are_bounded() {
+        let expr = "={{ $json.a + $json.b * 2 - 1 }}";
+        let n = 2_000usize;
+        // Warm-up (also initialises the TLS counter and any lazily built state).
+        for _ in 0..200 {
+            let _ = canonical(expr);
+        }
+        let (a0, b0) = alloc_snapshot();
+        for _ in 0..n {
+            std::hint::black_box(canonical(expr));
+        }
+        let (a1, b1) = alloc_snapshot();
+        let allocs = a1 - a0;
+        let _ = b1 - b0;
+        // Null block: proves the measurement window itself is quiet.
+        let (c0, _) = alloc_snapshot();
+        std::hint::black_box(0usize);
+        let (c1, _) = alloc_snapshot();
+        assert_eq!(c1 - c0, 0, "measurement window is not allocation-free");
+
+        let per_eval = allocs / n;
+        println!("allocations per evaluate+serialise: {per_eval} (total {allocs} over {n})");
+        assert!(
+            per_eval <= 64,
+            "one evaluation cost {per_eval} allocations; the budget for evaluate+canonicalise is 64"
+        );
+    }
+
+    #[test]
+    fn allocation_cost_does_not_grow_with_repetition() {
+        // A leak shows up as a *rising* per-call allocation count.
+        let expr = "={{ $json.a / $json.b }}";
+        let mut per_call = Vec::new();
+        for batch in 0..5 {
+            let n = 1_000;
+            let (a0, _) = alloc_snapshot();
+            for _ in 0..n {
+                let _ = StandardExpressionEvaluator::new().evaluate(expr, &ctx());
+            }
+            let (a1, _) = alloc_snapshot();
+            per_call.push((a1 - a0) / n);
+            println!("batch {batch}: {} allocs/eval", per_call[batch]);
+        }
+        let min = *per_call.iter().min().unwrap();
+        let max = *per_call.iter().max().unwrap();
+        assert_eq!(
+            min, max,
+            "per-evaluation allocations drift across batches ({min}..{max}) — unbounded growth"
+        );
+    }
+}
+
+#[cfg(test)]
+mod staged3_memory {
+    //! STAGE-3 memory-stability evidence: a real leak grows *linearly*, so the
+    //! test compares two identical batches rather than any absolute figure —
+    //! allocator retention and platform noise cannot make it flaky.
+
+    use n8n_common::expression_contract::{ExpressionEvaluator, SimpleEvaluationContext};
+    use serde_json::json;
+
+    fn rss_bytes() -> Option<usize> {
+        let statm = std::fs::read_to_string("/proc/self/statm").ok()?;
+        let resident_pages: usize = statm.split_whitespace().nth(1)?.parse().ok()?;
+        Some(resident_pages * 4096)
+    }
+
+    fn run_batch(n: usize) {
+        let ctx = SimpleEvaluationContext::new().with_json(json!({
+            "a": 7, "b": 2, "s": "n8n", "nums": [1, 2, 3], "flag": true
+        }));
+        let ev = crate::evaluator::StandardExpressionEvaluator::new();
+        for _ in 0..n {
+            for expr in [
+                "={{ $json.a + $json.b * 2 - 1 }}",
+                "={{ $json.s.toUpperCase() + '!' }}",
+                "={{ ($json.a > 3) && !$json.flag }}",
+                "={{ $json.nums.sum() / 2 }}",
+            ] {
+                let _ = ev.evaluate(expr, &ctx);
+            }
+        }
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn memory_is_bounded_across_repeated_batches() {
+        const N: usize = 200_000;
+        run_batch(5_000); // warm-up: allocator arenas, lazy state
+        let before = rss_bytes().expect("statm readable");
+        run_batch(N);
+        let mid = rss_bytes().expect("statm readable");
+        run_batch(N);
+        let after = rss_bytes().expect("statm readable");
+
+        let first = mid.saturating_sub(before);
+        let second = after.saturating_sub(mid);
+        println!(
+            "RSS: before={before} mid={mid} after={after}; growth batch1={first} batch2={second} \
+             ({N} evals each)"
+        );
+        // No monotonicity is assumed: glibc returns freed arenas to the OS, so RSS
+        // legitimately *falls* (observed here: 126 MB -> 9 MB). Only the second
+        // batch matters — a leak is linear growth across identical workloads.
+        assert!(
+            second < first.max(1) * 4 + (16 << 20),
+            "second identical batch grew {second} bytes after the first grew {first}: \
+             linear growth indicates a leak"
+        );
+        // And the process must not end up holding more than one batch's worth of
+        // unbounded accumulation above the steady-state mark.
+        assert!(
+            after.saturating_sub(mid) < 64 << 20,
+            "resident set gained {second} bytes in one batch"
+        );
+    }
+
+    #[test]
+    #[cfg(not(target_os = "linux"))]
+    fn memory_is_bounded_across_repeated_batches() {
+        // No /proc on this platform; the allocation-count and pointer-identity
+        // guards remain the authoritative evidence.
+        eprintln!("RSS check skipped on non-Linux target");
     }
 }
