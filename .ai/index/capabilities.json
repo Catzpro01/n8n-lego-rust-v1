@@ -514,6 +514,21 @@
         "copilot"
       ],
       "operations": []
+    },
+    {
+      "id": "ai-node",
+      "lego": "ui-frontend",
+      "title": "AI Node surfaces pilot (model catalog handed over, selection declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "ai-node"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

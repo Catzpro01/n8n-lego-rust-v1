@@ -952,6 +952,35 @@
       "phase": "P2-S23",
       "owner": "agent-01",
       "notes": "P2-S23: the strangler slice for the inline copilot suggestion surface (split out of P2-S03, Layer 5). Suggestions arrive as declared events through hand-over only - the surface never applies a suggestion silently, never fetches and never persists; request-accept/request-reject are declared interactions with closed results (accepted, unknown-suggestion, invalid-state, not-ready), only pending suggestions are actionable, and the owning capability performs the action. Distinct from the declared ai-copilot vocabulary capability (P2.10, stays status declared with no entry); the pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "ai-node",
+      "lego": "ui-frontend",
+      "title": "AI Node surfaces pilot (model catalog handed over, selection declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/ai-node.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "ai-node"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "ai-node",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/61-ai-node.test.mjs"
+      ],
+      "phase": "P2-S24",
+      "owner": "agent-01",
+      "notes": "P2-S24: the strangler slice for the AI-node parameter and model-picker surfaces (split out of P2-S03, Layer 5). The model catalog is handed over from the node/parameter contracts through declared capabilities only - no fetch, no catalog mutation, no local write of the selected model; request-select-model is a declared interaction with closed results (accepted, unknown-model, not-ready) and the capability that owns the parameter performs it. Distinct from the declared ai-agent-node vocabulary capability (P2.10, stays status declared with no entry); the pilot degrades by keeping the reference behaviour."
     }
   ]
 }

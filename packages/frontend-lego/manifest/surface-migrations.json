@@ -584,6 +584,27 @@
       "sourceIssue": "240",
       "notes": "P2-S23 Layer 5 strangler slice (issue #240): the inline copilot suggestion surface. Suggestions arrive as declared AI capability events through hand-over - the surface never applies a suggestion silently; accept/reject are declared with closed results, status is the declared subset pending|accepted|rejected, and a workspace with no suggestions is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "slice": "P2-S23"
+    },
+    {
+      "inventoryId": "ui.ai.node",
+      "category": "ai-surfaces",
+      "title": "AI node parameter - model picker over a handed-over catalog",
+      "surfaceIds": [
+        "ai-node"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/61-ai-node.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S24 Layer 5 strangler slice (issue #240): the AI-node parameter and model-picker surfaces. The model catalog is handed over from the node/parameter contracts - the surface holds no second source of truth; request-select-model is declared with closed results and the selection never moves locally; providers are the declared subset hosted|local|custom and a node with no models is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S24"
     }
   ]
 }

@@ -398,6 +398,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S23 Layer 5 strangler slice (issue #240): the inline copilot suggestion surface. Suggestions arrive as declared AI capability events through hand-over - the surface never applies a suggestion silently: no method writes a status, accept/reject are declared with closed results, and the outcome arrives only via a fresh hand-over. No fetch, no inference client, no persistence."
+    },
+    {
+      "id": "ai-node",
+      "title": "AI Node - model catalog handed over from the node/parameter contracts",
+      "kind": "page",
+      "routes": [
+        "/nodes/ai"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S24 Layer 5 strangler slice (issue #240): the AI-node parameter and model-picker surfaces. The model catalog is handed over from the node/parameter contracts; the surface holds no second source of truth - no fetch, no catalog mutation, no local write of the selected model. request-select-model is declared with closed results and the new value arrives only via a fresh hand-over."
     }
   ]
 }

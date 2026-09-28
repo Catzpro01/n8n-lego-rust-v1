@@ -1241,7 +1241,8 @@ test('the assembly exposes the surface, and the boot descriptor stays byte-ident
   // Refresh 2026-09-28 (P2-S21): + the project-admin surface: 20,271 -> 20,624 bytes, measured.
   // Refresh 2026-09-28 (P2-S22): + the assistant surface: 20,624 -> 20,942 bytes, measured.
   // Refresh 2026-09-28 (P2-S23): + the copilot surface: 20,942 -> 21,262 bytes, measured.
-  assert.equal(payload.length, 21_262, 'the boot payload is byte-identical to the P2-S23 baseline');
+  // Refresh 2026-09-28 (P2-S24): + the ai-node surface: 21,262 -> 21,589 bytes, measured.
+  assert.equal(payload.length, 21_589, 'the boot payload is byte-identical to the P2-S24 baseline');
   for (const word of ['contextId', 'sessionId', 'continuation', 'rollover', 'contextRef', 'chainOfThought', 'NORMAL']) {
     assert.equal(payload.includes(word), false, `${word} does not travel in the boot payload`);
   }
