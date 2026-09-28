@@ -13,10 +13,10 @@ document is right and the prose is stale.
 | Protected main baseline | `fc54c8c2bfc2557ddecf466e662869f197fc9595` |
 | Agent 1 branch | `main` |
 | Agent 2 branch | `main` |
-| **Latest completed slice** | **P2-S22** |
+| **Latest completed slice** | **P2-S23** |
 | **Realtime Delivery Progress** | **94.3%** (P0–P11 checkpoint-weighted; future programs excluded; no checkpoint model contributes 0) |
-| **Slice Completion** | **93.8%** (181/193 implemented; verifying and blocked contribute 0) |
-| **Active / verifying slices** | **P2-S23** |
+| **Slice Completion** | **94.3%** (182/193 implemented; verifying and blocked contribute 0) |
+| **Active / verifying slices** | **—** |
 | Planned queue | P2-S24, P2-S25, P2-S26, P2-S27, P2-S28, P2-S29 |
 | Blocked slices | P2-S03 |
 | Historical P2 ladder pointer | P2.27 (history, not active work) |
@@ -78,7 +78,7 @@ evidenced progress and contributes 0% to Slice Completion.
 - **P2-S20** (P2) — implemented · realtime 100.0% · completion contribution 100.0% · current checkpoint — · latest completed CP-05 (completed) · updated 2026-09-28T18:35:00Z — R1: PR #382 merged (squash, 9dac6de5); CI 9/9 before merge; CP-01..05 completed with evidence docs/n8n-lego/evidence/P2-S20-EVIDENCE.md; post-merge battery green (frontend 879/0/1, lego 3088, engine 49, runtime 79, governance 117, gates 7/7). Queue HARD GUARD unchanged.
 - **P2-S21** (P2) — implemented · realtime 100.0% · completion contribution 100.0% · current checkpoint — · latest completed CP-05 (completed) · updated 2026-09-28T19:45:00Z — R1: PR #383 merged (squash, ae03fb7b); CI 9/9 before merge; CP-01..05 completed with evidence docs/n8n-lego/evidence/P2-S21-EVIDENCE.md; post-merge battery green (frontend 897/0/1, lego 3088, engine 49, runtime 79, governance 117, gates 7/7). Queue HARD GUARD unchanged.
 - **P2-S22** (P2) — implemented · realtime 100.0% · completion contribution 100.0% · current checkpoint — · latest completed CP-05 (completed) · updated 2026-09-28T21:05:00Z — R1: PR #384 merged (squash, cb2f4d33); CI 9/9 before merge; CP-01..05 completed with evidence docs/n8n-lego/evidence/P2-S22-EVIDENCE.md; post-merge battery green (frontend 915/0/1, lego 3088, engine 49, runtime 79, governance 117, gates 7/7). Queue HARD GUARD unchanged.
-- **P2-S23** (P2) — in-progress · realtime 100.0% · completion contribution 0.0% · current checkpoint — · latest completed CP-05 (completed) · updated 2026-09-28T22:00:00Z — Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.
+- **P2-S23** (P2) — implemented · realtime 100.0% · completion contribution 100.0% · current checkpoint — · latest completed CP-05 (completed) · updated 2026-09-28T23:10:00Z — R1: PR #385 merged (squash, 6ecfdd95); CI 9/9 before merge; CP-01..05 completed with evidence docs/n8n-lego/evidence/P2-S23-EVIDENCE.md; post-merge battery green (frontend 933/0/1, lego 3088, engine 49, runtime 79, governance 117, gates 7/7). Queue HARD GUARD unchanged.
 - **P2-S24** (P2) — planned · realtime 0.0% · completion contribution 0.0% · current checkpoint — · latest completed — · updated 2026-09-27T09:30:00Z — Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.
 - **P2-S25** (P2) — planned · realtime 0.0% · completion contribution 0.0% · current checkpoint — · latest completed — · updated 2026-09-27T09:30:00Z — Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.
 - **P2-S26** (P2) — planned · realtime 0.0% · completion contribution 0.0% · current checkpoint — · latest completed — · updated 2026-09-27T09:30:00Z — Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.

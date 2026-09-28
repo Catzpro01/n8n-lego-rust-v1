@@ -229,9 +229,9 @@ test('H a counted transition moves progress by exactly +1, an aggregate transiti
     clone.find((slice) => slice.id === id).status = status;
     return completionTally(clone);
   };
-  // Subject follows the queue head: P2-S22 became implemented at R1 (PR #384),
-  // so the fixture leaf is the current head P2-S23 (still planned).
-  const counted = flip('P2-S23', 'implemented');
+  // Subject follows the queue head: P2-S23 became implemented at R1 (PR #385),
+  // so the fixture leaf is the current head P2-S24 (still planned).
+  const counted = flip('P2-S24', 'implemented');
   assert.equal(counted.implemented, base.implemented + 1, 'a leaf planned -> implemented is +1');
   assert.equal(counted.total, base.total, 'no denominator change');
   assert.equal(counted.percent, percent1(base.implemented + 1, base.total));
@@ -310,15 +310,19 @@ test('I progress figures are pinned to the reconciled accounting (refresh with e
   // unchanged PASSED): 181/199 = 91.0 -> 182/199 = 91.5; P2 50/59 -> 51/59;
   // current 180/193 = 93.3 -> 181/193 = 93.8. Evidence:
   // docs/n8n-lego/evidence/P2-S22-EVIDENCE.md.
-  assert.equal(BREAKDOWN.global.implemented, 182);
+  // Refresh 2026-09-28 (R1 P2-S23, PR #385 merge 6ecfdd95, HARD GUARD queue-
+  // unchanged PASSED): 182/199 = 91.5 -> 183/199 = 92.0; P2 51/59 -> 52/59;
+  // current 181/193 = 93.8 -> 182/193 = 94.3. Evidence:
+  // docs/n8n-lego/evidence/P2-S23-EVIDENCE.md.
+  assert.equal(BREAKDOWN.global.implemented, 183);
   assert.equal(BREAKDOWN.global.total, 199);
-  assert.equal(BREAKDOWN.global.percent, 91.5);
+  assert.equal(BREAKDOWN.global.percent, 92.0);
   const p2 = BREAKDOWN.programs.find((program) => program.id === 'P2');
-  assert.equal(p2.implemented, 51);
+  assert.equal(p2.implemented, 52);
   assert.equal(p2.counted, 59);
   assert.deepEqual(p2.excluded.map((entry) => entry.id), ['P2.27']);
   const metrics = headlineMetrics(REGISTER);
-  assert.equal(metrics.current.implemented, 181);
+  assert.equal(metrics.current.implemented, 182);
   assert.equal(metrics.current.total, 193);
   assert.equal(metrics.future.implemented, 1);
   assert.equal(metrics.future.total, 6);
