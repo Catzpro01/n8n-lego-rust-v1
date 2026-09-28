@@ -5,6 +5,19 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 26 — P2-S17 SELESAI (PR 379, merge 060ef4c2) + R1/R2
+
+- **START `72d6e49b`** (PRE/POST assert lulus: pop q0 P2-S17 -> activeSlices [P2-S17]; queue 13 -> 12, q0 kini P2-S18; blocked [P2-S03] tak berubah) + state-pin test G 13 -> 12.
+- **Delivery `42b5d7d9`** (Import/export surface pilot — payload {workflow} handed-over via loadSuccess; TANPA fetch/location/pushState; TANPA tulis-workflow (issuesWorkflowSave=false, issuesEngineCall=false); request-export serializes PERSIS dokumen hand-over (round-trip deep-equal; key tak dikenal lewat utuh — compatibility-critical #240); import-document parse JSON.parse ONLY (no eval/new Function), validasi nodes+connections, tolak envelope secret di KEDUA sisi, hasil dipegang PENDING untuk app layer (tidak pernah install; dokumen byte-identical setelah interaksi); actions refresh|request-export|import-document (results accepted|not-ready / accepted|invalid-json|invalid-document|not-ready); parity 4 state via shared ioActionsFor; IO_A11Y sekali derive (form landmark); preview 30/100; measured 300 node x20 render <250 ms; 18 tests A–E). Manifest: `ui.io.import-export` reference-only/declared → pilot-available/consuming/pilot-not-primary (sourceIssue 240, slice P2-S17, surfaceIds TETAP [workflow-editor, dashboard] — tidak ada surface baru); capability `import-export` (23rd); curated 23; pack budget 86 → **96 KB** (terukur 88.293 B + ekor S18–S29 ~12×500B); boot baseline TIDAK berubah (tanpa surface baru).
+- **Insiden governance**: guard literal `91.2%`/`92.0%` dari Issue #307 (angka ILUSTRASI era split, dilarang muncul sebagai pengukuran) kini false-positive karena realtime TURUNAN sah = 91,2% (17600/19300 di CP-completion S17; 92,0% akan muncul saat S19 CP-03) → diganti **derivation check** (block harus menampilkan realtime persis earned/points) + komentar evidence. Tidak ada denominator/denay berubah.
+- **Provenance PR #379**: 1 commit `42b5d7d9`, **15 file persis scope** (3 baru: src/test/evidence), tanpa file liar; **CI check-runs 9/9 ALL GREEN** → merge squash `060ef4c2`.
+- **Post-merge battery**: lego 3088/3088, frontend 825/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `fea438b8`** (HARD GUARD queue-unchanged pre-write LULUS: plannedQueue 12 [P2-S18..] & blockedSlices byte-identik; activeSlices → [] + lvc = P2-S17 = lifecycle write sah). **Delta: global 176/199=88.4% → 177/199=88.9%; current 175/193=90.7% → 176/193=91.2%; P2 45/59 → 46/59. Reason: P2-S17 became implemented.** Pin refresh (governance-register KPI + progress-accounting I; H fixture → P2-S18).
+- **R2 `ca66aa31`** (pointer-only `lastVerifiedMain` → R1) + **resync `ad80132c`** (README/.ai; ai:check PASS).
+- **State akhir**: activeSlices=[], queue head = **P2-S18** (12 item), blocked=[P2-S03], lvc=P2-S17, P2 = **46/59 (78.0%)**.
+- **NEXT**: **P2-S18** (queue head) → … → evaluasi final P2-S03 (gated).
+
+
 ## Update 25 — P2-S16 SELESAI (PR 378, merge 852b7046) + R1/R2
 
 - **START `e21d670c`** (PRE/POST assert lulus: pop q0 P2-S16 -> activeSlices [P2-S16]; queue 14 -> 13, q0 kini P2-S17; blocked [P2-S03] tak berubah) + state-pin test G 14 -> 13 (ter-commit bersama START).
