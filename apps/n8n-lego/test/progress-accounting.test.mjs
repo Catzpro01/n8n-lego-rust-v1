@@ -243,8 +243,13 @@ test('H a counted transition moves progress by exactly +1, an aggregate transiti
   const aggregate = flip('P2.27', 'planned');
   assert.equal(aggregate.implemented, base.implemented, 'the aggregate never moves the numerator');
   assert.equal(aggregate.total, base.total, 'the aggregate never moves the denominator');
-  const blocked = flip('P2-S03', 'implemented');
-  assert.equal(blocked.implemented, base.implemented + 1, 'unblocking a leaf is the same +1 with its own evidence');
+  // P2-S03 (the real blocked umbrella) was implemented at its formal re-scope
+  // (DEC-0029, PR #392); the unblock transition is modelled on a planned row
+  // taken through blocked (blocked contributes 0, then implemented is +1).
+  const blocked = flip('P11-S01', 'blocked');
+  assert.equal(blocked.implemented, base.implemented, 'a blocked leaf contributes 0');
+  const unblocked = flip('P11-S01', 'implemented');
+  assert.equal(unblocked.implemented, base.implemented + 1, 'unblocking a leaf is the same +1 with its own evidence');
 });
 
 /* --------------------------------------------------- I (zero unexplained progress) */
@@ -343,15 +348,19 @@ test('I progress figures are pinned to the reconciled accounting (refresh with e
   // unchanged PASSED): 188/199 = 94.5 -> 189/199 = 95.0; P2 57/59 -> 58/59;
   // current 187/193 = 96.9 -> 188/193 = 97.4. Evidence:
   // docs/n8n-lego/evidence/P2-S29-EVIDENCE.md.
-  assert.equal(BREAKDOWN.global.implemented, 189);
+  // Refresh 2026-09-29 (P2-S03 re-scope DEC-0029, PR #392 merge 972b5afe):
+  // 189/199 = 95.0 -> 190/199 = 95.5; P2 58/59 -> 59/59 (100.0);
+  // current 188/193 = 97.4 -> 189/193 = 97.9. Evidence:
+  // docs/n8n-lego/evidence/P2-S03-RESCOPE.md.
+  assert.equal(BREAKDOWN.global.implemented, 190);
   assert.equal(BREAKDOWN.global.total, 199);
-  assert.equal(BREAKDOWN.global.percent, 95);
+  assert.equal(BREAKDOWN.global.percent, 95.5);
   const p2 = BREAKDOWN.programs.find((program) => program.id === 'P2');
-  assert.equal(p2.implemented, 58);
+  assert.equal(p2.implemented, 59);
   assert.equal(p2.counted, 59);
   assert.deepEqual(p2.excluded.map((entry) => entry.id), ['P2.27']);
   const metrics = headlineMetrics(REGISTER);
-  assert.equal(metrics.current.implemented, 188);
+  assert.equal(metrics.current.implemented, 189);
   assert.equal(metrics.current.total, 193);
   assert.equal(metrics.future.implemented, 1);
   assert.equal(metrics.future.total, 6);

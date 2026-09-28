@@ -143,8 +143,8 @@ const MUTATIONS = [
       .filter((entry) => entry.id !== subject.id);
   }, /is neither active nor verifying/],
   ['a queued slice that is not planned', (r) => { r.executionPointer.plannedQueue.push('P5-M03'); }, /queued slice P5-M03 is implemented/],
-  ['a blocked slice without blockedBy', (r) => { delete r.programs.flatMap((p) => p.slices).find((x) => x.id === 'P2-S03').blockedBy; }, /P2-S03 does not record blockedBy/],
-  ['a blocked slice missing from blockedSlices', (r) => { r.executionPointer.blockedSlices = []; }, /blocked slice P2-S03 is missing/],
+  ['a blocked slice without blockedBy', (r) => { const x = r.programs.flatMap((p) => p.slices).find((s) => s.id === 'P11-S01'); x.status = 'blocked'; x.blockedBy = 'fixture'; r.executionPointer.blockedSlices = ['P11-S01']; delete x.blockedBy; }, /P11-S01 does not record blockedBy/],
+  ['a blocked slice missing from blockedSlices', (r) => { r.programs.flatMap((p) => p.slices).find((x) => x.id === 'P11-S01').status = 'blocked'; r.executionPointer.blockedSlices = []; }, /blocked slice P11-S01 is missing/],
   ['a latest completed slice that is not implemented', (r) => {
     // Any slice that is not implemented will do; the queue may legitimately be
     // empty once every queued slice has been started or blocked.
@@ -172,6 +172,12 @@ const MUTATIONS = [
       ['plannedQueue', r.executionPointer.plannedQueue ?? []],
       ['blockedSlices', r.executionPointer.blockedSlices ?? []],
     ];
+    // Every pointer list is legitimately empty after the P2-S03 re-scope (DEC-0029);
+    // seed the active list with an in-flight row so the duplicate still has a source.
+    if (lists.every(([, ids]) => ids.length === 0)) {
+      r.programs.flatMap((p) => p.slices).find((s) => s.id === 'P10-S01').status = 'in-progress';
+      r.executionPointer.activeSlices.push('P10-S01');
+    }
     const [from, claimed] = lists.find(([, ids]) => ids.length > 0);
     const target = lists.find(([name]) => name !== from)[1];
     target.push(claimed[0]);
@@ -522,8 +528,12 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // unchanged PASSED): 188/199 = 94.5 -> 189/199 = 95.0; current 187/193 =
   // 96.9 -> 188/193 = 97.4; P2 57/59 -> 58/59. Evidence:
   // docs/n8n-lego/evidence/P2-S29-EVIDENCE.md.
-  assert.equal(tally.percent, 95);
-  assert.equal(tally.implemented, 189);
+  // Refresh 2026-09-29 (P2-S03 re-scope DEC-0029, PR #392 merge 972b5afe):
+  // blocked -> implemented, blockedSlices -> []: 189/199 = 95.0 -> 190/199 = 95.5;
+  // current 188/193 = 97.4 -> 189/193 = 97.9; P2 58/59 -> 59/59 (100.0).
+  // Evidence: docs/n8n-lego/evidence/P2-S03-RESCOPE.md.
+  assert.equal(tally.percent, 95.5);
+  assert.equal(tally.implemented, 190);
   assert.equal(tally.total, 199);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
@@ -534,8 +544,8 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
     assert.equal(metrics.current.total, 193);
-  assert.equal(metrics.current.implemented, 188);
-  assert.equal(metrics.current.sliceCompletion, percent1(188, 193));
+  assert.equal(metrics.current.implemented, 189);
+  assert.equal(metrics.current.sliceCompletion, percent1(189, 193));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);
@@ -654,8 +664,17 @@ test('Issue #307: two metrics, status independent, checkpoint weights only where
   assert.match(block, /### Slice Completion/);
   assert.match(block, /Status is not progress/);
   assert.match(block, /Program status is not a percentage/);
-  assert.match(block, /Current checkpoint:/);
-  assert.match(block, /Latest checkpoint:/);
+  // The colon form renders only on verifying or blocked rows; after the P2-S03
+  // formal re-scope (DEC-0029) both pointer lists are empty, so the shape is
+  // asserted on a synthesised blocked row (the same fixture live-progress uses).
+  const rowsRegister = structuredClone(REGISTER);
+  const synthesised = rowsRegister.programs.flatMap((p) => p.slices).find((x) => x.id === 'P11-S01');
+  synthesised.status = 'blocked';
+  synthesised.blockedBy = 'fixture: checkpoint-column rendering check (DEC-0029 cleared the last real blocked row)';
+  rowsRegister.executionPointer.blockedSlices = ['P11-S01'];
+  const withRows = renderReadmeMilestoneSection(rowsRegister);
+  assert.match(withRows, /Current checkpoint:/);
+  assert.match(withRows, /Latest checkpoint:/);
   assert.match(block, /not register measurements/);
   // Refresh 2026-09-28 (P2-S17): the literal 91.2%/92.0% guards came from the
   // Issue #307 split - they kept the issue's ILLUSTRATION figures out of the
