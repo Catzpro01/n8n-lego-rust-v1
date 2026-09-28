@@ -348,6 +348,21 @@
         "auth"
       ],
       "operations": []
+    },
+    {
+      "id": "navigation",
+      "lego": "ui-frontend",
+      "title": "Navigation surface pilot (sidebar, top bar and breadcrumbs over a handed-over route table)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "navigation"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

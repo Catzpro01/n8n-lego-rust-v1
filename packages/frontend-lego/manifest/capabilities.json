@@ -632,6 +632,35 @@
       "phase": "P2-S12",
       "owner": "agent-01",
       "notes": "P2-S12: the strangler slice for the sign-in, user-management and membership surface. Identity state and the directory are handed over by the auth capability in one loadSuccess payload; the surface issues no login call, never re-derives identity locally and refuses credential or session material with an explicit security error (the auth runtime owns verification). The four region states reuse REGION_STATES; an empty directory facet is empty with reason none (users) or filtered (membership), not a fifth state. Sign-in/sign-out/role changes are declared interactions with closed result vocabularies, never executed silently - an owner row answers owner-unchangeable per the reference n8n rule. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "navigation",
+      "lego": "ui-frontend",
+      "title": "Navigation surface pilot (sidebar, top bar and breadcrumbs over a handed-over route table)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/navigation.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "navigation"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "navigation",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n navigation shell remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/50-navigation.test.mjs"
+      ],
+      "phase": "P2-S13",
+      "owner": "agent-01",
+      "notes": "P2-S13: the strangler slice for the primary navigation, breadcrumbs and route-switching shell (split out of P2-S03). The route table and active route are handed over through declared capabilities only; the surface issues no route change and holds no routing authority (the app-layer router owns history) and refuses a path carrying secret query material with an explicit security error. The four region states reuse REGION_STATES; an empty table is empty with reason none and a filter to zero is filtered, not a fifth state. Route opening and back are declared interactions with closed result vocabularies, never executed silently. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }
