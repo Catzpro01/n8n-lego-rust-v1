@@ -666,6 +666,25 @@
       "sourceIssue": "240",
       "notes": "P2-S27 Layer 5 strangler slice (issue #240): the skills and capability catalog surfaces. The catalog is handed over from the capability registry - the surface grants nothing and holds no second source of truth; request-open-skill is declared with closed results and the route never moves locally; skill status and capability state are the QUOTED vocabularies SKILL_STATUSES and CAPABILITY_STATES and a catalog with no skills is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "slice": "P2-S27"
+    },
+    {
+      "inventoryId": "ui.agent.runtime",
+      "category": "ai-surfaces",
+      "title": "Agent and runtime supervision - handed-over state",
+      "surfaceIds": [
+        "agent-runtime"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/65-agent-runtime.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "notes": "P2-S28 Layer 5 strangler slice (issue #240): the agent and runtime supervision surfaces. Supervision state is handed over from the runtime - the surface cannot start or stop runtimes and holds no second source of truth; request-open-agent is declared with closed results and the route never moves locally; agent status and event type are the QUOTED vocabularies agentSessionState and agentEventType and a supervision view with no records is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S28"
     }
   ]
 }

@@ -574,6 +574,21 @@
         "skills-capabilities"
       ],
       "operations": []
+    },
+    {
+      "id": "agent-runtime",
+      "lego": "ui-frontend",
+      "title": "Agent/Runtime views pilot (hand-over supervision, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "agent-runtime"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

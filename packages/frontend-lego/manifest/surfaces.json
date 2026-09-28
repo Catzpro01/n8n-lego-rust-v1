@@ -490,6 +490,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S27 Layer 5 strangler slice (issue #240): the skills and capability catalog surfaces. The catalog is handed over from the capability registry; the surface holds no private data path and GRANTS NOTHING - no direct registry access, no fetch, no record mutation, no navigation. request-open-skill is declared with closed results and the owning capability performs the navigation."
+    },
+    {
+      "id": "agent-runtime",
+      "title": "Agent/Runtime views - handed-over supervision (read-only, no control)",
+      "kind": "page",
+      "routes": [
+        "/agent"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S28 Layer 5 strangler slice (issue #240): the agent and runtime supervision surfaces. Supervision state is handed over from the runtime; the surface holds no private data path and CANNOT START OR STOP RUNTIMES - no direct runtime access, no fetch, no record mutation, no navigation. request-open-agent is declared with closed results and the owning capability performs the navigation."
     }
   ]
 }

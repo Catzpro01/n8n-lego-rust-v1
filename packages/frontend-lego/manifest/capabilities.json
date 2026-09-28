@@ -1068,6 +1068,35 @@
       "phase": "P2-S27",
       "owner": "agent-01",
       "notes": "P2-S27: the strangler slice for the skills and capability catalog surfaces (split out of P2-S03, Layer 5). The catalog is handed over from the capability registry through declared capabilities only - the surface grants nothing: no direct registry access, no fetch, no record mutation; request-open-skill is a declared interaction with closed results (accepted, unknown-skill, not-ready) and the capability that owns navigation performs it. Vocabularies are quoted (SKILL_STATUSES, CAPABILITY_STATES), never redefined. The pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "agent-runtime",
+      "lego": "ui-frontend",
+      "title": "Agent/Runtime views pilot (hand-over supervision, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/agent-runtime.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "agent-runtime"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "agent-runtime",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/65-agent-runtime.test.mjs"
+      ],
+      "phase": "P2-S28",
+      "owner": "agent-01",
+      "notes": "P2-S28: the strangler slice for the agent and runtime supervision surfaces (split out of P2-S03, Layer 5). Supervision state is handed over through declared capabilities only - the surface cannot start or stop runtimes: no control verb, no direct runtime access, no fetch, no record mutation; request-open-agent is a declared interaction with closed results (accepted, unknown-agent, not-ready) and the capability that owns navigation performs it. Vocabularies are quoted (agentSessionState, agentEventType), never redefined. The pilot degrades by keeping the reference behaviour."
     }
   ]
 }
