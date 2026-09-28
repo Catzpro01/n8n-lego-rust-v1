@@ -5,6 +5,22 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 42 — M8-04 DIDELIVERY (PR 394) + HYGIENE BRANCH RULES.md rule 1/4 SELESAI — remote = main + arena-manager saja
+
+- **Insiden workspace ke-11** (23:0x): reset di tengah "lanjutkan"; pemulihan rutin (node22 re-extract + clone main `b8280a7a`).
+- **Penemuan sisa kerja material**: 5 branch non-persistent di remote (rule 1 menyatakan hanya `main` + `arena-manager` yang boleh persist). Analisis unique-work vs main:
+  - `validation/m8-04-parameter-integrity` (`14de685b`, **kredit Manager-08**) = **task kanonik dekomposisi §M8 item 4** (`parameters.rs`, bobot 1.0, L1) yang BELUM ada di main (M8.1-3 mendarat inline di lib.rs) → **didelivery, bukan diarsipkan**.
+  - `validation/m8-03` (konten setara sudah mendarat inline → cabang superseded), `validation/m8-05` (nol sebatan otoritatif di dokumen — di luar 4 task M8), `chore/ci-fail-fast` (konvergen boundary-audit via PR 369; sisa CI/kanban tak pernah di-merge) → **diarsipkan** sebagai tag `archive/<branch>-<sha8>` (rule 4) lalu dihapus.
+  - `session-transcripts` (0 unique commit) → dihapus langsung.
+- **PR #394**: cabang `delivery/m8-04-parameter-integrity` dari main segar; `parameters.rs` Manager-08 (+352, 10 tests, desain decoupled-specs anti-siklus) + wiring `pub mod parameters;` + `pub use` (5 item) di `lib.rs`. Bukti lokal: `cargo test -p n8n-validation` **14/14**, `cargo fmt --check` bersih, `clippy` **0 peringatan dari parameters.rs**, `cargo check --workspace` Finished. CI **5/5 ALL GREEN** (L0/L1/L2-linux/L2-windows/konformasi) → squash-merge **`fb1df61f`** → verifikasi pasca-merge 14/14 di main segar → **R2 `474350a0`**.
+- **Toolchain**: rustup stable 1.98.1 dipasang (cargo lokal kini tersedia untuk bukti Rust).
+- **Battery final di `474350a0`**: FE **1041/0/1**, lego **3088/0**, runtime **79/79**, engine **19/19/0**, gov+prog+live **117/117**, pack 64/37/101, cargo 14/14 + workspace check ✓.
+- **State remote**: heads = **`main` + `arena-manager` saja** (rule 1 terpenuhi); 0 PR terbuka; tags archive: `chore-ci-fail-fast-4f4a0e37`, `validation-m8-03-...-8c0c90de`, `validation-m8-05-...-af2e4126` (+ warisan era arena-*).
+- **Register tak berubah**: 190/199 = 95,5 · P2 59/59 · current 189/193 = 97,9 · semua pointer kosong · lvm `fb1df61f`.
+- **Keputusan**: sisa kerja = SEMUA butuh **Manager Master Prompt owner** (futurePrograms / P6-S03-S04 / P7 features). Tak ada pekerjaan lagi yang boleh dimulai tanpa itu.
+
+---
+
 ## Update 41 — SEMUA PR FASE LANJUT DI-MERGE (371, 370) + battery penuh hijau — kerja terotorisasi HABIS
 
 - **PR #371 MERGED `c9fa85a7`** (runtime-kernel m1-05 error propagation, 6 file terkonfinasi, CI 5/5 termasuk Windows) → R2 `62acca06`.
