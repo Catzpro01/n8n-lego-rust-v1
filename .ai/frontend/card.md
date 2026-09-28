@@ -1,7 +1,7 @@
 # L1 — Frontend domain card
 
 One page on how the frontend LEGO is built; everything here is derivable from the
-manifests and the tests, which is why the card stays one page.
+manifests and the tests.
 
 ## What this LEGO is
 
@@ -31,9 +31,9 @@ packages/frontend-lego/
     skills.mjs context-session.mjs memory.mjs workspace.mjs agent-machine.mjs lego.mjs
     surface-migration.mjs surface-contract.mjs parity.mjs pilot-status-region.mjs
     notification-surface.mjs workflow-list.mjs dialog-surface.mjs execution-list.mjs
-    node-picker.mjs workflow-editor.mjs credentials.mjs settings.mjs webhooks.mjs
+    node-picker.mjs workflow-editor.mjs credentials.mjs settings.mjs webhooks.mjs auth.mjs
     adapters/ the framework adapter boundary (Vue; the only framework-aware code)
-  test/                     01-contract … 48-webhooks (numbered; 39-41,43-48 pilots)
+  test/                     01-contract … 49-auth (numbered; 39-41,43-49 pilots)
 ```
 
 What the odd ones own: `negotiation.mjs` discovery, access, degradation and operation
@@ -71,7 +71,7 @@ other's payloads by name.
 
 | Thing | Value |
 | ----- | ----- |
-| Architecture tests | 480 across 40 suites (measured with `node --test packages/frontend-lego/test/*.test.mjs`); backend comparisons skip *with a reason* unless the tree is present |
+| Architecture tests | 736 across 49 suites (measured with `node --test packages/frontend-lego/test/*.test.mjs`); backend comparisons skip *with a reason* unless the tree is present |
 | Architecture rules | 29, as data (`frontend.conformance()`), mirrored in contract §19.16 |
 | Surfaces / hooks / units | 12 / 15 (`1.1.0`) / 19 in a 3-level hierarchy |
 | Boot payload | 18,126 B JSON / 24,168 B base64, budget **32 KB**, byte-pinned to P2.5 |

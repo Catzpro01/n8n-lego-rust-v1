@@ -333,6 +333,21 @@
         "webhooks"
       ],
       "operations": []
+    },
+    {
+      "id": "auth",
+      "lego": "ui-frontend",
+      "title": "Auth surface pilot (sign-in, user management and membership)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "auth"
+      ],
+      "operations": []
     }
   ],
   "registered": [],
