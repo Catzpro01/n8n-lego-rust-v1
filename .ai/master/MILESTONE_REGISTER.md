@@ -9,13 +9,13 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 **Realtime Delivery Progress 97.4%** — 18800/19300 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 5 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 96.9%** — 187/193 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 97.4%** — 188/193 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
 | P0 | 100.0% | 100.0% | 2/2 | complete |
 | P1 | 100.0% | 100.0% | 2/2 | complete |
-| P2 | 98.3% | 96.6% | 57/59 | complete |
+| P2 | 98.3% | 98.3% | 58/59 | complete |
 | P3 | 100.0% | 100.0% | 18/18 | complete |
 | P4 | 100.0% | 100.0% | 10/10 | complete |
 | P5 | 100.0% | 100.0% | 26/26 | complete |
@@ -30,8 +30,8 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 | | |
 | --- | --- |
-| Latest completed slice | `P2-S28` — Agent/Runtime views (PR #390, merge `eb0893b0`) |
-| Active slices | `P2-S29` — Approvals and artifacts |
+| Latest completed slice | `P2-S29` — Approvals and artifacts (PR #391, merge `49f9d001`) |
+| Active slices | — (none) |
 | Verifying (merged, post-merge verification pending) | — (none) |
 | Planned queue (in order; planned ≠ authorized) | — |
 | Blocked | `P2-S03` — blocked by Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped. |
@@ -45,7 +45,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | --- | --- | --- | --- | --- | --- |
 | **P0** | Core Application Bootstrap | **COMPLETE** | 2/2 | 2 | — |
 | **P1** | n8n Compatibility / Behavioral Baseline | **COMPLETE** | 2/2 | 3 | — |
-| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 58/60 | 29 | `P2-S29` (in-progress) |
+| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 59/60 | 29 | — |
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
 | **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 26/26 | 20 | — |
@@ -223,7 +223,7 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 | `P2-S26` | Memory/Context/Session views (Layer 5 surface split out of P2-S03) | implemented | #388 | `a88f6315` | #240 |
 | `P2-S27` | Skills/Capabilities (Layer 5 surface split out of P2-S03) | implemented | #389 | `cd12208d` | #240 |
 | `P2-S28` | Agent/Runtime views (Layer 5 surface split out of P2-S03) | implemented | #390 | `eb0893b0` | #240 |
-| `P2-S29` | Approvals and artifacts (Layer 5 surface split out of P2-S03) | in-progress | — | — | #240 |
+| `P2-S29` | Approvals and artifacts (Layer 5 surface split out of P2-S03) | implemented | #391 | `49f9d001` | #240 |
 
 </details>
 
