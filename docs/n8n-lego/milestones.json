@@ -236,10 +236,10 @@
         }
       ],
       "postMergeVerification": {
-        "main": "aba5a0e4a387e9a5df4313facc5fb5cae47a2db9",
+        "main": "25a9c9ae2f069958ac1872cd4796584e19775de3",
         "gates": "7/7",
-        "backend": "2375/2375",
-        "frontend": "452 tests: 451 pass, 0 fail, 1 pre-existing skip",
+        "backend": "3088/3088",
+        "frontend": "694 tests: 693 pass, 0 fail, 1 pre-existing skip",
         "certificationSelftest": "exit 0"
       },
       "branchesRemoved": 25,
@@ -252,11 +252,11 @@
         "archive/arena/01a0c90d-n8n-rust-v-4"
       ],
       "governanceMerge": {
-        "pr": 257,
-        "headSha": "8b7bd19b0b7688eae12c9f9f234811326385296a",
-        "mergeSha": "fc54c8c2bfc2557ddecf466e662869f197fc9595",
-        "ci": "7/7",
-        "postMergeVerification": "fresh clone of main fc54c8c2: gates 7/7, backend 2397/2397, frontend 452 (451 pass, 0 fail, 1 pre-existing skip), certification selftest exit 0, 0 dirty files"
+        "pr": 373,
+        "headSha": "8b3c12ce0aa9ee91d76d143e2e0dca7e2cdef145",
+        "mergeSha": "25a9c9ae2f069958ac1872cd4796584e19775de3",
+        "ci": "9/9",
+        "postMergeVerification": "post-merge battery on main 25a9c9ae: lego 3088/3088, engine 19/19, runtime 79/79, frontend 694 (693 pass, 0 fail, 1 pre-existing skip), gates 7/7, accounting gates A-J 17/17 + GOV-OK, 0 dirty files"
       }
     }
   },
