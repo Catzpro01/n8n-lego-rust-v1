@@ -5,6 +5,15 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 34 — P2-S25 SELESAI (PR 387, merge 28ce6746) + R1/R2
+
+- **START `e7af8748`** (PRE/POST assert lulus: pop q0 P2-S25 -> activeSlices [P2-S25]; queue 5 -> 4, q0 kini P2-S26; blocked [P2-S03] tak berubah) + state-pin test G 5 -> 4.
+- **Delivery `28ce6746`** (Work Trace surface pilot — strangler slice Layer 5 (issue #240); payload handed-over {events} bentuk tertutup {id,kind,at,label} kind subset run|node|error|manual, ISO at, label <=200, id unik; **trace READ-ONLY** — tak ada fetch/mutate/navigasi/window/history, byte-identical setiap declared request; `request-open-event` DECLARED hasil closed (accepted/unknown-event/not-ready); empty reason none; window NEWEST tail 30/100 truncation reported; focus `event:<id>` hand-over order; secret envelope/event ditolak; parity via shared workTraceActionsFor; WORK_TRACE_A11Y sekali derive; measured 200 x20 <250 ms; 18 tests A–E). Manifest: surface `work-trace` (23rd, route /executions/trace); inventory BARU `ui.trace.work-trace` (28th, kategori execution-history); capability `work-trace` (31st, entry ./src/work-trace.mjs, fallback native-behavior); curated 31; boot 21.589 -> **21.913** (terukur); boundary 22 -> 23; card 8.368/8.704. Evidence: docs/n8n-lego/evidence/P2-S25-EVIDENCE.md (4 divergences).
+- **Provenance PR #387**: head commit `a1dec60b`, **17 file persis scope**; **CI 9/9 ALL GREEN** bersih pertama (~18 mnt, tanpa rerun) → merge squash `28ce6746`.
+- **Post-merge battery**: lego 3088/3088, frontend 970/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `bb6fcc26`** (HARD GUARD queue-4 membership byte-identical PASSED; activeSlices -> []; lvc {P2-S25,387,28ce6746}; pins: tally 184->185/199=93.0, P2 53->54/59, current 183->184/193=95.3, H-fixture flip('P2-S26')) + **R2 `bba5efe7`** (pointer-only: lastVerifiedMain -> R1 bb6fcc26) — pushed, tree clean.
+- **Insiden workspace (4x)**: tree diganti snapshot lama di tengah slice (15:40, 16:08, dst; /tmp scripts + node22 sempat hilang) — recovery prosedural: verifikasi origin/main via API -> clone ulang -> rekonstruksi dari backup /home/user/s25-recovery + /tmp -> injeksi idempoten; delivery di-push lebih awal sebagai benteng. Root cause di luar scope slice.
+
 ## Update 33 — P2-S24 SELESAI (PR 386, merge fff829ad) + R1/R2
 
 - **START `9b030ac5`** (PRE/POST assert lulus: pop q0 P2-S24 -> activeSlices [P2-S24]; queue 6 -> 5, q0 kini P2-S25; blocked [P2-S03] tak berubah) + state-pin test G 6 -> 5.
