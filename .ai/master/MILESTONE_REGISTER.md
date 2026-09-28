@@ -31,9 +31,9 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | | |
 | --- | --- |
 | Latest completed slice | `P2-S15` — Node configuration (PR #377, merge `396551af`) |
-| Active slices | — (none) |
+| Active slices | `P2-S16` — Connections |
 | Verifying (merged, post-merge verification pending) | — (none) |
-| Planned queue (in order; planned ≠ authorized) | `P2-S16`, `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
+| Planned queue (in order; planned ≠ authorized) | `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
 | Blocked | `P2-S03` — blocked by Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped. |
 | Not authorized | planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). |
 | Historical P2 ladder pointer | `P2.27` (history, not active work) |
@@ -45,7 +45,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | --- | --- | --- | --- | --- | --- |
 | **P0** | Core Application Bootstrap | **COMPLETE** | 2/2 | 2 | — |
 | **P1** | n8n Compatibility / Behavioral Baseline | **COMPLETE** | 2/2 | 3 | — |
-| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 45/60 | 29 | `P2-S16` (planned) |
+| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 45/60 | 29 | `P2-S16` (in-progress) |
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
 | **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 26/26 | 20 | — |
@@ -210,7 +210,7 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 | `P2-S13` | Navigation (Layer 3 surface split out of P2-S03) | implemented | #375 | `cafd7440` | #240 |
 | `P2-S14` | Canvas (Layer 3 surface split out of P2-S03) | implemented | #376 | `b4edc52c` | #240 |
 | `P2-S15` | Node configuration (Layer 3 surface split out of P2-S03) | implemented | #377 | `396551af` | #240 |
-| `P2-S16` | Connections (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S16` | Connections (Layer 3 surface split out of P2-S03) | in-progress | — | — | #240 |
 | `P2-S17` | Import/export (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
 | `P2-S18` | Environments (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
 | `P2-S19` | Integrations (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
