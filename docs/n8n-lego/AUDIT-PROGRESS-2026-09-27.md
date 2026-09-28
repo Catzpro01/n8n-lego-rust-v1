@@ -5,6 +5,18 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 21 — P2-S12 SELESAI (PR 374, merge fbf5dbc) + R1/R2
+
+- **RESUME sesi baru (master prompt P2 100%)**: rekonsiliasi resume dari state kanonik — main `659f139d` cocok baseline, queue head P2-S12, activeSlices=[], blocked=[P2-S03], lvc=P2-S11; tidak ada duplikat kerja (CASE A); delta accounting 0.
+- **START `bf66f731`** (PRE/POST assert lulus: pop q0 P2-S12 -> activeSlices [P2-S12] -> in-progress; queue 18 -> 17, q0 kini P2-S13; blocked [P2-S03] tak berubah; CP model 20/20/25/20/15 terpasang, tidak dipasang ulang) + **state-pin `f7735f97`** (progress-accounting G: panjang antrean 18 -> 17 — pin mengikuti transisi START, bukan perubahan semantik).
+- **Delivery `329d3eef`** (Auth surface pilot — sign-in/user-management/membership; satu payload hand-over `{identity, entries}`; TIDAK ada login call; identity tidak pernah diturunkan ulang; material kredensial/sesi ditolak dengan security error eksplisit; facets signin|users|membership; role dipatok ke system role n8n 2.9.4; aturan reference: owner -> `owner-unchangeable`; ui.auth.identity pilot-available; capability auth; 22 focused tests; temuan terdokumentasi 3 (custom role ditolak fail-closed = divergence tercatat, dsb.)) — card 8157/8192, pack 85993/86016.
+- **CI 9/9 GREEN** (9 check: L0, L1, L2 linux/windows, conformance, unit+integration, arch, clean-clone, windows-probe; 0 failure; ±15 menit) -> **merge `fbf5dbc`** (2026-09-28T06:00:30Z).
+- **Post-merge battery di merged main `fbf5dbc`**: lego 3088/3088, engine 19/19, runtime 79/79, frontend 735/0 (1 skip), gates 7/7, GOV-OK, ai:check PASS (prasyarat ENVIRONMENT dipenuhi lebih dulu: referensi runtime `.runtime`, katalog 483 node `N8N_LEGO_CATALOG_DIR`, build workflow-lego, node 22.18 — bukan defect kode).
+- **R1 `430e61b1`** (HARD GUARD queue-unchanged in-memory pre-write LULUS: plannedQueue 17 [P2-S13..] & blockedSlices [P2-S03] & verifying [] byte-identik; activeSlices -> [] + latestCompletedSlice = P2-S12 = lifecycle write sah). **Delta progres: global 171/199=85.9% → 172/199=86.4%; current 170/193=88.1% → 171/193=88.6%; P2 40/59 → 41/59. Reason: P2-S12 became implemented.** Pin refresh dengan evidence (governance-register + progress-accounting test I: 172/86.4/41/171; test H fixture leaf -> P2-S13 karena S12 kini implemented). Verifikasi ulang pasca-R1: lego 3088/3088, frontend 735/0, gates 7/7.
+- **R2 `be428d48`** (tail pointer-only `lastVerifiedMain` → `430e61b1`) + **resync `bd05dc61`** (README/.ai; fingerprint register ikut pointer; ai:check PASS).
+- **State akhir**: activeSlices=[], queue head = **P2-S13** (17 item), blocked=[P2-S03] (evaluasi manual, TIDAK otomatis), lvc=P2-S12, P2 = **41/59 (69.5%)**.
+- **NEXT**: **P2-S13** (queue head Navigation surface) → P2-S14..S29 → evaluasi final P2-S03 (gated).
+
 ## Update 20 — P2-S11 SELESAI (pr 372, merge dd49d4d3) + R1/R2
 
 - **P2-S11 full cycle**: delivery `eae23167` (Webhooks surface pilot — URL/method/registration shown with a node or workflow; hand-over boundary, no register call; auth material ditolak di entry shape; ui.webhooks.registrations pilot-available; webhooks capability; 20 focused tests) → CI sempat 4 job batal (shutdown runner WSL) → re-run sah → 9/9 → konflik dengan main (repair akuntansi) diselesaikan merge-main `3d805050` (konflik hanya file generated; register auto-merge; proyeksi diregen) → CI ulang 9/9 → merge `dd49d4d3`.
