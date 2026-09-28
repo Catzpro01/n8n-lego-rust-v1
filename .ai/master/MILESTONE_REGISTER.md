@@ -74,8 +74,8 @@ Legacy traceability: legacy issue → feature (`sourceIssue`) → program (`pare
 
 | Status | Features |
 | --- | --- |
-| implemented | 136 |
-| in-progress | 2 |
+| implemented | 138 |
+| in-progress | 0 |
 | planned | 170 |
 | proposed | 47 |
 | blocked | 0 |
@@ -417,7 +417,7 @@ Identity, sessions, authorization, credential boundary, key management, account 
 
 </details>
 
-<details><summary>Features (20: 10 implemented, 1 deferred, 8 planned, 1 in-progress)</summary>
+<details><summary>Features (20: 11 implemented, 1 deferred, 8 planned)</summary>
 
 | Feature | Title | Status | Relevance | Slice | Issues | Merge SHA |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -438,7 +438,7 @@ Identity, sessions, authorization, credential boundary, key management, account 
 | `P5-F-DEBT-007` | Public /api/v1 compatibility surface: API-key boundary + workflows resource | implemented | maintenance | `P5-M03` | #85, #221 | `cf52701c` |
 | `P5-F-DEBT-008` | Email-based password recovery | planned | maintenance | `P5-M06` | #85, #221 | — |
 | `P5-F-DEBT-009` | Service-principal REST + UI management | planned | maintenance | `P5-M07` | #85, #221 | — |
-| `P5-F-DEBT-010` | Public /api/v1 tags, variables, executions (list/get/delete) and openapi.yml | in-progress | maintenance | `P5-M08` | #85, #221 | — |
+| `P5-F-DEBT-010` | Public /api/v1 tags, variables, executions (list/get/delete) and openapi.yml | implemented | maintenance | `P5-M08` | #85, #221 | `600a2145` |
 | `P5-F-DEBT-011` | Public /api/v1 credentials and users resources, plus /api/v1/docs | planned | maintenance | `P5-M09` | #85, #221 | — |
 | `P5-F-DEBT-012` | Public /api/v1 resources blocked on missing models: projects, audit, source-control, data-tables, transfers, workflow versions, execution retry and tags | planned | maintenance | `P5-M10` | #85, #221 | — |
 
@@ -1022,7 +1022,7 @@ Thematic future program. Not a P number and not authorized: a slice starts only 
 | `GOV-F-014` | Workforce control plane: canonical schemas + policy, Command API engine (auth, CAS, idempotency, atomic journaled store) | implemented | active | — | #259, #260, #261, #262, #263, #264, #265, #266, #268 | `9b327405` |
 | `GOV-F-015` | Workforce scheduler, matcher and cross-program concurrency classification (SAFE_PARALLEL / CONDITIONAL_PARALLEL / SERIALIZED / HOLD) | implemented | active | — | #264, #267, #268 | `9b327405` |
 | `GOV-F-016` | Workforce recovery, reconciliation, replay verification and derived Manager memory views | implemented | active | — | #259, #262, #264, #268 | `9b327405` |
-| `GOV-F-017` | Branch policy amendment: persistent worker slots arena/agent-01..10 (DEC-0003) and arena-manager migration (DEC-0008) | in-progress | active | — | #256, #259, #263, #268 | `9b327405` |
+| `GOV-F-017` | Branch policy amendment: persistent worker slots arena/agent-01..10 (DEC-0003) and arena-manager migration (DEC-0008) | implemented | active | — | #256, #259, #263, #268 | `9b327405` |
 
 ## Current truth (historical P2 granular ladder)
 

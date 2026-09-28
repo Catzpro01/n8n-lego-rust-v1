@@ -9249,14 +9249,14 @@
       "parent": "P5",
       "slice": "P5-M08",
       "owner": "manager (unassigned)",
-      "status": "in-progress",
+      "status": "implemented",
       "relevance": "maintenance",
       "dependencies": [
         "P5-F-DEBT-007"
       ],
       "evidence": "docs/n8n-lego/evidence/P5-M08-EVIDENCE.md",
-      "pr": null,
-      "mergeSha": null,
+      "pr": 304,
+      "mergeSha": "600a21456213602ebdc6193229bab8432e6d1024",
       "relatedEvidence": [
         "docs/n8n-lego/evidence/P5.8-CERTIFICATION-EVIDENCE.md \u00a77"
       ],
@@ -14695,10 +14695,10 @@
       "parent": "GOVERNANCE",
       "slice": null,
       "owner": "manager",
-      "status": "in-progress",
+      "status": "implemented",
       "relevance": "active",
       "dependencies": [],
-      "evidence": "DEC-0003 amends governance.branchPolicy; DEC-0008 governs the arena-manager migration. Branch-policy amendment merged in PR #273 (9b327405) and fresh-main verified; archive tag archive/arena-manager-28eea831 pushed. Remaining: create arena/agent-01..10 (TASK-0003) and the arena-manager migration (DEC-0008, TASK-0008).",
+      "evidence": "DEC-0003 amends governance.branchPolicy; DEC-0008 governs the arena-manager migration. Branch-policy amendment merged in PR #273 (9b327405) and fresh-main verified; archive tag archive/arena-manager-28eea831 pushed. Remaining: create arena/agent-01..10 (TASK-0003) and the arena-manager migration (DEC-0008, TASK-0008). RECONCILED: remaining tasking void under DEC-0019 (ACTIVE, supersedes DEC-0017) — no agent branches ever created (TASK-0003 void by design), only main and arena-manager persist; DEC-0008 migration satisfied (arena-manager is the persistent second branch per RULES.md rule 1).",
       "pr": 273,
       "mergeSha": "9b32740591b4fb2f11463c5302b5bccd5f2a796c",
       "relatedEvidence": [],
