@@ -16,9 +16,9 @@
       "pr": 374,
       "mergeSha": "fbf5dbcdba01a6ff7cd624abac286a6d1249e885"
     },
-"activeSlices": [],
+"activeSlices": ["P2-S13"],
     "verifyingSlices": [],
-"plannedQueue": ["P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
+"plannedQueue": ["P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
@@ -3065,42 +3065,42 @@
           "id": "P2-S13",
           "title": "Navigation (Layer 3 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "planned",
+          "status": "in-progress",
           "checkpoints": [
             {
               "id": "CP-01",
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Navigation surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the primary navigation, breadcrumbs and route switching shell; route table handed over, the surface owns no routing authority. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-navigation.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "planned"
+              "status": "in-progress"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Navigation surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "planned"
+              "status": "in-progress"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Navigation surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "planned"
+              "status": "in-progress"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Navigation surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "planned"
+              "status": "in-progress"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Navigation surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "planned"
+              "status": "in-progress"
             }
           ],
           "updatedAt": "2026-09-27T09:30:00Z",
