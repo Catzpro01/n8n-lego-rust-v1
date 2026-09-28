@@ -11,8 +11,8 @@
     "authority": "main (DEC-0020). This block, read together with the slice statuses it names, is the only active-work pointer. lastVerifiedMain is the newest main SHA that passed post-merge verification; it is bumped at each governance reconciliation and must never lag current main without an explicit recorded reason. arena-manager is Manager memory and handoff, never a milestone source; README.md and .ai/ are generated projections of this file.",
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "7257e0ae9ad6b685a72619fcdc9b36d170fb44e1",
-    "latestCompletedSlice": {"id": "P2-S24", "pr": 386, "mergeSha": "fff829ad61fa4a60c4724b2c552a217a021dc788"},
-"activeSlices": ["P2-S25"],
+    "latestCompletedSlice": {"id": "P2-S25", "pr": 387, "mergeSha": "28ce67460a1f51a098d9bbb3c10c65d449c879e8"},
+"activeSlices": [],
     "verifyingSlices": [],
 "plannedQueue": ["P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
@@ -3781,7 +3781,7 @@
           "id": "P2-S25",
           "title": "Work Trace (Layer 5 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -3829,9 +3829,10 @@
               "completedAt": "2026-09-28T16:14:39Z"
             }
           ],
-          "updatedAt": "2026-09-28T16:14:39Z",
-          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
-          "mergeSha": null,
+          "updatedAt": "2026-09-28T16:43:38Z",
+          "latestUpdate": "R1: PR #387 merged (squash, 28ce6746); CI 9/9 before merge; CP-01..05 completed with evidence docs/n8n-lego/evidence/P2-S25-EVIDENCE.md; post-merge battery green (frontend 970/0/1, lego 3088, engine 49, runtime 79, governance 117, gates 7/7). Queue HARD GUARD unchanged.",
+          "mergeSha": "28ce67460a1f51a098d9bbb3c10c65d449c879e8",
+          "pr": 387,
           "issue": 240,
           "evidence": "docs/n8n-lego/evidence/P2-S25-EVIDENCE.md",
           "owner": "manager (unassigned)"
