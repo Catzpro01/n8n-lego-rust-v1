@@ -12,11 +12,11 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "430e61b17926e20a14da658a99a237c07079f866",
     "latestCompletedSlice": {
-      "id": "P2-S12",
-      "pr": 374,
-      "mergeSha": "fbf5dbcdba01a6ff7cd624abac286a6d1249e885"
+      "id": "P2-S13",
+      "pr": 375,
+      "mergeSha": "cafd7440414f3658f960fe507a32d88be00460c8"
     },
-"activeSlices": ["P2-S13"],
+"activeSlices": [],
     "verifyingSlices": [],
 "plannedQueue": ["P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
@@ -3065,7 +3065,7 @@
           "id": "P2-S13",
           "title": "Navigation (Layer 3 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -3113,11 +3113,12 @@
               "completedAt": "2026-09-28T06:40:00Z"
             }
           ],
-          "updatedAt": "2026-09-28T06:40:00Z",
-          "latestUpdate": "DELIVERED: P2-S13 Navigation surface pilot (split out of P2-S03, issue #240 Layer 3). src/navigation.mjs + test/50-navigation.test.mjs 18/18 (A-E = CP-01..05): handed-over route table {routes, active} via loadSuccess only; no fetch/location/pushState, no routing authority (requestOpenRoute/requestGoBack declared with closed results accepted|unknown-route|same-route|not-ready / accepted|not-ready); secret query paths refused fail-closed; closed REGION_STATES + region/kind vocabularies; parity equivalent on all four states through the shared navActionsFor rule; NAV_A11Y derived once (landmark on ready, assertive only on error, busy only on loading) with stable focus order and single-declared labels; bounds default 10/hard 50 with truncation reported, measured cost 300 routes x20 renders + filter <250 ms, explicit error region with retry, degraded mode counts undeliverable interactions. Manifests: ui.shell.navigation -> pilot-available/consuming/pilot-not-primary (sourceIssue 240, slice P2-S13); capability navigation (fallback native-behavior); curated index + card + pack budget 84->86 KB (measured 86438 B). Evidence: docs/n8n-lego/evidence/P2-S13-EVIDENCE.md (3 divergences recorded).",
-          "mergeSha": null,
+          "updatedAt": "2026-09-28T07:00:00Z",
+          "latestUpdate": "Implemented (R1, HARD GUARD queue-unchanged in-memory pre-write PASSED): P2-S13 delivered as PR #375 merged cafd7440414f3658f960fe507a32d88be00460c8 (CI 9/9). Navigation surface pilot: handed-over route table {routes, active} through loadSuccess only - no fetch/location/pushState, no routing authority (requestOpenRoute/requestGoBack declared, closed results), secret query paths refused fail-closed, closed REGION_STATES + region/kind vocabularies, parity equivalent on all four states via shared navActionsFor, NAV_A11Y derived once with stable focus order, bounds 10/50 with truncation, measured cost 300x20 renders <250 ms, explicit error region with retry, degraded counting. 18 focused tests; post-merge battery lego 3088/3088, engine 49/49, runtime 79/79, frontend 753/0 (1 skip), governance 117/117, gates 7/7. Evidence: docs/n8n-lego/evidence/P2-S13-EVIDENCE.md.",
+          "mergeSha": "cafd7440414f3658f960fe507a32d88be00460c8",
+          "pr": 375,
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S13-EVIDENCE.md",
           "owner": "manager (unassigned)"
         },
         {
