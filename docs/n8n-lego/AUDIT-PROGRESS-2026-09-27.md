@@ -5,6 +5,14 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 20 — P2-S11 SELESAI (pr 372, merge dd49d4d3) + R1/R2
+
+- **P2-S11 full cycle**: delivery `eae23167` (Webhooks surface pilot — URL/method/registration shown with a node or workflow; hand-over boundary, no register call; auth material ditolak di entry shape; ui.webhooks.registrations pilot-available; webhooks capability; 20 focused tests) → CI sempat 4 job batal (shutdown runner WSL) → re-run sah → 9/9 → konflik dengan main (repair akuntansi) diselesaikan merge-main `3d805050` (konflik hanya file generated; register auto-merge; proyeksi diregen) → CI ulang 9/9 → merge `dd49d4d3`.
+- **R1 `70469c52`** (HARD GUARD queue-unchanged in-memory pre-write LULUS: plannedQueue 18 [P2-S12..] & blockedSlices [P2-S03] byte-identik; activeSlices → [] + latestCompletedSlice = P2-S11 = lifecycle write sah). **Delta progres: global 170/199=85.4% → 171/199=85.9%; current 169/193=87.6% → 170/193=88.1%; P2 39/59 → 40/59. Reason: P2-S11 became implemented.** Pin refresh dengan evidence (governance-register + progress-accounting).
+- **R2 `6b22187d`** (tail pointer-only `lastVerifiedMain` → `70469c52`) + **resync `248dd42a`** (README/.ai; fingerprint register ikut pointer). Battery pasca-merge `dd49d4d3`: lego 3088/3088, engine 19/19, runtime 79/79, frontend 713/0 (1 skip), gates 7/7, GOV-OK.
+- **State akhir**: activeSlices=[] (tidak ada slice in-flight), queue head = **P2-S12**, blocked=[P2-S03] (evaluasi manual, TIDAK otomatis), lvc=P2-S11.
+- **NEXT**: **P2-S12** (queue head) → P2-S13..S29 → evaluasi final P2-S03 (gated).
+
 ## Update 19 — REPAIR AKUNTANSI GLOBAL P0–P11 (PR #373, merge 25a9c9ae) + R1/R2
 
 - **DRY-RUN gate (LOLOS)**: simulasi independen (`audit/dryrun-accounting.py`) atas register beku `f419cfba` — BEFORE 171/200=85.5% → AFTER 170/199=85.4%; delta tepat 1 baris (`P2.27` counted→excluded, aggregate-parent, delivery diwakili children PR 197); ambiguity 0; cross-check vs implementasi = 0 mismatch (identik). Peta klasifikasi 200 baris di `audit/DRYRUN-ACCOUNTING-2026-09-28.md`.
