@@ -439,6 +439,21 @@
         "environments"
       ],
       "operations": []
+    },
+    {
+      "id": "integrations",
+      "lego": "ui-frontend",
+      "title": "Integrations surface pilot (external sources view over handed-over records, no fetch, install behind the P6 admission path)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "integrations"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

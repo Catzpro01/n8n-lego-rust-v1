@@ -20,6 +20,7 @@
     "projects-workspace",
     "import-export",
     "environments",
+    "integrations",
     "ai-surfaces",
     "localization",
     "loading-error-empty-primitives",
@@ -498,6 +499,27 @@
       "notes": "P2-S03 Layer 3, second strangler slice (P2-S05). A bounded view-model for modals/overlays: the content is handed over (the surface never fetches, so it holds no private data path to the content's owning capability), the four region states reuse REGION_STATES, a closed dialog is `empty` not a fifth state, and the kind (confirmation/form/notice) decides the declared ready actions. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "sourceIssue": "240",
       "slice": "P2-S05"
+    },
+    {
+      "inventoryId": "ui.integrations.manage",
+      "category": "integrations",
+      "title": "Integrations - external sources view (community/private/custom, install behind admission)",
+      "surfaceIds": [
+        "integrations"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/56-integrations.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "notes": "P2-S19 Layer 4 strangler slice (issue #240): the external integration management panel. The integration records and the active id are handed over (the surface never fetches, never derives the active integration locally and never installs - request-activate/request-install are declared with closed results; every install lands behind the P6 admission path), the four region states reuse REGION_STATES, integration sources are the declared subset community|private|custom, and a workflow with no integrations is empty with reason none, not a fifth state. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "sourceIssue": "240",
+      "slice": "P2-S19"
     }
   ]
 }

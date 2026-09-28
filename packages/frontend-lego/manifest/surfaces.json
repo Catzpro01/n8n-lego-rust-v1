@@ -283,6 +283,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S18 Layer 4 strangler slice (issue #240): the environment selection and variable-scoping panel delivered as its own pilot. Environments, the active id and the variable records are handed over; the frontend never fetches variables, never derives the active environment locally (request-switch is declared - only a fresh hand-over moves it) and never persists (set/set-scope/submit are declared with closed results)."
+    },
+    {
+      "id": "integrations",
+      "title": "Integrations - external sources view (handed-over records, install behind admission)",
+      "kind": "page",
+      "routes": [
+        "/settings/integrations"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S19 Layer 4 strangler slice (issue #240): the external integration management panel (community/private/custom sources view) delivered as its own pilot. Integrations and the active id are handed over; the frontend never fetches and never installs - request-install is declared and always lands behind the P6 admission path (closed results, never a local install)."
     }
   ]
 }

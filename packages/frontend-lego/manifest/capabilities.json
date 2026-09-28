@@ -807,6 +807,35 @@
       "phase": "P2-S18",
       "owner": "agent-01",
       "notes": "P2-S18: the strangler slice for the environment selection and variable-scoping panel (split out of P2-S03, Layer 4). Environments, the active id and the variable records are handed over through declared capabilities only; the surface never fetches variables, never derives the active environment locally and never persists - set-variable/set-scope/request-submit/request-switch are declared interactions with closed result vocabularies. The four region states reuse REGION_STATES; environment kinds are the declared subset dev|preview|staging; variable scope is all | environment id; a workflow with no environments is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "integrations",
+      "lego": "ui-frontend",
+      "title": "Integrations surface pilot (external sources view over handed-over records, no fetch, install behind the P6 admission path)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/integrations.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "integrations"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "integrations",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n integrations view remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/56-integrations.test.mjs"
+      ],
+      "phase": "P2-S19",
+      "owner": "agent-01",
+      "notes": "P2-S19: the strangler slice for the external integration management panel (split out of P2-S03, Layer 4). Integrations and the active id are handed over through declared capabilities only; the surface never fetches and never installs - request-activate/request-install are declared interactions with closed results (install has NO accepted result: every install lands behind the P6 admission path and the handed-over installed flags never change locally). The four region states reuse REGION_STATES; integration sources are the declared subset community|private|custom; a workflow with no integrations is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }
