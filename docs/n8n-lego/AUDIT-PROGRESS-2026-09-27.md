@@ -5,6 +5,19 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 23 — P2-S14 SELESAI (PR 376, merge b4edc52c) + R1/R2
+
+- **START `db42e469`** (PRE/POST assert lulus: pop q0 P2-S14 -> activeSlices [P2-S14]; queue 16 -> 15, q0 kini P2-S15; blocked [P2-S03] tak berubah) + **state-pin `beb2d15f`** (test G: 16 -> 15).
+- **Delivery `2efd25ab`** (Canvas surface pilot — payload {nodes, edges} handed-over; issuesEngineCall=false + ownsEngineAuthority=false; selection/zoom declared (closed results), graph tak pernah dimutasi (dibuktikan byte-identical); secret/engine fields (runData, workflowId, ...) ditolak fail-closed; node/edge closed shapes (posisi finite, id unik, endpoint dikenal, id reserved ditolak); zoom [0.25, 4] explicit out-of-bounds; parity 4 state via shared canvasActionsFor; CANVAS_A11Y sekali derive (application landmark); bounds 30/100; measured 250 node+249 edge x20 <250 ms; 18 tests A–E). Manifest: surface `canvas` DIDEKLARASIKAN (13 surfaces); `ui.editor.canvas` reference-only → pilot; capability `canvas`; boot payload baseline 18.126 → 18.477 (terukur).
+- **Pin yang direfresh saat delivery** (semua dengan catatan transisi): test37/39 (pilot set + sources 11×240), test45 (sibling pin reference-only → pilot-available), test14 (workflow backend surfaces +canvas, derived), test32/34 (boot baseline 18477), frontend.boundary (surface catalog 12→13), test12 (card + pack 86 KB budget dari S13).
+- **Alur PR bersih**: kerja di branch `delivery/p2-s14-canvas` sejak awal (START sudah di main) → **PR #376** (1 commit) valid tanpa force-push → **CI 9/9 SUCCESS** → merge `b4edc52c`.
+- **Post-merge battery**: lego 3088/3088, engine 49/49, runtime 79/79, frontend 771/0 (1 skip), governance 117/117, gates 7/7.
+- **R1 `03bffeeb`** (HARD GUARD queue-unchanged in-memory pre-write LULUS: plannedQueue 15 [P2-S15..] & blockedSlices [P2-S03] byte-identik; activeSlices → [] + latestCompletedSlice = P2-S14 = lifecycle write sah). **Delta progres: global 173/199=86.9% → 174/199=87.4%; current 172/193=89.1% → 173/193=89.6%; P2 42/59 → 43/59. Reason: P2-S14 became implemented.** Pin refresh (governance-register + progress-accounting I; H fixture → P2-S15).
+- **R2 `5414a8d2`** (tail pointer-only `lastVerifiedMain` → R1) + **resync `8c086075`** (README/.ai; ai:check PASS).
+- **State akhir**: activeSlices=[], queue head = **P2-S15** (15 item), blocked=[P2-S03], lvc=P2-S14, P2 = **43/59 (72.9%)**.
+- **NEXT**: **P2-S15** (queue head) → … → evaluasi final P2-S03 (gated).
+
+
 ## Update 22 — P2-S13 SELESAI (PR 375, merge cafd7440) + R1/R2
 
 - **START `f581a6dc`** (PRE/POST assert lulus: pop q0 P2-S13 -> activeSlices [P2-S13] -> in-progress; queue 17 -> 16, q0 kini P2-S14; blocked [P2-S03] tak berubah; bobot CP asli 20/20/25/20/15 terpasang) + **state-pin `d23ed7ff`** (progress-accounting G: 17 -> 16).
