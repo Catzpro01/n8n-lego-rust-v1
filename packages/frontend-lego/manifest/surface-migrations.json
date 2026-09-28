@@ -27,7 +27,8 @@
     "accessibility-shared-primitives",
     "notifications-shared-surface",
     "dialogs-overlay-surface",
-    "memory-session-views"
+    "memory-session-views",
+    "skills-capabilities"
   ],
   "migrationStatuses": [
     "reference-only",
@@ -646,6 +647,25 @@
       "sourceIssue": "240",
       "notes": "P2-S26 Layer 5 strangler slice (issue #240): the memory/context/session inspection surfaces. Session state is handed over from the session capability - the surface holds no second source of truth and never touches the session store; request-open-entry is declared with closed results and the route never moves locally; memory kinds are the declared vocabulary short-term|long-term|retrieved, session status is active|idle|closed, and an inspection with no memory entries is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "slice": "P2-S26"
+    },
+    {
+      "inventoryId": "ui.skills.catalog",
+      "category": "skills-capabilities",
+      "title": "Skills and capability catalog - handed-over registry snapshot",
+      "surfaceIds": [
+        "skills-capabilities"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/64-skills-capabilities.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "notes": "P2-S27 Layer 5 strangler slice (issue #240): the skills and capability catalog surfaces. The catalog is handed over from the capability registry - the surface grants nothing and holds no second source of truth; request-open-skill is declared with closed results and the route never moves locally; skill status and capability state are the QUOTED vocabularies SKILL_STATUSES and CAPABILITY_STATES and a catalog with no skills is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S27"
     }
   ]
 }

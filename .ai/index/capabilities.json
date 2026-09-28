@@ -559,6 +559,21 @@
         "memory-views"
       ],
       "operations": []
+    },
+    {
+      "id": "skills-capabilities",
+      "lego": "ui-frontend",
+      "title": "Skills/Capabilities catalog pilot (hand-over registry snapshot, grants nothing)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "skills-capabilities"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

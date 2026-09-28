@@ -467,6 +467,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S26 Layer 5 strangler slice (issue #240): the memory/context/session inspection surfaces. Session state is handed over from the session capability; the surface holds no private data path - no direct session store access, no fetch, no record mutation, no navigation. request-open-entry is declared with closed results and the owning capability performs the navigation."
+    },
+    {
+      "id": "skills-capabilities",
+      "title": "Skills/Capabilities - handed-over catalog (read-only, grants nothing)",
+      "kind": "page",
+      "routes": [
+        "/skills"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S27 Layer 5 strangler slice (issue #240): the skills and capability catalog surfaces. The catalog is handed over from the capability registry; the surface holds no private data path and GRANTS NOTHING - no direct registry access, no fetch, no record mutation, no navigation. request-open-skill is declared with closed results and the owning capability performs the navigation."
     }
   ]
 }
