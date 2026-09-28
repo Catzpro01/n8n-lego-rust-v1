@@ -5,6 +5,19 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 28 — P2-S19 SELESAI (PR 381, merge 7de4d4ce) + R1/R2
+
+- **START `74cf2ce0`** (PRE/POST assert lulus: pop q0 P2-S19 -> activeSlices [P2-S19]; queue 11 -> 10, q0 kini P2-S20; blocked [P2-S03] tak berubah) + state-pin test G 11 -> 10.
+- **Delivery `daf3a400`** (Integrations surface pilot — payload {integrations, active} satu-load hand-over via loadSuccess; TANPA fetch/location/pushState, TANPA persistensi; active id TIDAK PERNAH bergerak lokal; **request-install TANPA hasil accepted — setiap install melewati P6 admission path** (admission-required) dan flag `installed` handed-over tidak pernah berubah lokal (byte-identical); secret ditolak di hand-over; bentuk tertutup {id,name,source,installed} source community|private|custom; active known-id iff list non-empty; parity 4 state via shared integrationsActionsFor; INTEGRATION_A11Y sekali derive (form landmark; focus order integration ids -> install iff active belum terpasang); bounds 30/100; measured 200 x20 render <250 ms; 18 tests A–F). Manifest: surface `integrations` (17th, backend none — dialogs precedent, route /settings/integrations); inventory BARU `ui.integrations.manage` (kategori `integrations` DITAMBAHKAN ke vocabulary tertutup, 23 entries); capability `integrations` (25th); curated 25; boot baseline 19.574 -> **19.934** (terukur); boundary 16 -> 17; card 8.275/8.704.
+- **Insiden lingkungan (penting)**: workspace ter-reset antar-turn TANPA `.git` (snapshot tidak menyertakan .git) → **re-clone penuh dari remote** (origin/main = da457143 = checkpoint S18, diverifikasi identik) + identitas git di-set ulang; node22 lama (`~/.local`) ikut hilang → runtime tests (apps/n8n-ts butuh node>=22.18, jalankan .ts langsung) gagal 79/79 → **Node 22.18.0 di-install ke `/home/user/tools/` (path persisten snapshot)** → runtime 79/79 hijau. Pin-fix kecil: anchor indent migrations notes (6 spasi), kategori vocabulary di manifest `categories` (bukan REQUIRED_CATEGORIES).
+- **Provenance PR #381**: 1 commit `daf3a400`, **17 file persis scope** (3 baru: src/test/evidence), tanpa file liar; **CI check-runs 9/9 ALL GREEN** (31 rounds; windows menyusul) → merge squash `7de4d4ce`.
+- **Post-merge battery**: lego 3088/3088, frontend 861/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `779bac01`** (HARD GUARD queue-unchanged pre-write LULUS: plannedQueue 10 [P2-S20..P2-S29] membership+order byte-identik & blockedSlices byte-identik; activeSlices -> [] + lvc = P2-S19 = lifecycle write sah). **Delta: global 178/199=89.4% -> 179/199=89.9%; current 177/193=91.7% -> 178/193=92.2%; P2 47/59 -> 48/59. Reason: P2-S19 became implemented.** Pin refresh (governance-register tally 179/89.9 + current 178; progress-accounting I; H fixture -> P2-S20).
+- **R2 `bae559f7`** (pointer-only `lastVerifiedMain` -> R1; diff tepat 1 baris) + **resync `9831b75b`** (README/.ai; ai:check PASS).
+- **State akhir**: activeSlices=[], queue head = **P2-S20** (10 item), blocked=[P2-S03], lvc=P2-S19, P2 = **48/59 (81.4%)**.
+- **NEXT**: **P2-S20** (queue head) -> P2-S21..S29 -> evaluasi final P2-S03 (gated).
+
+
 ## Update 27 — P2-S18 SELESAI (PR 380, merge 43c7b1b2) + R1/R2
 
 - **START `b43fa3b1`** (PRE/POST assert lulus: pop q0 P2-S18 -> activeSlices [P2-S18]; queue 12 -> 11, q0 kini P2-S19; blocked [P2-S03] tak berubah) + state-pin test G 12 -> 11 (ter-commit bersama START).
