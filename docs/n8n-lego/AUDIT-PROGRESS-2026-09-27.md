@@ -5,6 +5,17 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 41 — SEMUA PR FASE LANJUT DI-MERGE (371, 370) + battery penuh hijau — kerja terotorisasi HABIS
+
+- **PR #371 MERGED `c9fa85a7`** (runtime-kernel m1-05 error propagation, 6 file terkonfinasi, CI 5/5 termasuk Windows) → R2 `62acca06`.
+- **PR #370 MERGED `2b16f014`** (expression M03 STAGE-1..3, 6 file `crates/n8n-expression/`, +1433/−42): rebase `3af809dd` → L0/L1/linux/konformasi hijau (gagalasan lama = stale base), Windows gagal → **rerun-failed-jobs → hijau** (flake terkonfirmasi); PR ternyata **draft** → un-draft via GraphQL `markPullRequestReadyForReview` (REST PATCH `draft:false` diam — pelajaran: pakai `node_id`, bukan `id` numerik) → squash-merge → R2 `8c21d2af`.
+- **Battery penuh di main `8c21d2af`**: FE **1041/0/1**, lego **3088/0**, runtime **79/79**, engine **19/19/0** (npm install + setup-reference-runtime + build pasca-reset #10), gov+prog+live **117/117**, ai-pack **64/37/101** in-sync, boundary_audit PASS.
+- **Rantai fase lanjut (lengkap, semua ter-push)**: `972b5afe` (PR392/P2-S03) → `df125dfa` → `8b831d3b` → `f7201b9e` (audit39) → `a3424e3d` (PR393) → `487f89da` → `114118e4` (PR369) → `fc6ab716` → `2ca18ade` (audit40) → `c9fa85a7` (PR371) → `62acca06` → `2b16f014` (PR370) → **`8c21d2af`**.
+- **Status register tak berubah**: global **190/199 = 95,5**, P2 **59/59**, current **189/193 = 97,9**; queue/active/verifying/blocked semua kosong; feature in-progress = **0** (kedua baris basi direkonsiliasi di PR #393).
+- **Keadaan**: tak ada PR terbuka; tak ada kerja ter-otorisasi tersisa. Keputusan berikutnya (futurePrograms / P6-S03-S04 / P7 program in-progress) = **Manager Master Prompt owner** — tidak ada pekerjaan yang boleh dimulai tanpa itu.
+
+---
+
 ## Update 40 — LANJUT PASCA-P2: rekonsiliasi feature basi (PR 393) + PR 369 boundary-audit di-merge; Phase-3 track aktif
 
 - **Konteks**: P2 59/59 selesai + §23 tersampaikan; instruksi user "lanjutkan". Verifikasi register: tak ada slice tersisa yang ter-otorisasi (P6-S03/S04 = proposed tanpa otorisasi owner per DEC-0029; P10/P11 placeholders; futurePrograms = "not authorized: a slice starts only with a Manager Master Prompt"). `.arena/state/phases.yaml`: **PHASE_3_RUST_RUNTIME = active**; 3 PR Phase-3 terbuka (base basi `a1eadc77`).
