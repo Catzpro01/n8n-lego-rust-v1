@@ -195,7 +195,8 @@ test('G the plannedQueue is an execution queue, not the program inventory', () =
   // state pin only - planned +1 / in-progress -1 keeps the inventory net 0.
   // Refresh 2026-09-28 (START P2-S16): queue popped 14 -> 13 (q0 P2-S17);
   // Refresh 2026-09-28 (START P2-S17): queue popped 13 -> 12 (q0 P2-S18);
-  assert.equal(queue.length, 12, 'the queue holds the executable P2 tail only');
+  // Refresh 2026-09-28 (START P2-S18): queue popped 12 -> 11 (q0 P2-S19);
+  assert.equal(queue.length, 11, 'the queue holds the executable P2 tail only');
   assert.equal(BREAKDOWN.global.total, 199, 'the denominator is the inventory, not the queue');
   for (const id of queue) {
     const slice = BY_ID.get(id);
