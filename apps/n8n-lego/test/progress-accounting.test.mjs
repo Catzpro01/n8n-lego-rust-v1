@@ -185,7 +185,9 @@ test('F implemented rows carry evidence and verified rows carry a verification S
 
 test('G the plannedQueue is an execution queue, not the program inventory', () => {
   const queue = REGISTER.executionPointer.plannedQueue;
-  assert.equal(queue.length, 18, 'the queue holds the executable P2 tail only');
+  // State pin: updated only by a START transition (P2-S12 START popped the
+  // head on 2026-09-28: 18 -> 17, head = P2-S13, active = [P2-S12]).
+  assert.equal(queue.length, 17, 'the queue holds the executable P2 tail only');
   assert.equal(BREAKDOWN.global.total, 199, 'the denominator is the inventory, not the queue');
   for (const id of queue) {
     const slice = BY_ID.get(id);
