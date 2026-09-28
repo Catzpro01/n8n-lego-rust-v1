@@ -196,7 +196,8 @@ test('G the plannedQueue is an execution queue, not the program inventory', () =
   // Refresh 2026-09-28 (START P2-S16): queue popped 14 -> 13 (q0 P2-S17);
   // Refresh 2026-09-28 (START P2-S17): queue popped 13 -> 12 (q0 P2-S18);
   // Refresh 2026-09-28 (START P2-S18): queue popped 12 -> 11 (q0 P2-S19);
-  assert.equal(queue.length, 11, 'the queue holds the executable P2 tail only');
+  // Refresh 2026-09-28 (START P2-S19): queue popped 11 -> 10 (q0 P2-S20);
+  assert.equal(queue.length, 10, 'the queue holds the executable P2 tail only');
   assert.equal(BREAKDOWN.global.total, 199, 'the denominator is the inventory, not the queue');
   for (const id of queue) {
     const slice = BY_ID.get(id);
