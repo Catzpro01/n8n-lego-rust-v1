@@ -865,6 +865,35 @@
       "phase": "P2-S20",
       "owner": "agent-01",
       "notes": "P2-S20: the strangler slice for the retry/stop/bulk execution actions (split out of P2-S03, Layer 4, beyond the P2-S06 list). Execution records are handed over through declared capabilities only; the surface never fetches and never mutates a record - request-retry/request-stop/request-bulk-* are declared interactions with closed results (accepted, unknown-execution, invalid-state, no-selection, no-retryable, no-stoppable, not-ready) and the execution capability performs every action. The four region states reuse REGION_STATES; execution status is the declared subset success|error|running|waiting; a workflow with no executions is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "project-admin",
+      "lego": "ui-frontend",
+      "title": "Project/workspace administration surface pilot (membership and project data handed over, actions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/project-admin.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "project-admin"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "project-admin",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/58-project-admin.test.mjs"
+      ],
+      "phase": "P2-S21",
+      "owner": "agent-01",
+      "notes": "P2-S21: the strangler slice for the project and workspace administration panels (split out of P2-S03, Layer 4). Membership and project data are handed over through declared capabilities only; the surface holds no project model of its own until P5-M11 exists - no fetch, no mutation of a record, no direct call to the project/role capability. request-invite/request-remove-member/request-rename are declared interactions with closed results (accepted, unknown-project, unknown-member, invalid-role, invalid-name, not-ready); the owner can never be removed; the selected project is view state cleared by every fresh hand-over. The four region states reuse REGION_STATES; roles are the declared subset owner|admin|member; a workspace with no projects is empty with reason none. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }

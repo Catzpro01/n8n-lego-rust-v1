@@ -541,6 +541,27 @@
       "sourceIssue": "240",
       "notes": "P2-S20 Layer 4 strangler slice (issue #240): the retry/stop/bulk actions around executions beyond the P2-S06 history list. Execution records are handed over (the surface never fetches, never mutates a record and never calls the execution capability itself - request-retry/request-stop/request-bulk-* are declared with closed results), the four region states reuse REGION_STATES, execution status is the declared subset success|error|running|waiting, and a workflow with no executions is empty with reason none, not a fifth state. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "slice": "P2-S20"
+    },
+    {
+      "inventoryId": "ui.settings.projects-admin",
+      "category": "projects-workspace",
+      "title": "Project/workspace administration - invite, remove, rename (handed-over data)",
+      "surfaceIds": [
+        "project-admin"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/58-project-admin.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S21 Layer 4 strangler slice (issue #240): the project and workspace administration panels beyond the settings shell. Membership and project data are handed over (the surface holds no project model of its own until P5-M11 exists; invite/remove/rename are declared with closed results - the owner can never be removed), the four region states reuse REGION_STATES, roles are the declared subset owner|admin|member, and a workspace with no projects is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S21"
     }
   ]
 }

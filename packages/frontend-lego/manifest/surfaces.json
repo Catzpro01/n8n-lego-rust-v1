@@ -329,6 +329,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S20 Layer 4 strangler slice (issue #240): the retry/stop/bulk actions around executions, beyond the P2-S06 history list, delivered as its own pilot. Execution records are handed over; the frontend never fetches and never mutates a record - request-retry/request-stop/request-bulk-* are declared with closed results and the execution capability (app layer) performs every action. The selection is view state cleared by every fresh hand-over."
+    },
+    {
+      "id": "project-admin",
+      "title": "Project/workspace administration - membership and project data handed over",
+      "kind": "page",
+      "routes": [
+        "/settings/projects/admin"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S21 Layer 4 strangler slice (issue #240): the project and workspace administration panels. Membership and project data are handed over; the surface holds no project model of its own until P5-M11 exists - no fetch, no record mutation, no direct call to the project/role capability. invite/remove/rename are declared with closed results; the selected project is view state cleared by every fresh hand-over."
     }
   ]
 }

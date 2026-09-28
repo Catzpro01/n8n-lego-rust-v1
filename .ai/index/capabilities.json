@@ -469,6 +469,21 @@
         "execution-mgmt"
       ],
       "operations": []
+    },
+    {
+      "id": "project-admin",
+      "lego": "ui-frontend",
+      "title": "Project/workspace administration surface pilot (membership and project data handed over, actions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "project-admin"
+      ],
+      "operations": []
     }
   ],
   "registered": [],
