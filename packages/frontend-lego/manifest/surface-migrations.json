@@ -53,13 +53,15 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": "docs/n8n-lego/evidence/frontend-inventory-baseline.json",
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/50-navigation.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [],
-      "notes": "Shell/header/sidebar stay on the stock bundle until a later authorized surface migrates."
+      "sourceIssue": "240",
+      "slice": "P2-S13",
+      "notes": "P2-S13 Layer 3 strangler slice (issue #240): the primary navigation, breadcrumbs and route-switching shell. The route table and the active route are handed over (the surface never fetches a route table, never reads window.location and issues no route change - the app-layer router owns history), the four region states reuse REGION_STATES, a filter to zero is empty with reason filtered rather than a fifth state, and a path carrying secret query material is refused with an explicit security error. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.dashboard.workflow-list",

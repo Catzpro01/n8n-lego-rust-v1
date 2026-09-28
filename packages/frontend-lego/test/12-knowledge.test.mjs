@@ -72,7 +72,10 @@ test('no file exceeds its budget: the pack stays retrievable, not readable-in-fu
   // redundant prose left to reclaim: every large block in the pack is either
   // test-pinned vocabulary data or a curated decision record. Raised to 84 KB, which
   // keeps the measured total (82.5 KB) inside the budget without letting it drift.
-  assert.ok(total <= 84 * 1024, `the whole pack is ${total} B — it must stay under 84 KB`);
+  // P2-S13 adds the navigation capability to the curated index (+~445 B) and its
+  // module/test names to the card: measured total 86,438 B. Raised to 86 KB with the
+  // same measured-evidence rule - the budget tracks real curated content, not prose.
+  assert.ok(total <= 86 * 1024, `the whole pack is ${total} B — it must stay under 86 KB`);
   assert.equal(CONTEXT_LEVELS.length, 5, 'L0 to L4, one purpose each');
 });
 
