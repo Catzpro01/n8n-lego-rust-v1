@@ -5,6 +5,19 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 25 — P2-S16 SELESAI (PR 378, merge 852b7046) + R1/R2
+
+- **START `e21d670c`** (PRE/POST assert lulus: pop q0 P2-S16 -> activeSlices [P2-S16]; queue 14 -> 13, q0 kini P2-S17; blocked [P2-S03] tak berubah) + state-pin test G 14 -> 13 (ter-commit bersama START).
+- **Delivery `7cfa6f2e`** (Connections surface pilot — payload {connections, nodeIds} handed-over via loadSuccess; TANPA fetch/location/pushState, TANPA engine call (issuesEngineCall=false) dan TANPA tulis-workflow (issuesWorkflowSave=false); select = view state; reconnect/remove = declared requests (accepted | unknown-connection | unknown-node | duplicate-connection | not-ready); catatan RECORD byte-identical setelah interaksi; secret envelope ditolak; endpoint {node, port: integer ≥0} wajib resolve ke vocabulary; tipe subset main|ai_tool|ai_memory|ai_embedding|ai_vector (zoo penuh di reference — evidence); parity 4 state via shared connectionActionsFor; CONNECTION_A11Y sekali derive (list landmark); bounds 30/100; measured 300 koneksi x20 render <250 ms; 18 tests A–E). Manifest: surface `connections` DIDEKLARASIKAN (15 surfaces); inventory BARU `ui.editor.connections` (kategori connections) reference-only → pilot-available/consuming/pilot-not-primary; capability `connections` (fallback native-behavior); curated 22 cap; boot payload baseline 18.855 → 19.233 (terukur); surface catalog 14 → 15; workflow-capability surfaces +connections (test14).
+- **Insiden kecil saat pin**: blok python 2× gagal (assert count salah hitung: s240 termasuk dalam replace list; close-brace .ai indent 4≠6) — tidak ada yang tertulis setengah; semua diperbaiki + diverifikasi ulang sebelum battery.
+- **Provenance PR #378**: 1 commit, 18 file persis scope (3 file baru: src/test/evidence), tanpa file liar; **CI check-runs 9/9 ALL GREEN** (8 sukses cepat, Level 2 windows menyusul in_progress → success) → merge squash `852b7046`.
+- **Post-merge battery**: lego 3088/3088, frontend 807/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `869c3826`** (HARD GUARD queue-unchanged pre-write LULUS: plannedQueue 13 [P2-S17..] & blockedSlices [P2-S03] byte-identik; activeSlices → [] + lvc = P2-S16 = lifecycle write sah). **Delta: global 175/199=87.9% → 176/199=88.4%; current 174/193=90.2% → 175/193=90.7%; P2 44/59 → 45/59. Reason: P2-S16 became implemented.** Pin refresh (governance-register KPI + progress-accounting I; H fixture → P2-S17).
+- **R2 `2fdaae72`** (pointer-only `lastVerifiedMain` → R1) + **resync `1baedc94`** (README/.ai; ai:check PASS).
+- **State akhir**: activeSlices=[], queue head = **P2-S17** (13 item), blocked=[P2-S03], lvc=P2-S16, P2 = **45/59 (76.3%)**.
+- **NEXT**: **P2-S17** (queue head) → … → evaluasi final P2-S03 (gated).
+
+
 ## Update 24 — P2-S15 SELESAI (PR 377, merge 396551af) + R1/R2
 
 - **START `a6b56137`** (PRE/POST assert lulus: pop q0 P2-S15 -> activeSlices [P2-S15]; queue 15 -> 14, q0 kini P2-S16; blocked [P2-S03] tak berubah) + **state-pin `7d8f3673`** (test G: 15 -> 14).
