@@ -5,6 +5,18 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 40 — LANJUT PASCA-P2: rekonsiliasi feature basi (PR 393) + PR 369 boundary-audit di-merge; Phase-3 track aktif
+
+- **Konteks**: P2 59/59 selesai + §23 tersampaikan; instruksi user "lanjutkan". Verifikasi register: tak ada slice tersisa yang ter-otorisasi (P6-S03/S04 = proposed tanpa otorisasi owner per DEC-0029; P10/P11 placeholders; futurePrograms = "not authorized: a slice starts only with a Manager Master Prompt"). `.arena/state/phases.yaml`: **PHASE_3_RUST_RUNTIME = active**; 3 PR Phase-3 terbuka (base basi `a1eadc77`).
+- **Insiden workspace ke-9 (22:0x)**: reset menghapus repo tepat setelah P2; pemulihan rutin (node22 re-extract + clone ulang main `f7201b9e`).
+- **PR #393** (governance: reconcile stale in-progress features) — cabang `gov/reconcile-features` dari main segar: `P5-F-DEBT-010` in-progress → **implemented** (scope delivered di slice P5-M08, PR 304/600a2145; evidence P5-M08-EVIDENCE.md; `pr`/`mergeSha` disamakan dengan slice sesuai rule "SHA agrees with its slice") + `GOV-F-017` in-progress → **implemented** (amendment merged PR #273; sisa tugas TASK-0003/TASK-0008 **void di bawah DEC-0019 ACTIVE** — no agent branches, main + arena-manager persist; dicatat di evidence RECONCILED). Pelajaran: jumlah `"status": "in-progress"` raw = 3 (2 feature + baris program P7) — assert harus membedakan; `ai-pack` menolak register tanpa 40-hex SHA (governanceErrors) sebelum proyeksi bisa diregen. CI docs-only **4/4 hijau** → **squash-merge `a3424e3d`** → verifikasi pasca-merge 117/117 → **R2 `487f89da`**.
+- **PR #369** (KB-M10-002 reference-only Rust guard, satu file `tests/integration/boundary_audit.py`, disetujui Sprint Arbiter + konvergen dengan commit owner `1308ed98`): rebase bersih ke main (`6a8287c6`), audit lokal **PASS**, CI **5/5 ALL GREEN** (termasuk Windows) → **squash-merge `114118e4`** → audit lokal PASS di main segar → **R2 `fc6ab716`**.
+- **PR #370 (M03 expression) & #371 (M01 runtime-kernel)**: rebase bersih (`3af809dd`, `9f07733d`) → Level 0/1/2-linux/konformasi **hijau** (gagalasan lama = stale base, bukan kode); #370 sempat Windows-fail → **rerun-failed-jobs** (rule flake Windows). Menunggu pole Windows.
+- **Register/angka**: tak berubah — global **190/199 = 95,5**, P2 **59/59**, current **189/193 = 97,9**; lvm `114118e4` → head main `fc6ab716`. Tree clean.
+- **NEXT**: merge #370/#371 bila hijau (verifikasi pasca-merge + pointer) → lalu lapor owner: tak ada kerja ter-otorisasi tersisa — keputusan Master Prompt berikutnya (futurePrograms / P6-S03/S04) di tangan owner.
+
+---
+
 ## Update 39 — P2-S03 FORMAL RE-SCOPE SELESAI (DEC-0029, PR 392, merge 972b5afe) + Phase B df125dfa + R2 8b831d3b — P2 59/59 = 100%
 
 - **Otorisasi**: ask_user keputusan owner S03 di-skip user + instruksi "lanjutkan" = jalankan rekomendasi terekam: **Option A formal re-scope, TANPA penghapusan layer** (bukan penghapusan Layer-6, bukan override #240).
