@@ -5,6 +5,15 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 35 — P2-S26 SELESAI (PR 388, merge a88f6315) + R1/R2
+
+- **START `ddb676c5`** (PRE/POST assert lulus: pop q0 P2-S26 -> activeSlices [P2-S26]; queue 4 -> 3, q0 kini P2-S27; blocked [P2-S03] tak berubah) + state-pin test G 4 -> 3.
+- **Delivery `d026d742`** (Memory/Context/Session views pilot — strangler slice Layer 5 (issue #240); payload handed-over {memory, context, session} bentuk tertutup: item {id,kind,text} kind subset short-term|long-term|retrieved text <=500 id unik; context {limit,used} used<=limit; session {id,status,turns} status subset active|idle|closed; **READ-ONLY + tanpa akses langsung session store** — tak ada fetch/mutate/navigasi/window/history, byte-identical setiap declared request; `request-open-entry` DECLARED hasil closed (accepted/unknown-entry/not-ready); empty reason none; window NEWEST tail 30/100 truncation reported; focus view:session,view:context,entry:<id>; secret ditolak; parity via shared memoryViewsActionsFor; MEMORY_VIEWS_A11Y sekali derive; measured 200 x20 <250 ms; 18 tests A–E). Manifest: surface `memory-views` (24th, route /inspector/session); inventory BARU `ui.memory.views` (29th, kategori BARU `memory-session-views`); capability `memory-views` (32nd); curated 32; boot 21.913 -> **22.256** (terukur); boundary 23 -> 24; card +memory-views.mjs. Evidence: docs/n8n-lego/evidence/P2-S26-EVIDENCE.md (4 divergences).
+- **Provenance PR #388**: head commit `d026d742`, **17 file persis scope**; CI hijau dengan **1 flake Windows** ("Windows worker portability probe", zero failed steps) -> **re-run POST /actions/runs/{id}/rerun** -> **CI 9/9 ALL GREEN** (~21 mnt total) -> merge squash `a88f6315`.
+- **Post-merge battery**: lego 3088/3088, frontend 988/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `aa38e6f3`** (HARD GUARD queue-3 membership byte-identical PASSED; activeSlices -> []; lvc {P2-S26,388,a88f6315}; pins: tally 185->186/199=93.5, P2 54->55/59, current 184->185/193=95.9, H-fixture flip('P2-S27')) + **R2 `f66e7f17`** (pointer-only: lastVerifiedMain -> R1 aa38e6f3) — pushed, tree clean.
+- **Insiden workspace ke-5** (16:50): tree diganti snapshot lama lagi (node22 hilang; /tmp cp26.json cp_done selamat) — recovery routine kloning + restore node22 dari tarball /tmp; START S26 selamat karena sudah ter-push.
+
 ## Update 34 — P2-S25 SELESAI (PR 387, merge 28ce6746) + R1/R2
 
 - **START `e7af8748`** (PRE/POST assert lulus: pop q0 P2-S25 -> activeSlices [P2-S25]; queue 5 -> 4, q0 kini P2-S26; blocked [P2-S03] tak berubah) + state-pin test G 5 -> 4.
