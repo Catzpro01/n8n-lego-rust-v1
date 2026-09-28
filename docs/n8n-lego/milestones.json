@@ -3312,39 +3312,49 @@
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Import/export surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the workflow import and export dialogs and clipboard path; original workflow JSON compatibility is mandatory (invariant 2), the surface round-trips bytes unchanged. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-import-export.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/54-import-export.test.mjs group A (handed-over workflow document via loadSuccess, export round-trip semantic identity, import JSON.parse-only held pending, never installed, secret refused on both envelopes, unknown keys pass through untouched)",
+              "completedAt": "2026-09-28T13:20:00Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Import/export surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/54-import-export.test.mjs group B (ui.io.import-export pilot-available/consuming/pilot-not-primary pins + import-export capability with native-behavior fallback)",
+              "completedAt": "2026-09-28T13:20:00Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Import/export surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/54-import-export.test.mjs group C (parity equivalent on all four region states through the shared ioActionsFor rule; divergence fail-closed to recorded diffs)",
+              "completedAt": "2026-09-28T13:20:00Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Import/export surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/54-import-export.test.mjs group D (IO_A11Y derived once, stable [export, import] focus order, imported name announced, shared per-state interaction primitives)",
+              "completedAt": "2026-09-28T13:20:00Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Import/export surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/54-import-export.test.mjs group E (bounded node preview with truncation, measured 300 nodes x20 renders <250 ms, explicit error region with retry, degraded counting, closed request vocabularies)",
+              "completedAt": "2026-09-28T13:20:00Z"
             }
           ],
-          "updatedAt": "2026-09-28T12:30:00Z",
-          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "updatedAt": "2026-09-28T13:20:00Z",
+          "latestUpdate": "DELIVERED: P2-S17 Import/export surface pilot (split out of P2-S03, issue #240 Layer 3). src/import-export.mjs + test/54-import-export.test.mjs 18/18 (A-E = CP-01..05): handed-over {workflow} via loadSuccess only; no fetch/location/pushState AND no eval/new Function (import parses with JSON.parse only); issuesEngineCall=false + issuesWorkflowSave=false (request-export serializes exactly the hand-over; import-document validates and holds the candidate PENDING for the app layer - the document is byte-identical after every interaction); compatibility-critical: unknown top-level keys pass through untouched (round-trip deep-equal); secret envelope refused on BOTH sides; closed nodes+connections document contract; closed REGION_STATES + actions refresh|request-export|import-document with results accepted|not-ready and accepted|invalid-json|invalid-document|not-ready; parity equivalent on all four states via shared ioActionsFor; IO_A11Y derived once (form landmark on ready); bounds 30/100 preview with truncation, measured 300 nodes x20 renders <250 ms, explicit error region with retry, degraded counting. Manifests: ui.io.import-export -> pilot-available/consuming/pilot-not-primary (sourceIssue 240, slice P2-S17, surfaceIds [workflow-editor, dashboard]); capability import-export (fallback native-behavior); pack budget 86 -> 96 KB (measured 88,293 B); boot payload baseline unchanged (no new surface). Evidence: docs/n8n-lego/evidence/P2-S17-EVIDENCE.md (4 divergences recorded).",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,

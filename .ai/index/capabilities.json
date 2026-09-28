@@ -408,6 +408,22 @@
         "connections"
       ],
       "operations": []
+    },
+    {
+      "id": "import-export",
+      "lego": "ui-frontend",
+      "title": "Import/export surface pilot (workflow JSON round-trip over the handed-over document, no fetch, no workflow save)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "workflow-editor",
+        "dashboard"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

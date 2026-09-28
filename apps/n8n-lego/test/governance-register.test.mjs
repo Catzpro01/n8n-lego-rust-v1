@@ -605,8 +605,18 @@ test('Issue #307: two metrics, status independent, checkpoint weights only where
   assert.match(block, /Current checkpoint:/);
   assert.match(block, /Latest checkpoint:/);
   assert.match(block, /not register measurements/);
-  assert.doesNotMatch(block, /91\.2%/);
-  assert.doesNotMatch(block, /92\.0%/);
+  // Refresh 2026-09-28 (P2-S17): the literal 91.2%/92.0% guards came from the
+  // Issue #307 split - they kept the issue's ILLUSTRATION figures out of the
+  // generated block ("illustrations ... are not register measurements"). The
+  // derived realtime figure legitimately traverses those values now (17600/19300
+  // = 91.2% at P2-S17 CP completion; S19 CP-03 will compute 92.0%), so the
+  // literal ban false-positives on honest measurements. Replaced with the
+  // derivation check: the block must show realtime EXACTLY as earned/points.
+  assert.ok(
+    block.includes(`${metrics.current.realtime.toFixed(1)}%`),
+    `the generated block shows the derived realtime figure (got ${metrics.current.realtime})`,
+  );
+  assert.equal(metrics.current.realtime, percent1(metrics.current.earned, metrics.current.points));
   assert.match(block, /\| `P5-M08` \|[^\n]*✅ Implemented \| 100\.0% \| 100\.0% \|/);
   assert.equal(REGISTER.governance.progressModel.reconciledToMain, true);
   assert.equal(historicalP2Fingerprint(REGISTER), HISTORICAL_P2_FINGERPRINT);

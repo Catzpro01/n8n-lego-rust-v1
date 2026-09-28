@@ -748,6 +748,36 @@
       "phase": "P2-S16",
       "owner": "agent-01",
       "notes": "P2-S16: the strangler slice for the connection inspector / connection list (split out of P2-S03). Connection records and the node-id vocabulary are handed over through declared capabilities only; the surface never fetches a graph, issues no engine call and never writes the workflow - selection changes the view only while reconnect/remove are declared requests with closed result vocabularies. The four region states reuse REGION_STATES; the connection type vocabulary is the declared subset main|ai_tool|ai_memory|ai_embedding|ai_vector; a connectionless workflow is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "import-export",
+      "lego": "ui-frontend",
+      "title": "Import/export surface pilot (workflow JSON round-trip over the handed-over document, no fetch, no workflow save)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/import-export.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "workflow-editor",
+        "dashboard"
+      ],
+      "contracts": [
+        "contracts/workflow.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "import-export",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n import/export flow remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/54-import-export.test.mjs"
+      ],
+      "phase": "P2-S17",
+      "owner": "agent-01",
+      "notes": "P2-S17: the strangler slice for the workflow JSON import/export flow (split out of P2-S03). The workflow document is handed over through declared capabilities only; the surface never fetches and never writes the workflow - request-export serializes exactly the handed-over document (round-trip semantic identity; compatibility-critical per #240 invariant) while import-document parses the candidate with JSON.parse, validates nodes+connections, refuses secret-bearing envelopes and holds the result PENDING for the app layer. The four region states reuse REGION_STATES; an empty workflow is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }

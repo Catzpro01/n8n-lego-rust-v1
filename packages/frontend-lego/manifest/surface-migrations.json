@@ -300,16 +300,18 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+  "sourceIssue": "240",
+  "slice": "P2-S17",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/54-import-export.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.editor.workflow",
         "ui.dashboard.workflow-list"
       ],
-      "notes": "Workflow JSON semantics remain compatibility-critical (#240 invariant)."
+      "notes": "Workflow JSON semantics remain compatibility-critical (#240 invariant). P2-S17 Layer 3 strangler slice (issue #240): the workflow JSON import/export flow over the handed-over document - export serializes exactly the hand-over (round-trip semantic identity), import parses with JSON.parse, validates and holds the candidate PENDING for the app layer (never installed here; no key stripped, no value rewritten), secret-bearing envelopes refused fail-closed on both sides, the four region states reuse REGION_STATES. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.ai.assistant",
