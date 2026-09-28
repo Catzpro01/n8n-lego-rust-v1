@@ -5,6 +5,15 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 30 — P2-S21 SELESAI (PR 383, merge ae03fb7b) + R1/R2
+
+- **START `49bae7fe`** (PRE/POST assert lulus: pop q0 P2-S21 -> activeSlices [P2-S21]; queue 9 -> 8, q0 kini P2-S22; blocked [P2-S03] tak berubah) + state-pin test G 9 -> 8.
+- **Delivery `ea988864`** (Project/workspace administration surface pilot — strangler slice panel proyek/workspace dari P2-S03 (issue #240); payload handed-over {projects, members} bentuk tertutup {id,name,memberCount} + {userId,displayName,role} role subset owner|admin|member; TANPA model proyek sendiri sampai P5-M11 — tak fetch, tak mutate record, tak panggil capability proyek/role langsung; `request-invite|request-remove-member|request-rename` DECLARED hasil closed (accepted/unknown-project/unknown-member/invalid-role/invalid-name/not-ready); owner tak pernah bisa di-remove; selection = view state di-reset tiap hand-over; rename rule <=64 chars; parity 4 state via shared projectAdminActionsFor; PROJECT_ADMIN_A11Y sekali derive; bounds 30/100; measured 200 x20 <250 ms; 18 tests A–E). Manifest: surface `project-admin` (19th, backend none, route /settings/projects/admin); inventory BARU `ui.settings.projects-admin` (kategori `projects-workspace` — tanpa vocabulary baru, 25 entries); capability `project-admin` (27th); curated 27; boot baseline 20.271 -> **20.624** (terukur); boundary 18 -> 19; card 8.312/8.704. Evidence: docs/n8n-lego/evidence/P2-S21-EVIDENCE.md (4 divergences).
+- **Provenance PR #383**: 1 commit `ea988864`, **17 file persis scope** (3 baru: src/test/evidence), tanpa file liar; **CI check-runs 9/9 ALL GREEN** (~24 mnt; windows terakhir 13:13) → merge squash `ae03fb7b`.
+- **Post-merge battery**: lego 3088/3088, frontend 897/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `628c5817`** (HARD GUARD queue-8 membership byte-identical PASSED; activeSlices -> []; lvc object {P2-S21,383,ae03fb7b}; pins: tally 180->181/199=91.0, P2 49->50/59, current 179->180/193=93.3, H-fixture flip('P2-S22'), governance comment+percent) + **R2 `4a05d202`** (pointer-only: lastVerifiedMain -> 628c5817, proyeksi identik) — pushed, tree clean.
+- **Insiden kecil**: pin boot assert anchor memakai `P2-SNN baseline` (di-fix generik); test34 punya assert boot kedua (`JSON.stringify(wired.bootPayload).length`) yang harus ikut diganti; r1.py blok activeSlices sempat salah urutan (NameError) → dipatch; list-pin script dibuat idempoten (run pertama sudah memasang 3+1 list lalu crash di boot).
+
 ## Update 29 — P2-S20 SELESAI (PR 382, merge 9dac6de5) + R1/R2
 
 - **START `ee051a9b`** (PRE/POST assert lulus: pop q0 P2-S20 -> activeSlices [P2-S20]; queue 10 -> 9, q0 kini P2-S21; blocked [P2-S03] tak berubah) + state-pin test G 10 -> 9.
