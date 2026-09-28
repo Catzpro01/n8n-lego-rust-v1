@@ -5,6 +5,19 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 24 — P2-S15 SELESAI (PR 377, merge 396551af) + R1/R2
+
+- **START `a6b56137`** (PRE/POST assert lulus: pop q0 P2-S15 -> activeSlices [P2-S15]; queue 15 -> 14, q0 kini P2-S16; blocked [P2-S03] tak berubah) + **state-pin `7d8f3673`** (test G: 15 -> 14).
+- **Delivery `50ca8f29`** (Node configuration surface pilot — payload {parameters, values} handed-over via loadSuccess; TANPA fetch/location/pushState DAN TANPA evaluator di modul (no `eval`/`new Function`; string ekspresi `={{...}}` lewat verbatim, ditandai, tidak pernah dieksekusi); issuesExpressionEvaluation=false + issuesWorkflowSave=false (setParameter/requestSubmit declared, closed results); nilai primitive saja, envelope secret ditolak, konsistensi hand-over ditegakkan (values key tak dikenal ditolak); tipe subset tertutup string|number|boolean|options (zoo tipe n8n penuh tetap di reference — evidence); parity 4 state via shared paramActionsFor; PARAM_A11Y sekali derive (form landmark di ready); bounds 30/100 dengan truncation; measured 200 parameter x20 render <250 ms; error region eksplisit + retry; degraded counting; 18 tests A–E). Manifest: surface `node-config` DIDEKLARASIKAN (14 surfaces); `ui.nodes.parameters` reference-only → pilot-available/consuming/pilot-not-primary (evidence test/52); capability `node-config` (fallback native-behavior); curated index 21 cap; boot payload baseline 18.477 → 18.855 (terukur); card budget 8.192 → 8.704 (terukur 8.206).
+- **Provenance PR #377 diverifikasi**: 1 commit, 18 file persis scope S15 (tanpa file liar), mergeable; **CI check-runs 9/9 ALL GREEN** (Level 0/1/2 linux + conformance + backend gate + clean-clone smoke + unit/integration + 2 Windows checks) → merge squash `396551af`.
+- **Post-merge battery**: lego 3088/3088, frontend 789/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `9d41a59f`** (HARD GUARD queue-unchanged in-memory pre-write LULUS: plannedQueue 14 [P2-S16..] & blockedSlices [P2-S03] byte-identik; activeSlices → [] + latestCompletedSlice = P2-S15 = lifecycle write sah). **Delta progres: global 174/199=87.4% → 175/199=87.9%; current 173/193=89.6% → 174/193=90.2%; P2 43/59 → 44/59. Reason: P2-S15 became implemented.** Pin refresh (governance-register KPI + progress-accounting I; H fixture → P2-S16).
+- **R2 `60261a3a`** (tail pointer-only `lastVerifiedMain` → R1) + **resync `51d52cee`** (README/.ai; ai:check PASS).
+- **State akhir**: activeSlices=[], queue head = **P2-S16** (14 item), blocked=[P2-S03], lvc=P2-S15, P2 = **44/59 (74.6%)**.
+- **Catatan insiden**: blok pin pertama gagal diam-diam karena regex Python `[^]*?` (sintaks JS, bukan Python) → semua langkah pin hilang; diperbaiki dengan `str.find/replace` polos dan diverifikasi ulang. Ticket `443 pilot-available entry` dll. tertutup setelah itu.
+- **NEXT**: **P2-S16** (queue head) → … → evaluasi final P2-S03 (gated).
+
+
 ## Update 23 — P2-S14 SELESAI (PR 376, merge b4edc52c) + R1/R2
 
 - **START `db42e469`** (PRE/POST assert lulus: pop q0 P2-S14 -> activeSlices [P2-S14]; queue 16 -> 15, q0 kini P2-S15; blocked [P2-S03] tak berubah) + **state-pin `beb2d15f`** (test G: 16 -> 15).
