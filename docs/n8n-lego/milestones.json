@@ -12,11 +12,11 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "70469c526f32eca8e2ac06d559a569d466bd9028",
     "latestCompletedSlice": {
-      "id": "P2-S11",
-      "pr": 372,
-      "mergeSha": "dd49d4d3e4027faaeaefe6eb056613b8434c2ab2"
+      "id": "P2-S12",
+      "pr": 374,
+      "mergeSha": "fbf5dbcdba01a6ff7cd624abac286a6d1249e885"
     },
-"activeSlices": ["P2-S12"],
+"activeSlices": [],
     "verifyingSlices": [],
 "plannedQueue": ["P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
@@ -3005,7 +3005,7 @@
           "id": "P2-S12",
           "title": "Auth (users/identity) (Layer 4 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -3053,11 +3053,12 @@
               "completedAt": "2026-09-28T07:00:00Z"
             }
           ],
-          "updatedAt": "2026-09-28T07:00:00Z",
-          "latestUpdate": "DELIVERED: Auth surface pilot (sign-in, user-management and membership) over the single hand-over payload - the surface issues no login call, never re-derives identity locally and refuses credential or session material with an explicit security error (the auth runtime owns verification), closed facet vocabulary signin|users|membership + roles pinned to the reference n8n 2.9.4 system roles (custom roles refused fail-closed), the reference owner rule answers owner-unchangeable, parity fail-closed against shared-rule reference fixtures, a11y region landmark, bounded directory + explicit failure + degraded mode. ui.auth.identity registered pilot-available (rollback pilot-not-primary); auth capability declared (slot auth, degrades native-behavior). 22 focused tests; battery frontend 736/0. Evidence: docs/n8n-lego/evidence/P2-S12-EVIDENCE.md.",
-          "mergeSha": null,
+          "updatedAt": "2026-09-28T06:10:00Z",
+          "latestUpdate": "Implemented (R1, HARD GUARD queue-unchanged in-memory pre-write PASSED): P2-S12 delivered as PR #374 merged fbf5dbcdba01a6ff7cd624abac286a6d1249e885 (CI 9/9). Auth surface pilot (sign-in, user management and membership) over the single hand-over payload - the surface issues no login call, never re-derives identity locally, refuses credential/session material with an explicit security error; closed facet vocabulary, roles pinned to reference n8n 2.9.4, owner-unchangeable rule, parity fail-closed, bounded directory + explicit failure. 22 focused tests; post-merge battery lego 3088/3088, engine 19/19, runtime 79/79, frontend 735/0 (1 skip), gates 7/7. Evidence: docs/n8n-lego/evidence/P2-S12-EVIDENCE.md.",
+          "mergeSha": "fbf5dbcdba01a6ff7cd624abac286a6d1249e885",
+          "pr": 374,
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S12-EVIDENCE.md",
           "owner": "manager (unassigned)"
         },
         {
