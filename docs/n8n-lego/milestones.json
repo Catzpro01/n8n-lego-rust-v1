@@ -16,9 +16,9 @@
       "pr": 372,
       "mergeSha": "dd49d4d3e4027faaeaefe6eb056613b8434c2ab2"
     },
-"activeSlices": [],
+"activeSlices": ["P2-S12"],
     "verifyingSlices": [],
-"plannedQueue": ["P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
+"plannedQueue": ["P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
     "notAuthorized": "planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).",
     "updateRule": "Two paths, never mixed (DEC-0020 + DEC-0021). DELIVERY STATE — implementation, then delivery PR, then merge, then post-merge verification, then ONE governance PR reconciles the canonical state: a slice status becoming implemented, its merge SHA, its completion evidence, the executionPointer and the projections. PROGRESS TELEMETRY — evidence, then a checkpoint update, then this register, then README, then .ai, then a governance(progress): commit, then main: the Manager may commit that straight to main with no governance PR. Governance PRs are not delivery PRs (DEC-0014 keeps one delivery PR per slice), and telemetry never carries delivery state."
@@ -3005,7 +3005,7 @@
           "id": "P2-S12",
           "title": "Auth (users/identity) (Layer 4 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "planned",
+          "status": "in-progress",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -3043,8 +3043,8 @@
               "status": "planned"
             }
           ],
-          "updatedAt": "2026-09-27T09:30:00Z",
-          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "updatedAt": "2026-09-28T06:10:00Z",
+          "latestUpdate": "STARTED P2-S12 (Auth surface): PRE/POST asserts passed; queue popped P2-S12 -> activeSlices [P2-S12] -> in-progress. CP model already installed (CP-01 contract 20 / CP-02 pilot 20 / CP-03 parity 25 / CP-04 a11y 20 / CP-05 budget 15), verified not reinstalled. Scope: the sign-in, user-management and membership surfaces over the hand-over boundary; identity state is handed over by the auth capability and cannot be re-derived locally; no credential ever reaches the surface.",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,
