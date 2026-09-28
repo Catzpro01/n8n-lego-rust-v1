@@ -5,6 +5,18 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 22 — P2-S13 SELESAI (PR 375, merge cafd7440) + R1/R2
+
+- **START `f581a6dc`** (PRE/POST assert lulus: pop q0 P2-S13 -> activeSlices [P2-S13] -> in-progress; queue 17 -> 16, q0 kini P2-S14; blocked [P2-S03] tak berubah; bobot CP asli 20/20/25/20/15 terpasang) + **state-pin `d23ed7ff`** (progress-accounting G: 17 -> 16).
+- **Delivery `c2e15c12`** (Navigation surface pilot — sidebar/topbar/breadcrumbs atas route table handed-over {routes, active}; TIDAK ada fetch/window.location/pushState; issuesRouteChange=false + ownsRoutingAuthority=false; requestOpenRoute/requestGoBack declared (accepted|unknown-route|same-route|not-ready / accepted|not-ready); path ber-secret query (token= dsb.) ditolak fail-closed; REGION_STATES + kinds root|section|page; parity 4 state via shared navActionsFor; NAV_A11Y sekali derive; bounds 10/50 + truncation; measured 300 route x20 render <250 ms; 18 focused tests A–E). Manifest: `ui.shell.navigation` reference-only → pilot-available/consuming/pilot-not-primary (sourceIssue 240, slice P2-S13); capability `navigation` (fallback native-behavior); pack budget 84 → 86 KB (terukur 86,438 B; card 8178/8192). Evidence: 3 divergences tercatat (sumber route-table, refusal lebih ketat dari reference, breadcrumb fail-closed).
+- **Insiden alur (tertangani):** push pertama ke main membuat branch = main → PR kosong ("No commits between main and …") → main di-restore ke `09189857` (state pra-S13, hijau) via force-push terkontrol; S13 commits hidup di `delivery/p2-s13-navigation` → **PR #375** valid. Poll check-runs kosong (0 run) → beralih ke actions/runs+jobs → **CI 9/9 SUCCESS** (L0, L1, L2 linux+windows, conformance, unit+integration, clean-clone, arch, windows-probe) → merge `cafd7440`.
+- **Post-merge battery merged main**: lego 3088/3088, engine 49/49, runtime 79/79, frontend 753/0 (1 skip), governance 117/117, gates 7/7.
+- **R1 `1100e4d0`** (HARD GUARD queue-unchanged in-memory pre-write LULUS: plannedQueue 16 [P2-S14..] & blockedSlices [P2-S03] & verifying [] byte-identik; activeSlices → [] + latestCompletedSlice = P2-S13 = lifecycle write sah). **Delta progres: global 172/199=86.4% → 173/199=86.9%; current 171/193=88.6% → 172/193=89.1%; P2 41/59 → 42/59. Reason: P2-S13 became implemented.** Pin refresh (governance-register + progress-accounting I; H fixture → P2-S14). Verifikasi ulang pasca-R1: lego 3088, frontend 753/0.
+- **R2** (tail pointer-only `lastVerifiedMain` → R1) + **resync** (README/.ai; fingerprint register ikut pointer; ai:check PASS).
+- **State akhir**: activeSlices=[], queue head = **P2-S14** (16 item), blocked=[P2-S03] (evaluasi manual, TIDAK otomatis), lvc=P2-S13, P2 = **42/59 (71.2%)**.
+- **NEXT**: **P2-S14** (queue head) → … → evaluasi final P2-S03 (gated).
+
+
 ## Update 21 — P2-S12 SELESAI (PR 374, merge fbf5dbc) + R1/R2
 
 - **RESUME sesi baru (master prompt P2 100%)**: rekonsiliasi resume dari state kanonik — main `659f139d` cocok baseline, queue head P2-S12, activeSlices=[], blocked=[P2-S03], lvc=P2-S11; tidak ada duplikat kerja (CASE A); delta accounting 0.
