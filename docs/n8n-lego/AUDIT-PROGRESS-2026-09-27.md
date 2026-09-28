@@ -5,6 +5,15 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 29 — P2-S20 SELESAI (PR 382, merge 9dac6de5) + R1/R2
+
+- **START `ee051a9b`** (PRE/POST assert lulus: pop q0 P2-S20 -> activeSlices [P2-S20]; queue 10 -> 9, q0 kini P2-S21; blocked [P2-S03] tak berubah) + state-pin test G 10 -> 9.
+- **Delivery `89746daf`** (Execution management surface pilot — strangler slice retry/stop/bulk dari P2-S03 (issue #240); records handed-over `loadSuccess({executions})` bentuk tertutup {id,workflowName,status} status subset success|error|running|waiting; TANPA fetch/window/location/eval/dynamic-import, TANPA mutate record (tidak ada tulisan `.status` lokal), TIDAK memanggil execution capability sendiri — `request-retry|request-stop|request-bulk-*` DECLARED hasil closed (accepted/unknown-execution/invalid-state/no-selection/no-retryable/no-stoppable/not-ready); selection = view state di-reset tiap hand-over; retry hanya error, stop hanya running|waiting; secret envelope ditolak eksplisit; parity 4 state via shared execMgmtActionsFor; EXEC_MGMT_A11Y sekali derive (form/assertive-error/busy-loading; focus order exec ids -> bulk iff selection non-empty); bounds 30/100; measured 200 x20 <250 ms; 18 tests A–E). Manifest: surface `execution-mgmt` (18th, backend none, route /executions/manage); inventory BARU `ui.executions.manage` (kategori `execution-history` — TANPA vocabulary baru, 24 entries); capability `execution-mgmt` (26th); curated 26; boot baseline 19.934 -> **20.271** (terukur); boundary 17 -> 18; card 8.294/8.704. Evidence: docs/n8n-lego/evidence/P2-S20-EVIDENCE.md (4 divergences).
+- **Provenance PR #382**: 1 commit `89746daf`, **17 file persis scope** (3 baru: src/test/evidence), tanpa file liar; **CI check-runs 9/9 ALL GREEN** (~21.5 menit; windows terakhir 12:30:55) → merge squash `9dac6de5`. Catatan: merge API GitHub butuh **PUT** /pulls/:n/merge (POST -> 404).
+- **Post-merge battery**: lego 3088/3088, frontend 879/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `5333d0b8`** (HARD GUARD queue-9 membership byte-identical PASSED; activeSlices -> []; lvc object {P2-S20,382,9dac6de5}; pins: tally 179->180/199=90.5, P2 48->49/59, current 178->179/193=92.7, H-fixture flip('P2-S21'), governance comment+percent) + **R2 `9479e9aa`** (pointer-only: lastVerifiedMain -> 5333d0b8, proyeksi README/.ai identik 1 baris) — pushed, tree clean.
+- **Automation reusable**: /tmp/start_gate.py, /tmp/add_surface.py (manifests generik), /tmp/pin_surface.py (pins generik sorted-list/boot/boundary/index/card), /tmp/cp_done.py (CP completion + HARD GUARD EP), /tmp/r1.py (R1 register+pins generik).
+
 ## Update 28 — P2-S19 SELESAI (PR 381, merge 7de4d4ce) + R1/R2
 
 - **START `74cf2ce0`** (PRE/POST assert lulus: pop q0 P2-S19 -> activeSlices [P2-S19]; queue 11 -> 10, q0 kini P2-S20; blocked [P2-S03] tak berubah) + state-pin test G 11 -> 10.
