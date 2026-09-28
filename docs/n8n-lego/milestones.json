@@ -12,11 +12,11 @@
     "historicalLastP2Milestone": "P2.27",
     "lastVerifiedMain": "f398f99893652003e5ef2f02ec74a1033510049b",
     "latestCompletedSlice": {
-      "id": "P2-S10",
-      "pr": 368,
-      "mergeSha": "60763a5e55825294fb6b7480bdd5935b199f6e69"
+      "id": "P2-S11",
+      "pr": 372,
+      "mergeSha": "dd49d4d3e4027faaeaefe6eb056613b8434c2ab2"
     },
-"activeSlices": ["P2-S11"],
+"activeSlices": [],
     "verifyingSlices": [],
 "plannedQueue": ["P2-S12", "P2-S13", "P2-S14", "P2-S15", "P2-S16", "P2-S17", "P2-S18", "P2-S19", "P2-S20", "P2-S21", "P2-S22", "P2-S23", "P2-S24", "P2-S25", "P2-S26", "P2-S27", "P2-S28", "P2-S29"],
     "blockedSlices": ["P2-S03"],
@@ -2945,7 +2945,7 @@
           "id": "P2-S11",
           "title": "Webhooks (Layer 4 surface split out of P2-S03)",
           "kind": "slice",
-          "status": "in-progress",
+          "status": "implemented",
           "checkpoints": [
             {
               "id": "CP-01",
@@ -2993,11 +2993,12 @@
               "completedAt": "2026-09-27T20:00:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T20:00:00Z",
-          "latestUpdate": "DELIVERED: Webhooks surface pilot (URL/method/registration shown with a node or workflow) over the hand-over boundary - the surface issues no register call and auth material is refused at the entry shape (explicit security error), closed REGION_STATES + method/resource/urlKind/action/request vocabularies, parity fail-closed against shared-rule reference fixtures, a11y derived once, bounded list + explicit failure + degraded mode. ui.webhooks.registrations registered pilot-available (rollback pilot-not-primary); webhooks capability declared (slot webhooks, degrades native-behavior). 20 focused tests; battery lego 3071+, engine 19/19, runtime 79/79, frontend 714/0. Evidence: docs/n8n-lego/evidence/P2-S11-EVIDENCE.md.",
-          "mergeSha": null,
+          "updatedAt": "2026-09-28T04:35:00Z",
+          "latestUpdate": "Implemented (R1, HARD GUARD queue-unchanged in-memory pre-write PASSED): P2-S11 delivered as PR #372 merged dd49d4d3e4027faaeaefe6eb056613b8434c2ab2 (CI 9/9, merge-main reconciliation 3d805050). Webhooks surface pilot (URL/method/registration shown with a node or workflow) over the hand-over boundary; auth material refused at the entry shape; parity fail-closed; ui.webhooks.registrations pilot-available (rollback pilot-not-primary); webhooks capability declared. 20 focused tests; post-merge battery lego 3088/3088, engine 19/19, runtime 79/79, frontend 713/0 (1 skip), gates 7/7. Evidence: docs/n8n-lego/evidence/P2-S11-EVIDENCE.md.",
+          "pr": 372,
+          "mergeSha": "dd49d4d3e4027faaeaefe6eb056613b8434c2ab2",
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S11-EVIDENCE.md",
           "owner": "manager (unassigned)"
         },
         {

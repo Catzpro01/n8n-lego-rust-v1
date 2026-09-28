@@ -245,15 +245,18 @@ test('I progress figures are pinned to the reconciled accounting (refresh with e
   // Refresh 2026-09-28: accounting repair PPA-1 (P2.27 aggregate excluded,
   // evidence docs/n8n-lego/evidence/PROGRESS-ACCOUNTING-AUDIT.md): before
   // 171/200 = 85.5 (P2 40/60), after 170/199 = 85.4 (P2 39/59).
-  assert.equal(BREAKDOWN.global.implemented, 170);
+  // Refresh 2026-09-28 (R1 P2-S11, PR #372 merge dd49d4d3): 170/199 = 85.4 ->
+  // 171/199 = 85.9; P2 39/59 -> 40/59; current 169/193 -> 170/193. Evidence:
+  // docs/n8n-lego/evidence/P2-S11-EVIDENCE.md.
+  assert.equal(BREAKDOWN.global.implemented, 171);
   assert.equal(BREAKDOWN.global.total, 199);
-  assert.equal(BREAKDOWN.global.percent, 85.4);
+  assert.equal(BREAKDOWN.global.percent, 85.9);
   const p2 = BREAKDOWN.programs.find((program) => program.id === 'P2');
-  assert.equal(p2.implemented, 39);
+  assert.equal(p2.implemented, 40);
   assert.equal(p2.counted, 59);
   assert.deepEqual(p2.excluded.map((entry) => entry.id), ['P2.27']);
   const metrics = headlineMetrics(REGISTER);
-  assert.equal(metrics.current.implemented, 169);
+  assert.equal(metrics.current.implemented, 170);
   assert.equal(metrics.current.total, 193);
   assert.equal(metrics.future.implemented, 1);
   assert.equal(metrics.future.total, 6);
