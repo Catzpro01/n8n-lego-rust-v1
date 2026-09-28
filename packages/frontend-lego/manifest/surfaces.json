@@ -238,6 +238,28 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S15 Layer 3 strangler slice (issue #240): the parameter panel that edits one node type's parameters through the parameter contract. Definitions and values are handed over; expression evaluation stays behind the declared boundary - the frontend never evaluates and never posts the workflow."
+    },
+    {
+      "id": "connections",
+      "title": "Connection inspector \u2014 a workflow's connections over handed-over records",
+      "kind": "panel",
+      "routes": [],
+      "messageSlots": [
+        "node-descriptions",
+        "empty-states",
+        "validation-errors"
+      ],
+      "backend": {
+        "capability": "workflow",
+        "contract": "contracts/workflow.contract.md",
+        "endpoints": [
+          "/rest/workflows/:id"
+        ],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S16 Layer 3 strangler slice (issue #240): the connection inspector / connection list delivered as its own pilot. Connection records and the node-id vocabulary are handed over; the frontend never fetches a graph, performs no engine call and never writes the workflow - selection is view state, reconnect and remove are declared requests with closed results."
     }
   ]
 }

@@ -393,6 +393,21 @@
         "node-config"
       ],
       "operations": []
+    },
+    {
+      "id": "connections",
+      "lego": "ui-frontend",
+      "title": "Connections surface pilot (connection inspector over handed-over records, no engine call, no workflow save)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "connections"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

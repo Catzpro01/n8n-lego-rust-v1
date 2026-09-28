@@ -78,7 +78,9 @@ test('a consumer can discover identity, version, operations and origin', () => {
   assert.equal(backendCapability.owner, 'workflow');
   // Refresh 2026-09-28 (P2-S14): the canvas surface (ui.editor.canvas pilot) consumes the
   // backend workflow capability - the derived set grows by one, no capability change.
-  assert.deepEqual(backendCapability.surfaces, ['dashboard', 'workflow-editor', 'canvas']);
+  // Refresh 2026-09-28 (P2-S16): + the connections surface (connection records come
+  // from the handed-over workflow record) - derived set grows by one.
+  assert.deepEqual(backendCapability.surfaces, ['dashboard', 'workflow-editor', 'canvas', 'connections']);
   assert.throws(() => translation.negotiator.describe('nothing-here'), (error) => {
     assert.ok(error instanceof NegotiationError);
     assert.equal(error.code, 'frontend.capability.unknown');

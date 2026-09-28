@@ -3252,39 +3252,49 @@
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Connections surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the connection creation/removal affordances and connection inspector; connection mutations go through the workflow contract, never direct store writes. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-connections.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/53-connections.test.mjs group A (handed-over {connections, nodeIds} via loadSuccess, no engine call, no workflow save, secret envelope refused, list byte-identical after interactions, closed type/action/result vocabularies)",
+              "completedAt": "2026-09-28T11:10:00Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Connections surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/53-connections.test.mjs group B (ui.editor.connections pilot-available/consuming/pilot-not-primary pins + connections capability with native-behavior fallback)",
+              "completedAt": "2026-09-28T11:10:00Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Connections surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/53-connections.test.mjs group C (parity equivalent on all four region states through the shared connectionActionsFor rule; divergence fail-closed to recorded diffs)",
+              "completedAt": "2026-09-28T11:10:00Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Connections surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/53-connections.test.mjs group D (CONNECTION_A11Y derived once, stable focus order that selection never reorders, shared per-state interaction primitives)",
+              "completedAt": "2026-09-28T11:10:00Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Connections surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/53-connections.test.mjs group E (bounded visible list with truncation, measured 300 connections x20 renders <250 ms, explicit error region with retry, degraded counting, closed request vocabularies)",
+              "completedAt": "2026-09-28T11:10:00Z"
             }
           ],
-          "updatedAt": "2026-09-28T10:00:00Z",
-          "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
+          "updatedAt": "2026-09-28T11:10:00Z",
+          "latestUpdate": "DELIVERED: P2-S16 Connections surface pilot (split out of P2-S03, issue #240 Layer 3). src/connections.mjs + test/53-connections.test.mjs 18/18 (A-E = CP-01..05): handed-over {connections, nodeIds} via loadSuccess only; no fetch/location/pushState AND no eval/new Function; issuesEngineCall=false + issuesWorkflowSave=false (select is view state; reconnect/remove declared with closed results accepted|unknown-connection|unknown-node|duplicate-connection|not-ready); the connection records are byte-identical after every interaction; secret envelope refused; endpoint consistency enforced against the node vocabulary; closed REGION_STATES + declared type subset main|ai_tool|ai_memory|ai_embedding|ai_vector; parity equivalent on all four states via shared connectionActionsFor; CONNECTION_A11Y derived once (list landmark on ready); bounds 30/100 with truncation, measured 300 connections x20 renders <250 ms, explicit error region with retry, degraded counting. Manifests: surface connections declared (15th); ui.editor.connections new inventory entry -> pilot-available/consuming/pilot-not-primary (sourceIssue 240, slice P2-S16); capability connections (fallback native-behavior); boot payload baseline 18855 -> 19233 (measured); surface catalog 14 -> 15; workflow-capability surface set +connections. Evidence: docs/n8n-lego/evidence/P2-S16-EVIDENCE.md (3 divergences recorded).",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,

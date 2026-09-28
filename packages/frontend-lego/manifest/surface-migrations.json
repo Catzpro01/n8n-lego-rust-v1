@@ -12,6 +12,7 @@
     "workflow-list-dashboard",
     "workflow-editor",
     "canvas",
+    "connections",
     "node-picker-catalog",
     "node-parameter-ndv",
     "execution-history",
@@ -410,6 +411,27 @@
       ],
       "notes": "Issue #245. Severity (info/success/warning/error) and disposition (shown/dismissed) are separate axes from the region state the parity harness compares: the contract reuses REGION_STATES rather than forking a second list. Dismissal removes the notice from the live region instead of adding a sixth region state, because a dismissed notice that still occupied a region would still be announced. Only `error` is aria-live assertive; `warning` stays polite so cautions do not train users to ignore the region. The queue is bounded and errors are never silently dropped. Opt-in and non-primary: the stock n8n notification presentation remains the default path.",
       "sourceIssue": "245"
+    },
+    {
+      "inventoryId": "ui.editor.connections",
+      "category": "connections",
+      "title": "Connection inspector / connection list",
+      "surfaceIds": [
+        "connections"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/53-connections.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.editor.canvas"
+      ],
+      "sourceIssue": "240",
+      "slice": "P2-S16",
+      "notes": "P2-S16 Layer 3 strangler slice (issue #240): the connection inspector / connection list managing a workflow's connections. Connection records and the node-id vocabulary are handed over (the surface never fetches a graph, issues no engine call and never writes the workflow - selection is view state, reconnect and remove are declared requests with closed result vocabularies), the four region states reuse REGION_STATES, and the connection type vocabulary is the declared subset main|ai_tool|ai_memory|ai_embedding|ai_vector. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.pages.dashboard",
