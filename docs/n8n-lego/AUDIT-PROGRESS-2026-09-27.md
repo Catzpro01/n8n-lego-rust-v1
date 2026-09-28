@@ -5,6 +5,17 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 39 — P2-S03 FORMAL RE-SCOPE SELESAI (DEC-0029, PR 392, merge 972b5afe) + Phase B df125dfa + R2 8b831d3b — P2 59/59 = 100%
+
+- **Otorisasi**: ask_user keputusan owner S03 di-skip user + instruksi "lanjutkan" = jalankan rekomendasi terekam: **Option A formal re-scope, TANPA penghapusan layer** (bukan penghapusan Layer-6, bukan override #240).
+- **Phase A (PR #392)**: evidence doc `docs/n8n-lego/evidence/P2-S03-FORMAL-RESCOPE-EVIDENCE.md` + decision `DEC-0029` (ACTIVE, MILESTONE, selectedOption `A-formal-re-scope-no-removal`, scope {P2,[P2-S03]}, sources {issues:[240], requests:[REQ-0003]}, key-set=DEC-0021) di branch `p2-s03-rescope` → head `20bac726` **CI merah** (`Decision.evidence[]` hanya menerima `^EVD-[0-9{4,}$` — path dipindah ke `evidenceRefs`) → `622b2309` **CI 4/4 hijau** (docs-only profile) → **squash merge `972b5afe`**. Tally otomatis: P2-S03 blocked → implemented (legacy 100 poin tanpa checkpoint): global **190/199 = 95.5**, P2 **59/59**, current **189/193 = 97.9**, realtime 97.9, checkpointed 60.
+- **Phase B (`df125dfa`, parent `972b5afe`)**: status di milestones + pointer {P2-S03, 392, 972b5afe} + fixtures: governance dup-list (seed P10-S01 in-progress saat ketiga list kosong), kolom checkpoint colon-form (clone tersintesis P11-S01 blocked — baris kolom hanya render colon pada verifying/blocked), pins 190/95.5/59/current-189, **round-trip writer-kanonik**: `syncSliceText(raw,'P2-S03',slice).text === raw` → true (managed keys persis setelah `status`, `blockedBy` tanpa koma di blok terakhir). Battery: **gov+prog+live 117/117**, FE 1041/0/1, lego 3088/0, runtime 79/79, engine 19/19/0, ai-pack 64/37/101.
+- **Insiden workspace ke-8 (21:35)**: respons manager terpotong tepat SETELAH commit `672ed3a4` (isi identik dengan df125dfa) tetapi SEBELUM push; reset snapshot berikutnya menghapus tree (tak ada `.git`) — **commit Phase-B pertama LENYAP tak ter-push**. Recovery: node22 re-extract, clone ulang (HEAD main `972b5afe`), jalankan ulang `rescope_b.py` + `rescope_b2.py` (s25-recovery selamat) → semua guard hijau → **commit+push langsung `df125dfa` (fast-forward)** dalam satu langkah tanpa jeda. Pelajaran: commit DAN push dalam satu command sequence sebelum jeda apa pun; verifikasi `git branch --show-current` = main sebelum push.
+- **R2 `8b831d3b`** (pointer-only: `lastVerifiedMain` 2884bf86 → df125dfa; regen proyeksi; 117/117) — pushed, tree clean.
+- **Status P2 = 59/59 = 100%** — semua slice implemented, queue/active/verifying/blocked semuanya kosong. Tersisa: laporan §23 akhir P2 (bahasa Indonesia) sebelum program lain.
+
+---
+
 ## Update 38 — P2-S29 SELESAI (PR 391, merge 49f9d001) + R1/R2 — SLICE TERAKHIR P2 (58/59)
 
 - **START `1cde152e`** (PRE/POST assert lulus: pop q0 P2-S29 -> activeSlices [P2-S29]; queue 1 -> 0 (Q0 HABIS); blocked [P2-S03] tak berubah; slice+5CP planned -> in-progress) + state-pin test G 1 -> 0 (boundary regex diperluas: slice berikutnya = "P3 Slice A", bukan P2-S30).
