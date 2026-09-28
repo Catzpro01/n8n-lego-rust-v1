@@ -529,6 +529,21 @@
         "ai-node"
       ],
       "operations": []
+    },
+    {
+      "id": "work-trace",
+      "lego": "ui-frontend",
+      "title": "Work Trace surfaces pilot (hand-over timeline, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "work-trace"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

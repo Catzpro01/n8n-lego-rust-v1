@@ -605,6 +605,27 @@
       "sourceIssue": "240",
       "notes": "P2-S24 Layer 5 strangler slice (issue #240): the AI-node parameter and model-picker surfaces. The model catalog is handed over from the node/parameter contracts - the surface holds no second source of truth; request-select-model is declared with closed results and the selection never moves locally; providers are the declared subset hosted|local|custom and a node with no models is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "slice": "P2-S24"
+    },
+    {
+      "inventoryId": "ui.trace.work-trace",
+      "category": "execution-history",
+      "title": "Work trace - read-only execution timeline over handed-over events",
+      "surfaceIds": [
+        "work-trace"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/62-work-trace.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.executions.history"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S25 Layer 5 strangler slice (issue #240): the work-trace timeline surface. Trace events are handed over from the observability capability - the surface holds no second source of truth; request-open-event is declared with closed results and the route never moves locally; event kinds are the declared vocabulary run|node|error|manual and an empty trace is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S25"
     }
   ]
 }

@@ -981,6 +981,35 @@
       "phase": "P2-S24",
       "owner": "agent-01",
       "notes": "P2-S24: the strangler slice for the AI-node parameter and model-picker surfaces (split out of P2-S03, Layer 5). The model catalog is handed over from the node/parameter contracts through declared capabilities only - no fetch, no catalog mutation, no local write of the selected model; request-select-model is a declared interaction with closed results (accepted, unknown-model, not-ready) and the capability that owns the parameter performs it. Distinct from the declared ai-agent-node vocabulary capability (P2.10, stays status declared with no entry); the pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "work-trace",
+      "lego": "ui-frontend",
+      "title": "Work Trace surfaces pilot (hand-over timeline, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/work-trace.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "work-trace"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "work-trace",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/62-work-trace.test.mjs"
+      ],
+      "phase": "P2-S25",
+      "owner": "agent-01",
+      "notes": "P2-S25: the strangler slice for the work-trace timeline surface (split out of P2-S03, Layer 5). The trace is handed over from the observability capability through declared capabilities only - no fetch, no event mutation, no navigation; request-open-event is a declared interaction with closed results (accepted, unknown-event, not-ready) and the capability that owns navigation performs it. The pilot degrades by keeping the reference behaviour."
     }
   ]
 }
