@@ -215,6 +215,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S14 Layer 3 strangler slice (issue #240): composite region of the workflow editor delivered as its own pilot. The graph model is handed over to the frontend-lego canvas surface; the frontend never fetches a graph, performs no engine call and never mutates the workflow document."
+    },
+    {
+      "id": "node-config",
+      "title": "Node parameter / NDV panel (one node type's parameters)",
+      "kind": "panel",
+      "routes": [],
+      "messageSlots": [
+        "node-descriptions",
+        "forms",
+        "validation-errors"
+      ],
+      "backend": {
+        "capability": "node-registry",
+        "contract": "contracts/node.contract.md",
+        "endpoints": [
+          "/rest/types/nodes.json",
+          "/types/nodes.json"
+        ],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S15 Layer 3 strangler slice (issue #240): the parameter panel that edits one node type's parameters through the parameter contract. Definitions and values are handed over; expression evaluation stays behind the declared boundary - the frontend never evaluates and never posts the workflow."
     }
   ]
 }

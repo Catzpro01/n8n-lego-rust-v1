@@ -1233,7 +1233,8 @@ test('the assembly exposes the surface, and the boot descriptor stays byte-ident
   const payload = JSON.stringify(frontend.bootPayload);
   // Refresh 2026-09-28 (P2-S14): the boot descriptor grows with the declared canvas
   // surface (manifest/surfaces.json + capability): 18,126 -> 18,477 bytes, measured.
-  assert.equal(payload.length, 18_477, 'the boot payload is byte-identical to the P2.14 baseline');
+  // Refresh 2026-09-28 (P2-S15): + the node-config surface: 18,477 -> 18,855 bytes, measured.
+  assert.equal(payload.length, 18_855, 'the boot payload is byte-identical to the P2.15 baseline');
   for (const word of ['contextId', 'sessionId', 'continuation', 'rollover', 'contextRef', 'chainOfThought', 'NORMAL']) {
     assert.equal(payload.includes(word), false, `${word} does not travel in the boot payload`);
   }

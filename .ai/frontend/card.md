@@ -31,9 +31,9 @@ packages/frontend-lego/
     skills.mjs context-session.mjs memory.mjs workspace.mjs agent-machine.mjs lego.mjs
     surface-migration.mjs surface-contract.mjs parity.mjs pilot-status-region.mjs
     notification-surface.mjs workflow-list.mjs dialog-surface.mjs execution-list.mjs
-    node-picker.mjs workflow-editor.mjs credentials.mjs settings.mjs webhooks.mjs auth.mjs navigation.mjs canvas.mjs
+    node-picker.mjs workflow-editor.mjs credentials.mjs settings.mjs webhooks.mjs auth.mjs navigation.mjs canvas.mjs node-config.mjs
     adapters/ the framework adapter boundary (Vue; the only framework-aware code)
-  test/                     01-contract … 51-canvas (numbered; 39-41,43-51 pilots)
+  test/                     01-contract … 52-node-config (numbered; 39-41,43-52 pilots)
 ```
 
 What the odd ones own: `negotiation.mjs` discovery, access, degradation and operation

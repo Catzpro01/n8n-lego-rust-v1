@@ -150,21 +150,22 @@
       "category": "node-parameter-ndv",
       "title": "Node parameter / NDV panel",
       "surfaceIds": [
-        "workflow-editor",
-        "node-picker"
+        "node-config"
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/52-node-config.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.nodes.picker",
         "ui.editor.canvas"
       ],
-      "notes": "P7 dynamic parameters are non-scope for this slice (Issue #241 non-scope)."
+      "sourceIssue": "240",
+      "slice": "P2-S15",
+      "notes": "P2-S15 Layer 3 strangler slice (issue #240): the node parameter / NDV panel editing one node type's parameters through the parameter contract. Parameter definitions and values are handed over (the surface never fetches a schema and evaluates no expression - strings pass through verbatim behind the declared boundary - and never posts the workflow), the four region states reuse REGION_STATES, and the parameter type vocabulary is the declared subset string|number|boolean|options. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path. P7 dynamic parameters remain non-scope (Issue #241 non-scope)."
     },
     {
       "inventoryId": "ui.executions.history",

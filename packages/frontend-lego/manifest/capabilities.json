@@ -690,6 +690,35 @@
       "phase": "P2-S14",
       "owner": "agent-01",
       "notes": "P2-S14: the strangler slice for the workflow node-graph rendering surface (split out of P2-S03 as the composite region of the workflow editor). The graph model (nodes, edges) is handed over through declared capabilities only; the surface performs no engine call and holds no engine authority - selection and zoom are declared view-state interactions with closed result vocabularies, never graph mutations, and a payload carrying secret or engine fields is refused with an explicit security error. The four region states reuse REGION_STATES; an empty graph is empty with reason none, not a fifth state; zoom is pinned to [0.25, 4] with an explicit out-of-bounds result, never a silent clamp. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "node-config",
+      "lego": "ui-frontend",
+      "title": "Node configuration surface pilot (parameter panel over handed-over definitions and values, no expression evaluation)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/node-config.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "node-config"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "node-config",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n parameter panel remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/52-node-config.test.mjs"
+      ],
+      "phase": "P2-S15",
+      "owner": "agent-01",
+      "notes": "P2-S15: the strangler slice for the node parameter / NDV panel (split out of P2-S03). Parameter definitions and current values are handed over through declared capabilities only; the surface never fetches a node type's schema (the node registry owns the catalog), evaluates no expression (strings pass through verbatim behind the declared boundary) and never posts the workflow - setParameter/requestSubmit are declared interactions with closed result vocabularies. The four region states reuse REGION_STATES; the parameter type vocabulary is the declared subset string|number|boolean|options; a parameterless node is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }

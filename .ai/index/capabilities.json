@@ -378,6 +378,21 @@
         "canvas"
       ],
       "operations": []
+    },
+    {
+      "id": "node-config",
+      "lego": "ui-frontend",
+      "title": "Node configuration surface pilot (parameter panel over handed-over definitions and values, no expression evaluation)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "node-config"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

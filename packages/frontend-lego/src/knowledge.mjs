@@ -26,7 +26,7 @@ export const CONTEXT_LEVELS = Object.freeze([
     title: 'Frontend domain card',
     files: Object.freeze(['.ai/frontend/card.md']),
     answers: 'How the frontend LEGO is built, where things live, how boot works.',
-    maxBytes: 8192,
+    maxBytes: 8704,
   }),
   Object.freeze({
     id: 'L2',
