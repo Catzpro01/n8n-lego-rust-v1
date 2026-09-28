@@ -108,19 +108,21 @@
       "category": "canvas",
       "title": "Workflow canvas (nodes, connections)",
       "surfaceIds": [
-        "workflow-editor"
+        "canvas"
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/51-canvas.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.editor.workflow"
       ],
-      "notes": "Composite region of workflow-editor; never the first pilot."
+      "sourceIssue": "240",
+      "slice": "P2-S14",
+      "notes": "P2-S14 Layer 3 strangler slice (issue #240): the workflow node-graph rendering surface (nodes, edges, viewport, selection), the composite region of the workflow editor delivered as its own slice. The graph model is handed over (the surface never fetches a graph and performs no engine call - selection and zoom are declared view-state interactions with closed result vocabularies, never graph mutations), the four region states reuse REGION_STATES, and a payload carrying secret or engine fields is refused with an explicit security error. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.nodes.picker",

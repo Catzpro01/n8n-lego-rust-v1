@@ -661,6 +661,35 @@
       "phase": "P2-S13",
       "owner": "agent-01",
       "notes": "P2-S13: the strangler slice for the primary navigation, breadcrumbs and route-switching shell (split out of P2-S03). The route table and active route are handed over through declared capabilities only; the surface issues no route change and holds no routing authority (the app-layer router owns history) and refuses a path carrying secret query material with an explicit security error. The four region states reuse REGION_STATES; an empty table is empty with reason none and a filter to zero is filtered, not a fifth state. Route opening and back are declared interactions with closed result vocabularies, never executed silently. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "canvas",
+      "lego": "ui-frontend",
+      "title": "Canvas surface pilot (node graph, edges, viewport and selection over a handed-over graph model)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/canvas.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "canvas"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "canvas",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n canvas remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/51-canvas.test.mjs"
+      ],
+      "phase": "P2-S14",
+      "owner": "agent-01",
+      "notes": "P2-S14: the strangler slice for the workflow node-graph rendering surface (split out of P2-S03 as the composite region of the workflow editor). The graph model (nodes, edges) is handed over through declared capabilities only; the surface performs no engine call and holds no engine authority - selection and zoom are declared view-state interactions with closed result vocabularies, never graph mutations, and a payload carrying secret or engine fields is refused with an explicit security error. The four region states reuse REGION_STATES; an empty graph is empty with reason none, not a fifth state; zoom is pinned to [0.25, 4] with an explicit out-of-bounds result, never a silent clamp. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }
