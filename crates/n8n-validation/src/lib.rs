@@ -1,4 +1,10 @@
 use n8n_connection::WorkflowConnections;
+pub mod parameters;
+pub use parameters::{
+    validate_parameters, NodeParameterView, ParameterSpecSet, ParameterValidationError,
+    RequiredParameter,
+};
+
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, thiserror::Error, PartialEq)]
