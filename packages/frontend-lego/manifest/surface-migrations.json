@@ -19,6 +19,7 @@
     "credentials-settings",
     "projects-workspace",
     "import-export",
+    "environments",
     "ai-surfaces",
     "localization",
     "loading-error-empty-primitives",
@@ -413,6 +414,27 @@
       ],
       "notes": "Issue #245. Severity (info/success/warning/error) and disposition (shown/dismissed) are separate axes from the region state the parity harness compares: the contract reuses REGION_STATES rather than forking a second list. Dismissal removes the notice from the live region instead of adding a sixth region state, because a dismissed notice that still occupied a region would still be announced. Only `error` is aria-live assertive; `warning` stays polite so cautions do not train users to ignore the region. The queue is bounded and errors are never silently dropped. Opt-in and non-primary: the stock n8n notification presentation remains the default path.",
       "sourceIssue": "245"
+    },
+    {
+      "inventoryId": "ui.settings.environments",
+      "category": "environments",
+      "title": "Environments - selection + variable scoping",
+      "surfaceIds": [
+        "environments"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/55-environments.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "slice": "P2-S18",
+      "notes": "P2-S18 Layer 4 strangler slice (issue #240): the environment selection and variable-scoping panel. Environments, the active id and the variable records are handed over (the surface never fetches variables, never derives the active environment locally - only a fresh hand-over moves it - and never persists; set/set-scope/submit/switch are declared with closed results), the four region states reuse REGION_STATES, environment kinds are the declared subset dev|preview|staging, and variable scope is all | environment id. One surface, mode pilot, rollback pilot-not-primary; the original settings stay the default path."
     },
     {
       "inventoryId": "ui.editor.connections",

@@ -260,6 +260,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S16 Layer 3 strangler slice (issue #240): the connection inspector / connection list delivered as its own pilot. Connection records and the node-id vocabulary are handed over; the frontend never fetches a graph, performs no engine call and never writes the workflow - selection is view state, reconnect and remove are declared requests with closed results."
+    },
+    {
+      "id": "environments",
+      "title": "Environments - selection + variable scoping (handed-over records)",
+      "kind": "page",
+      "routes": [
+        "/settings/environments"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S18 Layer 4 strangler slice (issue #240): the environment selection and variable-scoping panel delivered as its own pilot. Environments, the active id and the variable records are handed over; the frontend never fetches variables, never derives the active environment locally (request-switch is declared - only a fresh hand-over moves it) and never persists (set/set-scope/submit are declared with closed results)."
     }
   ]
 }

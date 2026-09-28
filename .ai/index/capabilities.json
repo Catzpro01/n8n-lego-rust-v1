@@ -424,6 +424,21 @@
         "dashboard"
       ],
       "operations": []
+    },
+    {
+      "id": "environments",
+      "lego": "ui-frontend",
+      "title": "Environments surface pilot (environment selection + variable scoping over handed-over records, no fetch, no persistence)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "environments"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

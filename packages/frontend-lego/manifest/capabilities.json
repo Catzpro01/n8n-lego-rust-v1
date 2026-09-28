@@ -778,6 +778,35 @@
       "phase": "P2-S17",
       "owner": "agent-01",
       "notes": "P2-S17: the strangler slice for the workflow JSON import/export flow (split out of P2-S03). The workflow document is handed over through declared capabilities only; the surface never fetches and never writes the workflow - request-export serializes exactly the handed-over document (round-trip semantic identity; compatibility-critical per #240 invariant) while import-document parses the candidate with JSON.parse, validates nodes+connections, refuses secret-bearing envelopes and holds the result PENDING for the app layer. The four region states reuse REGION_STATES; an empty workflow is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "environments",
+      "lego": "ui-frontend",
+      "title": "Environments surface pilot (environment selection + variable scoping over handed-over records, no fetch, no persistence)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/environments.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "environments"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "environments",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n environments settings remain primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/55-environments.test.mjs"
+      ],
+      "phase": "P2-S18",
+      "owner": "agent-01",
+      "notes": "P2-S18: the strangler slice for the environment selection and variable-scoping panel (split out of P2-S03, Layer 4). Environments, the active id and the variable records are handed over through declared capabilities only; the surface never fetches variables, never derives the active environment locally and never persists - set-variable/set-scope/request-submit/request-switch are declared interactions with closed result vocabularies. The four region states reuse REGION_STATES; environment kinds are the declared subset dev|preview|staging; variable scope is all | environment id; a workflow with no environments is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }
