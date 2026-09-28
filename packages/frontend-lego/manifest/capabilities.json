@@ -836,6 +836,35 @@
       "phase": "P2-S19",
       "owner": "agent-01",
       "notes": "P2-S19: the strangler slice for the external integration management panel (split out of P2-S03, Layer 4). Integrations and the active id are handed over through declared capabilities only; the surface never fetches and never installs - request-activate/request-install are declared interactions with closed results (install has NO accepted result: every install lands behind the P6 admission path and the handed-over installed flags never change locally). The four region states reuse REGION_STATES; integration sources are the declared subset community|private|custom; a workflow with no integrations is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "execution-mgmt",
+      "lego": "ui-frontend",
+      "title": "Execution management surface pilot (retry/stop/bulk over handed-over records, no fetch, actions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/execution-mgmt.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "execution-mgmt"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "execution-mgmt",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/57-execution-mgmt.test.mjs"
+      ],
+      "phase": "P2-S20",
+      "owner": "agent-01",
+      "notes": "P2-S20: the strangler slice for the retry/stop/bulk execution actions (split out of P2-S03, Layer 4, beyond the P2-S06 list). Execution records are handed over through declared capabilities only; the surface never fetches and never mutates a record - request-retry/request-stop/request-bulk-* are declared interactions with closed results (accepted, unknown-execution, invalid-state, no-selection, no-retryable, no-stoppable, not-ready) and the execution capability performs every action. The four region states reuse REGION_STATES; execution status is the declared subset success|error|running|waiting; a workflow with no executions is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
     }
   ]
 }

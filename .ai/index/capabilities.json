@@ -454,6 +454,21 @@
         "integrations"
       ],
       "operations": []
+    },
+    {
+      "id": "execution-mgmt",
+      "lego": "ui-frontend",
+      "title": "Execution management surface pilot (retry/stop/bulk over handed-over records, no fetch, actions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "execution-mgmt"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

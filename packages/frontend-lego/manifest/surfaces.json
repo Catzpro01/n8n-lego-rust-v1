@@ -306,6 +306,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S19 Layer 4 strangler slice (issue #240): the external integration management panel (community/private/custom sources view) delivered as its own pilot. Integrations and the active id are handed over; the frontend never fetches and never installs - request-install is declared and always lands behind the P6 admission path (closed results, never a local install)."
+    },
+    {
+      "id": "execution-mgmt",
+      "title": "Execution management - retry/stop/bulk over handed-over records",
+      "kind": "page",
+      "routes": [
+        "/executions/manage"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S20 Layer 4 strangler slice (issue #240): the retry/stop/bulk actions around executions, beyond the P2-S06 history list, delivered as its own pilot. Execution records are handed over; the frontend never fetches and never mutates a record - request-retry/request-stop/request-bulk-* are declared with closed results and the execution capability (app layer) performs every action. The selection is view state cleared by every fresh hand-over."
     }
   ]
 }
