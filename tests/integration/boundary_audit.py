@@ -6,14 +6,19 @@ owns it (per docs/LEGO_PARALLEL_RULES.md), and reports:
   * cross-LEGO edges (DIRECT RUNTIME vs TYPE-ONLY)
   * circular dependencies between LEGOs
   * hidden coupling signals (global state, env vars, filesystem/db access)
-  * reference-source integrity (no Rust in Phase 2)
+  * reference-source integrity: `reference/n8n/` is the upstream TypeScript
+    snapshot and must never contain `.rs` files or a `Cargo.toml`. Rust lives
+    in the Cargo workspace under `crates/` (Phase 3+), which this audit does
+    not police.
 
 Read-only: it never modifies reference source. Exit 1 on undocumented findings.
+Run with `--selftest` to exercise the guard and the path mapping on a temp tree.
 """
 import os, re, sys, json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SRC = os.path.join(ROOT, "reference", "n8n", "packages", "workflow", "src")
+REFERENCE_DIR = os.path.join("reference", "n8n")  # must stay Rust-free in every phase
 
 LEGO_OWNERSHIP = {
     "workflow":       (["workflow.ts"], "Agent 1"),
@@ -47,9 +52,10 @@ ALLOWED_EDGES = {
 }
 
 def lego_of(rel):
+    norm = rel.replace("\\", "/")  # Windows runners hand back backslashes
     for lego, (paths, _owner) in LEGO_OWNERSHIP.items():
         for p in paths:
-            if rel == p or rel.startswith(p + "/"):
+            if norm == p or norm.startswith(p + "/"):
                 return lego
     return "shared-util"
 
@@ -127,16 +133,64 @@ def hidden_coupling():
                         hits.setdefault(kind, []).append(f"{rel}:{i}")
     return hits
 
-def rust_guard():
+def rust_guard(root=None):
+    """Return the `.rs` / `Cargo.toml` files found inside reference/n8n/ (sorted).
+
+    Reference-source integrity is phase-independent: the upstream snapshot is the
+    behavioural oracle of every LEGO and must never receive Rust. Vendored
+    node_modules are skipped. Rust under crates/ is the expected Phase-3 state.
+    """
+    root = root or ROOT
+    ref_dir = os.path.join(root, REFERENCE_DIR)
     offenders = []
-    for base in ("crates", "apps"):
-        for dp, _dn, fn in os.walk(os.path.join(ROOT, base)):
+    if os.path.isdir(ref_dir):
+        for dp, _dn, fn in os.walk(ref_dir):
+            if "node_modules" in dp.split(os.sep):
+                continue
             for f in fn:
                 if f.endswith(".rs") or f == "Cargo.toml":
-                    offenders.append(os.path.relpath(os.path.join(dp, f), ROOT))
-    return offenders
+                    offenders.append(os.path.relpath(os.path.join(dp, f), root).replace(os.sep, "/"))
+    return sorted(offenders)
+
+def selftest():
+    import tempfile, shutil
+    tmp = tempfile.mkdtemp(prefix="boundary-audit-selftest-")
+    try:
+        def touch(rel):
+            p = os.path.join(tmp, rel)
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            open(p, "w", encoding="utf-8").close()
+        touch("crates/n8n-workflow/src/lib.rs")
+        touch("crates/n8n-workflow/Cargo.toml")
+        touch("apps/n8n-ts/src/server.ts")
+        touch("reference/n8n/packages/workflow/src/workflow.ts")
+        touch("reference/n8n/node_modules/vendored/Cargo.toml")   # vendored, ignored
+
+        checks = []
+        checks.append(("Rust under crates/ is allowed (Phase 3 workspace)", rust_guard(tmp) == [], str(rust_guard(tmp))))
+        touch("reference/n8n/packages/core/native.rs")
+        touch("reference/n8n/packages/core/Cargo.toml")
+        got = rust_guard(tmp)
+        checks.append(("Rust inside reference/n8n is flagged, node_modules ignored",
+                       got == ["reference/n8n/packages/core/Cargo.toml", "reference/n8n/packages/core/native.rs"], str(got)))
+        checks.append(("missing reference dir yields no offenders (missing SRC is reported by main())",
+                       rust_guard(os.path.join(tmp, "nowhere")) == [], "unexpected offenders"))
+        checks.append(("lego_of normalises Windows separators",
+                       lego_of("graph\\graph-utils.ts") == "connection" and lego_of("workflow.ts") == "workflow",
+                       f"{lego_of('graph\\graph-utils.ts')} / {lego_of('workflow.ts')}"))
+
+        failed = 0
+        for name, ok, detail in checks:
+            print(f"[{'PASS' if ok else 'FAIL'}] {name}" + ("" if ok else f" -> {detail}"))
+            failed += 0 if ok else 1
+        print(f"SELFTEST: {len(checks) - failed}/{len(checks)} passed")
+        return 1 if failed else 0
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 def main():
+    if "--selftest" in sys.argv[1:]:
+        return selftest()
     if not os.path.isdir(SRC):
         print(f"[FAIL] reference source missing: {SRC}")
         return 1
@@ -168,14 +222,14 @@ def main():
         print(f"  {kind}: {len(locs)} hit(s) e.g. {locs[:3]}")
 
     offenders = rust_guard()
-    print(f"\n-- Phase-2 Rust guard: {'VIOLATION ' + str(offenders) if offenders else 'clean (no .rs / Cargo.toml)'}")
+    print(f"\n-- Reference-source integrity guard: {'CONTAMINATION ' + str(offenders) if offenders else 'clean (no .rs / Cargo.toml in reference/)'}")
 
     print("\n-------------------------------------------------------")
     failed = bool(undocumented) or bool(offenders)
     if undocumented:
         print(f"BOUNDARY VIOLATION: {len(undocumented)} undocumented edge(s): {undocumented}")
     if offenders:
-        print("PHASE VIOLATION: Rust introduced during Phase 2")
+        print(f"REFERENCE CONTAMINATION: Rust introduced inside reference/ ({len(offenders)} file(s))")
     print("AUDIT RESULT:", "FAIL" if failed else "PASS (all edges documented)")
     return 1 if failed else 0
 
