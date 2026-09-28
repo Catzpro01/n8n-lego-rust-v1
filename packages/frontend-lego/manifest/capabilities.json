@@ -65,9 +65,9 @@
       "trust": "feature",
       "lifecycle": "available",
       "surfaces": [
-        "dialogs",
-        "navigation"
-      ],
+      "dialogs",
+      "navigation"
+    ],
       "contracts": [
         "contracts/frontend.contract.md"
       ],
@@ -91,8 +91,8 @@
         "detail": "without an inference provider the assistant entry point is not rendered; the editor is unaffected"
       },
       "tests": [
-        "packages/frontend-lego/test/26-ai-contracts.test.mjs"
-      ],
+      "packages/frontend-lego/test/26-ai-contracts.test.mjs"
+    ],
       "phase": "P2.10",
       "owner": "agent-01",
       "notes": "Declared so the UI vocabulary for an AI assistant exists before the AI Foundation LEGO does. The frontend implements no inference and no provider client; `assistant.ask` is a semantic operation, not an endpoint, and the stream interaction is what a token-by-token answer means here. It attaches to no extension point yet: no AI hook is declared, and attaching to a neighbour surface's hook is exactly what the ownership rule refuses."
@@ -894,6 +894,35 @@
       "phase": "P2-S21",
       "owner": "agent-01",
       "notes": "P2-S21: the strangler slice for the project and workspace administration panels (split out of P2-S03, Layer 4). Membership and project data are handed over through declared capabilities only; the surface holds no project model of its own until P5-M11 exists - no fetch, no mutation of a record, no direct call to the project/role capability. request-invite/request-remove-member/request-rename are declared interactions with closed results (accepted, unknown-project, unknown-member, invalid-role, invalid-name, not-ready); the owner can never be removed; the selected project is view state cleared by every fresh hand-over. The four region states reuse REGION_STATES; roles are the declared subset owner|admin|member; a workspace with no projects is empty with reason none. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "assistant",
+      "lego": "ui-frontend",
+      "title": "AI Assistant surface pilot (conversational turns handed over as events)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/ai-assistant.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "assistant"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "assistant",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/59-ai-assistant.test.mjs"
+      ],
+      "phase": "P2-S22",
+      "owner": "agent-01",
+      "notes": "P2-S22: the strangler slice for the conversational assistant surface (split out of P2-S03, Layer 5). Assistant turns are handed over as events through declared capabilities only - the surface never fabricates assistant output, never fetches and never persists; request-send/request-stop-stream are declared with closed results (accepted, invalid-text, not-streaming, not-ready) and the capability that owns inference performs them. Distinct from the declared ai-assistant vocabulary capability (P2.10, stays status declared with no entry - the six AI capabilities never claim an implementation); this pilot degrades by keeping the reference behaviour."
     }
   ]
 }

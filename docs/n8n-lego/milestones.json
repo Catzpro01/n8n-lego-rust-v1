@@ -3608,42 +3608,52 @@
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The AI Assistant surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the conversational assistant surface; assistant turns handed over as events, the surface never fabricates assistant output. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-ai-assistant.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "test/59-ai-assistant.test.mjs 18/18 (boundary A x6: loadSuccess-only entry, never-fabricates static+behavioural, no fetch/eval/stream, secret refusal, closed turn shapes)",
+              "completedAt": "2026-09-28T20:30:00Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The AI Assistant surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "manifest/surface-migrations.json ui.ai.assistant converted reference-only -> pilot-available rollback pilot-not-primary + capability assistant (28th) while ai-assistant vocabulary stays declared (test/37 + test/39; index 28; boot 20_942)",
+              "completedAt": "2026-09-28T20:30:00Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the AI Assistant surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "parity compareObservations equivalent for loading/empty/ready/error; tampered interaction fails closed (test/59 C)",
+              "completedAt": "2026-09-28T20:30:00Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The AI Assistant surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "test/59 D x3: AI_ASSISTANT_A11Y derived once (form/assertive-error/busy-loading), focus composer->send->stop iff streaming, shared per-state primitives",
+              "completedAt": "2026-09-28T20:30:00Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The AI Assistant surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "in-progress"
+              "status": "completed",
+              "evidence": "test/59 E x5: bounds 30/100 newest-window + truncation, 200 turns x20 renders <250ms, error region with retry + recovery, degraded counts, closed result vocabularies",
+              "completedAt": "2026-09-28T20:30:00Z"
             }
           ],
-          "updatedAt": "2026-09-27T09:30:00Z",
+          "updatedAt": "2026-09-28T20:30:00Z",
           "latestUpdate": "Split out of P2-S03 per owner master prompt REQ-0003 section 6: Layers 3-5 are authorized for split and delivery, one surface = one delivery scope (contract, implementation, test suite, delivery PR, rollback path). Pilot mode, rollback pilot-not-primary, parity against the reference editor.",
           "mergeSha": null,
           "issue": 240,
-          "evidence": null,
+          "evidence": "docs/n8n-lego/evidence/P2-S22-EVIDENCE.md",
           "owner": "manager (unassigned)"
         },
         {

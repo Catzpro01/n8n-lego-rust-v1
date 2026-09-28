@@ -39,9 +39,9 @@
       "lifecycle": "available",
       "installed": false,
       "surfaces": [
-        "dialogs",
-        "navigation"
-      ],
+      "dialogs",
+      "navigation"
+    ],
       "degradation": {
         "fallback": "hide-assistant",
         "detail": "without an inference provider the assistant entry point is not rendered; the editor is unaffected"
@@ -482,6 +482,21 @@
       "installed": false,
       "surfaces": [
         "project-admin"
+      ],
+      "operations": []
+    },
+    {
+      "id": "assistant",
+      "lego": "ui-frontend",
+      "title": "AI Assistant surface pilot (conversational turns handed over as events)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "assistant"
       ],
       "operations": []
     }

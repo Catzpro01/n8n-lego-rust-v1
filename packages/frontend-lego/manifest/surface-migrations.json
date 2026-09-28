@@ -320,20 +320,21 @@
       "category": "ai-surfaces",
       "title": "AI assistant / copilot surfaces",
       "surfaceIds": [
-        "workflow-editor",
-        "node-picker"
-      ],
+      "assistant"
+    ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/59-ai-assistant.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.editor.workflow"
       ],
-      "notes": "Declared capability rows exist (ai-assistant/ai-copilot) but are not installed; no second AI authority."
+      "sourceIssue": "240",
+      "notes": "P2-S22 Layer 5 strangler slice (issue #240): the conversational assistant surface converted from reference-only to a pilot. Assistant turns are handed over as events - the surface never fabricates assistant output and holds no inference client; request-send/request-stop-stream are declared with closed results, roles are the declared subset user|assistant, and an empty conversation is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S22"
     },
     {
       "inventoryId": "ui.i18n.localization",

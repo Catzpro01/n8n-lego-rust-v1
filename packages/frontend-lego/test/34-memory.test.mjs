@@ -815,7 +815,8 @@ test('the assembly exposes Memory lazily, and the boot descriptor stays byte-ide
   // Refresh 2026-09-28 (P2-S19): + the integrations surface: 19,574 -> 19,934 bytes, measured.
   // Refresh 2026-09-28 (P2-S20): + the execution-mgmt surface: 19,934 -> 20,271 bytes, measured.
   // Refresh 2026-09-28 (P2-S21): + the project-admin surface: 20,271 -> 20,624 bytes, measured.
-  assert.equal(payload.length, 20_624, 'the boot payload is byte-identical to the P2-S21 baseline');
+  // Refresh 2026-09-28 (P2-S22): + the assistant surface: 20,624 -> 20,942 bytes, measured.
+  assert.equal(payload.length, 20_942, 'the boot payload is byte-identical to the P2-S22 baseline');
   for (const word of ['memoryId', 'scopeOwner', 'memory.remember', 'memory.list', 'memory.forget', 'provenance', 'IMPORTANT', 'forgotten']) {
     assert.equal(payload.includes(word), false, `${word} does not travel in the boot descriptor`);
   }
@@ -835,7 +836,7 @@ test('the assembly exposes Memory lazily, and the boot descriptor stays byte-ide
   assert.equal(wired.describe().memoryPublished, true);
   assert.equal(wired.describe().memoryDrift, 'not-declared');
   assert.equal(JSON.stringify(wired.bootPayload).includes('mem-secret-name'), false, 'a rendered record never enters the descriptor');
-  assert.equal(JSON.stringify(wired.bootPayload).length, 20_624);
+  assert.equal(JSON.stringify(wired.bootPayload).length, 20_942);
 });
 
 test('describeMemory is the surface as data, and the milestone is not claimed complete', () => {
