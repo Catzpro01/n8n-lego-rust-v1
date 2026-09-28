@@ -5,6 +5,14 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 32 — P2-S23 SELESAI (PR 385, merge 6ecfdd95) + R1/R2
+
+- **START `0daf5fe0`** (PRE/POST assert lulus: pop q0 P2-S23 -> activeSlices [P2-S23]; queue 7 -> 6, q0 kini P2-S24; blocked [P2-S03] tak berubah) + state-pin test G 7 -> 6.
+- **Delivery `cf1a8c7f`** (AI Copilot surface pilot — strangler slice Layer 5 (issue #240); payload handed-over {suggestions} bentuk tertutup {id,target,text,status} status subset pending|accepted|rejected, text <=4000; **suggestion TIDAK PERNAH di-apply senyap** — tak ada method menulis status; `request-accept|request-reject` DECLARED hasil closed (accepted/unknown-suggestion/invalid-state/not-ready) hanya pending actionable; outcome datang via fresh hand-over; tanpa fetch/provider client/persist; parity via shared copilotActionsFor; COPILOT_A11Y sekali derive (focus hanya pending suggestion ids); bounds 30/100; measured 200 x20 <250 ms; 18 tests A–E). Manifest: surface `copilot` (21st, route /copilot); inventory BARU `ui.ai.copilot` (26th, kategori ai-surfaces); capability `copilot` (29th); `ai-copilot` vocabulary TETAP declared (test26+A20 hijau); curated 29; boot 20.942 -> **21.262** (terukur); boundary 20 -> 21; card 8.341/8.704. Evidence: docs/n8n-lego/evidence/P2-S23-EVIDENCE.md (4 divergences).
+- **Provenance PR #385**: 1 commit `cf1a8c7f`, **17 file persis scope**; **CI RED pertama kali** — 2 job Windows gagal TANPA step gagal (runner infra flake: "Windows worker portability probe" + "Level 2 Workspace Tests (windows)"; Linux semua hijau) → **re-run via POST /actions/runs/{id}/rerun** (PAT punya izin rerun; rerun-failed-jobs 403) → **CI 9/9 ALL GREEN** (~20 mnt) → merge squash `6ecfdd95`.
+- **Post-merge battery**: lego 3088/3088, frontend 933/0 (1 skip), engine 49/49, runtime 79/79, governance 117/117, gates 7/7.
+- **R1 `a7b54ba0`** (HARD GUARD queue-6 membership byte-identical PASSED; activeSlices -> []; lvc {P2-S23,385,6ecfdd95}; pins: tally 182->183/199=92.0, P2 51->52/59, current 181->182/193=94.3, H-fixture flip('P2-S24')) + **R2 `67d2b6e3`** (pointer-only: lastVerifiedMain -> R1 a7b54ba0, KALININ target benar sejak awal) — pushed, tree clean.
+
 ## Update 31 — P2-S22 SELESAI (PR 384, merge cb2f4d33) + R1/R2
 
 - **START `a8a3385a`** (PRE/POST assert lulus: pop q0 P2-S22 -> activeSlices [P2-S22]; queue 8 -> 7, q0 kini P2-S23; blocked [P2-S03] tak berubah) + state-pin test G 8 -> 7.
