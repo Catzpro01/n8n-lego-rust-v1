@@ -54,8 +54,8 @@ Checkpoint-weighted earned points / current-delivery points: 17800 / 19300. Deno
 | Current-delivery slices | 193 |
 | Implemented (completion numerator) | 178 |
 | Verifying (display status; completion contribution 0) | 0 |
-| In progress, not verifying | 0 |
-| Planned | 12 |
+| In progress, not verifying | 1 |
+| Planned | 11 |
 | Blocked | 1 |
 | Proposed | 2 |
 | Deferred | 0 |
@@ -102,7 +102,7 @@ A program state of `complete` is not numeric 100%. Read the two percentage colum
 The queue is `executionPointer` only. Historical `P2.27` is not the next slice, and there is no `P2.28`.
 
 ```text
- 1. `P2-S20` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
+ 1. `P2-S20` in-progress; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
  2. `P2-S21` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
  3. `P2-S22` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
  4. `P2-S23` planned; realtime 0.0%; completion contribution 0.0%; updated 2026-09-27T09:30:00Z
@@ -122,7 +122,7 @@ _No verifying slice._
 
 - 🔴 **P2-S03** — Frontend Evolution layers 3-6. Status: BLOCKED. Realtime 0.0%. No checkpoint model is declared, so realtime progress stays 0.0%. That 0 is not a measured fraction of the work, and evidenced work is not converted into a percentage. Current checkpoint: none declared. Latest checkpoint: none declared. Checkpoint evidence: — (no completed checkpoint). Blocker: Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped.. Last progress update: —. Completion contribution: 0%.
 
-Planned queue (planned ≠ authorized): `P2-S20` → `P2-S21` → `P2-S22` → `P2-S23` → `P2-S24` → `P2-S25` → `P2-S26` → `P2-S27` → `P2-S28` → `P2-S29`.
+Planned queue (planned ≠ authorized): `P2-S21` → `P2-S22` → `P2-S23` → `P2-S24` → `P2-S25` → `P2-S26` → `P2-S27` → `P2-S28` → `P2-S29`.
 
 Not authorized: planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders).
 
@@ -175,7 +175,7 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 ## P2 — LEGO / AI / Plugin Foundation
 
 - **Realtime Delivery Progress:** **81.4%** `████████████████░░░░ 81.4%`
-- **Slice Completion:** **81.4%** (48 / 59 implemented). Remaining 11. 48 implemented, 10 planned, 1 blocked.
+- **Slice Completion:** **81.4%** (48 / 59 implemented). Remaining 11. 48 implemented, 1 in progress, 9 planned, 1 blocked.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent Machine, Context/Session/Memory, Workspace, MCP boundary, portability, Node Creator, translation, usage integrity, provider adapters, readiness, P2.27 pluggable runtime/security foundation (#90).
 - **Checkpoint model:** 27 slice(s) declare checkpoints; 31 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
@@ -234,7 +234,7 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 | `P2-S17` | Import/export | Import/export (Layer 3 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Performance/resource budget and failure behavior (completed, 15) | — |
 | `P2-S18` | Environments | Environments (Layer 4 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Performance/resource budget and failure behavior (completed, 15) | — |
 | `P2-S19` | Integrations | Integrations (Layer 4 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Performance/resource budget and failure behavior (completed, 15) | — |
-| `P2-S20` | Execution management | Execution management (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
+| `P2-S20` | Execution management | Execution management (Layer 4 surface split out of P2-S03) | 🔵 In progress | 0.0% | 0.0% | CP-01 Declared contract and handed-over input boundary (in-progress, 20) | — | — |
 | `P2-S21` | Project/workspace administration | Project/workspace administration (Layer 4 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
 | `P2-S22` | AI Assistant | AI Assistant (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
 | `P2-S23` | AI Copilot | AI Copilot (Layer 5 surface split out of P2-S03) | 🟡 Planned | 0.0% | 0.0% | — | — | — |
@@ -595,7 +595,7 @@ Excluded from the current-delivery denominator. Realtime **0.0%**. Slice complet
 - **Live progress (DEC-0021, LIVE-MILESTONE EXCEPTION):** checkpoint progress, checkpoint status, checkpoint evidence, current checkpoint, slice / program / overall progress and the milestone evidence of a slice still in flight are operational telemetry. The Manager may reconcile them straight to `main` in a `governance(progress):` commit, without a governance PR, with `node tools/lego/progress-event.mjs record --slice <id> --checkpoint <CP-nn> --status <status> --evidence <reference>`. The tool runs the whole atomic chain: validate evidence and weights → write the register → regenerate `README.md` and `.ai` → run `npm run lego:ai:check` → commit → push → verify `main`. One measurable event is one commit; live progress is never batched and a partial state is never published. The Manager never types a percentage: `resolve` derives the state from evidence — `--fetch` reads the DEC-0015 jobs and the runner availability from the GitHub API, `--jobs <file.json>` reads an export, and `verify --cmd` derives completed / blocked from a verification command's exit code. A checkpoint that declares `requires` is earned only when every named check has passed; an absent self-hosted check is never PASS and `WAITING_RUNNER` is never PASS, so a head that never ran the suite cannot look green. Two paths, never mixed: delivery state is implementation → delivery PR → merge → post-merge verification → one governance PR reconciling status, merge SHA, evidence and projections; telemetry is evidence → checkpoint update → register → README → .ai → a `governance(progress):` commit → main. A slice status becoming `implemented` is delivery state and is never telemetry. The exception never covers source code, tests, runtime behaviour, API / frontend / backend / contract / schema implementation, dependencies, packages, Rust code, CI workflows, security policy, permissions, infrastructure, database schema or production configuration — those still go through a delivery PR. Live telemetry never bypasses a completion gate: 100% realtime progress with a completion contribution of 0% is a legitimate state, and only `implemented` (DEC-0014 + DEC-0015) moves Slice Completion.
 - **Rule:** Milestone truth is main-owned. A milestone design found or developed in Manager memory becomes authoritative only when reconciled into main through a PR. arena-manager is not an alternate milestone authority, and its docs/ tree is a stale snapshot that is never copied over main.
 - **Pending reconciliation:** A milestone change that exists only on arena-manager, a local worktree, a handoff, an issue, a PR body or chat is a proposal (pending reconciliation), never authoritative truth. A PR proposes a milestone state; only the merged state on main is authoritative.
-- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `513a525351d6b7eb`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
+- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `5ebf1f5bcf83fa1e`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
 - **Progress model (Issue #307):** Realtime Delivery Progress is checkpoint-weighted across P0-P11. Slice Completion is implemented / active in that same denominator. Future programs stay visible and are excluded from the current-delivery denominator. Illustrations of the status/progress split are not register measurements and must not be copied into slice checkpoints. The generator counts only weights declared on slice.checkpoints. It does not invent weights. A completed checkpoint requires evidence. Weights on a slice must sum to 100. A slice with no checkpoint model stays at 0 unless it is implemented, in which case the legacy rule contributes 100. This projection is not canonical until the change is on main.
 - **Completion KPI:** Slice Completion is implemented slices / active slices in P0–P11. A verifying or blocked slice never increases that numerator. Realtime Delivery Progress is a separate checkpoint-weighted figure and can move while Slice Completion stays still.
 - **Purpose field:** a slice purpose is `slice.purpose` when present, otherwise the text after the first `: ` in the canonical title, otherwise the title. No purpose is invented.
