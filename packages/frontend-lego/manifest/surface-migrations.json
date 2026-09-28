@@ -563,6 +563,27 @@
       "sourceIssue": "240",
       "notes": "P2-S21 Layer 4 strangler slice (issue #240): the project and workspace administration panels beyond the settings shell. Membership and project data are handed over (the surface holds no project model of its own until P5-M11 exists; invite/remove/rename are declared with closed results - the owner can never be removed), the four region states reuse REGION_STATES, roles are the declared subset owner|admin|member, and a workspace with no projects is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "slice": "P2-S21"
+    },
+    {
+      "inventoryId": "ui.ai.copilot",
+      "category": "ai-surfaces",
+      "title": "AI copilot inline suggestions - accept or reject explicitly",
+      "surfaceIds": [
+        "copilot"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/60-copilot.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S23 Layer 5 strangler slice (issue #240): the inline copilot suggestion surface. Suggestions arrive as declared AI capability events through hand-over - the surface never applies a suggestion silently; accept/reject are declared with closed results, status is the declared subset pending|accepted|rejected, and a workspace with no suggestions is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S23"
     }
   ]
 }

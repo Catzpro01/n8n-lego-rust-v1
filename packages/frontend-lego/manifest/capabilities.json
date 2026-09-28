@@ -923,6 +923,35 @@
       "phase": "P2-S22",
       "owner": "agent-01",
       "notes": "P2-S22: the strangler slice for the conversational assistant surface (split out of P2-S03, Layer 5). Assistant turns are handed over as events through declared capabilities only - the surface never fabricates assistant output, never fetches and never persists; request-send/request-stop-stream are declared with closed results (accepted, invalid-text, not-streaming, not-ready) and the capability that owns inference performs them. Distinct from the declared ai-assistant vocabulary capability (P2.10, stays status declared with no entry - the six AI capabilities never claim an implementation); this pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "copilot",
+      "lego": "ui-frontend",
+      "title": "AI Copilot surface pilot (inline suggestions accepted or rejected explicitly)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/copilot.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "copilot"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "copilot",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/60-copilot.test.mjs"
+      ],
+      "phase": "P2-S23",
+      "owner": "agent-01",
+      "notes": "P2-S23: the strangler slice for the inline copilot suggestion surface (split out of P2-S03, Layer 5). Suggestions arrive as declared events through hand-over only - the surface never applies a suggestion silently, never fetches and never persists; request-accept/request-reject are declared interactions with closed results (accepted, unknown-suggestion, invalid-state, not-ready), only pending suggestions are actionable, and the owning capability performs the action. Distinct from the declared ai-copilot vocabulary capability (P2.10, stays status declared with no entry); the pilot degrades by keeping the reference behaviour."
     }
   ]
 }

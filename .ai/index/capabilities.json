@@ -499,6 +499,21 @@
         "assistant"
       ],
       "operations": []
+    },
+    {
+      "id": "copilot",
+      "lego": "ui-frontend",
+      "title": "AI Copilot surface pilot (inline suggestions accepted or rejected explicitly)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "copilot"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

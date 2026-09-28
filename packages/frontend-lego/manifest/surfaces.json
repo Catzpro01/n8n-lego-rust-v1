@@ -375,6 +375,29 @@
       "extensionPoints": [],
       "status": "partial",
       "notes": "P2-S22 Layer 5 strangler slice (issue #240): the conversational assistant surface. Assistant turns are handed over as events - the surface never fabricates assistant output: no method writes a turn and no inference/provider client exists here. request-send and request-stop-stream are declared with closed results; the capability that owns inference performs them and the reply arrives only via a fresh hand-over."
+    },
+    {
+      "id": "copilot",
+      "title": "AI Copilot - inline suggestions accepted or rejected explicitly",
+      "kind": "page",
+      "routes": [
+        "/copilot"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S23 Layer 5 strangler slice (issue #240): the inline copilot suggestion surface. Suggestions arrive as declared AI capability events through hand-over - the surface never applies a suggestion silently: no method writes a status, accept/reject are declared with closed results, and the outcome arrives only via a fresh hand-over. No fetch, no inference client, no persistence."
     }
   ]
 }
