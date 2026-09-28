@@ -510,8 +510,12 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // unchanged PASSED): 185/199 = 93.0 -> 186/199 = 93.5; current 184/193 =
   // 95.3 -> 185/193 = 95.9; P2 54/59 -> 55/59. Evidence:
   // docs/n8n-lego/evidence/P2-S26-EVIDENCE.md.
-  assert.equal(tally.percent, 93.5);
-  assert.equal(tally.implemented, 186);
+  // Refresh 2026-09-29 (R1 P2-S27, PR #389 merge cd12208d, HARD GUARD queue-
+  // unchanged PASSED): 186/199 = 93.5 -> 187/199 = 94.0; current 185/193 =
+  // 95.9 -> 186/193 = 96.4; P2 55/59 -> 56/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S27-EVIDENCE.md.
+  assert.equal(tally.percent, 94.0);
+  assert.equal(tally.implemented, 187);
   assert.equal(tally.total, 199);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
@@ -522,8 +526,8 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
     assert.equal(metrics.current.total, 193);
-  assert.equal(metrics.current.implemented, 185);
-  assert.equal(metrics.current.sliceCompletion, percent1(185, 193));
+  assert.equal(metrics.current.implemented, 186);
+  assert.equal(metrics.current.sliceCompletion, percent1(186, 193));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);
