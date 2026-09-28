@@ -245,6 +245,25 @@
       "notes": "P2-S11 Layer 3/4 strangler slice (issue #240): the webhook URL/method/registration surface shown with a node or a workflow, bounded and resource-switchable. Registrations are handed over through declared capabilities only; the surface ISSUES NO REGISTER CALL and a registration carrying auth material is refused with an explicit security error (Webhook node + Credentials runtime own auth, finding-only here). Mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
+      "inventoryId": "ui.auth.identity",
+      "category": "credentials-settings",
+      "title": "Auth surface (sign-in, user management and membership)",
+      "surfaceIds": [
+        "auth"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/49-auth.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "slice": "P2-S12",
+      "notes": "P2-S12 Layer 4 strangler slice (issue #240): the sign-in, user-management and membership surface, bounded and facet-switchable (signin / users / membership). Identity state and the directory are handed over by the auth capability in one loadSuccess payload; the surface ISSUES NO LOGIN CALL, never re-derives identity locally and refuses credential or session material with an explicit security error (the auth runtime owns verification, finding-only here). The owner role change answers owner-unchangeable per the reference n8n rule. Mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
       "inventoryId": "ui.projects.workspace",
       "category": "projects-workspace",
       "title": "Projects / workspace surfaces",

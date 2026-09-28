@@ -3012,39 +3012,49 @@
               "title": "Declared contract and handed-over input boundary",
               "purpose": "The Auth (users/identity) surface declares its frontend-lego contract explicitly and receives data only through hand-over (inputBoundary source hand-over): the sign-in, user-management and membership surfaces; identity state comes from the auth capability and cannot be re-derived locally. It holds no private data path and no second source of truth (issue #240 invariants 4-5). Its state vocabulary is closed and pinned to the shared REGION_STATES the parity harness compares. One dedicated test suite (packages/frontend-lego/test/NN-auth.test.mjs) pins the boundary and closed shapes.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/49-auth.test.mjs group A (single hand-over payload, no login call, identity never re-derived locally, credential/session refusal, closed facet/role vocabularies)",
+              "completedAt": "2026-09-28T07:00:00Z"
             },
             {
               "id": "CP-02",
               "title": "Pilot mode with rollback (pilot-not-primary)",
               "purpose": "The Auth (users/identity) surface ships as a flag-gated pilot: the original n8n editor remains the default path (pilot-not-primary). Rollback is switching the pilot flag off with no residual state and no workflow-data migration (issue #240 invariants 1 and 9). The surface registers in manifest/surface-migrations.json and manifest/capabilities.json with its pilot status; the surface-migration tests pin both entries.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/49-auth.test.mjs group B (manifest pins ui.auth.identity + auth capability, pilot-not-primary)",
+              "completedAt": "2026-09-28T07:00:00Z"
             },
             {
               "id": "CP-03",
               "title": "Parity evidence against the reference UI",
               "purpose": "Differential/parity evidence for the Auth (users/identity) surface against the reference UI: matched states, matched interaction outcomes and matched data rendering for every region the surface declares (issue #240 invariant 8 and the strangler migration model). Parity runs through the existing parity harness; a divergence is recorded as evidence, never hidden.",
               "weight": 25,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/49-auth.test.mjs group C (parity fail-closed against shared-rule reference fixtures)",
+              "completedAt": "2026-09-28T07:00:00Z"
             },
             {
               "id": "CP-04",
               "title": "Accessibility and interaction behavior",
               "purpose": "The Auth (users/identity) surface meets the accessibility and interaction requirements: keyboard reachability and focus order, aria labels for interactive controls, and the shared loading/empty/error interaction primitives (issue #240 Layer 2 primitives). Checked in the surface test suite.",
               "weight": 20,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/49-auth.test.mjs group D (a11y derived once, region landmark, assertive/busy exclusivity)",
+              "completedAt": "2026-09-28T07:00:00Z"
             },
             {
               "id": "CP-05",
               "title": "Performance/resource budget and failure behavior",
               "purpose": "The Auth (users/identity) surface stays inside its declared performance/resource budget: bounded visible lists (maxVisible enforced, truncation reported), measured render cost for a typical payload, and defined failure/degradation behavior - explicit error region with a retry affordance instead of a silent blank (issue #240 invariants 12 and the migration model).",
               "weight": 15,
-              "status": "planned"
+              "status": "completed",
+              "evidence": "packages/frontend-lego/test/49-auth.test.mjs group E (bounds + facet mutation, closed declared requests incl. owner-unchangeable, explicit failure + degraded mode)",
+              "completedAt": "2026-09-28T07:00:00Z"
             }
           ],
-          "updatedAt": "2026-09-28T06:10:00Z",
-          "latestUpdate": "STARTED P2-S12 (Auth surface): PRE/POST asserts passed; queue popped P2-S12 -> activeSlices [P2-S12] -> in-progress. CP model already installed (CP-01 contract 20 / CP-02 pilot 20 / CP-03 parity 25 / CP-04 a11y 20 / CP-05 budget 15), verified not reinstalled. Scope: the sign-in, user-management and membership surfaces over the hand-over boundary; identity state is handed over by the auth capability and cannot be re-derived locally; no credential ever reaches the surface.",
+          "updatedAt": "2026-09-28T07:00:00Z",
+          "latestUpdate": "DELIVERED: Auth surface pilot (sign-in, user-management and membership) over the single hand-over payload - the surface issues no login call, never re-derives identity locally and refuses credential or session material with an explicit security error (the auth runtime owns verification), closed facet vocabulary signin|users|membership + roles pinned to the reference n8n 2.9.4 system roles (custom roles refused fail-closed), the reference owner rule answers owner-unchangeable, parity fail-closed against shared-rule reference fixtures, a11y region landmark, bounded directory + explicit failure + degraded mode. ui.auth.identity registered pilot-available (rollback pilot-not-primary); auth capability declared (slot auth, degrades native-behavior). 22 focused tests; battery frontend 736/0. Evidence: docs/n8n-lego/evidence/P2-S12-EVIDENCE.md.",
           "mergeSha": null,
           "issue": 240,
           "evidence": null,
