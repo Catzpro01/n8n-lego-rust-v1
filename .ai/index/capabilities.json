@@ -544,6 +544,21 @@
         "work-trace"
       ],
       "operations": []
+    },
+    {
+      "id": "memory-views",
+      "lego": "ui-frontend",
+      "title": "Memory/Context/Session views pilot (hand-over inspection, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "memory-views"
+      ],
+      "operations": []
     }
   ],
   "registered": [],

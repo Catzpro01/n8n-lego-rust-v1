@@ -1010,6 +1010,35 @@
       "phase": "P2-S25",
       "owner": "agent-01",
       "notes": "P2-S25: the strangler slice for the work-trace timeline surface (split out of P2-S03, Layer 5). The trace is handed over from the observability capability through declared capabilities only - no fetch, no event mutation, no navigation; request-open-event is a declared interaction with closed results (accepted, unknown-event, not-ready) and the capability that owns navigation performs it. The pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "memory-views",
+      "lego": "ui-frontend",
+      "title": "Memory/Context/Session views pilot (hand-over inspection, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/memory-views.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "memory-views"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "memory-views",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/63-memory-views.test.mjs"
+      ],
+      "phase": "P2-S26",
+      "owner": "agent-01",
+      "notes": "P2-S26: the strangler slice for the memory/context/session inspection surfaces (split out of P2-S03, Layer 5). The session state is handed over from the session capability through declared capabilities only - no direct session store access, no fetch, no record mutation; request-open-entry is a declared interaction with closed results (accepted, unknown-entry, not-ready) and the capability that owns navigation performs it. The pilot degrades by keeping the reference behaviour."
     }
   ]
 }

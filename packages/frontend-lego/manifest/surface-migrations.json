@@ -26,7 +26,8 @@
     "loading-error-empty-primitives",
     "accessibility-shared-primitives",
     "notifications-shared-surface",
-    "dialogs-overlay-surface"
+    "dialogs-overlay-surface",
+    "memory-session-views"
   ],
   "migrationStatuses": [
     "reference-only",
@@ -626,6 +627,25 @@
       "sourceIssue": "240",
       "notes": "P2-S25 Layer 5 strangler slice (issue #240): the work-trace timeline surface. Trace events are handed over from the observability capability - the surface holds no second source of truth; request-open-event is declared with closed results and the route never moves locally; event kinds are the declared vocabulary run|node|error|manual and an empty trace is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "slice": "P2-S25"
+    },
+    {
+      "inventoryId": "ui.memory.views",
+      "category": "memory-session-views",
+      "title": "Memory/context/session inspection - handed-over session state",
+      "surfaceIds": [
+        "memory-views"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/63-memory-views.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "notes": "P2-S26 Layer 5 strangler slice (issue #240): the memory/context/session inspection surfaces. Session state is handed over from the session capability - the surface holds no second source of truth and never touches the session store; request-open-entry is declared with closed results and the route never moves locally; memory kinds are the declared vocabulary short-term|long-term|retrieved, session status is active|idle|closed, and an inspection with no memory entries is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S26"
     }
   ]
 }
