@@ -5,6 +5,7 @@ pub mod frame;
 pub mod ir;
 pub mod loop_manager;
 pub mod runner;
+pub mod subworkflow;
 
 pub use context::{
     CredentialsProvider, ExecutionContext, InMemoryCredentialsProvider, MemoryBudget,
@@ -17,6 +18,9 @@ pub use loop_manager::{LoopBatch, LoopError, LoopManager};
 pub use runner::{
     NodeExecutorRegistry, PassThroughExecutor, SetNodeExecutor, WorkflowExecutionResult,
     WorkflowRunner,
+};
+pub use subworkflow::{
+    isolated_child_context, SubworkflowError, SubworkflowInvoker, SubworkflowOutcome,
 };
 
 #[cfg(test)]
