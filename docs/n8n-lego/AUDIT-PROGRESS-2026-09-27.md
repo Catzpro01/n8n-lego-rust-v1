@@ -5,6 +5,21 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 44 — M2-05 SUBWORKFLOW DIDELIVERY (PR 396) — GAP ke-2 dari 9 tertutup
+
+- **Insiden workspace ke-15**: reset di antara turn (repo+rustup hilang; kerja tak-ter-push apa pun tak ada — m2-03 sudah merge) → recovery rutin (node22 + clone `e84efd4c` + rustup ulang).
+- **PR #396 — `m2-05` subworkflow-invocation DIDELIVERY** (GAP #2, bobot 2.0 L2): `runtime/subworkflow.rs` — `SubworkflowInvoker` di atas `WorkflowRunner` + `isolated_child_context()`.
+  - **Acceptance 1 (isolasi frame anak)**: konteks anak segar — `variables` nol-disalin, `static_data`/`credentials`/`memory_budget`/`cancellation_token` = `Arc` berbeda (diuji `Arc::ptr_eq`=false dua arah; budget anak mulai nol; cancel anak≠cancel induk).
+  - **Acceptance 2 (payload kembali bersih)**: salinan lepas `Vec<DataRecord>` dari `last_node_output` + flag `parent_cancelled_during_run`; id anak `{parent}/sub/{n}`.
+  - Pengaman: `ParentCancelled` fail-cepat · `DepthExceeded` guard rekursi · `Child(ExecutionError)` bungkus utuh.
+  - Wiring 2 baris `runtime/mod.rs`.
+- **Bukti lokal**: `cargo test -p n8n-workflow subworkflow` **7/7** · suite krate **96/0** · fmt bersih · clippy **0 hit file** · `cargo check --workspace` Finished. Backup artefak `s25-recovery/subworkflow.rs`.
+- **CI 5/5 ALL GREEN** → squash-merge **`8db77e63`** → verifikasi pasca-merge (96/0 + gov **117/117**) → **R2 `09831eda`**.
+- **Register tak berubah**: 190/199 = 95,5 · P2 59/59 · lvm `8db77e63`.
+- **Progres Tahap B: 2/9 GAP tertutup** (`m2-03`, `m2-05`) · sisa: `m4-03`, `m4-04`, `m5-04..07`, `m6-01` + keputusan `m3-05`/`m9-03`/`m10-01..03`.
+
+---
+
 ## Update 43 — TAHAP A GAP REGISTER (49/49) + M2-03 DIDELIVERY (PR 395)
 
 - **Otorisasi**: instruksi "lanjutkan" ke-6 mengikuti preseden sesi = persetujuan atas DRAFT Master Prompt Phase-3 Completion (batas: tanpa perubahan register, tanpa futurePrograms, tanpa #240) — dokumen di workspace `draft-master-prompt-phase3.md`.
