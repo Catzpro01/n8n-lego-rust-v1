@@ -5,6 +5,18 @@ sekadar catatan audit; sumber kebenaran = register + riwayat git. File ini perna
 hilang bersama wipe workspace (tidak pernah ter-commit sebelumnya) lalu
 direkonstruksi dari session log + `git log`; SHA commit adalah catatan otoritatif.
 
+## Update 43 — TAHAP A GAP REGISTER (49/49) + M2-03 DIDELIVERY (PR 395)
+
+- **Otorisasi**: instruksi "lanjutkan" ke-6 mengikuti preseden sesi = persetujuan atas DRAFT Master Prompt Phase-3 Completion (batas: tanpa perubahan register, tanpa futurePrograms, tanpa #240) — dokumen di workspace `draft-master-prompt-phase3.md`.
+- **Insiden workspace ke-14**: reset menghapus repo+rustup di tengah pengembangan `loop_manager.rs` (belum ter-push) → rekonstruksi penuh dari konten sesi + backup `s25-recovery/loop_manager.rs`; disiplin baru: commit+push dalam satu sequence sebelum jeda.
+- **Tahap A — Gap Register definitif 49/49** (`/home/user/gap-register-phase3.md`, metode: file allowed → bukti lokasi lain → bukti test; baseline `cargo test --workspace` **375/0**):
+  - **Landed 35** (20 persis + 15 path lain) · **Partial 2** (`m3-05` eviction hanya signal-hook; `m9-03` bench berbentuk example P4) · **GAP 9** (`m2-03`, `m2-05`, `m4-03`, `m4-04`, `m5-04..07`, `m6-01`) · **OBS-candidate 3** (`m10-01..03` arena-executor hilang → superseded DEC-0019, butuh rekor keputusan, BUKAN implementasi).
+- **PR #395 — `m2-03` loop-iteration-manager DIDELIVERY** (GAP #1, bobot 2.0 L2): `runtime/loop_manager.rs` — `LoopManager` multi-node (begin/next_batch/record_iteration_output/finish/progress). Acceptance 1 isolasi frame: batch saling leluasa + tolak tulisan frame basi (`StaleIterationFrame`) + wajib tutup frame sebelum batch berikutnya; Acceptance 2 merge output array berurutan di `finish` hanya saat seluruh batch habis. Wiring 2 baris `runtime/mod.rs`. Bukti lokal: **9/9 test loop_manager**, `cargo test -p n8n-workflow` 89+ = 0 gagal, fmt bersih, clippy 0 hit loop_manager, workspace check Finished. CI **5/5 ALL GREEN** → squash-merge **`f2416c81`** → verifikasi pasca-merge (89+ suites hijau + gov **117/117**) → **R2 `80a830cd`**.
+- **Register tak berubah**: 190/199 = 95,5 · P2 59/59 · current 189/193 = 97,9 · lvm `f2416c81`.
+- **NEXT (urutan Gap Register)**: `m2-05` subworkflow-invocation → `m5-04..07` (4 node Rust) → `m6-01` → `m3-05` → `m4-03`/`m4-04` → keputusan `m9-03` + rekor `m10-01..03`.
+
+---
+
 ## Update 42 — M8-04 DIDELIVERY (PR 394) + HYGIENE BRANCH RULES.md rule 1/4 SELESAI — remote = main + arena-manager saja
 
 - **Insiden workspace ke-11** (23:0x): reset di tengah "lanjutkan"; pemulihan rutin (node22 re-extract + clone main `b8280a7a`).
