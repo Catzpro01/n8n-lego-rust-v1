@@ -12,18 +12,24 @@
     "workflow-list-dashboard",
     "workflow-editor",
     "canvas",
+    "connections",
     "node-picker-catalog",
     "node-parameter-ndv",
     "execution-history",
     "credentials-settings",
     "projects-workspace",
     "import-export",
+    "environments",
+    "integrations",
     "ai-surfaces",
     "localization",
     "loading-error-empty-primitives",
     "accessibility-shared-primitives",
     "notifications-shared-surface",
-    "dialogs-overlay-surface"
+    "dialogs-overlay-surface",
+    "memory-session-views",
+    "skills-capabilities",
+    "approvals-artifacts"
   ],
   "migrationStatuses": [
     "reference-only",
@@ -53,13 +59,15 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": "docs/n8n-lego/evidence/frontend-inventory-baseline.json",
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/50-navigation.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [],
-      "notes": "Shell/header/sidebar stay on the stock bundle until a later authorized surface migrates."
+      "sourceIssue": "240",
+      "slice": "P2-S13",
+      "notes": "P2-S13 Layer 3 strangler slice (issue #240): the primary navigation, breadcrumbs and route-switching shell. The route table and the active route are handed over (the surface never fetches a route table, never reads window.location and issues no route change - the app-layer router owns history), the four region states reuse REGION_STATES, a filter to zero is empty with reason filtered rather than a fifth state, and a path carrying secret query material is refused with an explicit security error. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.dashboard.workflow-list",
@@ -106,19 +114,21 @@
       "category": "canvas",
       "title": "Workflow canvas (nodes, connections)",
       "surfaceIds": [
-        "workflow-editor"
+        "canvas"
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/51-canvas.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.editor.workflow"
       ],
-      "notes": "Composite region of workflow-editor; never the first pilot."
+      "sourceIssue": "240",
+      "slice": "P2-S14",
+      "notes": "P2-S14 Layer 3 strangler slice (issue #240): the workflow node-graph rendering surface (nodes, edges, viewport, selection), the composite region of the workflow editor delivered as its own slice. The graph model is handed over (the surface never fetches a graph and performs no engine call - selection and zoom are declared view-state interactions with closed result vocabularies, never graph mutations), the four region states reuse REGION_STATES, and a payload carrying secret or engine fields is refused with an explicit security error. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.nodes.picker",
@@ -146,21 +156,22 @@
       "category": "node-parameter-ndv",
       "title": "Node parameter / NDV panel",
       "surfaceIds": [
-        "workflow-editor",
-        "node-picker"
+        "node-config"
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/52-node-config.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.nodes.picker",
         "ui.editor.canvas"
       ],
-      "notes": "P7 dynamic parameters are non-scope for this slice (Issue #241 non-scope)."
+      "sourceIssue": "240",
+      "slice": "P2-S15",
+      "notes": "P2-S15 Layer 3 strangler slice (issue #240): the node parameter / NDV panel editing one node type's parameters through the parameter contract. Parameter definitions and values are handed over (the surface never fetches a schema and evaluates no expression - strings pass through verbatim behind the declared boundary - and never posts the workflow), the four region states reuse REGION_STATES, and the parameter type vocabulary is the declared subset string|number|boolean|options. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path. P7 dynamic parameters remain non-scope (Issue #241 non-scope)."
     },
     {
       "inventoryId": "ui.executions.history",
@@ -224,6 +235,46 @@
       "notes": "P2-S10 Layer 3/4 strangler slice (issue #240): the settings PANELS view-model (instance + personal), bounded and panel-switchable. Settings values are handed over through declared settings capabilities only; an entry carrying a secret-bearing field is refused with an explicit security error (P2.27/P5 secret boundary is finding-only here) and the surface never mutates settings data - save/reset are declared interactions with a closed result vocabulary. Localization and theme stay later authorized slices. Mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
+      "inventoryId": "ui.webhooks.registrations",
+      "category": "workflow-editor",
+      "title": "Webhook URL/method/registration surface (shown with a node or workflow)",
+      "surfaceIds": [
+        "webhooks"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/48-webhooks.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.shell.navigation"
+      ],
+      "sourceIssue": "240",
+      "slice": "P2-S11",
+      "notes": "P2-S11 Layer 3/4 strangler slice (issue #240): the webhook URL/method/registration surface shown with a node or a workflow, bounded and resource-switchable. Registrations are handed over through declared capabilities only; the surface ISSUES NO REGISTER CALL and a registration carrying auth material is refused with an explicit security error (Webhook node + Credentials runtime own auth, finding-only here). Mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
+      "inventoryId": "ui.auth.identity",
+      "category": "credentials-settings",
+      "title": "Auth surface (sign-in, user management and membership)",
+      "surfaceIds": [
+        "auth"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/49-auth.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "slice": "P2-S12",
+      "notes": "P2-S12 Layer 4 strangler slice (issue #240): the sign-in, user-management and membership surface, bounded and facet-switchable (signin / users / membership). Identity state and the directory are handed over by the auth capability in one loadSuccess payload; the surface ISSUES NO LOGIN CALL, never re-derives identity locally and refuses credential or session material with an explicit security error (the auth runtime owns verification, finding-only here). The owner role change answers owner-unchangeable per the reference n8n rule. Mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
       "inventoryId": "ui.projects.workspace",
       "category": "projects-workspace",
       "title": "Projects / workspace surfaces",
@@ -254,36 +305,39 @@
       ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+  "sourceIssue": "240",
+  "slice": "P2-S17",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/54-import-export.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.editor.workflow",
         "ui.dashboard.workflow-list"
       ],
-      "notes": "Workflow JSON semantics remain compatibility-critical (#240 invariant)."
+      "notes": "Workflow JSON semantics remain compatibility-critical (#240 invariant). P2-S17 Layer 3 strangler slice (issue #240): the workflow JSON import/export flow over the handed-over document - export serializes exactly the hand-over (round-trip semantic identity), import parses with JSON.parse, validates and holds the candidate PENDING for the app layer (never installed here; no key stripped, no value rewritten), secret-bearing envelopes refused fail-closed on both sides, the four region states reuse REGION_STATES. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
     },
     {
       "inventoryId": "ui.ai.assistant",
       "category": "ai-surfaces",
       "title": "AI assistant / copilot surfaces",
       "surfaceIds": [
-        "workflow-editor",
-        "node-picker"
-      ],
+      "assistant"
+    ],
       "currentOwner": "n8n-editor-ui",
       "proposedLegoOwner": "ui-frontend",
-      "migrationStatus": "reference-only",
+      "migrationStatus": "pilot-available",
       "referenceImplementation": "n8n-editor-ui@2.9.4",
-      "contractStatus": "declared",
-      "evidencePath": null,
-      "rollbackStrategy": "reference-remains-default",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/59-ai-assistant.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
       "dependencies": [
         "ui.editor.workflow"
       ],
-      "notes": "Declared capability rows exist (ai-assistant/ai-copilot) but are not installed; no second AI authority."
+      "sourceIssue": "240",
+      "notes": "P2-S22 Layer 5 strangler slice (issue #240): the conversational assistant surface converted from reference-only to a pilot. Assistant turns are handed over as events - the surface never fabricates assistant output and holds no inference client; request-send/request-stop-stream are declared with closed results, roles are the declared subset user|assistant, and an empty conversation is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S22"
     },
     {
       "inventoryId": "ui.i18n.localization",
@@ -367,6 +421,48 @@
       "sourceIssue": "245"
     },
     {
+      "inventoryId": "ui.settings.environments",
+      "category": "environments",
+      "title": "Environments - selection + variable scoping",
+      "surfaceIds": [
+        "environments"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/55-environments.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "slice": "P2-S18",
+      "notes": "P2-S18 Layer 4 strangler slice (issue #240): the environment selection and variable-scoping panel. Environments, the active id and the variable records are handed over (the surface never fetches variables, never derives the active environment locally - only a fresh hand-over moves it - and never persists; set/set-scope/submit/switch are declared with closed results), the four region states reuse REGION_STATES, environment kinds are the declared subset dev|preview|staging, and variable scope is all | environment id. One surface, mode pilot, rollback pilot-not-primary; the original settings stay the default path."
+    },
+    {
+      "inventoryId": "ui.editor.connections",
+      "category": "connections",
+      "title": "Connection inspector / connection list",
+      "surfaceIds": [
+        "connections"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/53-connections.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.editor.canvas"
+      ],
+      "sourceIssue": "240",
+      "slice": "P2-S16",
+      "notes": "P2-S16 Layer 3 strangler slice (issue #240): the connection inspector / connection list managing a workflow's connections. Connection records and the node-id vocabulary are handed over (the surface never fetches a graph, issues no engine call and never writes the workflow - selection is view state, reconnect and remove are declared requests with closed result vocabularies), the four region states reuse REGION_STATES, and the connection type vocabulary is the declared subset main|ai_tool|ai_memory|ai_embedding|ai_vector. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path."
+    },
+    {
       "inventoryId": "ui.pages.dashboard",
       "category": "workflow-list-dashboard",
       "title": "Dashboard workflow list (loading / empty / error / ready, bounded + filterable)",
@@ -407,6 +503,208 @@
       "notes": "P2-S03 Layer 3, second strangler slice (P2-S05). A bounded view-model for modals/overlays: the content is handed over (the surface never fetches, so it holds no private data path to the content's owning capability), the four region states reuse REGION_STATES, a closed dialog is `empty` not a fifth state, and the kind (confirmation/form/notice) decides the declared ready actions. One low-risk surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
       "sourceIssue": "240",
       "slice": "P2-S05"
+    },
+    {
+      "inventoryId": "ui.integrations.manage",
+      "category": "integrations",
+      "title": "Integrations - external sources view (community/private/custom, install behind admission)",
+      "surfaceIds": [
+        "integrations"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/56-integrations.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "notes": "P2-S19 Layer 4 strangler slice (issue #240): the external integration management panel. The integration records and the active id are handed over (the surface never fetches, never derives the active integration locally and never installs - request-activate/request-install are declared with closed results; every install lands behind the P6 admission path), the four region states reuse REGION_STATES, integration sources are the declared subset community|private|custom, and a workflow with no integrations is empty with reason none, not a fifth state. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "sourceIssue": "240",
+      "slice": "P2-S19"
+    },
+    {
+      "inventoryId": "ui.executions.manage",
+      "category": "execution-history",
+      "title": "Execution management - retry/stop/bulk actions (handed-over records)",
+      "surfaceIds": [
+        "execution-mgmt"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/57-execution-mgmt.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S20 Layer 4 strangler slice (issue #240): the retry/stop/bulk actions around executions beyond the P2-S06 history list. Execution records are handed over (the surface never fetches, never mutates a record and never calls the execution capability itself - request-retry/request-stop/request-bulk-* are declared with closed results), the four region states reuse REGION_STATES, execution status is the declared subset success|error|running|waiting, and a workflow with no executions is empty with reason none, not a fifth state. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S20"
+    },
+    {
+      "inventoryId": "ui.settings.projects-admin",
+      "category": "projects-workspace",
+      "title": "Project/workspace administration - invite, remove, rename (handed-over data)",
+      "surfaceIds": [
+        "project-admin"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/58-project-admin.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S21 Layer 4 strangler slice (issue #240): the project and workspace administration panels beyond the settings shell. Membership and project data are handed over (the surface holds no project model of its own until P5-M11 exists; invite/remove/rename are declared with closed results - the owner can never be removed), the four region states reuse REGION_STATES, roles are the declared subset owner|admin|member, and a workspace with no projects is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S21"
+    },
+    {
+      "inventoryId": "ui.ai.copilot",
+      "category": "ai-surfaces",
+      "title": "AI copilot inline suggestions - accept or reject explicitly",
+      "surfaceIds": [
+        "copilot"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/60-copilot.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S23 Layer 5 strangler slice (issue #240): the inline copilot suggestion surface. Suggestions arrive as declared AI capability events through hand-over - the surface never applies a suggestion silently; accept/reject are declared with closed results, status is the declared subset pending|accepted|rejected, and a workspace with no suggestions is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S23"
+    },
+    {
+      "inventoryId": "ui.ai.node",
+      "category": "ai-surfaces",
+      "title": "AI node parameter - model picker over a handed-over catalog",
+      "surfaceIds": [
+        "ai-node"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/61-ai-node.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.settings.pages"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S24 Layer 5 strangler slice (issue #240): the AI-node parameter and model-picker surfaces. The model catalog is handed over from the node/parameter contracts - the surface holds no second source of truth; request-select-model is declared with closed results and the selection never moves locally; providers are the declared subset hosted|local|custom and a node with no models is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S24"
+    },
+    {
+      "inventoryId": "ui.trace.work-trace",
+      "category": "execution-history",
+      "title": "Work trace - read-only execution timeline over handed-over events",
+      "surfaceIds": [
+        "work-trace"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/62-work-trace.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [
+        "ui.executions.history"
+      ],
+      "sourceIssue": "240",
+      "notes": "P2-S25 Layer 5 strangler slice (issue #240): the work-trace timeline surface. Trace events are handed over from the observability capability - the surface holds no second source of truth; request-open-event is declared with closed results and the route never moves locally; event kinds are the declared vocabulary run|node|error|manual and an empty trace is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S25"
+    },
+    {
+      "inventoryId": "ui.memory.views",
+      "category": "memory-session-views",
+      "title": "Memory/context/session inspection - handed-over session state",
+      "surfaceIds": [
+        "memory-views"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/63-memory-views.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "notes": "P2-S26 Layer 5 strangler slice (issue #240): the memory/context/session inspection surfaces. Session state is handed over from the session capability - the surface holds no second source of truth and never touches the session store; request-open-entry is declared with closed results and the route never moves locally; memory kinds are the declared vocabulary short-term|long-term|retrieved, session status is active|idle|closed, and an inspection with no memory entries is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S26"
+    },
+    {
+      "inventoryId": "ui.skills.catalog",
+      "category": "skills-capabilities",
+      "title": "Skills and capability catalog - handed-over registry snapshot",
+      "surfaceIds": [
+        "skills-capabilities"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/64-skills-capabilities.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "notes": "P2-S27 Layer 5 strangler slice (issue #240): the skills and capability catalog surfaces. The catalog is handed over from the capability registry - the surface grants nothing and holds no second source of truth; request-open-skill is declared with closed results and the route never moves locally; skill status and capability state are the QUOTED vocabularies SKILL_STATUSES and CAPABILITY_STATES and a catalog with no skills is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S27"
+    },
+    {
+      "inventoryId": "ui.agent.runtime",
+      "category": "ai-surfaces",
+      "title": "Agent and runtime supervision - handed-over state",
+      "surfaceIds": [
+        "agent-runtime"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/65-agent-runtime.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "notes": "P2-S28 Layer 5 strangler slice (issue #240): the agent and runtime supervision surfaces. Supervision state is handed over from the runtime - the surface cannot start or stop runtimes and holds no second source of truth; request-open-agent is declared with closed results and the route never moves locally; agent status and event type are the QUOTED vocabularies agentSessionState and agentEventType and a supervision view with no records is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S28"
+    },
+    {
+      "inventoryId": "ui.approvals.artifacts",
+      "category": "approvals-artifacts",
+      "title": "Approval queue and artifact review - handed-over state",
+      "surfaceIds": [
+        "approvals-artifacts"
+      ],
+      "currentOwner": "n8n-editor-ui",
+      "proposedLegoOwner": "ui-frontend",
+      "migrationStatus": "pilot-available",
+      "referenceImplementation": "n8n-editor-ui@2.9.4",
+      "contractStatus": "consuming",
+      "evidencePath": "packages/frontend-lego/test/66-approvals-artifacts.test.mjs",
+      "rollbackStrategy": "pilot-not-primary",
+      "dependencies": [],
+      "sourceIssue": "240",
+      "notes": "P2-S29 Layer 5 strangler slice (issue #240): the approval queue and artifact review surfaces. Approval and artifact state is handed over from the approval capability - the surface never writes a decision and holds no second source of truth; request-approve/request-reject are declared with closed results and the route never moves locally; approval status, artifact kind and retention are the QUOTED vocabularies decisionApprovalState, artifactKind and artifactRetention and an empty review is empty with reason none. One surface, mode pilot, rollback pilot-not-primary; the original editor stays the default path.",
+      "slice": "P2-S29"
     }
   ]
 }

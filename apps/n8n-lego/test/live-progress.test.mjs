@@ -573,9 +573,15 @@ test('the live state is readable from the register alone: status, checkpoint, ev
     'the slice headline names the delivery PR and merge');
   // Derived, not pinned: whichever slice is currently blocked renders this row
   // (P5-M10 was pinned here while it was the blocked umbrella; it is now in-progress).
-  const blockedId = REGISTER.executionPointer.blockedSlices[0];
-  assert.ok(blockedId, 'a blocked slice exists for the blocked-row check');
-  assert.match(rendered, new RegExp(`- 🔴 \\*\\*${blockedId}\\*\\*[^\\n]*Last progress update: —`));
+  // Derived, not pinned: no real blocked slice remains after the P2-S03 re-scope
+  // (DEC-0029), so the blocked-row rendering is checked on a synthesised clone.
+  const blockedRegister = structuredClone(REGISTER);
+  const blockedSlice = blockedRegister.programs.flatMap((prog) => prog.slices).find((x) => x.id === 'P11-S01');
+  blockedSlice.status = 'blocked';
+  blockedSlice.blockedBy = 'fixture: blocked-row rendering check (DEC-0029 cleared the last real blocked row)';
+  blockedRegister.executionPointer.blockedSlices = ['P11-S01'];
+  const blockedRendered = renderReadmeMilestoneSection(blockedRegister);
+  assert.match(blockedRendered, new RegExp(`- 🔴 \\*\\*P11-S01\\*\\*[^\\n]*Last progress update: —`));
   assert.match(rendered, /governance\(progress\):/);
   assert.match(rendered, /LIVE-MILESTONE EXCEPTION/);
   assert.match(formatPercent(headlineMetrics(REGISTER).current.realtime), /^\d+\.\d%$/);

@@ -1231,7 +1231,18 @@ test('the assembly exposes the surface, and the boot descriptor stays byte-ident
   assert.equal(typeof frontend.describeContextSession, 'function');
   // The browser receives the descriptor and nothing else: no context, no session, no usage.
   const payload = JSON.stringify(frontend.bootPayload);
-  assert.equal(payload.length, 18_126, 'the boot payload is byte-identical to the P2.5 baseline');
+  // Refresh 2026-09-28 (P2-S14): the boot descriptor grows with the declared canvas
+  // surface (manifest/surfaces.json + capability): 18,126 -> 18,477 bytes, measured.
+  // Refresh 2026-09-28 (P2-S15): + the node-config surface: 18,477 -> 18,855 bytes, measured.
+  // Refresh 2026-09-28 (P2-S16): + the connections surface: 18,855 -> 19,233 bytes, measured.
+  // Refresh 2026-09-28 (P2-S18): + the environments surface: 19,233 -> 19,574 bytes, measured.
+  // Refresh 2026-09-28 (P2-S19): + the integrations surface: 19,574 -> 19,934 bytes, measured.
+  // Refresh 2026-09-28 (P2-S20): + the execution-mgmt surface: 19,934 -> 20,271 bytes, measured.
+  // Refresh 2026-09-28 (P2-S21): + the project-admin surface: 20,271 -> 20,624 bytes, measured.
+  // Refresh 2026-09-28 (P2-S22): + the assistant surface: 20,624 -> 20,942 bytes, measured.
+  // Refresh 2026-09-28 (P2-S23): + the copilot surface: 20,942 -> 21,262 bytes, measured.
+  // Refresh 2026-09-28 (P2-S24): + the ai-node surface: 21,262 -> 21,589 bytes, measured.
+  assert.equal(payload.length, 23_262, 'the boot payload is byte-identical to the P2-S29 baseline');
   for (const word of ['contextId', 'sessionId', 'continuation', 'rollover', 'contextRef', 'chainOfThought', 'NORMAL']) {
     assert.equal(payload.includes(word), false, `${word} does not travel in the boot payload`);
   }

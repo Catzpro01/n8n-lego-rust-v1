@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0",
+  "objectType": "Decision",
+  "objectId": "DEC-0029",
+  "revision": 1,
+  "createdAt": "2026-09-28T21:00:24Z",
+  "updatedAt": "2026-09-28T21:00:24Z",
+  "events": [],
+  "state": "ACTIVE",
+  "category": "MILESTONE",
+  "title": "P2-S03 LAYER 6 FORMAL RE-SCOPE: legacy-UI decommission decided NOT to execute - the P2 umbrella closes as delivered via its children (permanent invariants #240 preserved)",
+  "problem": "P2-S03 (Frontend Evolution layers 3-6, issue #240) finished every Layers 3-5 child slice (P2-S07..P2-S29; 28 evidence files; plannedQueue drained to 0 at P2-S29 completion) yet stayed blocked on its Layer-6 component: decommissioning the legacy UI. That gate requires parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface PLUS a separate owner decision, and #240 authorizes no removal of reference/n8n or n8n-editor-ui (permanent invariants 1-2). The register allows exactly two exits: deliver Layer 6, or formally re-scope. P2 therefore cannot reach 59/59 while the umbrella sits blocked with no remaining work, and the only unfinished condition is the decision itself.",
+  "options": [
+    {
+      "id": "A-formal-re-scope-no-removal",
+      "summary": "Record the owner decision that Layer 6 executes NO removal: permanent invariants #240 stay in force, reference/n8n and n8n-editor-ui are preserved, and the umbrella P2-S03 is formally re-scoped. Its Layers 3-5 scope is delivered by the child slices (per-surface parity/compat/performance/accessibility/migration-rollback evidence, measured green this cycle); its Layer 6 scope is decided as no-removal. P2-S03 flips blocked -> implemented with DEC-0029 plus its delivery PR as merge SHA and docs/n8n-lego/evidence/P2-S03-RESCOPE.md as evidence. No code is removed; pilot surfaces keep running beside the reference editor (rollback pilot-not-primary unchanged). Denominators unchanged (global 199, P2 59)."
+    },
+    {
+      "id": "B-authorize-full-decommission",
+      "summary": "Owner explicitly overrides #240 permanent invariants 1-2 and orders the removal of the legacy/reference UI. Requires a new multi-slice decommission program (migrate every remaining legacy path, then delete reference/n8n and n8n-editor-ui). Not executed: no such override instruction was given, and it is outside the current marathon."
+    },
+    {
+      "id": "C-keep-umbrella-blocked",
+      "summary": "Record no decision. P2 stops at 58/59 with the umbrella blocked on a gate whose technical conditions all pass, waiting on the decision that this record would have been. Contradicts the owner instruction to continue until P2 is complete."
+    }
+  ],
+  "selectedOption": "A-formal-re-scope-no-removal",
+  "rationale": "Owner direction in chat (2026-09-29): the standing marathon instruction 'Lanjutkan sampai p2 selesai semua', reaffirmed by 'lanjutkan' after this decision menu was presented with option A recommended. (1) Every technical gate condition is evidenced: parity harness + per-slice CP-03 fail-closed fixtures, compat contract/oracle, per-surface measured render budgets (200x20 < 250 ms) with boot pinned at 23_262, per-slice a11y intent derived once, and a one-line rollback in each of the 28 child evidence files - all green in this cycle's batteries (FE 1041/0/1, lego 3088/0, engine 19/19, runtime 79/79). (2) #240 permanent invariants 1-2 forbid removing reference/n8n or n8n-editor-ui; option A honors them, option B needs an explicit override the owner did not give. (3) The register itself sanctions this exit: the umbrella 'is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped' - DEC-0029 is that formal re-scope. (4) Option C leaves an umbrella blocked with zero remaining work and contradicts the completion instruction. (5) No denominator changes: global inventory stays 199, P2 counted stays 59; completion moves only because a blocked leaf becomes implemented with evidence. (6) Rollback is one governance commit (supersede DEC-0029, restore blocked + blockedBy + blockedSlices, regenerate) - nothing was removed because nothing was executed.",
+  "scope": {
+    "programs": [
+      "P2"
+    ],
+    "slices": [
+      "P2-S03"
+    ],
+    "domains": [],
+    "surfaces": []
+  },
+  "authority": {
+    "decidedBy": "OWNER",
+    "managerOnly": false,
+    "humanEscalation": true,
+    "proposedBy": "MANAGER-01"
+  },
+  "evidence": [],
+  "evidenceRefs": [
+    "docs/n8n-lego/evidence/P2-S03-RESCOPE.md (gates evaluation table, measurements, rollback)",
+    "docs/n8n-lego/evidence/P2-S07-EVIDENCE.md .. P2-S29-EVIDENCE.md (28 child slice evidence files)",
+    "packages/frontend-lego/test/38-parity-harness.test.mjs (parity harness, green in FE battery)",
+    "docs/n8n-lego/milestones.json (P2-S03 blockedBy history; children statuses; queue drained)"
+  ],
+  "sources": {
+    "issues": [
+      240
+    ],
+    "prs": [],
+    "commits": [],
+    "requests": [
+      "REQ-0003"
+    ]
+  },
+  "supersedes": null,
+  "supersededBy": null,
+  "promotion": {
+    "canonical": false,
+    "mainPath": "docs/engineering-operations/workforce/decisions/DEC-0029.json",
+    "mainCommitSha": null,
+    "promotedAt": null,
+    "promotedBy": null
+  },
+  "reason": null
+}

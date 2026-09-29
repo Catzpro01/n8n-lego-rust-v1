@@ -113,9 +113,13 @@ test('B the surface migrates as a pilot with rollback pilot-not-primary', () => 
   assert.match(entry.evidencePath, /45-workflow-editor\.test\.mjs/);
   assert.deepEqual(entry.surfaceIds, [WORKFLOW_EDITOR_SURFACE_ID]);
   assert.equal(entry.slice, 'P2-S08');
-  // The canvas rewrite stays out of scope (issue #241): the sibling entry is untouched.
+  // Refresh 2026-09-28 (P2-S14): canvas was reference-only while the canvas rewrite
+  // stayed out of scope (issue #241); P2-S14 delivers it as its own pilot, so the
+  // sibling entry is now pilot-available with rollback pilot-not-primary (below).
   const canvas = inv.entries.find((e) => e.inventoryId === 'ui.editor.canvas');
-  assert.equal(canvas.migrationStatus, 'reference-only');
+  assert.equal(canvas.migrationStatus, 'pilot-available');
+  assert.equal(canvas.rollbackStrategy, 'pilot-not-primary');
+  assert.equal(canvas.slice, 'P2-S14');
 });
 
 test('B the capability declares the pilot and degrades to native behavior', () => {

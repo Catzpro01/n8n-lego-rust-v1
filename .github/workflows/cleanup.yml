@@ -5,9 +5,11 @@ on:
     branches: [ main ]
     types: [ closed ]
 
-# Deleting the PR head branch needs write access to refs; nothing else.
+# Deleting the PR head branch needs write access to refs; deleting that PR's
+# workflow artifacts needs write access to actions. Nothing else.
 permissions:
   contents: write
+  actions: write
 
 jobs:
   cleanup:
@@ -63,3 +65,28 @@ jobs:
             --merge-sha "$MERGE_SHA" \
             --pr "$PR_NUMBER" \
             --skip-tests
+
+      # The merged PR's artifacts have finished their job: they existed to prove the
+      # PR was green, and the merge is that proof. Left alone they accumulate against
+      # the org quota, which on 2026-09-29 was exhausted (1681 live artifacts,
+      # 8.07 GB, 0 expired) and turned three green jobs red - blocking every merge
+      # under DEC-0015 while every test step in them had passed.
+      #
+      # Selection is by exact commit SHA (the PR head and the merge commit), never by
+      # branch name or artifact-name pattern, so this cannot sweep anything unrelated.
+      # Non-fatal on purpose: post-merge verification and branch cleanup above are the
+      # steps that matter, and a storage problem must never block them again.
+      - name: Delete the merged PR workflow artifacts
+        if: always()
+        continue-on-error: true
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 tools/orchestration/cleanup_artifacts.py \
+            --sha "$HEAD_SHA" \
+            --sha "$MERGE_SHA" \
+            --pr "$PR_NUMBER" \
+            --apply

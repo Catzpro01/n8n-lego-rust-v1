@@ -1,15 +1,14 @@
 # L1 — Frontend domain card
 
 One page on how the frontend LEGO is built; everything here is derivable from the
-manifests and the tests, which is why the card can stay one page.
+manifests and the tests.
 
 ## What this LEGO is
 
 `ui-frontend` — the frontend LEGO Foundation. It owns the UI architecture, the
 compatibility boundary, the UI capability registry and the frontend regression gates.
 It does **not** own workflow, execution, auth, credentials, storage, the node registry
-or Rust, and implements no feature of its own — no AI feature either: it declares the AI
-vocabulary and performs no inference.
+or Rust, and implements no feature of its own — no AI feature: it declares the AI vocabulary and performs no inference.
 
 `apps/n8n-lego` serves the stock editor bundle unchanged and asks this LEGO for one
 thing: the boot descriptor. The LEGO never renders, never injects markup beyond one
@@ -32,9 +31,9 @@ packages/frontend-lego/
     skills.mjs context-session.mjs memory.mjs workspace.mjs agent-machine.mjs lego.mjs
     surface-migration.mjs surface-contract.mjs parity.mjs pilot-status-region.mjs
     notification-surface.mjs workflow-list.mjs dialog-surface.mjs execution-list.mjs
-    node-picker.mjs workflow-editor.mjs credentials.mjs settings.mjs
+    node-picker.mjs workflow-editor.mjs credentials.mjs settings.mjs webhooks.mjs auth.mjs navigation.mjs canvas.mjs node-config.mjs connections.mjs import-export.mjs environments.mjs integrations.mjs execution-mgmt.mjs project-admin.mjs ai-assistant.mjs copilot.mjs ai-node.mjs work-trace.mjs memory-views.mjs skills-capabilities.mjs agent-runtime.mjs approvals-artifacts.mjs
     adapters/ the framework adapter boundary (Vue; the only framework-aware code)
-  test/                     01-contract … 47-settings (numbered; 39/40/41/43-47 pilots)
+  test/                     01-contract … 55-environments (numbered; 39-41,43-55 pilots)
 ```
 
 What the odd ones own: `negotiation.mjs` discovery, access, degradation and operation
@@ -72,7 +71,7 @@ other's payloads by name.
 
 | Thing | Value |
 | ----- | ----- |
-| Architecture tests | 480 across 40 suites (measured with `node --test packages/frontend-lego/test/*.test.mjs`); backend comparisons skip *with a reason* unless the tree is present |
+| Architecture tests | 736 across 49 suites (measured with `node --test packages/frontend-lego/test/*.test.mjs`); backend comparisons skip *with a reason* unless the tree is present |
 | Architecture rules | 29, as data (`frontend.conformance()`), mirrored in contract §19.16 |
 | Surfaces / hooks / units | 12 / 15 (`1.1.0`) / 19 in a 3-level hierarchy |
 | Boot payload | 18,126 B JSON / 24,168 B base64, budget **32 KB**, byte-pinned to P2.5 |

@@ -12,7 +12,7 @@ import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
+import { accountingRows,
   validateGovernanceRegister, TOP_LEVEL_PROGRAMS, EXPECTED_PROGRAM_STATUS, LEGACY_FUTURE_MILESTONES, countBy,
   README_MARKERS, renderReadmeMilestoneSection, syncReadmeMilestoneSection,
   completionTally, sliceRecords, percent1, completionPercentForStatus, displayStatus, verifyingIndex,
@@ -143,8 +143,8 @@ const MUTATIONS = [
       .filter((entry) => entry.id !== subject.id);
   }, /is neither active nor verifying/],
   ['a queued slice that is not planned', (r) => { r.executionPointer.plannedQueue.push('P5-M03'); }, /queued slice P5-M03 is implemented/],
-  ['a blocked slice without blockedBy', (r) => { delete r.programs.flatMap((p) => p.slices).find((x) => x.id === 'P2-S03').blockedBy; }, /P2-S03 does not record blockedBy/],
-  ['a blocked slice missing from blockedSlices', (r) => { r.executionPointer.blockedSlices = []; }, /blocked slice P2-S03 is missing/],
+  ['a blocked slice without blockedBy', (r) => { const x = r.programs.flatMap((p) => p.slices).find((s) => s.id === 'P11-S01'); x.status = 'blocked'; x.blockedBy = 'fixture'; r.executionPointer.blockedSlices = ['P11-S01']; delete x.blockedBy; }, /P11-S01 does not record blockedBy/],
+  ['a blocked slice missing from blockedSlices', (r) => { r.programs.flatMap((p) => p.slices).find((x) => x.id === 'P11-S01').status = 'blocked'; r.executionPointer.blockedSlices = []; }, /blocked slice P11-S01 is missing/],
   ['a latest completed slice that is not implemented', (r) => {
     // Any slice that is not implemented will do; the queue may legitimately be
     // empty once every queued slice has been started or blocked.
@@ -172,6 +172,12 @@ const MUTATIONS = [
       ['plannedQueue', r.executionPointer.plannedQueue ?? []],
       ['blockedSlices', r.executionPointer.blockedSlices ?? []],
     ];
+    // Every pointer list is legitimately empty after the P2-S03 re-scope (DEC-0029);
+    // seed the active list with an in-flight row so the duplicate still has a source.
+    if (lists.every(([, ids]) => ids.length === 0)) {
+      r.programs.flatMap((p) => p.slices).find((s) => s.id === 'P10-S01').status = 'in-progress';
+      r.executionPointer.activeSlices.push('P10-S01');
+    }
     const [from, claimed] = lists.find(([, ids]) => ids.length > 0);
     const target = lists.find(([name]) => name !== from)[1];
     target.push(claimed[0]);
@@ -418,8 +424,12 @@ test('README projection lists current state, P5 ladder, recent slices and future
 test('completion KPI is implemented/total and never counts verifying or blocked', () => {
   const slices = sliceRecords(REGISTER).map((record) => record.slice);
   const tally = completionTally(slices);
-  assert.equal(tally.implemented, slices.filter((slice) => slice.status === 'implemented').length);
-  assert.equal(tally.total, slices.length);
+  // Accounting rule PPA-1 (2026-09-28): aggregate parent rows (named as
+  // parentSlice by other rows) are excluded - their delivery is represented by
+  // their children. See test/progress-accounting.test.mjs for the full rules.
+  const counted = accountingRows(slices);
+  assert.equal(tally.implemented, counted.filter((slice) => slice.status === 'implemented').length);
+  assert.equal(tally.total, counted.length);
   assert.equal(tally.percent, percent1(tally.implemented, tally.total));
   // Pin of the reconciled register. Refresh it when a slice's delivery state is reconciled; it
   // exists so a silently-flipped status cannot pass unnoticed. The tally itself is derived above,
@@ -438,9 +448,93 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   // then P5-M10 (public /api/v1 resources over the backing models) on PR #366 merge c95a0fae;
   // then P5-M06 (injected mail transport + forgot-password delivery) on PR #367 merge 49103ac9;
   // then P2-S10 (Settings panels pilot) on PR #368 merge 60763a5e.
-  assert.equal(tally.percent, 85.5);
-  assert.equal(tally.implemented, 171);
-  assert.equal(tally.total, 200);
+  // Refresh 2026-09-28: accounting repair PPA-1 - P2.27 reclassified as the
+  // aggregate ladder row of P2.27.0..P2.27.10 and excluded from the denominator
+  // (before 171/200 = 85.5; after 170/199 = 85.4; P2 40/60 -> 39/59). Evidence:
+  // docs/n8n-lego/evidence/PROGRESS-ACCOUNTING-AUDIT.md.
+  // Refresh 2026-09-28 (R1 P2-S11, PR #372 merge dd49d4d3, HARD GUARD queue-
+  // unchanged PASSED): 170/199 = 85.4 -> 171/199 = 85.9; current 169/193 =
+  // 87.6 -> 170/193 = 88.1; P2 39/59 -> 40/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S11-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S12, PR #374 merge fbf5dbc, HARD GUARD queue-
+  // unchanged PASSED): 171/199 = 85.9 -> 172/199 = 86.4; current 170/193 =
+  // 88.1 -> 171/193 = 88.6; P2 40/59 -> 41/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S12-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S13, PR #375 merge cafd7440, HARD GUARD queue-
+  // unchanged PASSED): 172/199 = 86.4 -> 173/199 = 86.9; current 171/193 =
+  // 88.6 -> 172/193 = 89.1; P2 41/59 -> 42/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S13-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S14, PR #376 merge b4edc52c, HARD GUARD queue-
+  // unchanged PASSED): 173/199 = 86.9 -> 174/199 = 87.4; current 172/193 =
+  // 89.1 -> 173/193 = 89.6; P2 42/59 -> 43/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S14-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S15, PR #377 merge 396551af, HARD GUARD queue-
+  // unchanged PASSED): 174/199 = 87.4 -> 175/199 = 87.9; current 173/193 =
+  // 89.6 -> 174/193 = 90.2; P2 43/59 -> 44/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S15-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S16, PR #378 merge 852b7046, HARD GUARD queue-
+  // unchanged PASSED): 175/199 = 87.9 -> 176/199 = 88.4; current 174/193 =
+  // 90.2 -> 175/193 = 90.7; P2 44/59 -> 45/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S16-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S17, PR #379 merge 060ef4c2, HARD GUARD queue-
+  // unchanged PASSED): 176/199 = 88.4 -> 177/199 = 88.9; current 175/193 =
+  // 90.7 -> 176/193 = 91.2; P2 45/59 -> 46/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S17-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S18, PR #380 merge 43c7b1b2, HARD GUARD queue-
+  // unchanged PASSED): 177/199 = 88.9 -> 178/199 = 89.4; current 176/193 =
+  // 91.2 -> 177/193 = 91.7; P2 46/59 -> 47/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S18-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S19, PR #381 merge 7de4d4ce, HARD GUARD queue-
+  // unchanged PASSED): 178/199 = 89.4 -> 179/199 = 89.9; current 177/193 =
+  // 91.7 -> 178/193 = 92.2; P2 47/59 -> 48/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S19-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S20, PR #382 merge 9dac6de5, HARD GUARD queue-
+  // unchanged PASSED): 179/199 = 89.9 -> 180/199 = 90.5; current 178/193 =
+  // 92.2 -> 179/193 = 92.7; P2 48/59 -> 49/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S20-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S21, PR #383 merge ae03fb7b, HARD GUARD queue-
+  // unchanged PASSED): 180/199 = 90.5 -> 181/199 = 91.0; current 179/193 =
+  // 92.7 -> 180/193 = 93.3; P2 49/59 -> 50/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S21-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S22, PR #384 merge cb2f4d33, HARD GUARD queue-
+  // unchanged PASSED): 181/199 = 91.0 -> 182/199 = 91.5; current 180/193 =
+  // 93.3 -> 181/193 = 93.8; P2 50/59 -> 51/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S22-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S23, PR #385 merge 6ecfdd95, HARD GUARD queue-
+  // unchanged PASSED): 182/199 = 91.5 -> 183/199 = 92.0; current 181/193 =
+  // 93.8 -> 182/193 = 94.3; P2 51/59 -> 52/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S23-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S24, PR #386 merge fff829ad, HARD GUARD queue-
+  // unchanged PASSED): 183/199 = 92.0 -> 184/199 = 92.5; current 182/193 =
+  // 94.3 -> 183/193 = 94.8; P2 52/59 -> 53/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S24-EVIDENCE.md.
+  // Refresh 2026-09-28 (R1 P2-S25, PR #387 merge 28ce6746, HARD GUARD queue-
+  // unchanged PASSED): 184/199 = 92.5 -> 185/199 = 93.0; current 183/193 =
+  // 94.8 -> 184/193 = 95.3; P2 53/59 -> 54/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S25-EVIDENCE.md.
+  // Refresh 2026-09-29 (R1 P2-S26, PR #388 merge a88f6315, HARD GUARD queue-
+  // unchanged PASSED): 185/199 = 93.0 -> 186/199 = 93.5; current 184/193 =
+  // 95.3 -> 185/193 = 95.9; P2 54/59 -> 55/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S26-EVIDENCE.md.
+  // Refresh 2026-09-29 (R1 P2-S27, PR #389 merge cd12208d, HARD GUARD queue-
+  // unchanged PASSED): 186/199 = 93.5 -> 187/199 = 94.0; current 185/193 =
+  // 95.9 -> 186/193 = 96.4; P2 55/59 -> 56/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S27-EVIDENCE.md.
+  // Refresh 2026-09-29 (R1 P2-S28, PR #390 merge eb0893b0, HARD GUARD queue-
+  // unchanged PASSED): 187/199 = 94.0 -> 188/199 = 94.5; current 186/193 =
+  // 96.4 -> 187/193 = 96.9; P2 56/59 -> 57/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S28-EVIDENCE.md.
+  // Refresh 2026-09-29 (R1 P2-S29, PR #391 merge 49f9d001, HARD GUARD queue-
+  // unchanged PASSED): 188/199 = 94.5 -> 189/199 = 95.0; current 187/193 =
+  // 96.9 -> 188/193 = 97.4; P2 57/59 -> 58/59. Evidence:
+  // docs/n8n-lego/evidence/P2-S29-EVIDENCE.md.
+  // Refresh 2026-09-29 (P2-S03 re-scope DEC-0029, PR #392 merge 972b5afe):
+  // blocked -> implemented, blockedSlices -> []: 189/199 = 95.0 -> 190/199 = 95.5;
+  // current 188/193 = 97.4 -> 189/193 = 97.9; P2 58/59 -> 59/59 (100.0).
+  // Evidence: docs/n8n-lego/evidence/P2-S03-RESCOPE.md.
+  assert.equal(tally.percent, 95.5);
+  assert.equal(tally.implemented, 190);
+  assert.equal(tally.total, 199);
   const verifying = verifyingIndex(REGISTER);
   const m08 = slices.find((slice) => slice.id === 'P5-M08');
   assert.equal(displayStatus(m08, verifying), 'implemented');
@@ -449,9 +543,9 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('blocked'), 0);
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
-  assert.equal(metrics.current.total, 194);
-  assert.equal(metrics.current.implemented, 170);
-  assert.equal(metrics.current.sliceCompletion, percent1(170, 194));
+    assert.equal(metrics.current.total, 193);
+  assert.equal(metrics.current.implemented, 189);
+  assert.equal(metrics.current.sliceCompletion, percent1(189, 193));
   assert.equal(metrics.future.total, 6);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);
@@ -570,11 +664,30 @@ test('Issue #307: two metrics, status independent, checkpoint weights only where
   assert.match(block, /### Slice Completion/);
   assert.match(block, /Status is not progress/);
   assert.match(block, /Program status is not a percentage/);
-  assert.match(block, /Current checkpoint:/);
-  assert.match(block, /Latest checkpoint:/);
+  // The colon form renders only on verifying or blocked rows; after the P2-S03
+  // formal re-scope (DEC-0029) both pointer lists are empty, so the shape is
+  // asserted on a synthesised blocked row (the same fixture live-progress uses).
+  const rowsRegister = structuredClone(REGISTER);
+  const synthesised = rowsRegister.programs.flatMap((p) => p.slices).find((x) => x.id === 'P11-S01');
+  synthesised.status = 'blocked';
+  synthesised.blockedBy = 'fixture: checkpoint-column rendering check (DEC-0029 cleared the last real blocked row)';
+  rowsRegister.executionPointer.blockedSlices = ['P11-S01'];
+  const withRows = renderReadmeMilestoneSection(rowsRegister);
+  assert.match(withRows, /Current checkpoint:/);
+  assert.match(withRows, /Latest checkpoint:/);
   assert.match(block, /not register measurements/);
-  assert.doesNotMatch(block, /91\.2%/);
-  assert.doesNotMatch(block, /92\.0%/);
+  // Refresh 2026-09-28 (P2-S17): the literal 91.2%/92.0% guards came from the
+  // Issue #307 split - they kept the issue's ILLUSTRATION figures out of the
+  // generated block ("illustrations ... are not register measurements"). The
+  // derived realtime figure legitimately traverses those values now (17600/19300
+  // = 91.2% at P2-S17 CP completion; S19 CP-03 will compute 92.0%), so the
+  // literal ban false-positives on honest measurements. Replaced with the
+  // derivation check: the block must show realtime EXACTLY as earned/points.
+  assert.ok(
+    block.includes(`${metrics.current.realtime.toFixed(1)}%`),
+    `the generated block shows the derived realtime figure (got ${metrics.current.realtime})`,
+  );
+  assert.equal(metrics.current.realtime, percent1(metrics.current.earned, metrics.current.points));
   assert.match(block, /\| `P5-M08` \|[^\n]*✅ Implemented \| 100\.0% \| 100\.0% \|/);
   assert.equal(REGISTER.governance.progressModel.reconciledToMain, true);
   assert.equal(historicalP2Fingerprint(REGISTER), HISTORICAL_P2_FINGERPRINT);

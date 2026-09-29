@@ -193,6 +193,349 @@
       "extensionPoints": ["ui:error:render", "ui:notification:render"],
       "status": "present",
       "notes": "The single place where a backend error code becomes a displayable message; today the fallback text, later the localized one."
+    },
+    {
+      "id": "canvas",
+      "title": "Workflow canvas \u2014 nodes, edges, viewport and selection",
+      "kind": "panel",
+      "routes": [],
+      "messageSlots": [
+        "node-descriptions",
+        "notifications",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "workflow",
+        "contract": "contracts/workflow.contract.md",
+        "endpoints": [
+          "/rest/workflows/:id"
+        ],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S14 Layer 3 strangler slice (issue #240): composite region of the workflow editor delivered as its own pilot. The graph model is handed over to the frontend-lego canvas surface; the frontend never fetches a graph, performs no engine call and never mutates the workflow document."
+    },
+    {
+      "id": "node-config",
+      "title": "Node parameter / NDV panel (one node type's parameters)",
+      "kind": "panel",
+      "routes": [],
+      "messageSlots": [
+        "node-descriptions",
+        "forms",
+        "validation-errors"
+      ],
+      "backend": {
+        "capability": "node-registry",
+        "contract": "contracts/node.contract.md",
+        "endpoints": [
+          "/rest/types/nodes.json",
+          "/types/nodes.json"
+        ],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S15 Layer 3 strangler slice (issue #240): the parameter panel that edits one node type's parameters through the parameter contract. Definitions and values are handed over; expression evaluation stays behind the declared boundary - the frontend never evaluates and never posts the workflow."
+    },
+    {
+      "id": "connections",
+      "title": "Connection inspector \u2014 a workflow's connections over handed-over records",
+      "kind": "panel",
+      "routes": [],
+      "messageSlots": [
+        "node-descriptions",
+        "empty-states",
+        "validation-errors"
+      ],
+      "backend": {
+        "capability": "workflow",
+        "contract": "contracts/workflow.contract.md",
+        "endpoints": [
+          "/rest/workflows/:id"
+        ],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S16 Layer 3 strangler slice (issue #240): the connection inspector / connection list delivered as its own pilot. Connection records and the node-id vocabulary are handed over; the frontend never fetches a graph, performs no engine call and never writes the workflow - selection is view state, reconnect and remove are declared requests with closed results."
+    },
+    {
+      "id": "environments",
+      "title": "Environments - selection + variable scoping (handed-over records)",
+      "kind": "page",
+      "routes": [
+        "/settings/environments"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S18 Layer 4 strangler slice (issue #240): the environment selection and variable-scoping panel delivered as its own pilot. Environments, the active id and the variable records are handed over; the frontend never fetches variables, never derives the active environment locally (request-switch is declared - only a fresh hand-over moves it) and never persists (set/set-scope/submit are declared with closed results)."
+    },
+    {
+      "id": "integrations",
+      "title": "Integrations - external sources view (handed-over records, install behind admission)",
+      "kind": "page",
+      "routes": [
+        "/settings/integrations"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S19 Layer 4 strangler slice (issue #240): the external integration management panel (community/private/custom sources view) delivered as its own pilot. Integrations and the active id are handed over; the frontend never fetches and never installs - request-install is declared and always lands behind the P6 admission path (closed results, never a local install)."
+    },
+    {
+      "id": "execution-mgmt",
+      "title": "Execution management - retry/stop/bulk over handed-over records",
+      "kind": "page",
+      "routes": [
+        "/executions/manage"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S20 Layer 4 strangler slice (issue #240): the retry/stop/bulk actions around executions, beyond the P2-S06 history list, delivered as its own pilot. Execution records are handed over; the frontend never fetches and never mutates a record - request-retry/request-stop/request-bulk-* are declared with closed results and the execution capability (app layer) performs every action. The selection is view state cleared by every fresh hand-over."
+    },
+    {
+      "id": "project-admin",
+      "title": "Project/workspace administration - membership and project data handed over",
+      "kind": "page",
+      "routes": [
+        "/settings/projects/admin"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S21 Layer 4 strangler slice (issue #240): the project and workspace administration panels. Membership and project data are handed over; the surface holds no project model of its own until P5-M11 exists - no fetch, no record mutation, no direct call to the project/role capability. invite/remove/rename are declared with closed results; the selected project is view state cleared by every fresh hand-over."
+    },
+    {
+      "id": "assistant",
+      "title": "AI Assistant - conversational turns handed over as events",
+      "kind": "page",
+      "routes": [
+        "/assistant"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S22 Layer 5 strangler slice (issue #240): the conversational assistant surface. Assistant turns are handed over as events - the surface never fabricates assistant output: no method writes a turn and no inference/provider client exists here. request-send and request-stop-stream are declared with closed results; the capability that owns inference performs them and the reply arrives only via a fresh hand-over."
+    },
+    {
+      "id": "copilot",
+      "title": "AI Copilot - inline suggestions accepted or rejected explicitly",
+      "kind": "page",
+      "routes": [
+        "/copilot"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S23 Layer 5 strangler slice (issue #240): the inline copilot suggestion surface. Suggestions arrive as declared AI capability events through hand-over - the surface never applies a suggestion silently: no method writes a status, accept/reject are declared with closed results, and the outcome arrives only via a fresh hand-over. No fetch, no inference client, no persistence."
+    },
+    {
+      "id": "ai-node",
+      "title": "AI Node - model catalog handed over from the node/parameter contracts",
+      "kind": "page",
+      "routes": [
+        "/nodes/ai"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S24 Layer 5 strangler slice (issue #240): the AI-node parameter and model-picker surfaces. The model catalog is handed over from the node/parameter contracts; the surface holds no second source of truth - no fetch, no catalog mutation, no local write of the selected model. request-select-model is declared with closed results and the new value arrives only via a fresh hand-over."
+    },
+    {
+      "id": "work-trace",
+      "title": "Work Trace - handed-over execution timeline (read-only)",
+      "kind": "page",
+      "routes": [
+        "/executions/trace"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S25 Layer 5 strangler slice (issue #240): the work-trace timeline surface. Trace events are handed over from the observability capability; the surface holds no second source of truth - no fetch, no event mutation, no navigation. request-open-event is declared with closed results and the owning capability performs the navigation."
+    },
+    {
+      "id": "memory-views",
+      "title": "Memory/Context/Session views - handed-over inspection state (read-only)",
+      "kind": "page",
+      "routes": [
+        "/inspector/session"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S26 Layer 5 strangler slice (issue #240): the memory/context/session inspection surfaces. Session state is handed over from the session capability; the surface holds no private data path - no direct session store access, no fetch, no record mutation, no navigation. request-open-entry is declared with closed results and the owning capability performs the navigation."
+    },
+    {
+      "id": "skills-capabilities",
+      "title": "Skills/Capabilities - handed-over catalog (read-only, grants nothing)",
+      "kind": "page",
+      "routes": [
+        "/skills"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S27 Layer 5 strangler slice (issue #240): the skills and capability catalog surfaces. The catalog is handed over from the capability registry; the surface holds no private data path and GRANTS NOTHING - no direct registry access, no fetch, no record mutation, no navigation. request-open-skill is declared with closed results and the owning capability performs the navigation."
+    },
+    {
+      "id": "agent-runtime",
+      "title": "Agent/Runtime views - handed-over supervision (read-only, no control)",
+      "kind": "page",
+      "routes": [
+        "/agent"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S28 Layer 5 strangler slice (issue #240): the agent and runtime supervision surfaces. Supervision state is handed over from the runtime; the surface holds no private data path and CANNOT START OR STOP RUNTIMES - no direct runtime access, no fetch, no record mutation, no navigation. request-open-agent is declared with closed results and the owning capability performs the navigation."
+    },
+    {
+      "id": "approvals-artifacts",
+      "title": "Approvals/Artifacts - handed-over review queue (read-only decisions)",
+      "kind": "page",
+      "routes": [
+        "/approvals"
+      ],
+      "messageSlots": [
+        "settings",
+        "forms",
+        "validation-errors",
+        "empty-states"
+      ],
+      "backend": {
+        "capability": "none",
+        "contract": null,
+        "endpoints": [],
+        "status": "present"
+      },
+      "extensionPoints": [],
+      "status": "partial",
+      "notes": "P2-S29 Layer 5 strangler slice (issue #240): the approval queue and artifact review surfaces. Approval state is handed over from the approval capability; the surface holds no private data path and NEVER WRITES A DECISION - request-approve/request-reject route through the declared action path and the outcome arrives via a fresh hand-over; no fetch, no store access, no record mutation, no navigation."
     }
   ]
 }

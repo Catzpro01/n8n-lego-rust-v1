@@ -7,15 +7,15 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 ## Delivery progress (same two metrics as README.md)
 
-**Realtime Delivery Progress 87.6%** — 17000/19400 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 5 current-delivery slice(s) have no checkpoint model and contribute 0.
+**Realtime Delivery Progress 97.9%** — 18900/19300 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 4 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 87.6%** — 170/194 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 97.9%** — 189/193 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
 | P0 | 100.0% | 100.0% | 2/2 | complete |
 | P1 | 100.0% | 100.0% | 2/2 | complete |
-| P2 | 66.7% | 66.7% | 40/60 | complete |
+| P2 | 100.0% | 100.0% | 59/59 | complete |
 | P3 | 100.0% | 100.0% | 18/18 | complete |
 | P4 | 100.0% | 100.0% | 10/10 | complete |
 | P5 | 100.0% | 100.0% | 26/26 | complete |
@@ -30,14 +30,14 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 | | |
 | --- | --- |
-| Latest completed slice | `P2-S10` — Settings (PR #368, merge `60763a5e`) |
-| Active slices | `P2-S11` — Webhooks |
+| Latest completed slice | `P2-S03` — Frontend Evolution layers 3-6 (PR #392, merge `972b5afe`) |
+| Active slices | — (none) |
 | Verifying (merged, post-merge verification pending) | — (none) |
-| Planned queue (in order; planned ≠ authorized) | `P2-S12`, `P2-S13`, `P2-S14`, `P2-S15`, `P2-S16`, `P2-S17`, `P2-S18`, `P2-S19`, `P2-S20`, `P2-S21`, `P2-S22`, `P2-S23`, `P2-S24`, `P2-S25`, `P2-S26`, `P2-S27`, `P2-S28`, `P2-S29` |
-| Blocked | `P2-S03` — blocked by Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped. |
-| Not authorized | planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED FOR DELIVERY NOW (owner master prompt marathon BLOCKER-ZERO): P8-S01 storage contract foundation (queue head, blocker-clearing for P5-M05); P5-M06 password recovery with provider-neutral injected mail transport (DEC-0028 ACTIVE option A); P5-M05 multi-host state once the P8 storage contract lands; P5-M11..P5-M18 backing models one by one after P5-M05; P5-M10 audit after the models; P2-S10..P2-S29 Layers 3-5 child slices (one surface per slice, pilot mode, parity evidence). COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). NOT AUTHORIZED: the P2-S03 Layer 6 legacy UI decommission (owner-authorized decommission only after ALL gates pass); P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). |
+| Planned queue (in order; planned ≠ authorized) | — |
+| Blocked | — |
+| Not authorized | planned is not authorized by itself: the Manager starts a queued slice by moving it to in-progress in a PR on main. AUTHORIZED QUEUE: EMPTY - every slice of the owner master prompt marathon BLOCKER-ZERO authorization has been delivered. That authorization named P8-S01, P5-M06, P5-M05, P5-M10, P5-M11..P5-M18 and P2-S10..P2-S29; all 32 now carry status implemented, so the list authorizes no remaining work and is retained here only as the record of what it covered. No delivery slice is authorized at present: a new authorization is an owner act, and planned or proposed status never substitutes for one. COMPLETED: P6-S05 (PR #355, merge d549d40d) and P5-M02 (same chain). DECIDED (DEC-0029): the P2-S03 Layer 6 legacy UI decommission executes NO removal - reference/n8n and n8n-editor-ui preserved per #240 permanent invariants 1-2, umbrella formally re-scoped; P6-S03, P6-S04 (proposed, no owner authorization for their scope); P10-S01 and P11-S01 (placeholders). |
 | Historical P2 ladder pointer | `P2.27` (history, not active work) |
-| Last verified main | `f1a11902` |
+| Last verified main | `e5be0ad3` |
 
 ## Programs P0–P11 (top level)
 
@@ -45,7 +45,7 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | --- | --- | --- | --- | --- | --- |
 | **P0** | Core Application Bootstrap | **COMPLETE** | 2/2 | 2 | — |
 | **P1** | n8n Compatibility / Behavioral Baseline | **COMPLETE** | 2/2 | 3 | — |
-| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 40/60 | 29 | `P2-S11` (in-progress) |
+| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 60/60 | 29 | — |
 | **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
 | **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
 | **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 26/26 | 20 | — |
@@ -74,8 +74,8 @@ Legacy traceability: legacy issue → feature (`sourceIssue`) → program (`pare
 
 | Status | Features |
 | --- | --- |
-| implemented | 136 |
-| in-progress | 2 |
+| implemented | 138 |
+| in-progress | 0 |
 | planned | 170 |
 | proposed | 47 |
 | blocked | 0 |
@@ -197,7 +197,7 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 | `P2.27.10` | frontend plugin boundary (final implementation slice) | implemented | #197 | `7d4eae8d` | #83 |
 | `P2-S01` | Frontend LEGO migration foundation + parity harness + status-region pilot | implemented | #244 | `c77c3dba` | #241 |
 | `P2-S02` | Frontend LEGO shared notification surface + accessibility parity | implemented | — | `0c2c5a7c` | #245 |
-| `P2-S03` | Frontend Evolution layers 3-6 (core workflow, platform, AI surfaces, legacy UI decommission) **Blocked by:** Layers 3-5 are split into dedicated child slices P2-S07..P2-S29 (node-picker, workflow-editor, credentials, settings, webhooks, auth, navigation plus the remaining #240 Layer 3-5 surfaces: canvas, node configuration, connections, import/export, environments, integrations, execution management, project/workspace administration and the eight AI/advanced surfaces), owner-authorized for split and delivery (REQ-0003 section 6) and executing via plannedQueue. What remains blocked is the Layer 6 component this umbrella carries: legacy UI decommission is gated on parity, compatibility, performance, accessibility and migration/rollback evidence for every required surface plus a separate Manager decision (#240 authorizes no removal of reference/n8n or n8n-editor-ui; permanent invariants 1-2). The umbrella stays blocked on that Layer 6 gate and tracks its children; it is not implemented until Layer 6 is decided and delivered or the scope is formally re-scoped. | blocked | — | — | #240 |
+| `P2-S03` | Frontend Evolution layers 3-6 (core workflow, platform, AI surfaces, legacy UI decommission) **Blocked by:** RESOLVED by formal re-scope DEC-0029 (PR #392, merge 972b5afe): Layers 3-5 delivered by the children P2-S07..P2-S29 (28 evidence files; parity/compat/perf/a11y/migration-rollback all measured green); Layer 6 decided NO REMOVAL - reference/n8n and n8n-editor-ui preserved per #240 permanent invariants 1-2. Original blocked-by text preserved in git history. | implemented | #392 | `972b5afe` | #240 |
 | `P2-S04` | Dashboard workflow list (first Layer 3 surface split out of P2-S03) | implemented | — | `1cab18c2` | #240 |
 | `P2-S05` | Dialogs / overlays (workflow settings, credential modal, confirmations) — second Layer 3 surface split out of P2-S03 | implemented | — | `1f89499c` | #240 |
 | `P2-S06` | Executions list (third Layer 3 surface split out of P2-S03) | implemented | — | `b3aba728` | #240 |
@@ -205,25 +205,25 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 | `P2-S08` | Workflow editor (Layer 3 surface split out of P2-S03) | implemented | — | `8a957ee8` | #240 |
 | `P2-S09` | Credentials (Layer 4 surface split out of P2-S03) | implemented | — | `edc3e960` | #240 |
 | `P2-S10` | Settings (Layer 4 surface split out of P2-S03) | implemented | #368 | `60763a5e` | #240 |
-| `P2-S11` | Webhooks (Layer 4 surface split out of P2-S03) | in-progress | — | — | #240 |
-| `P2-S12` | Auth (users/identity) (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S13` | Navigation (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S14` | Canvas (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S15` | Node configuration (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S16` | Connections (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S17` | Import/export (Layer 3 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S18` | Environments (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S19` | Integrations (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S20` | Execution management (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S21` | Project/workspace administration (Layer 4 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S22` | AI Assistant (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S23` | AI Copilot (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S24` | AI Node surfaces (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S25` | Work Trace (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S26` | Memory/Context/Session views (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S27` | Skills/Capabilities (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S28` | Agent/Runtime views (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
-| `P2-S29` | Approvals and artifacts (Layer 5 surface split out of P2-S03) | planned | — | — | #240 |
+| `P2-S11` | Webhooks (Layer 4 surface split out of P2-S03) | implemented | #372 | `dd49d4d3` | #240 |
+| `P2-S12` | Auth (users/identity) (Layer 4 surface split out of P2-S03) | implemented | #374 | `fbf5dbcd` | #240 |
+| `P2-S13` | Navigation (Layer 3 surface split out of P2-S03) | implemented | #375 | `cafd7440` | #240 |
+| `P2-S14` | Canvas (Layer 3 surface split out of P2-S03) | implemented | #376 | `b4edc52c` | #240 |
+| `P2-S15` | Node configuration (Layer 3 surface split out of P2-S03) | implemented | #377 | `396551af` | #240 |
+| `P2-S16` | Connections (Layer 3 surface split out of P2-S03) | implemented | #378 | `852b7046` | #240 |
+| `P2-S17` | Import/export (Layer 3 surface split out of P2-S03) | implemented | #379 | `060ef4c2` | #240 |
+| `P2-S18` | Environments (Layer 4 surface split out of P2-S03) | implemented | #380 | `43c7b1b2` | #240 |
+| `P2-S19` | Integrations (Layer 4 surface split out of P2-S03) | implemented | #381 | `7de4d4ce` | #240 |
+| `P2-S20` | Execution management (Layer 4 surface split out of P2-S03) | implemented | #382 | `9dac6de5` | #240 |
+| `P2-S21` | Project/workspace administration (Layer 4 surface split out of P2-S03) | implemented | #383 | `ae03fb7b` | #240 |
+| `P2-S22` | AI Assistant (Layer 5 surface split out of P2-S03) | implemented | #384 | `cb2f4d33` | #240 |
+| `P2-S23` | AI Copilot (Layer 5 surface split out of P2-S03) | implemented | #385 | `6ecfdd95` | #240 |
+| `P2-S24` | AI Node surfaces (Layer 5 surface split out of P2-S03) | implemented | #386 | `fff829ad` | #240 |
+| `P2-S25` | Work Trace (Layer 5 surface split out of P2-S03) | implemented | #387 | `28ce6746` | #240 |
+| `P2-S26` | Memory/Context/Session views (Layer 5 surface split out of P2-S03) | implemented | #388 | `a88f6315` | #240 |
+| `P2-S27` | Skills/Capabilities (Layer 5 surface split out of P2-S03) | implemented | #389 | `cd12208d` | #240 |
+| `P2-S28` | Agent/Runtime views (Layer 5 surface split out of P2-S03) | implemented | #390 | `eb0893b0` | #240 |
+| `P2-S29` | Approvals and artifacts (Layer 5 surface split out of P2-S03) | implemented | #391 | `49f9d001` | #240 |
 
 </details>
 
@@ -417,7 +417,7 @@ Identity, sessions, authorization, credential boundary, key management, account 
 
 </details>
 
-<details><summary>Features (20: 10 implemented, 1 deferred, 8 planned, 1 in-progress)</summary>
+<details><summary>Features (20: 11 implemented, 1 deferred, 8 planned)</summary>
 
 | Feature | Title | Status | Relevance | Slice | Issues | Merge SHA |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -438,7 +438,7 @@ Identity, sessions, authorization, credential boundary, key management, account 
 | `P5-F-DEBT-007` | Public /api/v1 compatibility surface: API-key boundary + workflows resource | implemented | maintenance | `P5-M03` | #85, #221 | `cf52701c` |
 | `P5-F-DEBT-008` | Email-based password recovery | planned | maintenance | `P5-M06` | #85, #221 | — |
 | `P5-F-DEBT-009` | Service-principal REST + UI management | planned | maintenance | `P5-M07` | #85, #221 | — |
-| `P5-F-DEBT-010` | Public /api/v1 tags, variables, executions (list/get/delete) and openapi.yml | in-progress | maintenance | `P5-M08` | #85, #221 | — |
+| `P5-F-DEBT-010` | Public /api/v1 tags, variables, executions (list/get/delete) and openapi.yml | implemented | maintenance | `P5-M08` | #85, #221 | `600a2145` |
 | `P5-F-DEBT-011` | Public /api/v1 credentials and users resources, plus /api/v1/docs | planned | maintenance | `P5-M09` | #85, #221 | — |
 | `P5-F-DEBT-012` | Public /api/v1 resources blocked on missing models: projects, audit, source-control, data-tables, transfers, workflow versions, execution retry and tags | planned | maintenance | `P5-M10` | #85, #221 | — |
 
@@ -1022,7 +1022,7 @@ Thematic future program. Not a P number and not authorized: a slice starts only 
 | `GOV-F-014` | Workforce control plane: canonical schemas + policy, Command API engine (auth, CAS, idempotency, atomic journaled store) | implemented | active | — | #259, #260, #261, #262, #263, #264, #265, #266, #268 | `9b327405` |
 | `GOV-F-015` | Workforce scheduler, matcher and cross-program concurrency classification (SAFE_PARALLEL / CONDITIONAL_PARALLEL / SERIALIZED / HOLD) | implemented | active | — | #264, #267, #268 | `9b327405` |
 | `GOV-F-016` | Workforce recovery, reconciliation, replay verification and derived Manager memory views | implemented | active | — | #259, #262, #264, #268 | `9b327405` |
-| `GOV-F-017` | Branch policy amendment: persistent worker slots arena/agent-01..10 (DEC-0003) and arena-manager migration (DEC-0008) | in-progress | active | — | #256, #259, #263, #268 | `9b327405` |
+| `GOV-F-017` | Branch policy amendment: persistent worker slots arena/agent-01..10 (DEC-0003) and arena-manager migration (DEC-0008) | implemented | active | — | #256, #259, #263, #268 | `9b327405` |
 
 ## Current truth (historical P2 granular ladder)
 

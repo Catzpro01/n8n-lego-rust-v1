@@ -39,9 +39,9 @@
       "lifecycle": "available",
       "installed": false,
       "surfaces": [
-        "dialogs",
-        "navigation"
-      ],
+      "dialogs",
+      "navigation"
+    ],
       "degradation": {
         "fallback": "hide-assistant",
         "detail": "without an inference provider the assistant entry point is not rendered; the editor is unaffected"
@@ -316,6 +316,292 @@
       "installed": false,
       "surfaces": [
         "settings"
+      ],
+      "operations": []
+    },
+    {
+      "id": "webhooks",
+      "lego": "ui-frontend",
+      "title": "Webhooks surface pilot (URL/method/registration shown with a node or workflow)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "webhooks"
+      ],
+      "operations": []
+    },
+    {
+      "id": "auth",
+      "lego": "ui-frontend",
+      "title": "Auth surface pilot (sign-in, user management and membership)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "auth"
+      ],
+      "operations": []
+    },
+    {
+      "id": "navigation",
+      "lego": "ui-frontend",
+      "title": "Navigation surface pilot (sidebar, top bar and breadcrumbs over a handed-over route table)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "navigation"
+      ],
+      "operations": []
+    },
+    {
+      "id": "canvas",
+      "lego": "ui-frontend",
+      "title": "Canvas surface pilot (node graph, edges, viewport and selection over a handed-over graph model)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "canvas"
+      ],
+      "operations": []
+    },
+    {
+      "id": "node-config",
+      "lego": "ui-frontend",
+      "title": "Node configuration surface pilot (parameter panel over handed-over definitions and values, no expression evaluation)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "node-config"
+      ],
+      "operations": []
+    },
+    {
+      "id": "connections",
+      "lego": "ui-frontend",
+      "title": "Connections surface pilot (connection inspector over handed-over records, no engine call, no workflow save)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "connections"
+      ],
+      "operations": []
+    },
+    {
+      "id": "import-export",
+      "lego": "ui-frontend",
+      "title": "Import/export surface pilot (workflow JSON round-trip over the handed-over document, no fetch, no workflow save)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "workflow-editor",
+        "dashboard"
+      ],
+      "operations": []
+    },
+    {
+      "id": "environments",
+      "lego": "ui-frontend",
+      "title": "Environments surface pilot (environment selection + variable scoping over handed-over records, no fetch, no persistence)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "environments"
+      ],
+      "operations": []
+    },
+    {
+      "id": "integrations",
+      "lego": "ui-frontend",
+      "title": "Integrations surface pilot (external sources view over handed-over records, no fetch, install behind the P6 admission path)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "integrations"
+      ],
+      "operations": []
+    },
+    {
+      "id": "execution-mgmt",
+      "lego": "ui-frontend",
+      "title": "Execution management surface pilot (retry/stop/bulk over handed-over records, no fetch, actions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "execution-mgmt"
+      ],
+      "operations": []
+    },
+    {
+      "id": "project-admin",
+      "lego": "ui-frontend",
+      "title": "Project/workspace administration surface pilot (membership and project data handed over, actions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "project-admin"
+      ],
+      "operations": []
+    },
+    {
+      "id": "assistant",
+      "lego": "ui-frontend",
+      "title": "AI Assistant surface pilot (conversational turns handed over as events)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "assistant"
+      ],
+      "operations": []
+    },
+    {
+      "id": "copilot",
+      "lego": "ui-frontend",
+      "title": "AI Copilot surface pilot (inline suggestions accepted or rejected explicitly)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "copilot"
+      ],
+      "operations": []
+    },
+    {
+      "id": "ai-node",
+      "lego": "ui-frontend",
+      "title": "AI Node surfaces pilot (model catalog handed over, selection declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "ai-node"
+      ],
+      "operations": []
+    },
+    {
+      "id": "work-trace",
+      "lego": "ui-frontend",
+      "title": "Work Trace surfaces pilot (hand-over timeline, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "work-trace"
+      ],
+      "operations": []
+    },
+    {
+      "id": "memory-views",
+      "lego": "ui-frontend",
+      "title": "Memory/Context/Session views pilot (hand-over inspection, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "memory-views"
+      ],
+      "operations": []
+    },
+    {
+      "id": "skills-capabilities",
+      "lego": "ui-frontend",
+      "title": "Skills/Capabilities catalog pilot (hand-over registry snapshot, grants nothing)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "skills-capabilities"
+      ],
+      "operations": []
+    },
+    {
+      "id": "agent-runtime",
+      "lego": "ui-frontend",
+      "title": "Agent/Runtime views pilot (hand-over supervision, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "agent-runtime"
+      ],
+      "operations": []
+    },
+    {
+      "id": "approvals-artifacts",
+      "lego": "ui-frontend",
+      "title": "Approvals/Artifacts pilot (hand-over review, decisions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "installed": false,
+      "surfaces": [
+        "approvals-artifacts"
       ],
       "operations": []
     }

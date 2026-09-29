@@ -116,7 +116,23 @@ test('the frontend LEGO is present and loaded by the app', () => {
   assert.equal(started.frontend.available, true);
   const description = started.frontend.describe();
   assert.equal(description.contractVersion, '1.0.0');
-  assert.equal(description.surfaces, 12);
+  // Refresh 2026-09-28 (P2-S14): the declared surface catalog grows by the canvas
+  // surface (manifest/surfaces.json): 12 -> 13.
+  // Refresh 2026-09-28 (P2-S15): + the node-config surface: 13 -> 14.
+  // Refresh 2026-09-28 (P2-S16): + the connections surface: 14 -> 15.
+  // Refresh 2026-09-28 (P2-S18): + the environments surface: 15 -> 16.
+  // Refresh 2026-09-28 (P2-S19): + the integrations surface: 16 -> 17.
+    // Refresh 2026-09-28 (P2-S20): + the execution-mgmt surface: 17 -> 18.
+    // Refresh 2026-09-28 (P2-S21): + the project-admin surface: 18 -> 19.
+    // Refresh 2026-09-28 (P2-S22): + the assistant surface: 19 -> 20.
+    // Refresh 2026-09-28 (P2-S23): + the copilot surface: 20 -> 21.
+    // Refresh 2026-09-28 (P2-S24): + the ai-node surface: 21 -> 22.
+    // Refresh 2026-09-29 (P2-S25): + the work-trace surface: 22 -> 23.
+    // Refresh 2026-09-29 (P2-S26): + the memory-views surface: 23 -> 24.
+    // Refresh 2026-09-29 (P2-S27): + the skills-capabilities surface: 24 -> 25.
+    // Refresh 2026-09-29 (P2-S28): + the agent-runtime surface: 25 -> 26.
+    // Refresh 2026-09-29 (P2-S29): + the approvals-artifacts surface: 26 -> 27.
+  assert.equal(description.surfaces, 27);
   assert.equal(description.capabilities, 0, 'P2.5 registers no capability');
   assert.equal(description.backendUntouched, true);
   assert.equal(description.editorVersion, '2.9.4');

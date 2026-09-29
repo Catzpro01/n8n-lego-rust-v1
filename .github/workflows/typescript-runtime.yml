@@ -76,14 +76,17 @@ jobs:
             bash "$script" --help >/dev/null
           done
 
+      # Already failure-only, so low volume; shortened and made non-fatal for the same
+      # reason as the uploads in n8n-lego.yml (org artifact quota exhausted 2026-09-29).
       - name: Upload runtime logs on failure
         if: failure()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: runtime-logs
           path: logs/
           if-no-files-found: ignore
-          retention-days: 7
+          retention-days: 3
 
   contract:
     name: Rust workspace untouched by this change set

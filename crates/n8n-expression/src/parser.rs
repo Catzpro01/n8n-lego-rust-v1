@@ -871,6 +871,7 @@ impl TokenParser {
                 "false" => Ok(ExprAst::Literal(Value::Bool(false))),
                 "null" => Ok(ExprAst::Literal(Value::Null)),
                 "$itemIndex" | "$item" => Ok(ExprAst::ItemIndex),
+                "$runIndex" | "$thisRunIndex" => Ok(ExprAst::RunIndex),
                 "$json" => Ok(ExprAst::JsonPath(Vec::new())),
                 "$node" => {
                     // Expect $node["NodeName"]

@@ -65,9 +65,9 @@
       "trust": "feature",
       "lifecycle": "available",
       "surfaces": [
-        "dialogs",
-        "navigation"
-      ],
+      "dialogs",
+      "navigation"
+    ],
       "contracts": [
         "contracts/frontend.contract.md"
       ],
@@ -91,8 +91,8 @@
         "detail": "without an inference provider the assistant entry point is not rendered; the editor is unaffected"
       },
       "tests": [
-        "packages/frontend-lego/test/26-ai-contracts.test.mjs"
-      ],
+      "packages/frontend-lego/test/26-ai-contracts.test.mjs"
+    ],
       "phase": "P2.10",
       "owner": "agent-01",
       "notes": "Declared so the UI vocabulary for an AI assistant exists before the AI Foundation LEGO does. The frontend implements no inference and no provider client; `assistant.ask` is a semantic operation, not an endpoint, and the stream interaction is what a token-by-token answer means here. It attaches to no extension point yet: no AI hook is declared, and attaching to a neighbour surface's hook is exactly what the ownership rule refuses."
@@ -574,6 +574,558 @@
       "phase": "P2-S10",
       "owner": "agent-01",
       "notes": "P2-S10: the strangler slice for the settings surface (instance + personal panels). Entries are handed over through declared settings capabilities only; a secret-bearing entry is refused with an explicit security error (P2.27/P5 secret boundary is finding-only here) and a non-scalar value is refused for the same reason. The four region states reuse REGION_STATES; a panel filtered to zero is empty with reason filtered, not a fifth state. Save/reset are declared interactions with a closed result vocabulary, never executed silently. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "webhooks",
+      "lego": "ui-frontend",
+      "title": "Webhooks surface pilot (URL/method/registration shown with a node or workflow)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/webhooks.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "webhooks"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "webhooks",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n webhook surfaces remain primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/48-webhooks.test.mjs"
+      ],
+      "phase": "P2-S11",
+      "owner": "agent-01",
+      "notes": "P2-S11: the strangler slice for the webhook URL/method/registration surface shown with a node or a workflow. Registrations are handed over through declared capabilities only; the surface issues no register call and a registration carrying auth material is refused with an explicit security error (Webhook node + Credentials runtime own auth). The four region states reuse REGION_STATES; a resource filter to zero is empty with reason filtered, not a fifth state. Copy-url is a declared interaction with a closed result vocabulary, never executed silently. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "auth",
+      "lego": "ui-frontend",
+      "title": "Auth surface pilot (sign-in, user management and membership)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/auth.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "auth"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "auth",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n sign-in and user management remain primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/49-auth.test.mjs"
+      ],
+      "phase": "P2-S12",
+      "owner": "agent-01",
+      "notes": "P2-S12: the strangler slice for the sign-in, user-management and membership surface. Identity state and the directory are handed over by the auth capability in one loadSuccess payload; the surface issues no login call, never re-derives identity locally and refuses credential or session material with an explicit security error (the auth runtime owns verification). The four region states reuse REGION_STATES; an empty directory facet is empty with reason none (users) or filtered (membership), not a fifth state. Sign-in/sign-out/role changes are declared interactions with closed result vocabularies, never executed silently - an owner row answers owner-unchangeable per the reference n8n rule. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "navigation",
+      "lego": "ui-frontend",
+      "title": "Navigation surface pilot (sidebar, top bar and breadcrumbs over a handed-over route table)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/navigation.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "navigation"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "navigation",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n navigation shell remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/50-navigation.test.mjs"
+      ],
+      "phase": "P2-S13",
+      "owner": "agent-01",
+      "notes": "P2-S13: the strangler slice for the primary navigation, breadcrumbs and route-switching shell (split out of P2-S03). The route table and active route are handed over through declared capabilities only; the surface issues no route change and holds no routing authority (the app-layer router owns history) and refuses a path carrying secret query material with an explicit security error. The four region states reuse REGION_STATES; an empty table is empty with reason none and a filter to zero is filtered, not a fifth state. Route opening and back are declared interactions with closed result vocabularies, never executed silently. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "canvas",
+      "lego": "ui-frontend",
+      "title": "Canvas surface pilot (node graph, edges, viewport and selection over a handed-over graph model)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/canvas.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "canvas"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "canvas",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n canvas remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/51-canvas.test.mjs"
+      ],
+      "phase": "P2-S14",
+      "owner": "agent-01",
+      "notes": "P2-S14: the strangler slice for the workflow node-graph rendering surface (split out of P2-S03 as the composite region of the workflow editor). The graph model (nodes, edges) is handed over through declared capabilities only; the surface performs no engine call and holds no engine authority - selection and zoom are declared view-state interactions with closed result vocabularies, never graph mutations, and a payload carrying secret or engine fields is refused with an explicit security error. The four region states reuse REGION_STATES; an empty graph is empty with reason none, not a fifth state; zoom is pinned to [0.25, 4] with an explicit out-of-bounds result, never a silent clamp. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "node-config",
+      "lego": "ui-frontend",
+      "title": "Node configuration surface pilot (parameter panel over handed-over definitions and values, no expression evaluation)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/node-config.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "node-config"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "node-config",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n parameter panel remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/52-node-config.test.mjs"
+      ],
+      "phase": "P2-S15",
+      "owner": "agent-01",
+      "notes": "P2-S15: the strangler slice for the node parameter / NDV panel (split out of P2-S03). Parameter definitions and current values are handed over through declared capabilities only; the surface never fetches a node type's schema (the node registry owns the catalog), evaluates no expression (strings pass through verbatim behind the declared boundary) and never posts the workflow - setParameter/requestSubmit are declared interactions with closed result vocabularies. The four region states reuse REGION_STATES; the parameter type vocabulary is the declared subset string|number|boolean|options; a parameterless node is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "connections",
+      "lego": "ui-frontend",
+      "title": "Connections surface pilot (connection inspector over handed-over records, no engine call, no workflow save)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/connections.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "connections"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "connections",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n connection list remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/53-connections.test.mjs"
+      ],
+      "phase": "P2-S16",
+      "owner": "agent-01",
+      "notes": "P2-S16: the strangler slice for the connection inspector / connection list (split out of P2-S03). Connection records and the node-id vocabulary are handed over through declared capabilities only; the surface never fetches a graph, issues no engine call and never writes the workflow - selection changes the view only while reconnect/remove are declared requests with closed result vocabularies. The four region states reuse REGION_STATES; the connection type vocabulary is the declared subset main|ai_tool|ai_memory|ai_embedding|ai_vector; a connectionless workflow is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "import-export",
+      "lego": "ui-frontend",
+      "title": "Import/export surface pilot (workflow JSON round-trip over the handed-over document, no fetch, no workflow save)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/import-export.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "workflow-editor",
+        "dashboard"
+      ],
+      "contracts": [
+        "contracts/workflow.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "import-export",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n import/export flow remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/54-import-export.test.mjs"
+      ],
+      "phase": "P2-S17",
+      "owner": "agent-01",
+      "notes": "P2-S17: the strangler slice for the workflow JSON import/export flow (split out of P2-S03). The workflow document is handed over through declared capabilities only; the surface never fetches and never writes the workflow - request-export serializes exactly the handed-over document (round-trip semantic identity; compatibility-critical per #240 invariant) while import-document parses the candidate with JSON.parse, validates nodes+connections, refuses secret-bearing envelopes and holds the result PENDING for the app layer. The four region states reuse REGION_STATES; an empty workflow is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "environments",
+      "lego": "ui-frontend",
+      "title": "Environments surface pilot (environment selection + variable scoping over handed-over records, no fetch, no persistence)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/environments.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "environments"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "environments",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n environments settings remain primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/55-environments.test.mjs"
+      ],
+      "phase": "P2-S18",
+      "owner": "agent-01",
+      "notes": "P2-S18: the strangler slice for the environment selection and variable-scoping panel (split out of P2-S03, Layer 4). Environments, the active id and the variable records are handed over through declared capabilities only; the surface never fetches variables, never derives the active environment locally and never persists - set-variable/set-scope/request-submit/request-switch are declared interactions with closed result vocabularies. The four region states reuse REGION_STATES; environment kinds are the declared subset dev|preview|staging; variable scope is all | environment id; a workflow with no environments is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "integrations",
+      "lego": "ui-frontend",
+      "title": "Integrations surface pilot (external sources view over handed-over records, no fetch, install behind the P6 admission path)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/integrations.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "integrations"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "integrations",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n integrations view remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/56-integrations.test.mjs"
+      ],
+      "phase": "P2-S19",
+      "owner": "agent-01",
+      "notes": "P2-S19: the strangler slice for the external integration management panel (split out of P2-S03, Layer 4). Integrations and the active id are handed over through declared capabilities only; the surface never fetches and never installs - request-activate/request-install are declared interactions with closed results (install has NO accepted result: every install lands behind the P6 admission path and the handed-over installed flags never change locally). The four region states reuse REGION_STATES; integration sources are the declared subset community|private|custom; a workflow with no integrations is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "execution-mgmt",
+      "lego": "ui-frontend",
+      "title": "Execution management surface pilot (retry/stop/bulk over handed-over records, no fetch, actions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/execution-mgmt.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "execution-mgmt"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "execution-mgmt",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/57-execution-mgmt.test.mjs"
+      ],
+      "phase": "P2-S20",
+      "owner": "agent-01",
+      "notes": "P2-S20: the strangler slice for the retry/stop/bulk execution actions (split out of P2-S03, Layer 4, beyond the P2-S06 list). Execution records are handed over through declared capabilities only; the surface never fetches and never mutates a record - request-retry/request-stop/request-bulk-* are declared interactions with closed results (accepted, unknown-execution, invalid-state, no-selection, no-retryable, no-stoppable, not-ready) and the execution capability performs every action. The four region states reuse REGION_STATES; execution status is the declared subset success|error|running|waiting; a workflow with no executions is empty with reason none, not a fifth state. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "project-admin",
+      "lego": "ui-frontend",
+      "title": "Project/workspace administration surface pilot (membership and project data handed over, actions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/project-admin.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "project-admin"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "project-admin",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/58-project-admin.test.mjs"
+      ],
+      "phase": "P2-S21",
+      "owner": "agent-01",
+      "notes": "P2-S21: the strangler slice for the project and workspace administration panels (split out of P2-S03, Layer 4). Membership and project data are handed over through declared capabilities only; the surface holds no project model of its own until P5-M11 exists - no fetch, no mutation of a record, no direct call to the project/role capability. request-invite/request-remove-member/request-rename are declared interactions with closed results (accepted, unknown-project, unknown-member, invalid-role, invalid-name, not-ready); the owner can never be removed; the selected project is view state cleared by every fresh hand-over. The four region states reuse REGION_STATES; roles are the declared subset owner|admin|member; a workspace with no projects is empty with reason none. Mode pilot, rollback pilot-not-primary."
+    },
+    {
+      "id": "assistant",
+      "lego": "ui-frontend",
+      "title": "AI Assistant surface pilot (conversational turns handed over as events)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/ai-assistant.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "assistant"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "assistant",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/59-ai-assistant.test.mjs"
+      ],
+      "phase": "P2-S22",
+      "owner": "agent-01",
+      "notes": "P2-S22: the strangler slice for the conversational assistant surface (split out of P2-S03, Layer 5). Assistant turns are handed over as events through declared capabilities only - the surface never fabricates assistant output, never fetches and never persists; request-send/request-stop-stream are declared with closed results (accepted, invalid-text, not-streaming, not-ready) and the capability that owns inference performs them. Distinct from the declared ai-assistant vocabulary capability (P2.10, stays status declared with no entry - the six AI capabilities never claim an implementation); this pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "copilot",
+      "lego": "ui-frontend",
+      "title": "AI Copilot surface pilot (inline suggestions accepted or rejected explicitly)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/copilot.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "copilot"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "copilot",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/60-copilot.test.mjs"
+      ],
+      "phase": "P2-S23",
+      "owner": "agent-01",
+      "notes": "P2-S23: the strangler slice for the inline copilot suggestion surface (split out of P2-S03, Layer 5). Suggestions arrive as declared events through hand-over only - the surface never applies a suggestion silently, never fetches and never persists; request-accept/request-reject are declared interactions with closed results (accepted, unknown-suggestion, invalid-state, not-ready), only pending suggestions are actionable, and the owning capability performs the action. Distinct from the declared ai-copilot vocabulary capability (P2.10, stays status declared with no entry); the pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "ai-node",
+      "lego": "ui-frontend",
+      "title": "AI Node surfaces pilot (model catalog handed over, selection declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/ai-node.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "ai-node"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "ai-node",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/61-ai-node.test.mjs"
+      ],
+      "phase": "P2-S24",
+      "owner": "agent-01",
+      "notes": "P2-S24: the strangler slice for the AI-node parameter and model-picker surfaces (split out of P2-S03, Layer 5). The model catalog is handed over from the node/parameter contracts through declared capabilities only - no fetch, no catalog mutation, no local write of the selected model; request-select-model is a declared interaction with closed results (accepted, unknown-model, not-ready) and the capability that owns the parameter performs it. Distinct from the declared ai-agent-node vocabulary capability (P2.10, stays status declared with no entry); the pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "work-trace",
+      "lego": "ui-frontend",
+      "title": "Work Trace surfaces pilot (hand-over timeline, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/work-trace.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "work-trace"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "work-trace",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/62-work-trace.test.mjs"
+      ],
+      "phase": "P2-S25",
+      "owner": "agent-01",
+      "notes": "P2-S25: the strangler slice for the work-trace timeline surface (split out of P2-S03, Layer 5). The trace is handed over from the observability capability through declared capabilities only - no fetch, no event mutation, no navigation; request-open-event is a declared interaction with closed results (accepted, unknown-event, not-ready) and the capability that owns navigation performs it. The pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "memory-views",
+      "lego": "ui-frontend",
+      "title": "Memory/Context/Session views pilot (hand-over inspection, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/memory-views.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "memory-views"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "memory-views",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/63-memory-views.test.mjs"
+      ],
+      "phase": "P2-S26",
+      "owner": "agent-01",
+      "notes": "P2-S26: the strangler slice for the memory/context/session inspection surfaces (split out of P2-S03, Layer 5). The session state is handed over from the session capability through declared capabilities only - no direct session store access, no fetch, no record mutation; request-open-entry is a declared interaction with closed results (accepted, unknown-entry, not-ready) and the capability that owns navigation performs it. The pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "skills-capabilities",
+      "lego": "ui-frontend",
+      "title": "Skills/Capabilities catalog pilot (hand-over registry snapshot, grants nothing)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/skills-capabilities.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "skills-capabilities"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "skills-capabilities",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/64-skills-capabilities.test.mjs"
+      ],
+      "phase": "P2-S27",
+      "owner": "agent-01",
+      "notes": "P2-S27: the strangler slice for the skills and capability catalog surfaces (split out of P2-S03, Layer 5). The catalog is handed over from the capability registry through declared capabilities only - the surface grants nothing: no direct registry access, no fetch, no record mutation; request-open-skill is a declared interaction with closed results (accepted, unknown-skill, not-ready) and the capability that owns navigation performs it. Vocabularies are quoted (SKILL_STATUSES, CAPABILITY_STATES), never redefined. The pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "agent-runtime",
+      "lego": "ui-frontend",
+      "title": "Agent/Runtime views pilot (hand-over supervision, open declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/agent-runtime.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "agent-runtime"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "agent-runtime",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/65-agent-runtime.test.mjs"
+      ],
+      "phase": "P2-S28",
+      "owner": "agent-01",
+      "notes": "P2-S28: the strangler slice for the agent and runtime supervision surfaces (split out of P2-S03, Layer 5). Supervision state is handed over through declared capabilities only - the surface cannot start or stop runtimes: no control verb, no direct runtime access, no fetch, no record mutation; request-open-agent is a declared interaction with closed results (accepted, unknown-agent, not-ready) and the capability that owns navigation performs it. Vocabularies are quoted (agentSessionState, agentEventType), never redefined. The pilot degrades by keeping the reference behaviour."
+    },
+    {
+      "id": "approvals-artifacts",
+      "lego": "ui-frontend",
+      "title": "Approvals/Artifacts pilot (hand-over review, decisions declared)",
+      "status": "available",
+      "activation": "lazy",
+      "entry": "./src/approvals-artifacts.mjs",
+      "criticality": "optional",
+      "trust": "feature",
+      "lifecycle": "available",
+      "surfaces": [
+        "approvals-artifacts"
+      ],
+      "contracts": [
+        "contracts/frontend.contract.md"
+      ],
+      "extensionPoints": [],
+      "messages": "approvals-artifacts",
+      "degradation": {
+        "fallback": "native-behavior",
+        "detail": "without the capability the reference n8n editor remains primary"
+      },
+      "tests": [
+        "packages/frontend-lego/test/66-approvals-artifacts.test.mjs"
+      ],
+      "phase": "P2-S29",
+      "owner": "agent-01",
+      "notes": "P2-S29: the strangler slice for the approval queue and artifact review surfaces (split out of P2-S03, Layer 5). Approval and artifact state is handed over through declared capabilities only - the surface never writes a decision: request-approve/request-reject are declared interactions routed through the declared action path with closed results (accepted, unknown-approval, invalid-state, not-ready) and the outcome arrives via a fresh hand-over. Vocabularies are quoted (decisionApprovalState, artifactKind, artifactRetention), never redefined. The pilot degrades by keeping the reference behaviour."
     }
   ]
 }
