@@ -14,7 +14,7 @@ permissions:
 jobs:
   cleanup:
     name: Post-Merge Verification & Branch Cleanup
-    runs-on: [ self-hosted, linux, x64, rust-build, n8n-rust ]
+    runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.merged == true
     steps:
       # Full history: when another PR merged in the meantime, main has advanced past
@@ -27,27 +27,14 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      # Self-heal: a restarted WSL runner must not turn the post-merge verification
-      # into "cargo: command not found" (exit 127) — that failure also blocks the
-      # branch cleanup step below and lets merged branches pile up.
-      - name: Rust toolchain preflight
-        shell: bash
+      - name: Post-Merge Main Verification (Linux container)
+        shell: powershell
         run: |
+          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
           set -euo pipefail
-          if [ -f "$HOME/.cargo/env" ]; then . "$HOME/.cargo/env"; fi
-          if ! command -v cargo >/dev/null 2>&1; then
-            echo "cargo not found on PATH - installing rustup (minimal + rustfmt)"
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --component rustfmt
-            . "$HOME/.cargo/env"
-          fi
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-          echo "cargo: $(command -v cargo) ($(cargo --version))"
-          rustc --version
-
-      - name: Post-Merge Main Verification (Level 0 + Level 2)
-        run: |
           cargo check --workspace
           cargo test -p n8n-workflow
+          '@
 
       # The runner verifies that merge_commit_sha is on main (fetching it if main moved on),
       # never deletes main or arena-manager (DEC-0019), and
@@ -60,11 +47,13 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 tools/orchestration/cleanup_runner.py \
-            --branch "$BRANCH_NAME" \
-            --merge-sha "$MERGE_SHA" \
-            --pr "$PR_NUMBER" \
-            --skip-tests
+          $python = Get-Command py.exe -ErrorAction SilentlyContinue
+          if ($python) {
+            & $python.Source -3 tools/orchestration/cleanup_runner.py --branch "$env:BRANCH_NAME" --merge-sha "$env:MERGE_SHA" --pr "$env:PR_NUMBER" --skip-tests
+          } else {
+            & python tools/orchestration/cleanup_runner.py --branch "$env:BRANCH_NAME" --merge-sha "$env:MERGE_SHA" --pr "$env:PR_NUMBER" --skip-tests
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # The merged PR's artifacts have finished their job: they existed to prove the
       # PR was green, and the merge is that proof. Left alone they accumulate against
@@ -85,8 +74,9 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 tools/orchestration/cleanup_artifacts.py \
-            --sha "$HEAD_SHA" \
-            --sha "$MERGE_SHA" \
-            --pr "$PR_NUMBER" \
-            --apply
+          $python = Get-Command py.exe -ErrorAction SilentlyContinue
+          if ($python) {
+            & $python.Source -3 tools/orchestration/cleanup_artifacts.py --sha "$env:HEAD_SHA" --sha "$env:MERGE_SHA" --pr "$env:PR_NUMBER" --apply
+          } else {
+            & python tools/orchestration/cleanup_artifacts.py --sha "$env:HEAD_SHA" --sha "$env:MERGE_SHA" --pr "$env:PR_NUMBER" --apply
+          }

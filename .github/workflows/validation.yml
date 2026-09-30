@@ -1,4 +1,4 @@
-name: Level 0 & Level 1 Validation (Parallel WSL Workers)
+name: Level 0 & Level 1 Validation (Windows Host + Linux Container)
 
 on:
   pull_request:
@@ -35,7 +35,7 @@ concurrency:
 jobs:
   format_and_check:
     name: Level 0 (Check & Format)
-    runs-on: [ self-hosted, linux, x64, rust-build, n8n-rust ]
+    runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
     steps:
       - name: Checkout Code
@@ -45,34 +45,24 @@ jobs:
           submodules: false
           lfs: false
 
-      # Self-heal: WSL runners can lose ~/.cargo/bin from PATH after a restart, which
-      # surfaces as "cargo: command not found" (exit 127) instead of a real check
-      # result. Source the rustup env when present; install the minimal toolchain when
-      # absent; export the bin dir for the later steps either way.
-      - name: Level 0 - Rust toolchain preflight
-        shell: bash
+      - name: Level 0 - Linux container preflight + format + check
+        shell: powershell
         run: |
+          & "$env:GITHUB_WORKSPACE\\tools\\ci\\run-linux-container.ps1" -Command @'
           set -euo pipefail
-          if [ -f "$HOME/.cargo/env" ]; then . "$HOME/.cargo/env"; fi
-          if ! command -v cargo >/dev/null 2>&1; then
-            echo "cargo not found on PATH - installing rustup (minimal + rustfmt)"
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --component rustfmt
-            . "$HOME/.cargo/env"
-          fi
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-          echo "cargo: $(command -v cargo) ($(cargo --version))"
+          command -v cargo
+          command -v rustc
+          command -v rustfmt
+          cargo --version
           rustc --version
           rustfmt --version
-
-      - name: Level 0 - Verify Formatting
-        run: cargo fmt --all -- --check
-
-      - name: Level 0 - Fast Workspace Check
-        run: cargo check --workspace
+          cargo fmt --all -- --check
+          cargo check --workspace
+          '@
 
   unit_tests:
     name: Level 1 (Affected Tests)
-    runs-on: [ self-hosted, linux, x64, rust-build, n8n-rust ]
+    runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
     steps:
       - name: Checkout Code
@@ -82,36 +72,19 @@ jobs:
           submodules: false
           lfs: false
 
-      # Same self-heal as Level 0: a restarted WSL runner must not turn a real check
-      # into "cargo: command not found" (exit 127).
-      - name: Level 1 - Rust toolchain preflight
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -f "$HOME/.cargo/env" ]; then . "$HOME/.cargo/env"; fi
-          if ! command -v cargo >/dev/null 2>&1; then
-            echo "cargo not found on PATH - installing rustup (minimal + rustfmt)"
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --component rustfmt
-            . "$HOME/.cargo/env"
-          fi
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
-          echo "cargo: $(command -v cargo) ($(cargo --version))"
-          rustc --version
-
       - name: Level 1 - Affected Crate Unit Tests
-        shell: bash
+        shell: powershell
         run: |
-          # HEAD~1 is the base tip for the pull_request merge ref and the previous main for a merge push,
-          # so this diff covers the whole change. n8n-workflow (the previous default set) always runs;
-          # workspace-wide inputs (Cargo.toml, Cargo.lock, n8n-common) run the whole workspace.
+          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
+          set -euo pipefail
           CHANGED=$(git diff --name-only HEAD~1 HEAD)
           if echo "$CHANGED" | grep -qE '^(Cargo\.toml|Cargo\.lock|crates/n8n-common/)'; then
             echo "Workspace-wide input changed: testing the whole workspace"
             cargo test --workspace
           else
-            # grep exits 1 when no crate changed; under `bash -e -o pipefail` that must not abort the step.
             CRATES=$(echo "$CHANGED" | { grep '^crates/' || true; } | cut -d/ -f2)
             AFFECTED=$( (echo n8n-workflow; echo "$CRATES") | grep -v '^$' | sort -u | sed 's/^/-p /' | tr '\n' ' ')
             echo "Testing: $AFFECTED"
             cargo test $AFFECTED
           fi
+          '@
