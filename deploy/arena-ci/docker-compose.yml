@@ -1,0 +1,75 @@
+services:
+  arena-gateway:
+    image: node:22-bookworm-slim
+    restart: unless-stopped
+    user: "node"
+    security_opt:
+      - no-new-privileges:true
+    working_dir: /app
+    environment:
+      NODE_ENV: production
+      ARENA_GATEWAY_BIND: 0.0.0.0
+      ARENA_GATEWAY_PORT: "7890"
+      ARENA_CONTROL_BIND: 127.0.0.1
+      ARENA_CONTROL_PORT: "7891"
+      ARENA_DATA_DIR: /var/lib/arena-ci
+      GITHUB_WEBHOOK_SECRET_FILE: /run/secrets/github_webhook_secret
+      GITHUB_PAT_FILE: /run/secrets/github_pat
+    ports:
+      - "127.0.0.1:7891:7891"
+    volumes:
+      - ${ARENA_GATEWAY_HOST_DIR:-C:/arena-ci/gateway}:/app:ro
+      - arena_node_modules:/app/node_modules
+      - ${ARENA_DATA_HOST_DIR:-C:/arena-ci/data}:/var/lib/arena-ci:rw
+    secrets:
+      - github_webhook_secret
+      - github_pat
+    command:
+      - /bin/sh
+      - -lc
+      - |
+        npm ci --omit=dev
+        exec node server.js
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:7890/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    networks:
+      - arena_internal
+
+  cloudflared:
+    image: ${CLOUDFLARED_IMAGE:-cloudflare/cloudflared:latest}
+    restart: unless-stopped
+    depends_on:
+      arena-gateway:
+        condition: service_healthy
+    command:
+      - tunnel
+      - --no-autoupdate
+      - --config
+      - /etc/cloudflared/config.yml
+      - run
+    volumes:
+      - ${CLOUDFLARED_HOST_DIR:-C:/arena-ci/cloudflared}:/etc/cloudflared:ro
+    networks:
+      - arena_internal
+
+networks:
+  arena_internal:
+    driver: bridge
+    internal: false
+
+volumes:
+  arena_node_modules:
+
+secrets:
+  github_webhook_secret:
+    file: ${GITHUB_WEBHOOK_SECRET_FILE:-./secrets/github_webhook_secret.txt}
+  github_pat:
+    file: ${GITHUB_PAT_FILE:-./secrets/github_pat.txt}
