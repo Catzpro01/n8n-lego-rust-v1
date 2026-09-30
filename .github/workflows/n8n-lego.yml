@@ -256,21 +256,60 @@ jobs:
       # lego:pack`, so archiving it on a pull request proved nothing that the checksum
       # step had not already proved.
       #
-      # Now: archive only where a build is worth archiving (main, and release tags once
-      # they exist - the repo has cut zero releases and has zero version tags), never on
-      # a PR, and let it expire the next day. Steady state falls from ~8 GB to ~0.6 GB.
-      - name: Upload release artifacts
+      # 2026-09-29, second pass: gating the upload to main was not enough. 338 copies
+      # still accumulated at ~17 MB each = 5.77 GB, 97% of all artifact storage in the
+      # repository, and the account (personal, Free plan, 0.50 GB included) sat 12x over
+      # its allowance - which is what actually stopped ubuntu-latest from starting jobs,
+      # not a failed payment.
+      #
+      # The payload is now not uploaded at all, because uploading it never proved
+      # anything:
+      #   * the assertion is the "Verify the artifact checksums" step above, unchanged
+      #     and exactly as strict - it runs `sha256sum -c` against the real tarball;
+      #   * `download-artifact` has zero occurrences repo-wide, so nothing consumed it;
+      #   * the tarball is deterministically reproducible from any commit with
+      #     `bash scripts/release.sh --no-docker`;
+      #   * the repository has 0 releases and 0 npm packages, and all 25 tags are
+      #     `archive/*` branch archives - 0 semver tags - so no release has ever
+      #     depended on this artifact.
+      #
+      # What is archived instead is the evidence that the build happened and what it
+      # produced: the checksum file plus a manifest of names, byte sizes and hashes.
+      # That is a few hundred bytes and is strictly more useful than the tarball, which
+      # had to be downloaded in full to learn the same facts.
+      #
+      # If a real release is ever cut, the destination is GitHub Releases (an immutable,
+      # addressable artifact store that already exists), never Actions artifact storage,
+      # which is a 90-day-max CI scratch space shared with the storage allowance.
+      - name: Record the release manifest (evidence, not payload)
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          {
+            echo "commit=${GITHUB_SHA}"
+            echo "ref=${GITHUB_REF}"
+            echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "---"
+            for f in dist/n8n-lego-*.tgz dist/n8n-lego-*.tar.gz; do
+              [ -e "$f" ] || continue
+              printf '%s %s %s\n' "$(basename "$f")" "$(stat -c%s "$f")" "$(sha256sum "$f" | cut -d' ' -f1)"
+            done
+          } > dist/release-manifest.txt
+          echo "::notice::release manifest recorded ($(stat -c%s dist/release-manifest.txt) bytes); payload intentionally not uploaded"
+          cat dist/release-manifest.txt
+
+      - name: Upload the release manifest
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: n8n-lego-release
+          name: n8n-lego-release-manifest
           path: |
-            dist/n8n-lego-0.1.0.tgz
-            dist/n8n-lego-0.1.0.tar.gz
+            dist/release-manifest.txt
             dist/n8n-lego-0.1.0.tar.gz.sha256
           if-no-files-found: ignore
-          retention-days: 1
+          retention-days: 7
 
   clean-clone:
     name: Clean clone → start → health → browser smoke → restart

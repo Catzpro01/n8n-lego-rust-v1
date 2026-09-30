@@ -74,6 +74,90 @@ test('cli: decisions-check succeeds; unknown command is a usage error', () => {
   assert.equal(main(['frobnicate'], io), 2);
 });
 
+/**
+ * Storage regression guard (2026-09-29).
+ *
+ * The account is a personal Free plan: 0.50 GB of Actions/Packages storage. On
+ * 2026-09-29 the repository alone held 5.94 GB of artifacts - 97% of it one artifact
+ * class, `n8n-lego-release`, at ~17 MB per run - which put the account 12x over its
+ * allowance and stopped GitHub-hosted jobs from starting at all.
+ *
+ * The rule this encodes is about PURPOSE, not size: Actions artifact storage is CI
+ * scratch space for small, purposeful evidence. A build payload - a distributable
+ * tarball, an archive of dist/ or target/, an installed node_modules - is reproducible
+ * from the commit and belongs in a release store, never in a CI artifact. Evidence
+ * (JSON reports, logs, screenshots, checksums, manifests) is exactly what artifacts are
+ * for and is deliberately NOT restricted here.
+ */
+test('no workflow uploads a build payload as a CI artifact', () => {
+  const dir = join(REPO_ROOT, '.github', 'workflows');
+  // A path is a payload if it names a distributable archive or a build/dependency tree.
+  const PAYLOAD = [
+    /\.tgz\s*$/,
+    /\.tar\.gz\s*$/,
+    /\.tar\.(xz|bz2|zst)\s*$/,
+    /\.(zip|whl|jar|deb|rpm|dmg|exe|msi|apk|AppImage)\s*$/,
+    /^\s*(dist|build|out|target|node_modules|vendor|\.next|coverage)\/?\s*$/,
+  ];
+  // ...unless it is the checksum or manifest that describes one, which is the point.
+  const EVIDENCE = [/\.sha256\s*$/, /manifest/i, /checksum/i];
+
+  const offenders = [];
+  let uploads = 0;
+  for (const entry of readdirSync(dir)) {
+    if (!/\.ya?ml$/.test(entry)) continue;
+    const lines = readFileSync(join(dir, entry), 'utf8').split('\n');
+    for (let i = 0; i < lines.length; i += 1) {
+      if (!/uses:\s*actions\/upload-artifact/.test(lines[i])) continue;
+      uploads += 1;
+      // walk the `with:` block of this step and collect its path entries
+      for (let j = i + 1; j < Math.min(lines.length, i + 40); j += 1) {
+        const line = lines[j];
+        if (/^\s*-\s*name:/.test(line) || /^\s{0,4}\w[\w-]*:\s*$/.test(line)) break;
+        const m = line.match(/^\s*(?:path:\s*)?[|>]?\s*(\S.*)$/);
+        if (!m) continue;
+        const value = m[1].trim();
+        if (!value || value.startsWith('#') || /^(name|if|retention-days|if-no-files-found|overwrite|compression-level):/.test(value)) continue;
+        if (EVIDENCE.some((re) => re.test(value))) continue;
+        if (PAYLOAD.some((re) => re.test(value))) {
+          offenders.push(`${entry}:${j + 1}: ${value}`);
+        }
+      }
+    }
+  }
+  assert.ok(uploads > 0, 'the scan found upload-artifact steps to check (guard is not vacuous)');
+  assert.deepEqual(
+    offenders,
+    [],
+    'A build payload must not be uploaded as a CI artifact: it is reproducible from the\n'
+      + 'commit, nothing downloads it, and it exhausts the Actions storage allowance.\n'
+      + 'Upload a checksum or manifest instead, and publish real releases to a release store.\n'
+      + offenders.join('\n'),
+  );
+});
+
+/** The guard above must be able to see a violation, or it proves nothing. */
+test('the build-payload guard rejects a reintroduced payload upload', () => {
+  const sample = [
+    '      - name: Upload release artifacts',
+    '        uses: actions/upload-artifact@v4',
+    '        with:',
+    '          name: n8n-lego-release',
+    '          path: |',
+    '            dist/n8n-lego-0.1.0.tgz',
+    '            dist/n8n-lego-0.1.0.tar.gz.sha256',
+  ];
+  const PAYLOAD = [/\.tgz\s*$/, /\.tar\.gz\s*$/];
+  const EVIDENCE = [/\.sha256\s*$/];
+  const hits = sample
+    .map((l) => l.trim())
+    .filter((v) => {
+      if (EVIDENCE.some((re) => re.test(v))) return false;
+      return PAYLOAD.some((re) => re.test(v));
+    });
+  assert.deepEqual(hits, ['dist/n8n-lego-0.1.0.tgz'], 'the payload is caught and the checksum is not');
+});
+
 test('DEC-0019: the task-distribution engine and legacy agent runtime stay removed', () => {
   const gone = ['tools/workforce/src/engine.mjs', 'tools/workforce/src/scheduler.mjs', 'docs/engineering-operations/workforce/policy.json',
     'tools/arena-bridge', 'tools/arena-executor', 'tools/gateway', 'tools/orchestration/control_plane.py', 'tools/orchestration/task_manager.py', 'tools/orchestration/audit_runner.py',
