@@ -1,4 +1,4 @@
-name: Level 0 & Level 1 Validation (Windows Host + Linux Container)
+name: Level 0 & Level 1 Validation (Linux Docker)
 
 on:
   pull_request:
@@ -29,14 +29,14 @@ on:
 
 concurrency:
   group: validation-${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded runs on PR refs only; every push to a protected branch keeps its own run (merge evidence).
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  format_and_check:
-    name: Level 0 (Check & Format)
+  validation:
+    name: Level 0 & 1 (Linux Docker)
     runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
+    timeout-minutes: 15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
@@ -45,46 +45,22 @@ jobs:
           submodules: false
           lfs: false
 
-      - name: Level 0 - Linux container preflight + format + check
+      - name: Level 0 - Format & Check
         shell: powershell
         run: |
-          & "$env:GITHUB_WORKSPACE\\tools\\ci\\run-linux-container.ps1" -Command @'
+          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
           set -euo pipefail
+
           command -v cargo
           command -v rustc
           command -v rustfmt
           cargo --version
           rustc --version
           rustfmt --version
+
+          echo "=== Level 0: format ==="
           cargo fmt --all -- --check
-          cargo check --workspace
-          '@
 
-  unit_tests:
-    name: Level 1 (Affected Tests)
-    runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
-    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 2
-          submodules: false
-          lfs: false
-
-      - name: Level 1 - Affected Crate Unit Tests
-        shell: powershell
-        run: |
-          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
-          set -euo pipefail
-          CHANGED=$(git diff --name-only HEAD~1 HEAD)
-          if echo "$CHANGED" | grep -qE '^(Cargo\.toml|Cargo\.lock|crates/n8n-common/)'; then
-            echo "Workspace-wide input changed: testing the whole workspace"
-            cargo test --workspace
-          else
-            CRATES=$(echo "$CHANGED" | { grep '^crates/' || true; } | cut -d/ -f2)
-            AFFECTED=$( (echo n8n-workflow; echo "$CRATES") | grep -v '^$' | sort -u | sed 's/^/-p /' | tr '\n' ' ')
-            echo "Testing: $AFFECTED"
-            cargo test $AFFECTED
-          fi
+          echo "=== Level 0: check ==="
+          cargo check --workspace --locked
           '@

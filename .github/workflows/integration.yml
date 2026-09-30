@@ -1,4 +1,4 @@
-name: Level 2 Integration & Conformance Suite (Matrix Workers)
+name: Level 2 Integration & Conformance Suite (Linux Docker)
 
 on:
   pull_request:
@@ -12,14 +12,14 @@ on:
 
 concurrency:
   group: integration-${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded runs on PR refs only; every push to a protected branch keeps its own run (merge evidence).
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  integration_workspace_linux:
-    name: Level 2 Workspace Tests (linux)
+  integration:
+    name: Level 2 (Linux Docker)
     runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.head.repo.full_name == github.repository
+    timeout-minutes: 30
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
@@ -28,59 +28,25 @@ jobs:
           submodules: false
           lfs: false
 
-      - name: Level 2 - Full Rust Workspace Tests (Linux container)
+      - name: Level 2 - Full Workspace + LEGO & Node Conformance
         shell: powershell
         run: |
           & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
           set -euo pipefail
+
           command -v cargo
           command -v rustc
+          command -v node
           cargo --version
           rustc --version
-          cargo test --workspace
-          '@
-
-  integration_workspace_windows:
-    name: Level 2 Workspace Tests (windows)
-    runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
-          submodules: false
-          lfs: false
-
-      - name: Level 2 - Full Rust Workspace Tests
-        run: cargo test --workspace
-
-  conformance:
-    name: Level 2 Conformance LEGO & Node Catalog
-    runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
-          submodules: false
-          lfs: false
-
-      - name: Level 2 - Localization & Catalog Tests
-        shell: powershell
-        run: |
-          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
-          set -euo pipefail
-          command -v node
           node --version
-          node --test packages/reconstructed-engine/localization.test.mjs packages/reconstructed-engine/node-catalog.test.mjs
-          '@
 
-      - name: Level 2 - Execution LEGO Conformance Tests
-        shell: powershell
-        run: |
-          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
-          set -euo pipefail
+          echo "=== Level 2: full Rust workspace tests ==="
+          cargo test --workspace --locked
+
+          echo "=== Level 2: Localization & Node Catalog ==="
+          node --test packages/reconstructed-engine/localization.test.mjs packages/reconstructed-engine/node-catalog.test.mjs
+
+          echo "=== Level 2: Execution LEGO ==="
           node --experimental-strip-types --test packages/execution-lego/test/02-runtime.test.mjs packages/execution-lego/test/03-context-recovery.test.mjs
           '@
