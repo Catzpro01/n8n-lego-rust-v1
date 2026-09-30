@@ -16,6 +16,7 @@ jobs:
     name: Post-Merge Verification & Branch Cleanup
     runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.merged == true
+    timeout-minutes: 15
     steps:
       # Full history: when another PR merged in the meantime, main has advanced past
       # merge_commit_sha and a depth-1 checkout no longer contains it. The runner also
@@ -32,8 +33,8 @@ jobs:
         run: |
           & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
           set -euo pipefail
-          cargo check --workspace
-          cargo test -p n8n-workflow
+          cargo check --workspace --locked
+          cargo test -p n8n-workflow --locked
           '@
 
       # The runner verifies that merge_commit_sha is on main (fetching it if main moved on),
