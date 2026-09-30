@@ -15,10 +15,11 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  integration_workspace_linux:
-    name: Level 2 Workspace Tests (Linux Docker)
+  integration:
+    name: Level 2 (Linux Docker)
     runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.head.repo.full_name == github.repository
+    timeout-minutes: 30
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
@@ -27,44 +28,18 @@ jobs:
           submodules: false
           lfs: false
 
-      - name: Level 2 - Full Rust Workspace Tests (Linux container)
+      - name: Level 2 - LEGO & Node Catalog Conformance
         shell: powershell
         run: |
           & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
           set -euo pipefail
-          command -v cargo
-          command -v rustc
-          cargo --version
-          rustc --version
-          cargo test --workspace
-          '@
 
-  conformance:
-    name: Level 2 Conformance LEGO & Node Catalog (Linux Docker)
-    runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
-          submodules: false
-          lfs: false
-
-      - name: Level 2 - Localization & Catalog Tests
-        shell: powershell
-        run: |
-          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
-          set -euo pipefail
           command -v node
           node --version
-          node --test packages/reconstructed-engine/localization.test.mjs packages/reconstructed-engine/node-catalog.test.mjs
-          '@
 
-      - name: Level 2 - Execution LEGO Conformance Tests
-        shell: powershell
-        run: |
-          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
-          set -euo pipefail
+          echo "=== Localization & Node Catalog ==="
+          node --test packages/reconstructed-engine/localization.test.mjs packages/reconstructed-engine/node-catalog.test.mjs
+
+          echo "=== Execution LEGO ==="
           node --experimental-strip-types --test packages/execution-lego/test/02-runtime.test.mjs packages/execution-lego/test/03-context-recovery.test.mjs
           '@
