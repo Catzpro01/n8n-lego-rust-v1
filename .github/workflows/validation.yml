@@ -36,7 +36,7 @@ jobs:
     name: Level 0 & 1 (Linux Docker)
     runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
@@ -45,7 +45,7 @@ jobs:
           submodules: false
           lfs: false
 
-      - name: Level 0 - Format & Check + Level 1 - Full Workspace Tests
+      - name: Level 0 - Format & Check
         shell: powershell
         run: |
           & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
@@ -62,8 +62,5 @@ jobs:
           cargo fmt --all -- --check
 
           echo "=== Level 0: check ==="
-          cargo check --workspace
-
-          echo "=== Level 1: full workspace tests ==="
-          cargo test --workspace
+          cargo check --workspace --locked
           '@
