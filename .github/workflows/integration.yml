@@ -1,4 +1,4 @@
-name: Level 2 Integration & Conformance Suite (Matrix Workers)
+name: Level 2 Integration & Conformance Suite (Linux Docker)
 
 on:
   pull_request:
@@ -12,12 +12,11 @@ on:
 
 concurrency:
   group: integration-${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded runs on PR refs only; every push to a protected branch keeps its own run (merge evidence).
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   integration_workspace_linux:
-    name: Level 2 Workspace Tests (linux)
+    name: Level 2 Workspace Tests (Linux Docker)
     runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
@@ -40,23 +39,8 @@ jobs:
           cargo test --workspace
           '@
 
-  integration_workspace_windows:
-    name: Level 2 Workspace Tests (windows)
-    runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
-          submodules: false
-          lfs: false
-
-      - name: Level 2 - Full Rust Workspace Tests
-        run: cargo test --workspace
-
   conformance:
-    name: Level 2 Conformance LEGO & Node Catalog
+    name: Level 2 Conformance LEGO & Node Catalog (Linux Docker)
     runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
     if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
