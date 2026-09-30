@@ -28,18 +28,25 @@ jobs:
           submodules: false
           lfs: false
 
-      - name: Level 2 - LEGO & Node Catalog Conformance
+      - name: Level 2 - Full Workspace + LEGO & Node Conformance
         shell: powershell
         run: |
           & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Command @'
           set -euo pipefail
 
+          command -v cargo
+          command -v rustc
           command -v node
+          cargo --version
+          rustc --version
           node --version
 
-          echo "=== Localization & Node Catalog ==="
+          echo "=== Level 2: full Rust workspace tests ==="
+          cargo test --workspace --locked
+
+          echo "=== Level 2: Localization & Node Catalog ==="
           node --test packages/reconstructed-engine/localization.test.mjs packages/reconstructed-engine/node-catalog.test.mjs
 
-          echo "=== Execution LEGO ==="
+          echo "=== Level 2: Execution LEGO ==="
           node --experimental-strip-types --test packages/execution-lego/test/02-runtime.test.mjs packages/execution-lego/test/03-context-recovery.test.mjs
           '@
