@@ -36,6 +36,7 @@ import { fileURLToPath } from 'node:url';
 
 import { classifyChecks, OK } from '../workforce/src/checks.mjs';
 import {
+  normalizeEol, detectEol, applyEol,
   CHECKPOINT_STATUSES,
   LIVE_PROGRESS_MODEL,
   classifyProgressCommit,
@@ -328,7 +329,19 @@ export function deriveCommandState(command, { output = '', code = 0 } = {}) {
  * thousands of unrelated lines in a progress commit.
  */
 export function syncSliceText(raw, sliceId, slice) {
-  const lines = raw.split('\n');
+  // EOL-PRESERVING, and the only place the register's line endings are handled.
+  //
+  // Every match below is exact: a line must equal `"id": "P3-M01",` and a status
+  // line must match /^ {10}"status": ".+",?$/. On a CRLF working tree every line
+  // carries a trailing CR, so none of them match, the slice is reported as "not
+  // found", and the writer refuses to run. That is what made the round-trip
+  // assertion fail on the self-hosted test job on 2026-09-30.
+  //
+  // The input is matched canonically and the output is re-terminated with
+  // whatever the input used, so a rewrite is still byte-identical when the state
+  // has not changed -- the property the round-trip assertion actually checks.
+  const eol = detectEol(raw);
+  const lines = normalizeEol(raw).split('\n');
   const start = lines.findIndex((line, index) => line === `${SLICE_INDENT}"id": "${sliceId}",`
     && (lines[index + 1] ?? '').startsWith(`${SLICE_INDENT}"title":`));
   if (start === -1) return { ok: false, reason: `slice ${sliceId} was not found in ${LIVE_PROGRESS_MODEL.register}` };
@@ -381,7 +394,7 @@ export function syncSliceText(raw, sliceId, slice) {
     break;
   }
   out.push(...lines.slice(end));
-  return { ok: true, text: out.join('\n') };
+  return { ok: true, text: applyEol(out.join('\n'), eol) };
 }
 
 function renderKeyLines(slice, keys) {
@@ -424,6 +437,9 @@ function jsonString(value) {
 /* ------------------------------------------------------------------- commands */
 
 function readRegister() {
+  // The bytes exactly as committed. syncSliceText matches canonically and hands
+  // the terminator back, so `sync.text === before.raw` remains a meaningful
+  // no-change test and the rollback writes back precisely what was there.
   const raw = readFileSync(REGISTER_PATH, 'utf8');
   return { raw, register: JSON.parse(raw) };
 }

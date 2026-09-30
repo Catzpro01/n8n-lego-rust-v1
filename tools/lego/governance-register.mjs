@@ -306,7 +306,35 @@ const STATUS_ROW = /^\s*\|.*`?\b(P\d{1,2}(?:\.\d+)+\+?|P\d{1,2}-[SM]\d{2}|FUTURE
  * README.md and ROADMAP.md are projections / narrative, never registers (DEC-0020).
  * Returns violations; empty means both are consistent with the register.
  */
-export function validateMilestoneProjections({ register, readme, roadmap }) {
+/**
+ * Canonical line endings for anything compared against generated text.
+ *
+ * The register, README, ROADMAP and the surgical register writer all read the
+ * WORKING TREE and compare it against text rendered from a registry, so their
+ * verdict used to depend on how the runner happened to materialise the checkout.
+ * It did: on 2026-09-30 the self-hosted architecture job reported all 101
+ * generated files and the README block stale, and 7 governance assertions failed
+ * in the test job, purely because Git for Windows defaults core.autocrlf=true.
+ *
+ * Normalising here -- in the three functions that own the comparisons -- makes
+ * the verdict mean the same thing on every runner. Nothing else is relaxed: a
+ * difference in any character other than the terminator still compares unequal,
+ * and every marker, indentation and key match below is still exact.
+ */
+export const normalizeEol = (text) => text.replace(/\r\n?/g, '\n');
+
+/** The terminator a file already uses, so writing it back produces no diff. */
+export const detectEol = (text) => (text.includes('\r\n') ? '\r\n' : '\n');
+
+export const applyEol = (text, eol) => (eol === '\n' ? text : text.replace(/\n/g, eol));
+
+export function validateMilestoneProjections({ register, readme: rawReadme, roadmap: rawRoadmap }) {
+  // Compared against rendered text, so it is compared canonically. ROADMAP is
+  // split into lines below to look for competing status rows, and a CRLF line
+  // carries a trailing CR through every regex that is meant to anchor on the
+  // end of the line.
+  const readme = normalizeEol(rawReadme);
+  const roadmap = normalizeEol(rawRoadmap);
   const errors = [];
   const begins = readme.split(README_MARKERS.begin).length - 1;
   const ends = readme.split(README_MARKERS.end).length - 1;
@@ -1003,8 +1031,14 @@ ${README_MARKERS.end}`;
 }
 
 /** Replace (or report) the generated block inside README.md text. */
-export function syncReadmeMilestoneSection(readme, register) {
+export function syncReadmeMilestoneSection(rawReadme, register) {
   const block = renderReadmeMilestoneSection(register);
+  // The block is rendered with LF terminators, so on a CRLF working tree a
+  // byte-exact `changed` verdict is true for every file whether or not the
+  // projection is current -- the single largest source of false staleness in
+  // this repository. The marker search itself is unaffected: it matches a
+  // substring, not a line.
+  const readme = normalizeEol(rawReadme);
   const start = readme.indexOf(README_MARKERS.begin);
   const end = readme.indexOf(README_MARKERS.end);
   if (start === -1 || end === -1 || end < start) return { ok: false, text: null, reason: 'README.md has no milestone-governance markers' };

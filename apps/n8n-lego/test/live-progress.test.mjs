@@ -23,7 +23,7 @@ import {
   completionContribution, formatPercent, headlineMetrics, historicalP2Fingerprint, programTally,
   renderReadmeMilestoneSection, sliceDeliveryProgress, syncReadmeMilestoneSection,
   validateGovernanceRegister, validateLiveProgressModel, validateMilestoneProjections,
-  displayStatus, verifyingIndex, HISTORICAL_P2_FINGERPRINT,
+  displayStatus, verifyingIndex, normalizeEol, HISTORICAL_P2_FINGERPRINT,
 } from '../../../tools/lego/governance-register.mjs';
 import { currentStatus, milestoneRegisterDoc } from '../../../tools/lego/ai-pack.mjs';
 import {
@@ -331,8 +331,18 @@ test('the surgical register writer round-trips the canonical register unchanged'
   // its own order, and key order is not a semantic difference.
   const rewritten = findSlice(JSON.parse(sync.text), target.id).slice;
   assert.deepEqual(rewritten, applied.slice, 'the text edit must equal the intended slice');
-  const before = raw.split('\n');
-  const after = sync.text.split('\n');
+  // Split canonically, for the same reason syncSliceText() matches canonically:
+  // `bounds` locates the block by exact line equality, and on a CRLF working tree
+  // every line carries a trailing CR, so findIndex returns -1 for both arrays and
+  // `outside()` slices around index -1 -- the surgicality assertion then compares
+  // nonsense and fails for a reason that has nothing to do with the writer.
+  //
+  // Nothing is weakened by comparing canonically. syncSliceText() is
+  // EOL-preserving, so both sides carry identical terminators by construction,
+  // and the half of this test above already asserts the stronger property that a
+  // no-op rewrite is byte-identical, terminators included.
+  const before = normalizeEol(raw).split('\n');
+  const after = normalizeEol(sync.text).split('\n');
   assert.notEqual(before.join('\n'), after.join('\n'), 'a checkpoint change must change the register text');
   // A progress commit touches only the slice it records: everything outside its block is byte-identical.
   const bounds = (lines, sliceId) => {
@@ -351,7 +361,7 @@ test('the surgical register writer round-trips the canonical register unchanged'
   });
   const again = syncSliceText(sync.text, target.id, blocked.slice);
   assert.equal(again.ok, true);
-  const againBounds = bounds(again.text.split('\n'), target.id);
+  const againBounds = bounds(normalizeEol(again.text).split('\n'), target.id);
   assert.equal(againBounds.end - againBounds.start, afterBounds.end - afterBounds.start,
     'a checkpoint event changes lines, it never adds them');
   assert.match(again.text, /"status": "blocked"/);

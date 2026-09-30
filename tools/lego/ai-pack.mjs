@@ -33,6 +33,48 @@ import {
   verifyingIndex,
 } from './governance-register.mjs';
 
+/**
+ * The generated pack must be identical on every runner, so it is compared and
+ * emitted in a single canonical line-ending form. DEC-0020, portability axis.
+ *
+ * This is not hypothetical. On 2026-09-30 the self-hosted architecture job
+ * reported all 101 generated files plus the README block as stale, and the cause
+ * turned out to be BOTH halves of a checkout round trip -- fixing only one of them
+ * still fails:
+ *
+ *   1. The working tree arrived CRLF. `actions/checkout` runs with `clean: true`,
+ *      and its cleaning step does `git clean -ffdx` + `git reset --hard HEAD`
+ *      BEFORE the fetch and the checkout, which deletes the working tree --
+ *      including the very .gitattributes that pins `eol=lf`. Git therefore
+ *      resolves attributes against an index that predates the file, falls back to
+ *      core.autocrlf=true on a Windows runner, and materialises the tree CRLF.
+ *   2. Builders copy text out of the working tree. adrIndex() reads an ADR
+ *      heading and splices it into a table row, so a CRLF tree leaves the trailing
+ *      CR behind `split('\n')` and it lands in the MIDDLE of a generated line.
+ *      Normalising only the file on disk does not help -- the generated side is
+ *      the dirty one, and that is where the stray CR was found.
+ *
+ * Normalising once, where the pack leaves generate(), makes the whole class go
+ * away regardless of which builder is involved, and leaves the check exactly as
+ * strict about everything except the terminators: any difference in content
+ * still compares unequal.
+ */
+export const normalizeEol = (text) => text.replace(/\r\n?/g, '\n');
+
+/** The terminator a file already uses, so rewriting it produces no diff. */
+export const detectEol = (text) => (text.includes('\r\n') ? '\r\n' : '\n');
+
+export const applyEol = (text, eol) => (eol === '\n' ? text : text.replace(/\n/g, eol));
+
+/** First differing character, or -1 when the two strings are equal. */
+const firstDifference = (a, b) => {
+  const limit = Math.min(a.length, b.length);
+  for (let i = 0; i < limit; i += 1) if (a[i] !== b[i]) return i;
+  return a.length === b.length ? -1 : limit;
+};
+const lineAt = (text, index) => text.slice(0, index).split('\n').length;
+const excerptAt = (text, index) => JSON.stringify(text.slice(index, index + 48));
+
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const AI_ROOT = join(REPO_ROOT, '.ai');
 const LOCK = JSON.parse(readFileSync(CONTRACT_LOCK_FILE, 'utf8'));
@@ -1566,7 +1608,7 @@ function projectDecisions() {
     ? readdirSync(adrDir).filter((name) => name.endsWith('.md')).sort()
     : [];
   const adrRows = adrs.map((name) => {
-    const first = readFileSync(join(adrDir, name), 'utf8').split('\n').find((line) => line.startsWith('# ')) ?? name;
+    const first = normalizeEol(readFileSync(join(adrDir, name), 'utf8')).split('\n').find((line) => line.startsWith('# ')) ?? name;
     return `| [\`${name.replace('.md', '')}\`](../../docs/architecture/adr/${name}) | ${first.replace(/^#\s*/, '')} |`;
   });
   if (!decisions) return null;
@@ -2171,7 +2213,7 @@ function adrIndex() {
   let rows = [];
   if (existsSync(dir)) {
     rows = readdirSync(dir).filter((file) => file.endsWith('.md')).sort().map((file) => {
-      const first = readFileSync(join(dir, file), 'utf8').split('\n').find((line) => line.startsWith('# ')) ?? file;
+      const first = normalizeEol(readFileSync(join(dir, file), 'utf8')).split('\n').find((line) => line.startsWith('# ')) ?? file;
       return `| [\`${file.replace('.md', '')}\`](../docs/architecture/adr/${file}) | ${first.replace(/^#\s*/, '')} |`;
     });
   }
@@ -2257,6 +2299,10 @@ export function generate() {
       .replaceAll('@@MASTER_TOP_COUNT@@', String(masterTopCount))
       .replaceAll('@@FRONTEND_VIEW_COUNT@@', String(frontendViewCount)));
   }
+  // Canonical line endings for the whole pack. The builders read the working
+  // tree, so on a CRLF checkout their output is not LF-pure; normalising here
+  // makes generate() platform-independent without touching 20 builders.
+  for (const [relativePath, content] of files) files.set(relativePath, normalizeEol(content));
   return files;
 }
 
@@ -2331,6 +2377,15 @@ const CURATED = Object.freeze({
 const isCurated = (relativePath) => CURATED.files.includes(relativePath);
 
 function writeAll(files) {
+  // The terminator each file already uses, captured before the wipe. Without
+  // this, `npm run lego:ai` on a CRLF checkout rewrites all 101 files to LF: a
+  // no-op generator call turning into a 99-file diff. Normalising on the way
+  // through is only safe if writing puts the style back.
+  const eols = new Map();
+  for (const relativePath of [...files.keys(), ...CURATED.files]) {
+    const absolute = join(AI_ROOT, relativePath);
+    if (existsSync(absolute)) eols.set(relativePath, detectEol(readFileSync(absolute, 'utf8')));
+  }
   // Preserve curated documents across the wipe. Reading them into memory first
   // is deliberate: a partial-delete walk would be one bug away from removing a
   // file it meant to keep.
@@ -2348,16 +2403,28 @@ function writeAll(files) {
   for (const [relativePath, content] of files) {
     const absolute = join(AI_ROOT, relativePath);
     mkdirSync(dirname(absolute), { recursive: true });
-    writeFileSync(absolute, content);
+    writeFileSync(absolute, applyEol(content, eols.get(relativePath) ?? '\n'));
   }
 }
 
-function check(files) {
+export function check(files) {
   const stale = [];
   for (const [relativePath, content] of files) {
     const absolute = join(AI_ROOT, relativePath);
-    if (!existsSync(absolute)) stale.push(`${relativePath} (missing)`);
-    else if (readFileSync(absolute, 'utf8') !== content) stale.push(`${relativePath} (out of date)`);
+    if (!existsSync(absolute)) {
+      stale.push(`${relativePath} (missing)`);
+      continue;
+    }
+    const actual = normalizeEol(readFileSync(absolute, 'utf8'));
+    if (actual === content) continue;
+    // "(out of date)" alone is not actionable: when 101 files reported exactly
+    // that word, the message carried no hint that the cause was line endings,
+    // and it cost a full CI cycle to localise. Name the line and both sides.
+    const at = firstDifference(actual, content);
+    stale.push(
+      `${relativePath} (out of date at line ${lineAt(actual, at)}: `
+      + `on disk ${excerptAt(actual, at)} / generated ${excerptAt(content, at)})`,
+    );
   }
   const expected = new Set(files.keys());
   const walk = (dir, prefix = '') => {
@@ -2380,7 +2447,10 @@ function check(files) {
 const README_PATH = join(REPO_ROOT, 'README.md');
 function readmeProjection() {
   const register = JSON.parse(readFileSync(join(REPO_ROOT, 'docs', 'n8n-lego', 'milestones.json'), 'utf8'));
-  return syncReadmeMilestoneSection(readFileSync(README_PATH, 'utf8'), register);
+  const raw = readFileSync(README_PATH, 'utf8');
+  // Same reasoning as the pack: compared canonically, with `eol` travelling
+  // alongside the result so the writer can put the file back as it found it.
+  return { ...syncReadmeMilestoneSection(normalizeEol(raw), register), eol: detectEol(raw) };
 }
 
 /** DEC-0020: README.md and ROADMAP.md are projections / narrative of the register, never registers. */
@@ -2388,8 +2458,8 @@ function projectionViolations() {
   const register = JSON.parse(readFileSync(join(REPO_ROOT, 'docs', 'n8n-lego', 'milestones.json'), 'utf8'));
   return validateMilestoneProjections({
     register,
-    readme: readFileSync(README_PATH, 'utf8'),
-    roadmap: readFileSync(join(REPO_ROOT, 'docs', 'n8n-lego', 'ROADMAP.md'), 'utf8'),
+    readme: normalizeEol(readFileSync(README_PATH, 'utf8')),
+    roadmap: normalizeEol(readFileSync(join(REPO_ROOT, 'docs', 'n8n-lego', 'ROADMAP.md'), 'utf8')),
   });
 }
 
@@ -2418,7 +2488,7 @@ if (isCli) {
     process.stderr.write(`README.md: ${readme.reason}\n`);
     process.exit(1);
   }
-  if (readme.changed) writeFileSync(README_PATH, readme.text);
+  if (readme.changed) writeFileSync(README_PATH, applyEol(readme.text, readme.eol));
   process.stdout.write(
     `Generated pack: ${files.size}; curated: ${CURATED.files.length} (owner ${CURATED.owner}, preserved); `
     + `total .ai: ${files.size + CURATED.files.length}.\n`,

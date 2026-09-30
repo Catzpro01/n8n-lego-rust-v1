@@ -1,0 +1,27 @@
+# Normalise line endings in the working tree, not in the object store.
+#
+# WHY THIS EXISTS
+#
+# `.ai/` and the README milestone block are GENERATED, and
+# tools/lego/ai-pack.mjs --check compares them by exact string equality against
+# the generator's own output, which is always LF-terminated. Git for Windows
+# defaults `core.autocrlf=true`, so a checkout on a Windows runner rewrites
+# those LF endings to CRLF, and EVERY generated file then reads back as
+# "out of date" -- together with the README milestone-governance block.
+#
+# That is not a projection drift. It is a platform artefact that makes a
+# byte-reproducible generator unverifiable on any Windows runner.
+#
+# It stayed invisible because the n8n-lego architecture job never actually
+# executed its steps in CI: the hosted jobs failed to start, so the gate never
+# reached `ai-pack --check`. Once the job ran on the self-hosted Windows fleet
+# (PR #416), 7 of the 8 gate failures were this one cause.
+#
+# `text=auto` keeps git's own text/binary detection, so binaries (PNGs, the
+# offline tarball, lockfile-free assets) are untouched.
+* text=auto eol=lf
+
+# The pinned n8n reference checkout is vendored verbatim and is never edited by
+# this project. Normalising it would buy nothing and risks a mass
+# renormalisation, so it keeps git's default behaviour.
+reference/ -text

@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import {
   accountingRows, accountingBreakdown, aggregateParentIds, progressRoleOf,
   excludedRows, isVerifiedRow, completionTally, headlineMetrics, percent1,
-  renderReadmeMilestoneSection, sliceRecords, validateGovernanceRegister,
+  renderReadmeMilestoneSection, normalizeEol, sliceRecords, validateGovernanceRegister,
   validateSliceCheckpoints,
 } from '../../../tools/lego/governance-register.mjs';
 
@@ -156,7 +156,13 @@ test('D the counting rule is documented and derivable (roles come from the schem
 /* -------------------------------------------------------- E (projection == canon) */
 
 test('E the README projection equals the canonical derived projection', () => {
-  const readme = readFileSync(join(REGISTER_PATH, '..', '..', '..', 'README.md'), 'utf8');
+  // Compared canonically, for the same reason validateMilestoneProjections() is:
+  // `renderReadmeMilestoneSection` emits LF terminators, so on a CRLF working
+  // tree a byte-exact `includes` is false for a README that does in fact carry
+  // the block. The property under test is that the whole rendered block is
+  // present, and that is still exactly what is required -- a block with a single
+  // altered row does not match and the assertion still fails.
+  const readme = normalizeEol(readFileSync(join(REGISTER_PATH, '..', '..', '..', 'README.md'), 'utf8'));
   const block = renderReadmeMilestoneSection(REGISTER);
   assert.ok(readme.includes(block), 'README carries the generated block rendered from the register');
   const metrics = headlineMetrics(REGISTER);
