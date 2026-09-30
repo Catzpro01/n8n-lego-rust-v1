@@ -1,4 +1,4 @@
-name: Level 0 & Level 1 Validation (Windows Host + Linux Container)
+name: Level 0 & Level 1 Validation (Linux Docker)
 
 on:
   pull_request:
