@@ -114,17 +114,22 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Native PowerShell: the contract check is a pure git-diff assertion that
+      # does not need a Linux container.  Eliminating the Docker startup saves
+      # ~30-60 s per run without changing the checked paths or the error output.
       - name: Assert the TypeScript change set does not touch Rust or the reference source
         shell: powershell
         run: |
+          $ErrorActionPreference = "Stop"
           $baseSha = "${{ github.event.pull_request.base.sha || github.event.before || 'HEAD~1' }}"
-          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Image n8n-node-ci:latest -Command @"
-          set -euo pipefail
-          base='$baseSha'
-          changed=`$(git diff --name-only "`$base" HEAD || git diff --name-only HEAD~1 HEAD)
-          echo "`$changed"
-          if echo "`$changed" | grep -E '^(crates/|apps/n8n-rust/|Cargo\.(toml|lock)|reference/n8n/)' >/dev/null; then
-            echo "::error::Phase TS-1 must not modify Rust crates, the Rust app or the pinned reference"
+          $changed = git diff --name-only $baseSha HEAD 2>$null
+          if ($LASTEXITCODE -ne 0) { $changed = git diff --name-only HEAD~1 HEAD }
+          Write-Host $changed
+          $forbidden = $changed | Where-Object { $_ -match '^(crates/|apps/n8n-rust/|Cargo\.(toml|lock)|reference/n8n/)' }
+          if ($forbidden) {
+            Write-Host "::error::Phase TS-1 must not modify Rust crates, the Rust app or the pinned reference"
+            Write-Host "Forbidden changes:"
+            $forbidden | ForEach-Object { Write-Host "  $_" }
             exit 1
-          fi
-          "@
+          }
+          Write-Host "Contract check passed: no Rust or reference paths touched"
