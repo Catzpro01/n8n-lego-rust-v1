@@ -3,9 +3,7 @@ name: TypeScript Runtime Gate
 # Phase TS-1: gates the TypeScript baseline (apps/n8n-ts + packages/reconstructed-engine
 # + tests/runtime). Rust is untouched by this workflow and keeps its own pipelines.
 #
-# Runs on GitHub-hosted runners because the runtime needs nothing but Node >= 22.18.
-# To run it on the VPS runner instead, change `runs-on` to:
-#   runs-on: [self-hosted, linux, x64, vps-runtime]
+# Runs on Windows self-hosted runners using explicit Docker container (n8n-node-ci:latest).
 
 on:
   pull_request:
@@ -45,36 +43,32 @@ permissions:
 jobs:
   gate:
     name: Runtime gate (typecheck + unit + real-process suite + single-engine audit)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64, rust-build, n8n-rust]
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: '22.18'
-
-      - name: Node version
-        run: node -v
-
-      - name: Install dev dependencies (typescript for the typecheck gate)
-        run: npm --prefix apps/n8n-ts ci --no-audit --no-fund
-
-      - name: TypeScript runtime gate (5 stages)
-        run: bash tests/integration/runtime_gate.sh
-
-      - name: Fixture snapshots are up to date
-        run: node tests/runtime/helpers/update-fixtures.mjs --check
-
-      - name: Packaging scripts syntax + shell hygiene
+      - name: Execute Runtime Gate in Linux Container
+        shell: powershell
         run: |
+          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Image n8n-node-ci:latest -Command @'
+          set -euo pipefail
+          mkdir -p /tmp/runner-temp
+          export RUNNER_TEMP=/tmp/runner-temp
+          export GITHUB_WORKSPACE=/workspace
+          cd /workspace
+          sed -i 's/\r$//' tests/integration/runtime_gate.sh scripts/lib/common.sh scripts/*.sh
+          node -v
+          npm --prefix apps/n8n-ts ci --no-audit --no-fund
+          bash tests/integration/runtime_gate.sh
+          node tests/runtime/helpers/update-fixtures.mjs --check
           bash -n scripts/lib/common.sh
           for script in scripts/install.sh scripts/start.sh scripts/stop.sh scripts/upgrade.sh scripts/rollback.sh scripts/doctor.sh; do
             bash -n "$script"
             bash "$script" --help >/dev/null
           done
+          '@
 
       # Already failure-only, so low volume; shortened and made non-fatal for the same
       # reason as the uploads in n8n-lego.yml (org artifact quota exhausted 2026-09-29).
@@ -90,7 +84,7 @@ jobs:
 
   contract:
     name: Rust workspace untouched by this change set
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64, rust-build, n8n-rust]
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -99,12 +93,16 @@ jobs:
           fetch-depth: 0
 
       - name: Assert the TypeScript change set does not touch Rust or the reference source
+        shell: powershell
         run: |
+          $baseSha = "${{ github.event.pull_request.base.sha || github.event.before || 'HEAD~1' }}"
+          & "$env:GITHUB_WORKSPACE\tools\ci\run-linux-container.ps1" -Image n8n-node-ci:latest -Command @"
           set -euo pipefail
-          base="${{ github.event.pull_request.base.sha || github.event.before || 'HEAD~1' }}"
-          changed="$(git diff --name-only "$base" HEAD || git diff --name-only HEAD~1 HEAD)"
-          echo "$changed"
-          if echo "$changed" | grep -E '^(crates/|apps/n8n-rust/|Cargo\.(toml|lock)|reference/n8n/)' >/dev/null; then
+          base='$baseSha'
+          changed=`$(git diff --name-only "`$base" HEAD || git diff --name-only HEAD~1 HEAD)
+          echo "`$changed"
+          if echo "`$changed" | grep -E '^(crates/|apps/n8n-rust/|Cargo\.(toml|lock)|reference/n8n/)' >/dev/null; then
             echo "::error::Phase TS-1 must not modify Rust crates, the Rust app or the pinned reference"
             exit 1
           fi
+          "@
