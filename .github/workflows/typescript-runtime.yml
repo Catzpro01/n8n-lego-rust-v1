@@ -56,8 +56,30 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/runner-temp
           export RUNNER_TEMP=/tmp/runner-temp
-          export GITHUB_WORKSPACE=/workspace
-          cd /workspace
+
+          # /workspace is a bind mount of a Windows path (Docker Desktop file
+          # sharing), so every file open crosses a translation layer that is far
+          # slower than the container's own disk. This gate spawns ~80 real
+          # runtime processes and each one re-resolves the whole import graph:
+          # on HEAD 0a05762a a spawn took 19-22 s on the mount, against the
+          # harness 20 s startup timeout, while the same spawn on a local
+          # filesystem is under 0.5 s — 55 of 79 stage-4 tests died on that gap.
+          # Copy the tree once onto container-local disk and run the gate there.
+          # `reference/` (the pinned n8n checkout) and `.git` are not read by
+          # this job, so they stay out of the copy.
+          ws=/tmp/arena-workspace
+          rm -rf "$ws"
+          mkdir -p "$ws"
+          started=$(date +%s)
+          ( cd /workspace && tar cf - --exclude=./reference --exclude=./.git . ) | ( cd "$ws" && tar xf - )
+          echo "[runner] workspace copied to $ws in $(( $(date +%s) - started ))s"
+
+          # Failure logs are written inside the copy, but the upload step reads
+          # them from the host workspace: copy them back whatever the outcome.
+          trap 'mkdir -p /workspace/logs && cp -a "$ws"/logs/. /workspace/logs/ 2>/dev/null || true' EXIT
+
+          export GITHUB_WORKSPACE="$ws"
+          cd "$ws"
           sed -i 's/\r$//' tests/integration/runtime_gate.sh scripts/lib/common.sh scripts/*.sh
           node -v
           npm --prefix apps/n8n-ts ci --no-audit --no-fund
