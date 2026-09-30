@@ -28,6 +28,117 @@ Proyek ini berada di bawah tata kelola arsitektur tunggal (P0 Governance):
 5. **LEGO = Development Boundary, Bukan Runtime Overhead**: Pembagian LEGO hanya berfungsi sebagai batas modul dan pemisahan tugas saat isolasi/pengembangan. Pada hot-path runtime, engine tidak memecah eksekusi menjadi lapisan serialisasi JSON / IPC antar-crate yang berat, melainkan menggunakan representasi Runtime IR terpadu dengan alokasi minimal/zero-copy.
 6. **Feature & Node Freeze**: Penambahan node baru dibekukan sementara hingga arsitektur Kernel Runtime IR (P1: `ExecutionContext`, `ExecutionFrame`, `NodeExecutor`, Data Plane) dibakukan.
 
+## How to read this register
+
+**Documentation layer: README v2.0** — a projection of `docs/n8n-lego/milestones.json`
+register 2.5.0. This section explains the identifiers; it does not define them. The
+register is the only authority (DEC-0020: milestone truth is main-owned), the generated
+block below and the `.ai/` pack are rendered from it by `npm run lego:ai`, and
+`npm run lego:ai:check` fails when this README, the pack and the register disagree.
+Prose authority for every rule stated here:
+[`docs/engineering-operations/VOCABULARY.md`](docs/engineering-operations/VOCABULARY.md).
+
+This layer deliberately teaches **shapes, not facts**. It names no live slice, no live
+sub-milestone and no current pointer, because `governance-register.test.mjs` forbids
+milestone/slice IDs outside the generated block — a curated layer that recites canonical
+state would be a second authority, and would go stale. The concrete IDs are in the table
+below, which the generator owns.
+
+Five namespaces appear there. **A namespace must not be inferred from another namespace**
+— matching digits never imply matching meaning:
+
+```text
+P2           != Priority-02    program identity is not urgency
+P5           != Priority-05    program identity is not urgency
+Pn-Mnn       != Milestone-nn   that M is Maintenance, inside Program n
+UI-PHASE-05  != P5             a UI planning phase is not a program
+telemetry P0 != Program P0     a locked runtime contract is not identity
+```
+
+### PROGRAM — identity, `P0`–`P11`, permanent
+
+`P<number>` is a Program ID and nothing else. `P0`–`P11` is the complete top-level set
+(`governance.noNewTopLevelMilestones`); legacy `P12`–`P23` were consolidated into
+`futurePrograms[]` as `FUTURE-*` with traceability, and `P24+` is forbidden. A Program
+ID is never renamed, and never used as a synonym for operational priority.
+
+| ID | Program |
+| :--- | :--- |
+| `P0` | Core Application Bootstrap |
+| `P1` | n8n Compatibility / Behavioral Baseline |
+| `P2` | LEGO / AI / Plugin Foundation |
+| `P3` | Workflow + Execution + Unlimited Nodes |
+| `P4` | Trigger / Webhook / Ingress |
+| `P5` | Identity / Authentication / Authorization / Credentials (Security) |
+| `P6` | Node Registry / Node Runtime |
+| `P7` | Dynamic Parameters / Schema Runtime |
+| `P8` | Storage / Data Layer |
+| `P9` | Observability / Diagnostics / Operations |
+| `P10` | Multi-Tenant / Isolation / Quota |
+| `P11` | Worker / Distributed Scaling / HA |
+
+### PRIORITY — operational urgency, `Priority-00`–`Priority-06`
+
+Urgency is an **overlay**: it owns none of the three identity layers. It may not be
+written `P0`–`P6`, it never changes a STATUS, and it contributes 0 to delivery progress.
+
+| Token | Meaning |
+| :--- | :--- |
+| `Priority-00` | Security / Trust |
+| `Priority-01` | Merge Backlog |
+| `Priority-02` | CI / Runner |
+| `Priority-03` | Blocker Removal |
+| `Priority-04` | Authorized Delivery |
+| `Priority-05` | Root-Cause Hardening |
+| `Priority-06` | Future / Optional |
+
+### MILESTONE — grouping inside a program, `Pn.m`, historical and immutable
+
+The canonical milestone shape in this repository is dot notation **inside a program**:
+`Pn.m`, where `n` is the Program and `m` the milestone within it. `milestones[]` is
+immutable, and the current pointer lives in the register and in the generated table below.
+There is no global `Milestone-XX` namespace here: `M0`–`M5` in older documents are
+informal section names, not identifiers, and the `M` in a slice ID such as `Pn-Mnn` means
+*Maintenance*. A work record therefore writes `MILESTONE: N/A` rather than inventing a
+grouping.
+
+### SLICE — delivery identity, one PR each (DEC-0014)
+
+| Shape | Means | Reads as |
+| :--- | :--- | :--- |
+| `Pn-Snn` | feature slice inside Program `n` | "a slice inside Program `P2`" |
+| `Pn-Mnn` | maintenance / hardening / debt slice inside Program `n` | "maintenance inside Program `P5`" |
+| `Pn.m` | historical pre-reset id — immutable | "sub-milestone `m` of Program `n`" |
+| `<FUTURE-PROGRAM>-Snn` | slice of a thematic future program | "a slice of a `FUTURE-*` program" |
+
+A slice ID is never renamed for vocabulary reasons: renaming one orphans its PR, its
+merge SHA, its evidence file and its checkpoint history.
+
+### STATUS — `governance.statusVocabulary`, and nothing else
+
+`implemented`, `in-progress`, `planned`, `proposed`, `blocked`, `deferred`,
+`superseded`, `retired`, `rejected`. Program-level state uses the separate
+`complete` / `in-progress` / `planned` vocabulary and is **not** a slice percentage.
+
+### One more namespace readers meet in `.ai/`
+
+`UI-PHASE-03` … `UI-PHASE-10` are AI-UI implementation phases
+(`.ai/master/AI_UI_IMPLEMENTATION_PHASES.md`, curated). They were formerly written as
+bare `P3`–`P10`, which collided token-for-token with Programs `P3`–`P10`; a crosswalk in
+that file keeps historical references readable. Separately, the telemetry priority
+classes `P0`–`P4` in three contracts locked at v1.0.0 are a **runtime** namespace and
+are deliberately not renamed — see VOCABULARY.md §7.
+
+### A complete work record
+
+```text
+PRIORITY:   Priority-04     Authorized Delivery             (overlay, urgency)
+PROGRAM:    Pn              a canonical Program, e.g. P2     (identity, permanent)
+MILESTONE:  N/A             no canonical grouping applies - never fabricated
+SLICE:      Pn-Snn          a slice inside that Program      (delivery, one PR)
+STATUS:     implemented     from governance.statusVocabulary
+```
+
 <!-- BEGIN GENERATED milestone-governance: npm run lego:ai renders this block from docs/n8n-lego/milestones.json; do not edit by hand -->
 ## Overall Milestone Progress
 
@@ -589,7 +700,7 @@ Excluded from the current-delivery denominator. Realtime **0.0%**. Slice complet
 - **Live progress (DEC-0021, LIVE-MILESTONE EXCEPTION):** checkpoint progress, checkpoint status, checkpoint evidence, current checkpoint, slice / program / overall progress and the milestone evidence of a slice still in flight are operational telemetry. The Manager may reconcile them straight to `main` in a `governance(progress):` commit, without a governance PR, with `node tools/lego/progress-event.mjs record --slice <id> --checkpoint <CP-nn> --status <status> --evidence <reference>`. The tool runs the whole atomic chain: validate evidence and weights → write the register → regenerate `README.md` and `.ai` → run `npm run lego:ai:check` → commit → push → verify `main`. One measurable event is one commit; live progress is never batched and a partial state is never published. The Manager never types a percentage: `resolve` derives the state from evidence — `--fetch` reads the DEC-0015 jobs and the runner availability from the GitHub API, `--jobs <file.json>` reads an export, and `verify --cmd` derives completed / blocked from a verification command's exit code. A checkpoint that declares `requires` is earned only when every named check has passed; an absent self-hosted check is never PASS and `WAITING_RUNNER` is never PASS, so a head that never ran the suite cannot look green. Two paths, never mixed: delivery state is implementation → delivery PR → merge → post-merge verification → one governance PR reconciling status, merge SHA, evidence and projections; telemetry is evidence → checkpoint update → register → README → .ai → a `governance(progress):` commit → main. A slice status becoming `implemented` is delivery state and is never telemetry. The exception never covers source code, tests, runtime behaviour, API / frontend / backend / contract / schema implementation, dependencies, packages, Rust code, CI workflows, security policy, permissions, infrastructure, database schema or production configuration — those still go through a delivery PR. Live telemetry never bypasses a completion gate: 100% realtime progress with a completion contribution of 0% is a legitimate state, and only `implemented` (DEC-0014 + DEC-0015) moves Slice Completion.
 - **Rule:** Milestone truth is main-owned. A milestone design found or developed in Manager memory becomes authoritative only when reconciled into main through a PR. arena-manager is not an alternate milestone authority, and its docs/ tree is a stale snapshot that is never copied over main.
 - **Pending reconciliation:** A milestone change that exists only on arena-manager, a local worktree, a handoff, an issue, a PR body or chat is a proposal (pending reconciliation), never authoritative truth. A PR proposes a milestone state; only the merged state on main is authoritative.
-- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `cac26b33abf51ef7`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
+- **Freshness:** generated by `npm run lego:ai` from register 2.5.0 (fingerprint `4a4cd5cc5da0b2a3`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
 - **Progress model (Issue #307):** Realtime Delivery Progress is checkpoint-weighted across P0-P11. Slice Completion is implemented / active in that same denominator. Future programs stay visible and are excluded from the current-delivery denominator. Illustrations of the status/progress split are not register measurements and must not be copied into slice checkpoints. The generator counts only weights declared on slice.checkpoints. It does not invent weights. A completed checkpoint requires evidence. Weights on a slice must sum to 100. A slice with no checkpoint model stays at 0 unless it is implemented, in which case the legacy rule contributes 100. This projection is not canonical until the change is on main.
 - **Completion KPI:** Slice Completion is implemented slices / active slices in P0–P11. A verifying or blocked slice never increases that numerator. Realtime Delivery Progress is a separate checkpoint-weighted figure and can move while Slice Completion stays still.
 - **Purpose field:** a slice purpose is `slice.purpose` when present, otherwise the text after the first `: ` in the canonical title, otherwise the title. No purpose is invented.

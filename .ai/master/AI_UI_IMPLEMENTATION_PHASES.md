@@ -2,6 +2,30 @@
 
 **Status:** specification (sequencing, not a schedule). **Owner:** agent-01.
 
+> **Namespace note (vocabulary separation, `docs/engineering-operations/VOCABULARY.md`).**
+> The phases in this document are **AI-UI implementation phases**, namespaced `UI-PHASE-nn`.
+> They are **not** canonical Programs. They were previously written as bare `P3`–`P10`, which
+> collided token-for-token with canonical Programs `P3`–`P11` in
+> `docs/n8n-lego/milestones.json` — two different meanings for the same string in the same
+> `.ai/master/` folder. The crosswalk below is the only thing that changed; no scope, no
+> dependency, no exit gate and no definition of done was altered.
+>
+> | Before (ambiguous) | After (namespaced) | Canonical Program with the same token — **unrelated** |
+> | --- | --- | --- |
+> | `P3` | `UI-PHASE-03` | `P3` = Workflow + Execution + Unlimited Nodes |
+> | `P4` | `UI-PHASE-04` | `P4` = Trigger / Webhook / Ingress |
+> | `P5` | `UI-PHASE-05` | `P5` = Identity / Authentication / Authorization / Credentials |
+> | `P6` | `UI-PHASE-06` | `P6` = Node Registry / Node Runtime |
+> | `P7` | `UI-PHASE-07` | `P7` = Dynamic Parameters / Schema Runtime |
+> | `P8` | `UI-PHASE-08` | `P8` = Storage / Data Layer |
+> | `P9` | `UI-PHASE-09` | `P9` = Observability / Diagnostics / Operations |
+> | `P10` | `UI-PHASE-10` | `P10` = Multi-Tenant / Isolation / Quota |
+>
+> Older evidence, PR bodies, issues and chat that say "AI UI P5" mean `UI-PHASE-05`. Those
+> historical records are **not** rewritten (`GOVERNANCE SAFETY`: no historical evidence rewrite);
+> this table is how they are read. The `P2.5` / `P2.10` references in this file are canonical
+> historical **sub-milestones of Program P2** and are deliberately unchanged.
+
 This document says **in what order the AI experience is built, what each phase depends on, and what
 proves it**. It is deliberately conservative: a phase that needs vocabulary nobody publishes yet
 waits, because building UI against an invented word is how a second vocabulary is born.
@@ -15,13 +39,13 @@ Everything below builds *on* it and adds no new foundation.
 ## 1. Dependency rule
 
 ```
-P3 skeleton ──┬─► P4 Assistant (GLOBAL)
-              ├─► P5 Copilot chat + context/session
-              │        ├─► P6 trace · agents · approvals · artifacts
-              │        │        ├─► P7 skills · memory                    (waits for XA-11, XA-12)
-              │        │        └─► P8 MCP · runtimes · workspace        (waits for XA-16, XA-13)
-              │        └───────────────────────────────────────────► P9 node creator · translation · usage (waits for XA-15, XA-14, XA-17)
-              └───────────────────────────────────────────────────► P10 hardening (a11y · performance · mobile · i18n · evidence)
+UI-PHASE-03 skeleton ──┬─► UI-PHASE-04 Assistant (GLOBAL)
+              ├─► UI-PHASE-05 Copilot chat + context/session
+              │        ├─► UI-PHASE-06 trace · agents · approvals · artifacts
+              │        │        ├─► UI-PHASE-07 skills · memory                    (waits for XA-11, XA-12)
+              │        │        └─► UI-PHASE-08 MCP · runtimes · workspace        (waits for XA-16, XA-13)
+              │        └───────────────────────────────────────────► UI-PHASE-09 node creator · translation · usage (waits for XA-15, XA-14, XA-17)
+              └───────────────────────────────────────────────────► UI-PHASE-10 hardening (a11y · performance · mobile · i18n · evidence)
 ```
 
 A phase may start when its dependencies are *published*, not when they are merely planned. While a
@@ -44,7 +68,7 @@ dependency is `publicationPending` (XA-11 … XA-17), the surface renders its st
 
 ## 3. Phases
 
-### P3 — AI experience skeleton (no inference)
+### UI-PHASE-03 — AI experience skeleton (no inference)
 
 **Delivers.** The shell-level entry points (`AI Assistant`, `Copilot`, `Ask AI`,
 `Analyze Execution`), the right-side panel with its stable tab strip (Chat · Trace · Agents ·
@@ -60,13 +84,13 @@ copy keys resolve in all six locales.
 **Exit gate.** Entry points and status bar are live on a build with no AI configured, and the
 zero-install copy is the honest one (`AI Foundation ready · no provider configured`).
 
-### P4 — AI Assistant (`GLOBAL`)
+### UI-PHASE-04 — AI Assistant (`GLOBAL`)
 
 **Delivers.** Session creation (`ai.agent-session`), context load (`ai.context`), streaming answers
 through `ai.model-gateway` (`generate`, `stream`), per-message token chips with `source`, the usage
 detail view, and the action-proposal path (`ai.decision` + `ai.approval`).
 
-**Depends on.** P3. **XA-17** for usage beyond `countTokens` (until then: `estimated` or absent).
+**Depends on.** UI-PHASE-03. **XA-17** for usage beyond `countTokens` (until then: `estimated` or absent).
 
 **Tests.** Zero-install state; `capability-unavailable` never rendered as an error; refused
 permission shows the missing grant; streaming announces completion once; a proposed action never
@@ -75,14 +99,14 @@ executes without an approval decision.
 **Exit gate.** An instance with no provider is a *valid* instance: the Assistant explains what is
 missing and the editor keeps working.
 
-### P5 — Copilot chat, context and session
+### UI-PHASE-05 — Copilot chat, context and session
 
 **Delivers.** The context ladder (`GLOBAL → WORKFLOW → NODE → EXECUTION → EVENT`) with the scope
 chip, the context panel (`used`, `budget`, `remaining`, session, previous session, continuation,
 memory loaded, tools loaded, reserved output), the session line, and the rollover flow
 (`NORMAL → PREPARE → ROLLOVER`, `context.compact`, `context.compacted`).
 
-**Depends on.** P3, P4.
+**Depends on.** UI-PHASE-03, UI-PHASE-04.
 
 **Tests.** Rollover produces a new session with `continuationOf` linked and no data loss visible to
 the user; a filled window never renders as an error; scope changes are visible in the chip; the
@@ -90,7 +114,7 @@ panel keeps the canvas scroll position in drawer mode.
 
 **Exit gate.** A long conversation survives a rollover without the user seeing a failure.
 
-### P6 — Trace, agents, approvals, artifacts
+### UI-PHASE-06 — Trace, agents, approvals, artifacts
 
 **Delivers.** The Trace tab (operational rows, bounded and virtualized, ordered by
 `(timestamp, sequence)`), the Agents tab (single agent line, `Agents n`, delegation tree), the
@@ -98,7 +122,7 @@ approval card in chat/trace/status bar, the Files tab with per-kind preview and 
 `Preview · Apply · Open · Download · Compare · Revert` actions (gated by approval where declared),
 and decision cards with reason summaries and evidence references.
 
-**Depends on.** P5. Consumes `ai.agent-events` (26 types), `ai.agent-runtime`,
+**Depends on.** UI-PHASE-05. Consumes `ai.agent-events` (26 types), `ai.agent-runtime`,
 `ai.agent-delegation`, `ai.approval`, `ai.artifact`.
 
 **Tests.** Trace ordering and drop counting; a paused run is never "completed"; a child agent shows
@@ -108,14 +132,14 @@ reports partial state; artifacts render no payload inline.
 **Exit gate.** One full delegated run is reconstructable from the Trace tab alone, with references
 instead of payloads.
 
-### P7 — Skills and memory *(waits for XA-11, XA-12)*
+### UI-PHASE-07 — Skills and memory *(waits for XA-11, XA-12)*
 
 **Delivers.** `Skills n active` → skill list → skill detail (procedure, capabilities, validators,
 references, token budget, version), and `Memory n relevant` → relevant items by kind → `Open Memory
 Graph`. Until the decisions resolve: both surfaces render `capability-unavailable` with the reason
 and no mock data.
 
-**Depends on.** P6, plus a manager decision publishing `ai.skill` / `ai.memory` (or an explicit
+**Depends on.** UI-PHASE-06, plus a manager decision publishing `ai.skill` / `ai.memory` (or an explicit
 statement that the frontend owns them as presentation-only).
 
 **Tests.** No skill/memory state is sent to the backend while unpublished; counts come from data
@@ -123,14 +147,14 @@ already loaded; the graph is L3-only and paged.
 
 **Exit gate.** The chips render truthful counts or an honest "not published" state.
 
-### P8 — MCP, runtimes, workspace *(waits for XA-16, XA-13)*
+### UI-PHASE-08 — MCP, runtimes, workspace *(waits for XA-16, XA-13)*
 
 **Delivers.** Capability-first MCP presentation (`github.search — MCP`) with lazy advanced details
 (server, transport, health, tools loaded, availability), the runtime line in agent detail
 (kind, version, availability, locality, supports) with lazy resource cost, and the workspace view
 (project, status, runtime, terminal state, tree) with explicit scope.
 
-**Depends on.** P6, plus the MCP capability decision and the workspace contract (today
+**Depends on.** UI-PHASE-06, plus the MCP capability decision and the workspace contract (today
 `workspace.projects` is `unsupported`, contract `0.0.0`).
 
 **Tests.** No MCP tool dump (capability first); a runtime with `supports.cancellation: false` has no
@@ -140,7 +164,7 @@ ever shown.
 **Exit gate.** An external runtime is optional in every flow: local-only and remote-only instances
 both render complete, non-degraded surfaces.
 
-### P9 — Node creator, translation, token & usage *(waits for XA-15, XA-14, XA-17)*
+### UI-PHASE-09 — Node creator, translation, token & usage *(waits for XA-15, XA-14, XA-17)*
 
 **Delivers.** `Create with AI` (Describe → Draft → Validate → Test → Preview → Install) with the
 seven creation methods as peers (Visual, Declarative, OpenAPI, Script, Subworkflow, Native,
@@ -148,7 +172,7 @@ Rust/WASM), the compact language control (`Language`, `Response language: Auto`,
 response`), and the usage view (`Message`, `Context`, `Output`, `Total`, `Source`) fed by whatever
 is *reported*.
 
-**Depends on.** P6; each sub-surface gated by its decision.
+**Depends on.** UI-PHASE-06; each sub-surface gated by its decision.
 
 **Tests.** The AI flow never bypasses `workflow.validate`; Rust/WASM is never the default;
 `source: estimated` is visibly different from `reported`; a translation action is absent while
@@ -157,14 +181,14 @@ XA-14 is open.
 **Exit gate.** Creating a node with AI produces a validated draft and an installable preview, or
 explains which declared step is missing.
 
-### P10 — Hardening
+### UI-PHASE-10 — Hardening
 
 **Delivers.** Accessibility and localization completeness across every surface (keyboard map,
 live-region behaviour, RTL pass, contrast, reduced motion, 200% zoom, touch targets), the
 performance pass (lazy discipline audited per surface, virtualization limits, no polling,
 boot-payload confirmation), the mobile pass, and the final evidence set.
 
-**Depends on.** P4–P9.
+**Depends on.** UI-PHASE-04–UI-PHASE-09.
 
 **Tests.** The full state matrix has no blank cell; every string resolves in all six locales with
 `ar` RTL; a trace of 200 rows renders within the interactive budget; the boot descriptor is

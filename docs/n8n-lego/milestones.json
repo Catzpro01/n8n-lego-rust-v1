@@ -1,5 +1,5 @@
 {
-  "registerVersion": "2.4.0",
+  "registerVersion": "2.5.0",
   "owner": "manager",
   "canonical": true,
   "purpose": "Granular milestone truth beneath the strategic Phase A-F roadmap, and \u2014 since the governance reset (#256) \u2014 the single canonical register of programs P0-P11, their slices, the thematic future programs and the feature registry. This is the only machine-readable milestone register. Milestones and slices may be refined by Manager only by updating this file; strategic phases are not deleted.",
@@ -216,6 +216,192 @@
     ],
     "branchPolicy": "Persistent branches: main and arena-manager only (DEC-0019, docs/engineering-operations/workforce/decisions/DEC-0019.json; supersedes the worker-slot branches of DEC-0003 and the agent-branch model of DEC-0017). The Manager executes every task itself; each Slice is delivered by one PR from a short-lived Manager branch that is deleted after merge. Every other branch is: A) merged -> deleted; B) important unmerged work -> PR, merge, delete; C) obsolete -> deleted after comparison with main (unique content preserved under an archive/<branch> tag).",
     "runnerProtocol": "docs/engineering-operations/RUNNER-PROTOCOL.md (machine-readable: docs/engineering-operations/workforce-governance.json#runnerProtocol)",
+    "terminology": {
+      "authority": "docs/engineering-operations/VOCABULARY.md (owner Master Prompt 'CANONICAL VOCABULARY SEPARATION', 2026-09-29). This block is a machine-readable summary; the document is the prose authority. Regression gate: apps/n8n-lego/test/governance-vocabulary.test.mjs.",
+      "absoluteRule": "PROGRAM ID != PRIORITY ID. P0 = Program P0 (Core Application Bootstrap); Priority-00 = operational urgency (Security / Trust). P5 = Program P5; Priority-05 = root-cause hardening. P5-M05 = an existing canonical slice inside Program P5. Urgency and identity are orthogonal: one work item carries both. No operating report may read P0 as 'priority'; no canonical governance record may read Priority-05 as 'Program P5'.",
+      "hierarchy": "PROGRAM (identity, P0-P11, permanent) -> MILESTONE (grouping inside a program, historical, immutable) -> SLICE (delivery, one PR, canonical work identity). PRIORITY overlays all three and owns none of them.",
+      "namespaces": {
+        "program": {
+          "tokens": "P0-P11",
+          "source": "programs[].id in this file",
+          "rule": "Canonical identity. Never renamed. noNewTopLevelMilestones: P0-P11 is the complete top-level set, P24+ forbidden. Legacy P12-P23 were consolidated into futurePrograms[] as FUTURE-* with traceability; a bare P12-P23 in a historical document is a legacy Program reference, never a priority."
+        },
+        "milestone": {
+          "tokens": "P2.11-P2.27, P2.27.0-P2.27.10, P9.6, P6.23, P4.8 (dot notation); P5-M01..P5-M10 (maintenance)",
+          "rule": "Historical granular ladder; milestones[] stays immutable. The letter M inside a historical slice ID (P5-M05) is part of that slice's canonical identifier and is NOT evidence of one global Milestone namespace. A NEW grouping, if ever needed, uses MILESTONE-01 / 'Milestone 01' and never a bare Pn. Do not create a Milestone to decorate nomenclature; report MILESTONE: N/A rather than invent one."
+        },
+        "slice": {
+          "tokens": "P2-S07, P2-S29, P5-M05, P6-S05, P8-S01, P3 Slice A, P3 Slice M",
+          "rule": "Canonical work identity, one delivery PR each (DEC-0014). P2-S07 reads as 'a slice inside Program P2'. Never changed for vocabulary reasons: changing one orphans its PR, merge SHA, evidence file and checkpoint history."
+        },
+        "priority": {
+          "tokens": "Priority-00 .. Priority-06",
+          "scale": {
+            "Priority-00": "Security / Trust",
+            "Priority-01": "Merge Backlog",
+            "Priority-02": "CI / Runner",
+            "Priority-03": "Blocker Removal",
+            "Priority-04": "Authorized Delivery",
+            "Priority-05": "Root-Cause Hardening",
+            "Priority-06": "Future / Optional"
+          },
+          "rule": "Operational urgency overlay. MAY NOT be written P0-P6. Prose may render Priority-04 or priority-04; never P4. A priority never appears alone in a work record: it is always paired with the PROGRAM / SLICE it overlays, never changes STATUS, and never contributes to progress."
+        },
+        "aiUiPhase": {
+          "tokens": "UI-PHASE-03 .. UI-PHASE-10",
+          "source": ".ai/master/AI_UI_IMPLEMENTATION_PHASES.md (curated)",
+          "rule": "AI-UI implementation phases. Formerly written as bare P3-P10, which collided token-for-token with canonical Programs P3-P10 in this same register. Namespaced 2026-09-29; a crosswalk in that file keeps historical references readable. Historical evidence, PR bodies and issues that say 'AI UI P5' mean UI-PHASE-05 and are NOT rewritten.",
+          "collisionResolved": true
+        },
+        "projectPhase": {
+          "tokens": "PHASE_1_ANATOMY .. PHASE_5_PERFORMANCE_BENCHMARK",
+          "source": ".arena/state/phases.yaml, PROJECT_RULES.md, README.md",
+          "rule": "Distinct token shape; no Pn collision. The WORD 'phase' is overloaded three ways and must always be qualified: (a) aiUiPhase; (b) the generator's '(phase Pn)' rendering of a canonical Program in .ai/domains/*.md; (c) canonical Program IDs carried as QUOTED DATA VALUES under a field the code names 'phase' or 'source' - apps/n8n-lego/src/compat/capability.mjs (phase: 'P3'/'P5'/'P6'), src/lego/contract-oracle.mjs (CORACLE_PHASES = ['P3','P4','P6','P8']), src/lego/replay-evidence.mjs (REPLAY_EVID_SOURCES = ['P3','P6']). Sense (c) is namespace #1, NOT a priority, and is NOT renamed: those values are contract-fed and capability-conformance.mjs validates them against the LEGO registry. Every quoted Pn data value in first-party source is declared in QUOTED_PN_ALLOWLIST in apps/n8n-lego/test/governance-vocabulary.test.mjs with the namespace it means; an undeclared one fails the gate."
+        },
+        "telemetryPriorityClass": {
+          "tokens": "P0-P4",
+          "source": "observability.telemetry-buffer@1.0.0 (TELEMETRY_PRIORITY_CLASSES), observability.telemetry-retention@1.0.0 (RETENTION_PRIORITIES, RET_RANK, SIGNAL_DEFAULT_PRIORITY), observability.low-resource-mode@1.0.0",
+          "meanings": {
+            "P0": "security/audit/safety evidence - never shed by pressure",
+            "P1": "failure/error diagnostics",
+            "P2": "execution lifecycle",
+            "P3": "performance telemetry",
+            "P4": "debug/verbose telemetry - shed first"
+          },
+          "rule": "NOT the Manager ladder and not interchangeable with it (5 values, record-shedding criticality, vs 7 values, human urgency). DELIBERATELY NOT RENAMED: these are locked contracts at v1.0.0 and the values are serialized into fixtures, so renaming is a contract-breaking DELIVERY (ADR + version bump + fixture migration), not vocabulary cleanup. Blast radius measured: 10 files, ~178 occurrences. Disambiguated by registration here plus the regression gate, which pins these three contracts as the ONLY place P0-P4 may carry priority semantics.",
+          "collisionStatus": "OPEN-DOCUMENTED (AMBIGUITY-01)",
+          "precedent": "execution.guard@1.0.0 GUARD_LANES already uses named lanes (system, interactive, background, bulk, deferred) with no Pn token - the pattern to follow if this namespace is ever migrated."
+        },
+        "resourcePriorityLane": {
+          "tokens": "system, interactive, background, bulk, deferred",
+          "source": "resource-guard.mjs GUARD_LANES (execution.guard@1.0.0)",
+          "rule": "Already clean: named lanes, no Pn token. Held up as the precedent for telemetryPriorityClass."
+        }
+      },
+      "reportFormat": {
+        "fields": [
+          "PRIORITY",
+          "PROGRAM",
+          "MILESTONE",
+          "SLICE",
+          "BRANCH",
+          "PR",
+          "HEAD SHA",
+          "STATUS",
+          "EVIDENCE"
+        ],
+        "example": {
+          "PRIORITY": "Priority-04",
+          "PROGRAM": "P5",
+          "MILESTONE": "N/A",
+          "SLICE": "P5-M05",
+          "BRANCH": "delivery/p5-m05-multi-host-state",
+          "PR": "#401",
+          "HEAD SHA": "0123abcd",
+          "STATUS": "in-progress",
+          "EVIDENCE": "docs/n8n-lego/evidence/P5-M05-EVIDENCE.md"
+        },
+        "rules": "MILESTONE: N/A when no canonical grouping exists - never fabricate. STATUS uses only statusVocabulary. PRIORITY is optional on a delivery record and mandatory on a Manager triage/backlog record."
+      },
+      "openAmbiguities": [
+        {
+          "id": "AMBIGUITY-01",
+          "field": "telemetry priority classes P0-P4",
+          "location": "telemetry-buffer.mjs, telemetry-retention.mjs, low-resource-mode.mjs + fixtures/p9/*.json + 5 test files",
+          "currentMeaning": "record-shedding criticality inside three contracts locked at v1.0.0",
+          "possibleMeanings": [
+            "telemetry priority (actual)",
+            "Program P0-P4 (collision)",
+            "Manager priority (collision)"
+          ],
+          "recommendation": "keep as-is; disambiguate by registration + regression gate",
+          "authorityRequired": "owner decision to open a contract-change delivery (ADR + version bump + fixture migration), or explicit acceptance of documentation-only disambiguation (RECOMMENDED)",
+          "status": "reported, NOT changed"
+        },
+        {
+          "id": "AMBIGUITY-02",
+          "field": "(P0 CONSTITUTION) / (P0 Governance)",
+          "location": "PROJECT_RULES.md section 0 heading; README.md 'Governance & Single Source of Truth (P0 Constitution)'",
+          "currentMeaning": "primacy - these are the highest-authority rules",
+          "possibleMeanings": [
+            "operational priority",
+            "Program P0",
+            "bare ordinal"
+          ],
+          "evidence": "Program P0 = 'Core Application Bootstrap' (programs[0] in this file): app bootstrap, runtime host, packaging - not a constitution. Priority-00 = 'Security / Trust' - also not a constitution. Every available Pn reading asserts something false.",
+          "recommendation": "drop the Pn token: '(CONSTITUTIONAL - highest authority; not Program P0, not Priority-00)'",
+          "authorityRequired": "owner confirmation of wording; PROJECT_RULES.md section 0 is a constitutional clause and Issue #266 reserves rule changes to Manager authority",
+          "status": "reported, NOT changed"
+        },
+        {
+          "id": "AMBIGUITY-03",
+          "field": "(P1: ExecutionContext, ExecutionFrame, NodeExecutor, Data Plane)",
+          "location": "PROJECT_RULES.md section 0.5 FEATURE & NODE FREEZE; README.md feature/node freeze item",
+          "currentMeaning": "ordinal enumerator listing the Kernel Runtime IR spec items that must land before the freeze lifts",
+          "possibleMeanings": [
+            "Program P1",
+            "operational priority",
+            "ordinal list marker"
+          ],
+          "evidence": "Program P1 = 'n8n Compatibility / Behavioral Baseline' - unrelated to the Runtime IR. Priority-01 = 'Merge Backlog' - unrelated. The four items exist as crates/n8n-workflow/src/runtime/{ir,frame,executor,context}.rs, i.e. a spec-item list.",
+          "recommendation": "'(IR-1: ExecutionContext, ExecutionFrame, NodeExecutor, Data Plane)' or drop the label",
+          "authorityRequired": "owner/Manager ruling - the token sits inside a FREEZE clause whose exit condition is separately contested, so editing its text risks changing what the freeze means",
+          "status": "reported, NOT changed"
+        }
+      ],
+      "versionPolicy": {
+        "field": "registerVersion",
+        "scheme": "semver; enforced by packages/frontend-lego/test/33-milestones.test.mjs:55 (/^\\d+\\.\\d+\\.\\d+$/)",
+        "majorMeans": "a canonical re-foundation of the register that invalidates existing identifiers or forces consumers to migrate. Sole precedent: 1.0.0 -> 2.0.0, 'governance reset (#256): one canonical register for P0-P11, slices, future programs and features' (8b7bd19b).",
+        "minorMeans": "an additive governance rule, decision, or newly authorized program/slice set that invalidates nothing. Precedent: 2.1.0 DEC-0020 milestone truth is main-owned (5468b2d4); 2.2.0 split realtime progress from slice completion (7084a123); 2.3.0 DEC-0021 live milestone progress telemetry (c2b519d6); 2.4.0 DEC-0024 authorize P7 as P7-S01..S08 (45733fa2).",
+        "thisChange": "2.4.0 -> 2.5.0. governance.terminology (this block) and governance.terminology.documentationLayers are additive keys. No identifier was invalidated, no consumer must migrate, and no canonical state moved - see notDelivery below and the progress invariants in apps/n8n-lego/test/governance-vocabulary.test.mjs. Under the precedent above this is a MINOR bump.",
+        "v3Question": "The owner directive of 2026-09-29 named 'Milestone/Register schema/documentation: v3.0' as a target, and in the same section (steps 7-8) instructed the Manager to determine from existing semantics whether a change is genuinely MAJOR and never to move a version string cosmetically without documenting a contract change. The two are resolved by the evidence: writing 3.0.0 here would advertise a canonical reset that this cycle deliberately did not perform, which sections 15 and 16 forbid. Recorded as an open authority item, not silently decided - see docs/engineering-operations/VOCABULARY.md section 12.",
+        "authority": "Manager, delegated by repository precedent: every prior bump was made by a governance commit of exactly this shape. Escalated to the owner only for the 3.0.0 label question."
+      },
+      "documentationLayers": {
+        "rule": "One term, one meaning, one authority. A projection may restate canonical state but may never originate it; a curated document may add prose but may never contradict the register.",
+        "layers": [
+          {
+            "id": "canonical-register",
+            "path": "docs/n8n-lego/milestones.json",
+            "kind": "AUTHORITY",
+            "versionField": "registerVersion",
+            "note": "The only place program identity, slice identity, statuses, denominators and the execution pointer originate. DEC-0020: milestone truth is main-owned."
+          },
+          {
+            "id": "generated-projection",
+            "paths": [
+              ".ai/master/MILESTONE_REGISTER.md",
+              ".ai/ (64 generated files)",
+              "README.md, the block between the milestone-governance markers"
+            ],
+            "kind": "GENERATED",
+            "authority": "tools/lego/ai-pack.mjs + tools/lego/governance-register.mjs",
+            "note": "Rendered from the register by `npm run lego:ai` and verified by `npm run lego:ai:check`. Never hand-edited."
+          },
+          {
+            "id": "curated-prose",
+            "paths": [
+              "docs/engineering-operations/VOCABULARY.md",
+              ".ai/master/AI_UI_IMPLEMENTATION_PHASES.md",
+              "README.md outside the generated markers"
+            ],
+            "kind": "CURATED",
+            "note": "Human-authored. The generator must never delete or replace curated content, and a curated document must never restate a number the register owns."
+          },
+          {
+            "id": "readme-documentation-layer",
+            "path": "README.md, section 'How to read this register'",
+            "kind": "CURATED",
+            "version": "README v2.0",
+            "contract": "v2.0 = the README states, in human-readable form and immediately before the generated register table, the five namespaces a reader meets there (PROGRAM, PRIORITY, MILESTONE, SLICE, STATUS), the rule that a namespace must not be inferred from another namespace, and its own standing as a projection. Machine-checked by apps/n8n-lego/test/governance-vocabulary.test.mjs, which also asserts the layer names the registerVersion it projects - so the README can carry a version without becoming an authority.",
+            "whyVersionedSeparately": "README.md declares no version string of its own anywhere on main; its only version marker is the generated freshness line ('from register <registerVersion>, fingerprint <hash>'). Introducing 'README v2.0' therefore creates a new label, which section 2 of the directive permits only with a documented contract. This entry is that contract, and the regression gate is its enforcement."
+          }
+        ],
+        "wordOverload": "'Vocabulary' already names a second, unrelated thing in this repository. packages/frontend-lego/src/vocabulary.mjs is the shared CAPABILITY vocabulary lock (VOCABULARIES, LOCAL_VOCABULARIES, DECLARED_OVERLAPS, detectCollisions, vocabularyDrift, compareVocabulary) that stops the frontend and the backend foundation from growing two dialects for one capability term; it is tested by packages/frontend-lego/test/24-vocabulary.test.mjs against docs/n8n-lego/decisions/cross-agent-decisions.json. This terminology block and docs/engineering-operations/VOCABULARY.md govern IDENTIFIER NAMESPACES (P0-P11, Priority-NN, Pn-Snn, Pn-Mnn, UI-PHASE-NN). The two are disjoint: neither reads, renames, validates or versions the other, and no capability term in the lock carries a Pn token. Registered because the directive's own target is one term and one meaning, and the word 'vocabulary' was the one collision the first pass missed."
+      },
+      "notDelivery": "Vocabulary cleanup is not delivery. This block adds no slice, moves no status to implemented, and contributes 0 to Realtime Delivery Progress and 0 to Slice Completion. The denominators (199 global / 193 current) and numerators (190 / 189) are unchanged by design. No Program ID, slice ID, sub-milestone ID, DEC ID, merge SHA, status, denominator, checkpoint or plannedQueue entry was altered."
+    },
     "reconciliation": {
       "mergedPRs": [
         {
