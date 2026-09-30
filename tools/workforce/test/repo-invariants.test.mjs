@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { extname, join, relative } from 'node:path';
 import { REPO_ROOT } from '../src/schema.mjs';
 import { checkDecisionRecords, main } from '../src/cli.mjs';
 
@@ -163,4 +163,98 @@ test('DEC-0019: the task-distribution engine and legacy agent runtime stay remov
     'tools/arena-bridge', 'tools/arena-executor', 'tools/gateway', 'tools/orchestration/control_plane.py', 'tools/orchestration/task_manager.py', 'tools/orchestration/audit_runner.py',
     '.arena/AGENT_RULES.md', '.arena/templates'];
   for (const p of gone) assert.ok(!existsSync(join(REPO_ROOT, p)), `${p} must not come back without a new owner decision`);
+});
+
+// ---------------------------------------------------------------------------------
+// Root-cause guard (Priority-05): no first-party source may identify the repository by
+// its checkout directory NAME.
+//
+// FOUND + REPRODUCED 2026-09-29. `packages/frontend-lego/test/12-knowledge.test.mjs:56`
+// asserted that REPO_ROOT ended with the repository's own name. It passed in CI only because the
+// runner's checkout directory happened to be named after the repository, and it failed
+// in every other checkout - reproduced in a clone named `n8n-audit`. The assertion also
+// added no information: the same file derived REPO_ROOT by path traversal eight lines
+// above, so the only thing the name check contributed was an environment dependency.
+// That is the hidden-failure shape this guard exists to prevent: a test that is green
+// for a reason nobody wrote down, and red for a reason nobody intended.
+//
+// The sweep that found it classified every REPO_ROOT derivation repo-wide (25+ files):
+// all the others traverse from `import.meta.url`, `__dirname`, `PACKAGE_ROOT` or
+// `APP_DIR`. This keeps that true, so the next one cannot be added by accident.
+//
+// The patterns are assembled from a fragment so this file does not contain the literal
+// it forbids, and therefore cannot match itself.
+const REPO_NAME_FRAGMENT = 'n8n-rust';
+const RUNNER_WORKDIR = '/home/' + 'runner/work/';
+const DIRECTORY_NAME_ASSUMPTIONS = [
+  new RegExp('endsWith\\(\\s*[\'"][^\'"]*' + REPO_NAME_FRAGMENT, 'i'),
+  new RegExp('basename\\([^)]*\\)\\s*===?\\s*[\'"]' + REPO_NAME_FRAGMENT, 'i'),
+  new RegExp('===?\\s*[\'"]' + REPO_NAME_FRAGMENT + '-v\\.?4[\'"]'),
+  new RegExp(RUNNER_WORKDIR.replace(/\//g, '\\/') + REPO_NAME_FRAGMENT, 'i'),
+];
+
+const GUARD_SKIP_DIRS = new Set([
+  'node_modules', '.git', 'reference', 'target', 'dist', 'build', 'coverage', 'out', '.next',
+]);
+const GUARD_SOURCE_EXTENSIONS = new Set(['.mjs', '.js', '.cjs', '.ts', '.py', '.sh', '.ps1', '.yml', '.yaml']);
+
+function* firstPartySources(dir = REPO_ROOT) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (GUARD_SKIP_DIRS.has(entry.name)) continue;
+      yield* firstPartySources(full);
+    } else if (GUARD_SOURCE_EXTENSIONS.has(extname(entry.name))) {
+      yield full;
+    }
+  }
+}
+
+test('no first-party source identifies the repository by its checkout directory name', () => {
+  const hits = [];
+  let scanned = 0;
+  // This file is the guard: it carries the forbidden literals on purpose, as the
+  // fixtures of the vacuity test below. Scanning itself would make the guard
+  // permanently red, so it is the one documented exemption.
+  const GUARD_FILE = join(REPO_ROOT, 'tools', 'workforce', 'test', 'repo-invariants.test.mjs');
+  for (const file of firstPartySources()) {
+    if (file === GUARD_FILE) continue;
+    scanned += 1;
+    const lines = readFileSync(file, 'utf8').split('\n');
+    lines.forEach((line, index) => {
+      for (const pattern of DIRECTORY_NAME_ASSUMPTIONS) {
+        if (pattern.test(line)) {
+          hits.push(`${relative(REPO_ROOT, file)}:${index + 1}: ${line.trim().slice(0, 110)}`);
+          break;
+        }
+      }
+    });
+  }
+  assert.ok(scanned > 300, `the sweep actually walked the tree (${scanned} first-party source files)`);
+  assert.deepEqual(hits, [],
+    'A directory-name assumption makes code environment-dependent: it is green only in a\n'
+    + `checkout named after the repository. Derive paths by traversal instead.\n${hits.join('\n')}`);
+});
+
+test('the directory-name guard is not vacuous: it rejects the assertion it replaced', () => {
+  const offenders = [
+    "assert.ok(REPO_ROOT.endsWith('n8n-rust-v.4'), 'root');",
+    'if (basename(dir) === "n8n-rust-v.4") {}',
+    "const p = '/home/runner/work/n8n-rust-v.4/n8n-rust-v.4';",
+  ];
+  for (const line of offenders) {
+    assert.ok(DIRECTORY_NAME_ASSUMPTIONS.some((pattern) => pattern.test(line)),
+      `guard must reject: ${line}`);
+  }
+  // And it must not reject the correct pattern, or it would force the defect back in.
+  const legitimate = [
+    "const REPO_ROOT = join(PACKAGE_ROOT, '..', '..');",
+    "const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');",
+    "assert.ok(existsSync(join(REPO_ROOT, 'docs/n8n-lego/milestones.json')), 'root');",
+    'const RUNTIME = process.env.N8N_RUNTIME ?? someDefault;',
+  ];
+  for (const line of legitimate) {
+    assert.ok(!DIRECTORY_NAME_ASSUMPTIONS.some((pattern) => pattern.test(line)),
+      `guard must accept: ${line}`);
+  }
 });

@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
@@ -53,7 +53,19 @@ test('every file the pack references exists — a dangling pointer is a broken p
   for (const file of packFiles()) {
     assert.ok(size(file) > 0, `${file} exists and is not empty`);
   }
-  assert.ok(REPO_ROOT.endsWith('n8n-rust-v.4'), 'the pack is read from the repository root');
+  // Repository identity by CONTENT, never by directory NAME. This used to assert
+  // asserted that REPO_ROOT ended with the repository's own name, which added no
+  // information - line 48 above
+  // already derives REPO_ROOT by path traversal - and only added an environment
+  // dependency: the test passed in CI because the runner's checkout directory happened
+  // to be named after the repository, and failed in every other checkout (a worktree, a
+  // differently-named clone, a Windows worker). Reproduced 2026-09-29 in a clone named
+  // `n8n-audit`. The repo-wide sweep found this was the only such assertion; see the
+  // guard in tools/workforce/test/repo-invariants.test.mjs.
+  assert.ok(existsSync(join(REPO_ROOT, 'docs/n8n-lego/milestones.json')),
+    'REPO_ROOT is the repository root: it carries the canonical register');
+  assert.ok(existsSync(join(REPO_ROOT, 'package.json')),
+    'REPO_ROOT is the repository root: it carries the workspace manifest');
   assert.ok(read(`${PACK_ROOT}/README.md`).includes('Context levels'), 'the entry point explains the ladder');
 });
 
