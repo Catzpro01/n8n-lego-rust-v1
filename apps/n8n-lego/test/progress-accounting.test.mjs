@@ -352,18 +352,24 @@ test('I progress figures are pinned to the reconciled accounting (refresh with e
   // 189/199 = 95.0 -> 190/199 = 95.5; P2 58/59 -> 59/59 (100.0);
   // current 188/193 = 97.4 -> 189/193 = 97.9. Evidence:
   // docs/n8n-lego/evidence/P2-S03-RESCOPE.md.
+  // Refresh 2026-09-30 (governance: five FUTURE-* slices activated into P0-P11 as
+  // P2-M01 / P3-M01 / P4-M01 / P8-M01 / P11-M02, origin rows `superseded`, PR #412,
+  // HARD GUARD queue-unchanged PASSED): global 190/199 = 95.5 unchanged - five counted
+  // rows joined the programs while five superseded rows left the future bucket; P2
+  // 59/59 -> 59/60 (P2-M01 is a counted planned leaf); current 189/193 = 97.9 ->
+  // 189/198 = 95.5; future 1/6 -> 1/1. Evidence: docs/n8n-lego/milestones.json.
   assert.equal(BREAKDOWN.global.implemented, 190);
   assert.equal(BREAKDOWN.global.total, 199);
   assert.equal(BREAKDOWN.global.percent, 95.5);
   const p2 = BREAKDOWN.programs.find((program) => program.id === 'P2');
   assert.equal(p2.implemented, 59);
-  assert.equal(p2.counted, 59);
+  assert.equal(p2.counted, 60);
   assert.deepEqual(p2.excluded.map((entry) => entry.id), ['P2.27']);
   const metrics = headlineMetrics(REGISTER);
   assert.equal(metrics.current.implemented, 189);
-  assert.equal(metrics.current.total, 193);
+  assert.equal(metrics.current.total, 198);
   assert.equal(metrics.future.implemented, 1);
-  assert.equal(metrics.future.total, 6);
+  assert.equal(metrics.future.total, 1);
 });
 
 /* ----------------------------------------------- J (zero invisible completion) */

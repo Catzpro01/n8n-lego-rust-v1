@@ -7,24 +7,24 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 ## Delivery progress (same two metrics as README.md)
 
-**Realtime Delivery Progress 97.9%** — 18900/19300 checkpoint-weighted points, P0–P11 only. Future programs are excluded (6 slices). 4 current-delivery slice(s) have no checkpoint model and contribute 0.
+**Realtime Delivery Progress 95.5%** — 18900/19800 checkpoint-weighted points, P0–P11 only. Future programs are excluded (1 slices). 9 current-delivery slice(s) have no checkpoint model and contribute 0.
 
-**Slice Completion 97.9%** — 189/193 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
+**Slice Completion 95.5%** — 189/198 implemented. Verifying and blocked contribute 0. Program status is not this percentage.
 
 | Program | Realtime | Slice completion | Implemented | State |
 | --- | ---: | ---: | ---: | --- |
 | P0 | 100.0% | 100.0% | 2/2 | complete |
 | P1 | 100.0% | 100.0% | 2/2 | complete |
-| P2 | 100.0% | 100.0% | 59/59 | complete |
-| P3 | 100.0% | 100.0% | 18/18 | complete |
-| P4 | 100.0% | 100.0% | 10/10 | complete |
+| P2 | 98.3% | 98.3% | 59/60 | complete |
+| P3 | 94.7% | 94.7% | 18/19 | complete |
+| P4 | 90.9% | 90.9% | 10/11 | complete |
 | P5 | 100.0% | 100.0% | 26/26 | complete |
 | P6 | 94.4% | 94.4% | 34/36 | complete |
 | P7 | 100.0% | 100.0% | 8/8 | in-progress |
-| P8 | 100.0% | 100.0% | 7/7 | planned |
+| P8 | 87.5% | 87.5% | 7/8 | planned |
 | P9 | 100.0% | 100.0% | 23/23 | complete |
 | P10 | 0.0% | 0.0% | 0/1 | planned |
-| P11 | 0.0% | 0.0% | 0/1 | planned |
+| P11 | 0.0% | 0.0% | 0/2 | planned |
 
 ## Active work (executionPointer, DEC-0020)
 
@@ -45,16 +45,16 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 | --- | --- | --- | --- | --- | --- |
 | **P0** | Core Application Bootstrap | **COMPLETE** | 2/2 | 2 | — |
 | **P1** | n8n Compatibility / Behavioral Baseline | **COMPLETE** | 2/2 | 3 | — |
-| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 60/60 | 29 | — |
-| **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/18 | 24 | — |
-| **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/10 | 19 | — |
+| **P2** | LEGO / AI / Plugin Foundation | **COMPLETE** | 60/61 | 29 | `P2-M01` (planned) |
+| **P3** | Workflow + Execution + Unlimited Nodes | **COMPLETE** | 18/19 | 24 | `P3-M01` (planned) |
+| **P4** | Trigger / Webhook / Ingress | **COMPLETE** | 10/11 | 19 | `P4-M01` (planned) |
 | **P5** | Identity / Authentication / Authorization / Credentials (Security) | **COMPLETE** | 26/26 | 20 | — |
 | **P6** | Node Registry / Node Runtime | **COMPLETE** | 34/36 | 67 | — |
 | **P7** | Dynamic Parameters / Schema Runtime | **IN-PROGRESS** | 8/8 | 29 | — |
-| **P8** | Storage / Data Layer | **PLANNED** | 7/7 | 5 | — |
+| **P8** | Storage / Data Layer | **PLANNED** | 7/8 | 5 | `P8-M01` (planned) |
 | **P9** | Observability / Diagnostics / Operations | **COMPLETE** | 23/23 | 23 | — |
 | **P10** | Multi-Tenant / Isolation / Quota | **PLANNED** | 0/1 | 5 | `P10-S01` (planned) |
-| **P11** | Worker / Distributed Scaling / HA | **PLANNED** | 0/1 | 3 | `P11-S01` (planned) |
+| **P11** | Worker / Distributed Scaling / HA | **PLANNED** | 0/2 | 3 | `P11-S01` (planned) |
 
 > P0-P11 are the complete top-level set. No P12+ is created for features, optimization, hardening or debt; legacy P12-P23 are consolidated into futurePrograms[] with traceability; P24+ is forbidden. There is no P5.9: P5 debt is maintenance slices P5-Mnn (P5-M01..M10).
 
@@ -62,11 +62,11 @@ This generated view is derived from `docs/n8n-lego/milestones.json`. Do not edit
 
 | Program | Title | Legacy milestones | Legacy issues | Status | Features | Next slice |
 | --- | --- | --- | --- | --- | --- | --- |
-| **FUTURE-EVENT** | Event & Automation Control Plane | P12 | #228 | planned | 8 | `FUTURE-EVENT-S01` |
-| **FUTURE-RELIABILITY** | Execution Reliability, Data Plane, Scheduling & Certification | P13, P16, P17, P21 | #229, #232, #233, #237 | planned | 31 | `FUTURE-RELIABILITY-S02` |
-| **FUTURE-PLATFORM** | Release, Collaboration & Operator Platform | P14, P15, P22 | #230, #231, #238 | planned | 23 | `FUTURE-PLATFORM-S01` |
-| **FUTURE-DISTRIBUTION** | Worker Fabric, Storage Lifecycle & Disaster Recovery | P19, P20 | #235, #236 | planned | 21 | `FUTURE-DISTRIBUTION-S01` |
-| **FUTURE-AI-ECOSYSTEM** | AI Runtime Optimization & Ecosystem Interoperability | P18, P23 | #234, #239 | planned | 29 | `FUTURE-AI-ECOSYSTEM-S01` |
+| **FUTURE-EVENT** | Event & Automation Control Plane | P12 | #228 | planned | 8 | — |
+| **FUTURE-RELIABILITY** | Execution Reliability, Data Plane, Scheduling & Certification | P13, P16, P17, P21 | #229, #232, #233, #237 | planned | 31 | — |
+| **FUTURE-PLATFORM** | Release, Collaboration & Operator Platform | P14, P15, P22 | #230, #231, #238 | planned | 23 | — |
+| **FUTURE-DISTRIBUTION** | Worker Fabric, Storage Lifecycle & Disaster Recovery | P19, P20 | #235, #236 | planned | 21 | — |
+| **FUTURE-AI-ECOSYSTEM** | AI Runtime Optimization & Ecosystem Interoperability | P18, P23 | #234, #239 | planned | 29 | — |
 
 Legacy traceability: legacy issue → feature (`sourceIssue`) → program (`parent`) → future slice (`slice`).
 
@@ -160,7 +160,7 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 
 **Source issues:** #90, #83, #86, #87, #88, #240
 
-<details><summary>Slices (60)</summary>
+<details><summary>Slices (61)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
@@ -224,6 +224,7 @@ Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent
 | `P2-S27` | Skills/Capabilities (Layer 5 surface split out of P2-S03) | implemented | #389 | `cd12208d` | #240 |
 | `P2-S28` | Agent/Runtime views (Layer 5 surface split out of P2-S03) | implemented | #390 | `eb0893b0` | #240 |
 | `P2-S29` | Approvals and artifacts (Layer 5 surface split out of P2-S03) | implemented | #391 | `49f9d001` | #240 |
+| `P2-M01` | Lazy tool/skill discovery + token-aware capability budgets (activated from FUTURE-AI-ECOSYSTEM-S01; legacy P18) | planned | — | — | #234 |
 
 </details>
 
@@ -269,7 +270,7 @@ Workflow and Execution as first-class LEGO domains; logical workflow size decoup
 
 **Source issues:** #75, #79, #91, #97
 
-<details><summary>Slices (18)</summary>
+<details><summary>Slices (19)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
@@ -291,6 +292,7 @@ Workflow and Execution as first-class LEGO domains; logical workflow size decoup
 | `P3.15` | Slice P: closeout evidence, matrix reconciliation, mainBaseline refresh | implemented | #135 | `f833a5a5` | #97 |
 | `P3.15-fix` | Restore immutable mainBaseline + correct P3 closeout evidence | implemented | #136 | `6e31854d` | #97 |
 | `P3-S01` | Execution optimizer extensions (semantic node elimination, content-addressed subgraph cache, resource-aware compilation, incremental execution, self-profiling, hot/cold path split) | implemented | — | `048f5bf5` | #75 |
+| `P3-M01` | Side-effect reliability: effect ledger, outbox/inbox, idempotency before retry (activated from FUTURE-RELIABILITY-S02; legacy P13) | planned | — | — | #229 |
 
 </details>
 
@@ -331,7 +333,7 @@ Trigger model, webhook ingress, forms, schedules, event ingress, bounded ingress
 
 **Source issues:** #99, #103, #104, #105, #106, #107, #108, #109, #111
 
-<details><summary>Slices (10)</summary>
+<details><summary>Slices (11)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
@@ -345,6 +347,7 @@ Trigger model, webhook ingress, forms, schedules, event ingress, bounded ingress
 | `P4.8` | Advanced ingress efficiency: route atlas + atomic swap, adaptive clamp, payload capsule, burst fusion, brownout QoS, flight recorder | implemented | — | `57c473a5` | #111 |
 | `P4.9` | Compatibility + performance acceptance: compat matrix, deterministic replay capsule, acceptance suite | implemented | — | `7dbbf2c6` | #107 |
 | `P4-S01` | Ingress innovation remainder: predictive admission controller (full), shadow compatibility path, P4 self-profiling, dedicated webhook/ingress plane | implemented | #323 | `a32e9b80` | #111 |
+| `P4-M01` | Durable signals, timers and external-event resume (activated from FUTURE-EVENT-S01; legacy P12) | planned | — | — | #228 |
 
 </details>
 
@@ -630,7 +633,7 @@ Provider-neutral storage contracts, workflow/execution persistence, graph segmen
 
 **Source issues:** #90, #78
 
-<details><summary>Slices (7)</summary>
+<details><summary>Slices (8)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
@@ -641,6 +644,7 @@ Provider-neutral storage contracts, workflow/execution persistence, graph segmen
 | `P8-S05` | Storage concurrency semantics (race behavior, isolation expectations) | implemented | #356 | `3e0f621d` | — |
 | `P8-S06` | Local reference provider (in-memory/local implementation of the storage contract) | implemented | #356 | `3e0f621d` | — |
 | `P8-S07` | Storage test harness (contract conformance suite every provider must pass) | implemented | #356 | `3e0f621d` | — |
+| `P8-M01` | Schema/compatibility gateway + upgrade simulator (activated from FUTURE-PLATFORM-S01; legacy P14) | planned | — | — | #230 |
 
 </details>
 
@@ -754,11 +758,12 @@ Independent worker pools, queue/scheduler integration, remote plugin scaling, HA
 
 **Source issues:** #90
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (2)</summary>
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
 | `P11-S01` | Worker pool + queue integration foundation (not authorized) | planned | — | — | #90 |
+| `P11-M02` | Execution leases, fencing and stalled-worker recovery (activated from FUTURE-DISTRIBUTION-S01; legacy P19) | planned | — | — | #235 |
 
 </details>
 
@@ -786,7 +791,7 @@ Thematic future program. Not a P number and not authorized: a slice starts only 
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
-| `FUTURE-EVENT-S01` | Durable signals, timers and external-event resume (not authorized) | planned | — | — | #228 |
+| `FUTURE-EVENT-S01` | Durable signals, timers and external-event resume (not authorized) | superseded | — | — | #228 |
 
 </details>
 
@@ -818,7 +823,7 @@ Thematic future program. Not a P number and not authorized: a slice starts only 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
 | `FUTURE-RELIABILITY-S01` | Standalone benchmark / reproducibility certification tooling (legacy P21) | implemented | #246 | `aba5a0e4` | #243 |
-| `FUTURE-RELIABILITY-S02` | Side-effect reliability: effect ledger, outbox/inbox, idempotency before retry (legacy P13; not authorized) | planned | — | — | #229 |
+| `FUTURE-RELIABILITY-S02` | Side-effect reliability: effect ledger, outbox/inbox, idempotency before retry (legacy P13; not authorized) | superseded | — | — | #229 |
 
 </details>
 
@@ -872,7 +877,7 @@ Thematic future program. Not a P number and not authorized: a slice starts only 
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
-| `FUTURE-PLATFORM-S01` | Schema/compatibility gateway + upgrade simulator (legacy P14; not authorized) | planned | — | — | #230 |
+| `FUTURE-PLATFORM-S01` | Schema/compatibility gateway + upgrade simulator (legacy P14; not authorized) | superseded | — | — | #230 |
 
 </details>
 
@@ -918,7 +923,7 @@ Thematic future program. Not a P number and not authorized: a slice starts only 
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
-| `FUTURE-DISTRIBUTION-S01` | Execution leases, fencing and stalled-worker recovery (legacy P19; not authorized) | planned | — | — | #235 |
+| `FUTURE-DISTRIBUTION-S01` | Execution leases, fencing and stalled-worker recovery (legacy P19; not authorized) | superseded | — | — | #235 |
 
 </details>
 
@@ -962,7 +967,7 @@ Thematic future program. Not a P number and not authorized: a slice starts only 
 
 | Slice | Title | Status | PR | Merge SHA | Issue |
 | --- | --- | --- | --- | --- | --- |
-| `FUTURE-AI-ECOSYSTEM-S01` | Lazy tool/skill discovery + token-aware capability budgets (legacy P18; not authorized) | planned | — | — | #234 |
+| `FUTURE-AI-ECOSYSTEM-S01` | Lazy tool/skill discovery + token-aware capability budgets (legacy P18; not authorized) | superseded | — | — | #234 |
 
 </details>
 

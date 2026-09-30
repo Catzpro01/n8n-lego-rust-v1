@@ -543,10 +543,18 @@ test('completion KPI is implemented/total and never counts verifying or blocked'
   assert.equal(completionPercentForStatus('blocked'), 0);
   assert.equal(completionPercentForStatus('planned'), 0);
   const metrics = headlineMetrics(REGISTER);
-    assert.equal(metrics.current.total, 193);
+  // Refresh 2026-09-30 (governance: five FUTURE-* slices activated into P0-P11 as
+  // P2-M01 / P3-M01 / P4-M01 / P8-M01 / P11-M02, their origin rows marked
+  // `superseded`, PR #412): current denominator 193 -> 198 and current completion
+  // 97.9 -> 95.5; the numerator is untouched (189) because every activated row stays
+  // `planned`. The future bucket 6 -> 1 for the same reason: superseded rows leave the
+  // counted denominator. Evidence: docs/n8n-lego/milestones.json
+  // (`sourceFutureProgram` / `sourceFutureSlice` on each activated row) and
+  // docs/n8n-lego/evidence/PROGRESS-ACCOUNTING-AUDIT.md (PPA rules 1-4).
+  assert.equal(metrics.current.total, 198);
   assert.equal(metrics.current.implemented, 189);
-  assert.equal(metrics.current.sliceCompletion, percent1(189, 193));
-  assert.equal(metrics.future.total, 6);
+  assert.equal(metrics.current.sliceCompletion, percent1(189, 198));
+  assert.equal(metrics.future.total, 1);
   assert.equal(metrics.current.total + metrics.future.total, tally.total);
   const block = renderReadmeMilestoneSection(REGISTER);
   assert.match(block, new RegExp(`\\*\\*${formatPercent(metrics.current.sliceCompletion)}\\*\\*`));
@@ -765,8 +773,22 @@ test('declared checkpoints move realtime progress and never slice completion or 
   assert.doesNotMatch(rendered, /\| `P5-M08` \|[^\n]*Implemented/);
 
   const futureOnly = clone();
-  const planned = futureOnly.futurePrograms.flatMap((program) => program.slices).find((slice) => slice.status === 'planned');
-  planned.checkpoints = [{ id: 'CP-01', title: 'Not current delivery', weight: 100, status: 'completed', evidence: 'unit-test evidence' }];
+  // PR #412 activated every still-`planned` FUTURE slice into P0-P11 and left its origin
+  // row `superseded` (excluded from the counted denominator), so the register no longer
+  // ships a planned future slice. The claim under test is about one, so the fixture
+  // declares that state on a future row that is no longer current delivery.
+  const futureRows = futureOnly.futurePrograms.flatMap((program) => program.slices);
+  const planned = futureRows.find((slice) => slice.status === 'planned') ?? futureRows.find((slice) => slice.supersededBy);
+  assert.ok(planned, 'the fixture has a future row to exercise');
+  planned.status = 'planned';
+  // A fully-completed model cannot move the future ratio here (the one counted future row
+  // is already Implemented = 100), so the fixture models a PARTIAL checkpoint: 40 of 100
+  // points earned. The assertion below then proves the isolation claim is still
+  // observable, instead of passing because both sides happen to be 100.
+  planned.checkpoints = [
+    { id: 'CP-01', title: 'Not current delivery', weight: 40, status: 'completed', evidence: 'unit-test evidence' },
+    { id: 'CP-02', title: 'Still planned', weight: 60, status: 'planned' },
+  ];
   assert.equal(headlineMetrics(futureOnly).current.realtime, before.current.realtime);
   assert.notEqual(headlineMetrics(futureOnly).future.realtime, before.future.realtime);
 

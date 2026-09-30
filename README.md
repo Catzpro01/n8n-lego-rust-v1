@@ -35,45 +35,45 @@ Status is not progress. Both percentages below are generated from [`docs/n8n-leg
 
 ### Realtime Delivery Progress
 
-**97.9%**
+**95.5%**
 
-`████████████████████ 97.9%`
+`███████████████████░ 95.5%`
 
-Checkpoint-weighted earned points / current-delivery points: 18900 / 19300. Denominator: programs P0–P11 only (193 active slices). Future programs are excluded. 60 slice(s) declare checkpoints. 129 implemented slice(s) have no checkpoint list and contribute 100 each. 4 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
+Checkpoint-weighted earned points / current-delivery points: 18900 / 19800. Denominator: programs P0–P11 only (198 active slices). Future programs are excluded. 60 slice(s) declare checkpoints. 129 implemented slice(s) have no checkpoint list and contribute 100 each. 9 slice(s) have no checkpoint model and contribute 0. A 0 from a missing model is not a measured fraction of that slice.
 
 ### Slice Completion
 
-**97.9%**
+**95.5%**
 
-`████████████████████ 97.9%`
+`███████████████████░ 95.5%`
 
-**189 / 193 slices implemented** in the same P0–P11 denominator. Only `implemented` increases this numerator. Verifying, blocked, in-progress, planned, proposed and deferred contribute 0. Superseded, retired and rejected stay out of the denominator.
+**189 / 198 slices implemented** in the same P0–P11 denominator. Only `implemented` increases this numerator. Verifying, blocked, in-progress, planned, proposed and deferred contribute 0. Superseded, retired and rejected stay out of the denominator.
 
 | | |
 | --- | ---: |
-| Current-delivery slices | 193 |
+| Current-delivery slices | 198 |
 | Implemented (completion numerator) | 189 |
 | Verifying (display status; completion contribution 0) | 0 |
 | In progress, not verifying | 0 |
-| Planned | 2 |
+| Planned | 7 |
 | Blocked | 0 |
 | Proposed | 2 |
 | Deferred | 0 |
-| Future-program slices excluded from both denominators | 6 |
+| Future-program slices excluded from both denominators | 1 |
 
 ```text
 P0   realtime ████████████████████ 100.0%  completion 100.0%  2/2  status complete
 P1   realtime ████████████████████ 100.0%  completion 100.0%  2/2  status complete
-P2   realtime ████████████████████ 100.0%  completion 100.0%  59/59  status complete
-P3   realtime ████████████████████ 100.0%  completion 100.0%  18/18  status complete
-P4   realtime ████████████████████ 100.0%  completion 100.0%  10/10  status complete
+P2   realtime ████████████████████  98.3%  completion  98.3%  59/60  status complete
+P3   realtime ███████████████████░  94.7%  completion  94.7%  18/19  status complete
+P4   realtime ██████████████████░░  90.9%  completion  90.9%  10/11  status complete
 P5   realtime ████████████████████ 100.0%  completion 100.0%  26/26  status complete
 P6   realtime ███████████████████░  94.4%  completion  94.4%  34/36  status complete
 P7   realtime ████████████████████ 100.0%  completion 100.0%  8/8  status in-progress
-P8   realtime ████████████████████ 100.0%  completion 100.0%  7/7  status planned
+P8   realtime ██████████████████░░  87.5%  completion  87.5%  7/8  status planned
 P9   realtime ████████████████████ 100.0%  completion 100.0%  23/23  status complete
 P10  realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
-P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/1  status planned
+P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0%  completion   0.0%  0/2  status planned
 ```
 
 ## Program Overview
@@ -82,16 +82,16 @@ P11  realtime ░░░░░░░░░░░░░░░░░░░░   0.0
 | --- | --- | ---: | ---: | ---: | --- |
 | P0 | Core Application Bootstrap | 100.0% | 100.0% | 2/2 | complete |
 | P1 | n8n Compatibility / Behavioral Baseline | 100.0% | 100.0% | 2/2 | complete |
-| P2 | LEGO / AI / Plugin Foundation | 100.0% | 100.0% | 59/59 | complete |
-| P3 | Workflow + Execution + Unlimited Nodes | 100.0% | 100.0% | 18/18 | complete |
-| P4 | Trigger / Webhook / Ingress | 100.0% | 100.0% | 10/10 | complete |
+| P2 | LEGO / AI / Plugin Foundation | 98.3% | 98.3% | 59/60 | complete |
+| P3 | Workflow + Execution + Unlimited Nodes | 94.7% | 94.7% | 18/19 | complete |
+| P4 | Trigger / Webhook / Ingress | 90.9% | 90.9% | 10/11 | complete |
 | P5 | Identity / Authentication / Authorization / Credentials (Security) | 100.0% | 100.0% | 26/26 | complete |
 | P6 | Node Registry / Node Runtime | 94.4% | 94.4% | 34/36 | complete |
 | P7 | Dynamic Parameters / Schema Runtime | 100.0% | 100.0% | 8/8 | in-progress |
-| P8 | Storage / Data Layer | 100.0% | 100.0% | 7/7 | planned |
+| P8 | Storage / Data Layer | 87.5% | 87.5% | 7/8 | planned |
 | P9 | Observability / Diagnostics / Operations | 100.0% | 100.0% | 23/23 | complete |
 | P10 | Multi-Tenant / Isolation / Quota | 0.0% | 0.0% | 0/1 | planned |
-| P11 | Worker / Distributed Scaling / HA | 0.0% | 0.0% | 0/1 | planned |
+| P11 | Worker / Distributed Scaling / HA | 0.0% | 0.0% | 0/2 | planned |
 
 A program state of `complete` is not numeric 100%. Read the two percentage columns.
 
@@ -163,13 +163,13 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 
 ## P2 — LEGO / AI / Plugin Foundation
 
-- **Realtime Delivery Progress:** **100.0%** `████████████████████ 100.0%`
-- **Slice Completion:** **100.0%** (59 / 59 implemented). Remaining 0. 59 implemented.
+- **Realtime Delivery Progress:** **98.3%** `████████████████████ 98.3%`
+- **Slice Completion:** **98.3%** (59 / 60 implemented). Remaining 1. 59 implemented, 1 planned.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Contract-driven LEGO architecture, FE/BE domain boundaries, AI foundation, Agent Machine, Context/Session/Memory, Workspace, MCP boundary, portability, Node Creator, translation, usage integrity, provider adapters, readiness, P2.27 pluggable runtime/security foundation (#90).
-- **Checkpoint model:** 27 slice(s) declare checkpoints; 32 implemented slice(s) use the legacy 100 rule; 0 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 27 slice(s) declare checkpoints; 32 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (59)</summary>
+<details><summary>Slices (60)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
@@ -233,18 +233,19 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 | `P2-S27` | Skills/Capabilities | Skills/Capabilities (Layer 5 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Performance/resource budget and failure behavior (completed, 15) | — |
 | `P2-S28` | Agent/Runtime views | Agent/Runtime views (Layer 5 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Performance/resource budget and failure behavior (completed, 15) | — |
 | `P2-S29` | Approvals and artifacts | Approvals and artifacts (Layer 5 surface split out of P2-S03) | ✅ Implemented | 100.0% | 100.0% | — | CP-05 Performance/resource budget and failure behavior (completed, 15) | — |
+| `P2-M01` | Lazy tool/skill discovery + token-aware capability budgets | Lazy tool/skill discovery + token-aware capability budgets (activated from FUTURE-AI-ECOSYSTEM-S01; legacy P18) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
 ## P3 — Workflow + Execution + Unlimited Nodes
 
-- **Realtime Delivery Progress:** **100.0%** `████████████████████ 100.0%`
-- **Slice Completion:** **100.0%** (18 / 18 implemented). Remaining 0. 18 implemented.
+- **Realtime Delivery Progress:** **94.7%** `███████████████████░ 94.7%`
+- **Slice Completion:** **94.7%** (18 / 19 implemented). Remaining 1. 18 implemented, 1 planned.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Workflow and Execution as first-class LEGO domains; logical workflow size decoupled from runtime working set (#75, #90).
-- **Checkpoint model:** 0 slice(s) declare checkpoints; 18 implemented slice(s) use the legacy 100 rule; 0 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 0 slice(s) declare checkpoints; 18 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (18)</summary>
+<details><summary>Slices (19)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
@@ -266,18 +267,19 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 | `P3.15` | Slice P | closeout evidence, matrix reconciliation, mainBaseline refresh | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P3.15-fix` | Restore immutable mainBaseline + correct P3 closeout evidence | Restore immutable mainBaseline + correct P3 closeout evidence | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P3-S01` | Execution optimizer extensions | Execution optimizer extensions (semantic node elimination, content-addressed subgraph cache, resource-aware compilation, incremental execution, self-profiling, hot/cold path split) | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
+| `P3-M01` | Side-effect reliability | effect ledger, outbox/inbox, idempotency before retry (activated from FUTURE-RELIABILITY-S02; legacy P13) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
 ## P4 — Trigger / Webhook / Ingress
 
-- **Realtime Delivery Progress:** **100.0%** `████████████████████ 100.0%`
-- **Slice Completion:** **100.0%** (10 / 10 implemented). Remaining 0. 10 implemented.
+- **Realtime Delivery Progress:** **90.9%** `██████████████████░░ 90.9%`
+- **Slice Completion:** **90.9%** (10 / 11 implemented). Remaining 1. 10 implemented, 1 planned.
 - **Program status:** complete. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Trigger model, webhook ingress, forms, schedules, event ingress, bounded ingress queues, safe admission, trigger observability and failure behavior (#90, #99).
-- **Checkpoint model:** 1 slice(s) declare checkpoints; 9 implemented slice(s) use the legacy 100 rule; 0 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 1 slice(s) declare checkpoints; 9 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (10)</summary>
+<details><summary>Slices (11)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
@@ -291,6 +293,7 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 | `P4.8` | Advanced ingress efficiency | route atlas + atomic swap, adaptive clamp, payload capsule, burst fusion, brownout QoS, flight recorder | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P4.9` | Compatibility + performance acceptance | compat matrix, deterministic replay capsule, acceptance suite | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
 | `P4-S01` | Ingress innovation remainder | predictive admission controller (full), shadow compatibility path, P4 self-profiling, dedicated webhook/ingress plane | ✅ Implemented | 100.0% | 100.0% | — | CP-04 Dedicated webhook/ingress plane: separated planes, bounded buffering, admission control, response offload (completed, 22) | — |
+| `P4-M01` | Durable signals, timers and external-event resume | Durable signals, timers and external-event resume (activated from FUTURE-EVENT-S01; legacy P12) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
@@ -411,13 +414,13 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 
 ## P8 — Storage / Data Layer
 
-- **Realtime Delivery Progress:** **100.0%** `████████████████████ 100.0%`
-- **Slice Completion:** **100.0%** (7 / 7 implemented). Remaining 0. 7 implemented.
+- **Realtime Delivery Progress:** **87.5%** `██████████████████░░ 87.5%`
+- **Slice Completion:** **87.5%** (7 / 8 implemented). Remaining 1. 7 implemented, 1 planned.
 - **Program status:** planned. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Provider-neutral storage contracts, workflow/execution persistence, graph segments, indexes, transactions, migrations, backup/recovery, SQLite/PostgreSQL/object-store providers (#90).
-- **Checkpoint model:** 7 slice(s) declare checkpoints; 0 implemented slice(s) use the legacy 100 rule; 0 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 7 slice(s) declare checkpoints; 0 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (7)</summary>
+<details><summary>Slices (8)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
@@ -428,6 +431,7 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 | `P8-S05` | Storage concurrency semantics | Storage concurrency semantics (race behavior, isolation expectations) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Storage concurrency semantics (race behavior, isolation expectations) (completed, 100) | — |
 | `P8-S06` | Local reference provider | Local reference provider (in-memory/local implementation of the storage contract) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Local reference provider (in-memory/local implementation of the storage contract) (completed, 100) | — |
 | `P8-S07` | Storage test harness | Storage test harness (contract conformance suite every provider must pass) | ✅ Implemented | 100.0% | 100.0% | — | CP-01 Storage test harness (contract conformance suite every provider must pass) (completed, 100) | — |
+| `P8-M01` | Schema/compatibility gateway + upgrade simulator | Schema/compatibility gateway + upgrade simulator (activated from FUTURE-PLATFORM-S01; legacy P14) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
@@ -488,16 +492,17 @@ Not authorized: planned is not authorized by itself: the Manager starts a queued
 ## P11 — Worker / Distributed Scaling / HA
 
 - **Realtime Delivery Progress:** **0.0%** `░░░░░░░░░░░░░░░░░░░░ 0.0%`
-- **Slice Completion:** **0.0%** (0 / 1 implemented). Remaining 1. 0 implemented, 1 planned.
+- **Slice Completion:** **0.0%** (0 / 2 implemented). Remaining 2. 0 implemented, 2 planned.
 - **Program status:** planned. Program status is not a percentage and is not 100% just because the word is complete.
 - **Purpose:** Independent worker pools, queue/scheduler integration, remote plugin scaling, HA, recovery, distributed execution, horizontal scaling — never microservice-per-node (#90).
-- **Checkpoint model:** 0 slice(s) declare checkpoints; 0 implemented slice(s) use the legacy 100 rule; 1 slice(s) have no checkpoint model and stay at 0.0%.
+- **Checkpoint model:** 0 slice(s) declare checkpoints; 0 implemented slice(s) use the legacy 100 rule; 2 slice(s) have no checkpoint model and stay at 0.0%.
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (2)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
 | `P11-S01` | Worker pool + queue integration foundation | Worker pool + queue integration foundation (not authorized) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
+| `P11-M02` | Execution leases, fencing and stalled-worker recovery | Execution leases, fencing and stalled-worker recovery (activated from FUTURE-DISTRIBUTION-S01; legacy P19) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
@@ -507,70 +512,70 @@ These programs stay visible. They are not in the Realtime Delivery Progress deno
 
 | Future program | Legacy milestones | Realtime | Slice completion | Slices implemented | State |
 | --- | --- | ---: | ---: | ---: | --- |
-| FUTURE-EVENT | P12 | 0.0% | 0.0% | 0/1 | planned |
-| FUTURE-RELIABILITY | P13, P16, P17, P21 | 50.0% | 50.0% | 1/2 | planned |
-| FUTURE-PLATFORM | P14, P15, P22 | 0.0% | 0.0% | 0/1 | planned |
-| FUTURE-DISTRIBUTION | P19, P20 | 0.0% | 0.0% | 0/1 | planned |
-| FUTURE-AI-ECOSYSTEM | P18, P23 | 0.0% | 0.0% | 0/1 | planned |
+| FUTURE-EVENT | P12 | 0.0% | 0.0% | 0/0 | planned |
+| FUTURE-RELIABILITY | P13, P16, P17, P21 | 100.0% | 100.0% | 1/1 | planned |
+| FUTURE-PLATFORM | P14, P15, P22 | 0.0% | 0.0% | 0/0 | planned |
+| FUTURE-DISTRIBUTION | P19, P20 | 0.0% | 0.0% | 0/0 | planned |
+| FUTURE-AI-ECOSYSTEM | P18, P23 | 0.0% | 0.0% | 0/0 | planned |
 
 ## FUTURE-EVENT — Event & Automation Control Plane
 
-Excluded from the current-delivery denominator. Realtime **0.0%**. Slice completion **0.0%** (0 / 1). Program status: planned.
+Excluded from the current-delivery denominator. Realtime **0.0%**. Slice completion **0.0%** (0 / 0). Program status: planned.
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (0)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
-| `FUTURE-EVENT-S01` | Durable signals, timers and external-event resume | Durable signals, timers and external-event resume (not authorized) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
+| `FUTURE-EVENT-S01` | Durable signals, timers and external-event resume | Durable signals, timers and external-event resume (not authorized) | Superseded | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
 ## FUTURE-RELIABILITY — Execution Reliability, Data Plane, Scheduling & Certification
 
-Excluded from the current-delivery denominator. Realtime **50.0%**. Slice completion **50.0%** (1 / 2). Program status: planned.
+Excluded from the current-delivery denominator. Realtime **100.0%**. Slice completion **100.0%** (1 / 1). Program status: planned.
 
-<details><summary>Slices (2)</summary>
+<details><summary>Slices (1)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
 | `FUTURE-RELIABILITY-S01` | Standalone benchmark / reproducibility certification tooling | Standalone benchmark / reproducibility certification tooling (legacy P21) | ✅ Implemented | 100.0% | 100.0% | none declared | legacy implemented (100, no checkpoint list) | — |
-| `FUTURE-RELIABILITY-S02` | Side-effect reliability | effect ledger, outbox/inbox, idempotency before retry (legacy P13; not authorized) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
+| `FUTURE-RELIABILITY-S02` | Side-effect reliability | effect ledger, outbox/inbox, idempotency before retry (legacy P13; not authorized) | Superseded | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
 ## FUTURE-PLATFORM — Release, Collaboration & Operator Platform
 
-Excluded from the current-delivery denominator. Realtime **0.0%**. Slice completion **0.0%** (0 / 1). Program status: planned.
+Excluded from the current-delivery denominator. Realtime **0.0%**. Slice completion **0.0%** (0 / 0). Program status: planned.
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (0)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
-| `FUTURE-PLATFORM-S01` | Schema/compatibility gateway + upgrade simulator | Schema/compatibility gateway + upgrade simulator (legacy P14; not authorized) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
+| `FUTURE-PLATFORM-S01` | Schema/compatibility gateway + upgrade simulator | Schema/compatibility gateway + upgrade simulator (legacy P14; not authorized) | Superseded | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
 ## FUTURE-DISTRIBUTION — Worker Fabric, Storage Lifecycle & Disaster Recovery
 
-Excluded from the current-delivery denominator. Realtime **0.0%**. Slice completion **0.0%** (0 / 1). Program status: planned.
+Excluded from the current-delivery denominator. Realtime **0.0%**. Slice completion **0.0%** (0 / 0). Program status: planned.
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (0)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
-| `FUTURE-DISTRIBUTION-S01` | Execution leases, fencing and stalled-worker recovery | Execution leases, fencing and stalled-worker recovery (legacy P19; not authorized) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
+| `FUTURE-DISTRIBUTION-S01` | Execution leases, fencing and stalled-worker recovery | Execution leases, fencing and stalled-worker recovery (legacy P19; not authorized) | Superseded | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
 ## FUTURE-AI-ECOSYSTEM — AI Runtime Optimization & Ecosystem Interoperability
 
-Excluded from the current-delivery denominator. Realtime **0.0%**. Slice completion **0.0%** (0 / 1). Program status: planned.
+Excluded from the current-delivery denominator. Realtime **0.0%**. Slice completion **0.0%** (0 / 0). Program status: planned.
 
-<details><summary>Slices (1)</summary>
+<details><summary>Slices (0)</summary>
 
 | Slice | Title | Purpose | Status | Realtime | Completion | Current checkpoint | Latest checkpoint | Blocker |
 | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
-| `FUTURE-AI-ECOSYSTEM-S01` | Lazy tool/skill discovery + token-aware capability budgets | Lazy tool/skill discovery + token-aware capability budgets (legacy P18; not authorized) | 🟡 Planned | 0.0% | 0.0% | none declared | none declared | — |
+| `FUTURE-AI-ECOSYSTEM-S01` | Lazy tool/skill discovery + token-aware capability budgets | Lazy tool/skill discovery + token-aware capability budgets (legacy P18; not authorized) | Superseded | 0.0% | 0.0% | none declared | none declared | — |
 
 </details>
 
@@ -584,7 +589,7 @@ Excluded from the current-delivery denominator. Realtime **0.0%**. Slice complet
 - **Live progress (DEC-0021, LIVE-MILESTONE EXCEPTION):** checkpoint progress, checkpoint status, checkpoint evidence, current checkpoint, slice / program / overall progress and the milestone evidence of a slice still in flight are operational telemetry. The Manager may reconcile them straight to `main` in a `governance(progress):` commit, without a governance PR, with `node tools/lego/progress-event.mjs record --slice <id> --checkpoint <CP-nn> --status <status> --evidence <reference>`. The tool runs the whole atomic chain: validate evidence and weights → write the register → regenerate `README.md` and `.ai` → run `npm run lego:ai:check` → commit → push → verify `main`. One measurable event is one commit; live progress is never batched and a partial state is never published. The Manager never types a percentage: `resolve` derives the state from evidence — `--fetch` reads the DEC-0015 jobs and the runner availability from the GitHub API, `--jobs <file.json>` reads an export, and `verify --cmd` derives completed / blocked from a verification command's exit code. A checkpoint that declares `requires` is earned only when every named check has passed; an absent self-hosted check is never PASS and `WAITING_RUNNER` is never PASS, so a head that never ran the suite cannot look green. Two paths, never mixed: delivery state is implementation → delivery PR → merge → post-merge verification → one governance PR reconciling status, merge SHA, evidence and projections; telemetry is evidence → checkpoint update → register → README → .ai → a `governance(progress):` commit → main. A slice status becoming `implemented` is delivery state and is never telemetry. The exception never covers source code, tests, runtime behaviour, API / frontend / backend / contract / schema implementation, dependencies, packages, Rust code, CI workflows, security policy, permissions, infrastructure, database schema or production configuration — those still go through a delivery PR. Live telemetry never bypasses a completion gate: 100% realtime progress with a completion contribution of 0% is a legitimate state, and only `implemented` (DEC-0014 + DEC-0015) moves Slice Completion.
 - **Rule:** Milestone truth is main-owned. A milestone design found or developed in Manager memory becomes authoritative only when reconciled into main through a PR. arena-manager is not an alternate milestone authority, and its docs/ tree is a stale snapshot that is never copied over main.
 - **Pending reconciliation:** A milestone change that exists only on arena-manager, a local worktree, a handoff, an issue, a PR body or chat is a proposal (pending reconciliation), never authoritative truth. A PR proposes a milestone state; only the merged state on main is authoritative.
-- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `90dfcb35564ea698`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
+- **Freshness:** generated by `npm run lego:ai` from register 2.4.0 (fingerprint `cac26b33abf51ef7`); `npm run lego:ai:check` fails when this section, the `.ai` pack or the register disagree.
 - **Progress model (Issue #307):** Realtime Delivery Progress is checkpoint-weighted across P0-P11. Slice Completion is implemented / active in that same denominator. Future programs stay visible and are excluded from the current-delivery denominator. Illustrations of the status/progress split are not register measurements and must not be copied into slice checkpoints. The generator counts only weights declared on slice.checkpoints. It does not invent weights. A completed checkpoint requires evidence. Weights on a slice must sum to 100. A slice with no checkpoint model stays at 0 unless it is implemented, in which case the legacy rule contributes 100. This projection is not canonical until the change is on main.
 - **Completion KPI:** Slice Completion is implemented slices / active slices in P0–P11. A verifying or blocked slice never increases that numerator. Realtime Delivery Progress is a separate checkpoint-weighted figure and can move while Slice Completion stays still.
 - **Purpose field:** a slice purpose is `slice.purpose` when present, otherwise the text after the first `: ` in the canonical title, otherwise the title. No purpose is invented.

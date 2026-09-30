@@ -4079,6 +4079,18 @@
           "issue": 240,
           "evidence": "docs/n8n-lego/evidence/P2-S29-EVIDENCE.md",
           "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P2-M01",
+          "title": "Lazy tool/skill discovery + token-aware capability budgets (activated from FUTURE-AI-ECOSYSTEM-S01; legacy P18)",
+          "kind": "maintenance",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 234,
+          "evidence": null,
+          "owner": "manager (unassigned)",
+          "sourceFutureProgram": "FUTURE-AI-ECOSYSTEM",
+          "sourceFutureSlice": "FUTURE-AI-ECOSYSTEM-S01"
         }
       ]
     },
@@ -4274,6 +4286,18 @@
           "evidence": "docs/n8n-lego/evidence/P3-S01-EVIDENCE.md",
           "owner": "manager (unassigned)",
           "note": "Remaining #75/#224 optimization items whose foundations exist in P3.3-P3.13."
+        },
+        {
+          "id": "P3-M01",
+          "title": "Side-effect reliability: effect ledger, outbox/inbox, idempotency before retry (activated from FUTURE-RELIABILITY-S02; legacy P13)",
+          "kind": "maintenance",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 229,
+          "evidence": null,
+          "owner": "manager (unassigned)",
+          "sourceFutureProgram": "FUTURE-RELIABILITY",
+          "sourceFutureSlice": "FUTURE-RELIABILITY-S02"
         }
       ]
     },
@@ -4438,6 +4462,18 @@
           "issue": 111,
           "evidence": "PR #323 merged a32e9b80d72210b68151035f451a020b1538d080; docs/n8n-lego/evidence/P4-S01-EVIDENCE.md. crates/n8n-common/src/innovation.rs 853 \u2192 2708 lines, 11 \u2192 39 #[test]. cargo fmt --all -- --check clean; cargo check --workspace clean; cargo test --workspace 321 passed / 0 failed (293 baseline \u2192 +28). Required checks 9/9 success after one DEC-0015 retry of Level 2 Workspace Tests (windows), which failed on a self-hosted sccache server transport error with zero Rust diagnostics and zero test failures and passed on attempt 2.",
           "owner": "manager (agent-2 ingress scope)"
+        },
+        {
+          "id": "P4-M01",
+          "title": "Durable signals, timers and external-event resume (activated from FUTURE-EVENT-S01; legacy P12)",
+          "kind": "maintenance",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 228,
+          "evidence": null,
+          "owner": "manager (unassigned)",
+          "sourceFutureProgram": "FUTURE-EVENT",
+          "sourceFutureSlice": "FUTURE-EVENT-S01"
         }
       ]
     },
@@ -6770,6 +6806,18 @@
           "mergeSha": "3e0f621dc774aa4ab3d7433d70092228645bddf2",
           "evidence": "docs/n8n-lego/evidence/P8-S01-DELIVERY.md",
           "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P8-M01",
+          "title": "Schema/compatibility gateway + upgrade simulator (activated from FUTURE-PLATFORM-S01; legacy P14)",
+          "kind": "maintenance",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 230,
+          "evidence": null,
+          "owner": "manager (unassigned)",
+          "sourceFutureProgram": "FUTURE-PLATFORM",
+          "sourceFutureSlice": "FUTURE-PLATFORM-S01"
         }
       ]
     },
@@ -7054,6 +7102,18 @@
           "issue": 90,
           "evidence": null,
           "owner": "manager (unassigned)"
+        },
+        {
+          "id": "P11-M02",
+          "title": "Execution leases, fencing and stalled-worker recovery (activated from FUTURE-DISTRIBUTION-S01; legacy P19)",
+          "kind": "maintenance",
+          "status": "planned",
+          "mergeSha": null,
+          "issue": 235,
+          "evidence": null,
+          "owner": "manager (unassigned)",
+          "sourceFutureProgram": "FUTURE-DISTRIBUTION",
+          "sourceFutureSlice": "FUTURE-DISTRIBUTION-S01"
         }
       ]
     }
@@ -7078,11 +7138,12 @@
           "id": "FUTURE-EVENT-S01",
           "title": "Durable signals, timers and external-event resume (not authorized)",
           "kind": "slice",
-          "status": "planned",
+          "status": "superseded",
           "mergeSha": null,
           "issue": 228,
           "evidence": null,
-          "owner": "manager (unassigned)"
+          "owner": "manager (unassigned)",
+          "supersededBy": "P4-M01"
         }
       ]
     },
@@ -7127,11 +7188,12 @@
           "id": "FUTURE-RELIABILITY-S02",
           "title": "Side-effect reliability: effect ledger, outbox/inbox, idempotency before retry (legacy P13; not authorized)",
           "kind": "slice",
-          "status": "planned",
+          "status": "superseded",
           "mergeSha": null,
           "issue": 229,
           "evidence": null,
           "owner": "manager (unassigned)",
+          "supersededBy": "P3-M01",
           "legacyMilestone": "P13"
         }
       ]
@@ -7161,11 +7223,12 @@
           "id": "FUTURE-PLATFORM-S01",
           "title": "Schema/compatibility gateway + upgrade simulator (legacy P14; not authorized)",
           "kind": "slice",
-          "status": "planned",
+          "status": "superseded",
           "mergeSha": null,
           "issue": 230,
           "evidence": null,
           "owner": "manager (unassigned)",
+          "supersededBy": "P8-M01",
           "legacyMilestone": "P14"
         }
       ]
@@ -7192,11 +7255,12 @@
           "id": "FUTURE-DISTRIBUTION-S01",
           "title": "Execution leases, fencing and stalled-worker recovery (legacy P19; not authorized)",
           "kind": "slice",
-          "status": "planned",
+          "status": "superseded",
           "mergeSha": null,
           "issue": 235,
           "evidence": null,
           "owner": "manager (unassigned)",
+          "supersededBy": "P11-M02",
           "legacyMilestone": "P19"
         }
       ]
@@ -7223,11 +7287,12 @@
           "id": "FUTURE-AI-ECOSYSTEM-S01",
           "title": "Lazy tool/skill discovery + token-aware capability budgets (legacy P18; not authorized)",
           "kind": "slice",
-          "status": "planned",
+          "status": "superseded",
           "mergeSha": null,
           "issue": 234,
           "evidence": null,
           "owner": "manager (unassigned)",
+          "supersededBy": "P2-M01",
           "legacyMilestone": "P18"
         }
       ]
