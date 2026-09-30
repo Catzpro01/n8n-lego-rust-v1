@@ -58,12 +58,24 @@ Write-Host "Cargo home volume: $cargoHomeVolume"
 Write-Host "Cargo build jobs: $cargoJobs (host logical CPUs: $hostLogicalCores; reserved: 2)"
 Write-Host "Command script: $scriptPath"
 
+# ── Performance telemetry (lightweight, no secrets) ──────────────────────────
+$ciStart = [System.Diagnostics.Stopwatch]::StartNew()
+Write-Host "::group::CI Telemetry"
+Write-Host "[CI_TELEMETRY] CONTAINER_START $(Get-Date -Format 'o')"
+
 try {
   docker run --pull=never --rm --mount "type=bind,source=$resolved,target=/workspace" --mount "type=volume,source=$cargoTargetVolume,target=/workspace/target" --mount "type=volume,source=$cargoHomeVolume,target=/cargo" --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/workspace/target --env CARGO_BUILD_JOBS=$cargoJobs --mount "type=bind,source=$scriptPath,target=/tmp/arena-command.sh,readonly" --workdir /workspace $Image bash /tmp/arena-command.sh
-  if ($LASTEXITCODE -ne 0) {
-    exit $LASTEXITCODE
-  }
+  $dockerExit = $LASTEXITCODE
 }
 finally {
+  $ciStart.Stop()
+  $durationMs = $ciStart.ElapsedMilliseconds
+  $durationSec = [Math]::Round($durationMs / 1000, 1)
+  Write-Host "[CI_TELEMETRY] CONTAINER_DONE $(Get-Date -Format 'o') duration_ms=$durationMs duration_sec=$durationSec exit=$dockerExit"
+  Write-Host "::endgroup::"
   Remove-Item -LiteralPath $scriptPath -Force -ErrorAction SilentlyContinue
+}
+
+if ($dockerExit -ne 0) {
+  exit $dockerExit
 }
