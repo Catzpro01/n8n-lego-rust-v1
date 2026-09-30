@@ -15,6 +15,24 @@ jobs:
   cleanup:
     name: Post-Merge Verification & Branch Cleanup
     runs-on: [ self-hosted, Windows, X64, rust-build, n8n-rust ]
+    concurrency:
+      # Serialize this heavyweight self-hosted lane across every PR and workflow.
+      # The workflow-level group above only deduplicates pushes to the SAME ref, so
+      # N open PRs still run N Docker lanes at once on one shared Windows host.
+      # Measured 2026-09-30 08:38: three PR heads pushed within seconds produced 9
+      # concurrent runs; the jobs that shared the host sat at ~10.03 min (normal:
+      # 3.4-3.9 min) and failed, while the identical retry on an idle fleet passed
+      # in 0.65-4.9 min. cancel-in-progress stays false so queued evidence survives.
+      #
+      # Split 2026-09-30 (owner decision on #405): check and test carry SEPARATE
+      # groups, so Level 0 & 1 and Level 2 run in parallel for one PR while every
+      # other PR queues behind whichever lane it needs. Ceiling on the shared host
+      # becomes at most two heavy lanes at a time, never the 4-6 that a burst of PR
+      # pushes used to start.
+      # Post-merge verification shares the test lane on purpose: it must not race a
+      # PR's integration run for the same host.
+      group: arena-selfhosted-rust-test
+      cancel-in-progress: false
     if: github.event.pull_request.merged == true
     timeout-minutes: 15
     steps:
