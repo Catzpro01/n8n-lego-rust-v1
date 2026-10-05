@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "n8n lego \u2014 workflow automation: the real n8n editor UI served by the LEGO execution engine",
+  "description": "n8n lego — workflow automation: the real n8n editor UI served by the LEGO execution engine",
   "license": "SEE LICENSE IN LICENSE.md",
   "engines": {
     "node": ">=22.18.0"
@@ -44,12 +44,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Catzpro01/n8n-rust-v.4.git",
+    "url": "git+https://github.com/Catzpro01/n8n-lego-rust-v1.git",
     "directory": "apps/n8n-lego"
   },
-  "homepage": "https://github.com/Catzpro01/n8n-rust-v.4/tree/main/apps/n8n-lego#readme",
+  "homepage": "https://github.com/Catzpro01/n8n-lego-rust-v1/tree/main/apps/n8n-lego#readme",
   "bugs": {
-    "url": "https://github.com/Catzpro01/n8n-rust-v.4/issues"
+    "url": "https://github.com/Catzpro01/n8n-lego-rust-v1/issues"
   },
   "publishConfig": {
     "access": "public"

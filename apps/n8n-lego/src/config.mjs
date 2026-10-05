@@ -32,7 +32,7 @@ export const APP_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
  */
 export function defaultDataDir(env = process.env) {
   const configured = readEnv(env, 'USER_FOLDER');
-  return configured === undefined ? join(homedir(), '.n8n-lego') : dir(configured);
+  return configured === undefined ? resolve(REPO_ROOT, 'data', 'lego') : dir(configured);
 }
 
 /** Where the node catalog and the extracted icons live. */
@@ -133,7 +133,7 @@ export function loadConfig(env = process.env) {
   const identity = instanceIdentity(dataDir);
   const protocol = oneOf(env, 'PROTOCOL', 'http', ['http', 'https']);
   const host = str(env, 'HOST', '0.0.0.0');
-  const port = int(env, 'PORT', 5678, { min: 0, max: 65535 });
+  const port = int(env, 'PORT', 5677, { min: 0, max: 65535 });
   // Resolved from the package, not the repo: the same code must work when the
   // app is installed globally with `npm install -g n8n-lego`.
   const editorDist = dir(str(env, 'EDITOR_DIST', join(APP_ROOT, 'node_modules', 'n8n-editor-ui', 'dist')));

@@ -13,10 +13,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("       ⚡ N8N RUST FULL SERVER (STANDALONE ENGINE) ⚡       ");
     println!("============================================================\n");
 
-    // 1. Inisialisasi Database SQLite (Pilihan B)
-    let db_path = "sqlite://n8n.sqlite";
-    println!("📦 Menginisialisasi Database SQLite: {}", db_path);
-    let db = Database::init(db_path).await?;
+    // 1. Inisialisasi Database SQLite Terisolasi (data/rust/)
+    let data_dir = std::env::var("N8N_RUST_DATA_DIR").unwrap_or_else(|_| "data/rust".to_string());
+    let _ = std::fs::create_dir_all(&data_dir);
+    let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        format!("sqlite://{}/n8n.sqlite", data_dir.trim_end_matches('/'))
+    });
+    println!("📦 Menginisialisasi Database SQLite Rust: {}", db_url);
+    let db = Database::init(&db_url).await?;
 
     // Seed default workflow contoh ke database jika kosong
     let existing_workflows = db.list_workflows().await?;

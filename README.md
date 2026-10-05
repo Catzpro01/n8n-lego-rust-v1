@@ -92,6 +92,20 @@ n8n-lego-rust-v1/
 
 ---
 
+## Resource Isolation Boundaries
+
+| Resource | Lego (`apps/n8n-lego`) | Rust (`apps/n8n-rust`) | Reference (`apps/n8n-reference`) |
+| :--- | :--- | :--- | :--- |
+| **Port** | `5677` | `5678` | `5680` |
+| **Data Directory** | `data/lego/` | `data/rust/` | `data/reference/` |
+| **Database** | `data/lego/*.json` (Atomic file store) | `data/rust/n8n.sqlite` | `data/reference/database.sqlite` |
+| **Environment (.env)** | `apps/n8n-lego/.env.example` | `apps/n8n-rust/.env.example` | `apps/n8n-reference/.env.example` |
+| **Dependencies** | `apps/n8n-lego/package.json` | `apps/n8n-rust/Cargo.toml` | `apps/n8n-reference/package.json` |
+| **Process Tracking** | Isolated PID (`data/.pids.json`) | Isolated PID (`data/.pids.json`) | Isolated PID (`data/.pids.json`) |
+| **Logs & State** | Isolated di `data/lego/` | Isolated di `data/rust/` | Isolated di `data/reference/` |
+
+---
+
 ## Cara Menjalankan Instance
 
 ### 1. Menjalankan Ketiga Instance Sekaligus
@@ -100,6 +114,14 @@ node scripts/start-all.mjs
 # Atau via npm:
 npm start
 ```
+
+### Menghentikan Semua Instance Terdaftar (PID-Targeted Safe Stop)
+```bash
+node scripts/stop-all.mjs
+# Atau via npm:
+npm run stop
+```
+*Catatan: Script menghentikan proses hanya berdasarkan PID yang tercatat di `data/.pids.json`, tanpa mematikan proses Node atau Rust sistem secara global.*
 
 ### 2. Menjalankan Masing-Masing Secara Terpisah
 

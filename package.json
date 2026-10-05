@@ -11,7 +11,8 @@
     "start:reference": "node apps/n8n-reference/index.mjs",
     "test:crates": "cargo test --workspace",
     "check:crates": "cargo check --workspace",
-    "check:rust": "cargo check --manifest-path apps/n8n-rust/Cargo.toml"
+    "check:rust": "cargo check --manifest-path apps/n8n-rust/Cargo.toml",
+    "stop": "node scripts/stop-all.mjs"
   },
   "keywords": [
     "n8n",

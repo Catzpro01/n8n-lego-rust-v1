@@ -110,3 +110,7 @@ update_rust_official.mjs
 /n8n-rust/
 runtime_registry.rs
 docs/architecture.md
+
+# Process tracking
+.pids.json
+*.pids.json
