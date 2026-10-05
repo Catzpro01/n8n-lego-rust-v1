@@ -14,6 +14,15 @@ impl NodeRegistry {
         }
     }
 
+    pub fn with_builtins() -> Self {
+        let mut reg = Self::new();
+        reg.register(crate::nodes::IfNode);
+        reg.register(crate::nodes::SetNode);
+        reg.register(crate::nodes::CodePolyglotNode::default());
+        reg.register(crate::nodes::DynamicIntegrationNode::default());
+        reg
+    }
+
     pub fn register<N: N8nNode + 'static>(&mut self, node: N) {
         let desc = node.description();
         self.nodes.insert(desc.name.clone(), Arc::new(node));
