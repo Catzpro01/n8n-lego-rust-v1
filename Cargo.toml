@@ -9,6 +9,7 @@ members = [
     "crates/n8n-execution-data",
     "crates/n8n-expression",
     "crates/n8n-nodes-rust",
+    "crates/n8n-realtime",
 ]
 exclude = [
     "apps/n8n-rust",

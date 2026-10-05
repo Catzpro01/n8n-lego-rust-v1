@@ -121,3 +121,27 @@
   - `main`: Berhasil di-merge dan di-push (Fast-Forward) ke `origin/main`.
   - `audit/v4-foundation`: Berhasil di-push ke remote `audit/v4-foundation`.
 - **Status Remote**: Remote `origin` kini aktif mengarah ke `Catzpro01/n8n-lego-rust-v1.git`. Repositori lama (`Catzpro01/n8n-rust-v.4.git`) dialihkan sebagai `upstream-v4` (read-only/untouched).
+
+## IMPLEMENTASI PRIORITAS 1: REALTIME-LEGO (WEBSOCKET & PUSH ENGINE)
+- **Target Invariant**: R1..R13 pada `contracts/realtime.contract.md`.
+- **Implementasi Rust (`crates/n8n-realtime`)**:
+  - Dibuat crate baru `crates/n8n-realtime` yang mencakup:
+    - `types.rs`: Invariant R1 (`DEFAULT_PUSH_BACKEND = "websocket"`, `MAX_PAYLOAD_SIZE_BYTES = 5 MiB`, `PING_INTERVAL_MS = 60s`), enum `PushBackend`, format amplop `PushMessage` n8n.
+    - `origin.rs`: Invariant R11 (matriks validasi origin `Forwarded` > `X-Forwarded-Host` > `Host`, stripping port standar 80/443 dan bracket IPv6).
+    - `serializer.rs`: Serializer aman DAG / pendeteksi siklus circular reference, frame builder SSE (`:ok\n\n`, `:ping\n\n`, `data: <json>\n\n`).
+    - `session.rs`: Invariant R3, R4, R5, R9, R10 (`SessionRegistry` berbasis channel Tokio, eviksi re-registrasi, heartbeat filter, dan liveness sweep).
+  - Didaftarkan ke root `Cargo.toml` workspace members.
+  - Unit test `cargo test -p n8n-realtime`: **6/6 PASS** (100%).
+- **Integrasi Engine Rust (`apps/n8n-rust`)**:
+  - Dependency `n8n-realtime` dan `futures-util` ditambahkan ke `apps/n8n-rust/Cargo.toml`.
+  - `AppState` mengintegrasikan `SessionRegistry` bersama `Database` dan broadcast event bus.
+  - Endpoint `/ws`, `/push`, dan `/rest/push` ditingkatkan untuk mendukung query `pushRef`, heartbeat frame handling, dan live session push.
+  - Kompilasi `cargo check`: **PASS**.
+- **Implementasi TypeScript (`packages/reconstructed-engine`)**:
+  - Dibuat `packages/reconstructed-engine/src/realtime-engine.ts` yang mengimplementasikan seluruh kontrak R1..R13.
+  - Pengujian paket `packages/realtime-lego`: **14/14 PASS** (`npm test`).
+- **Pembersihan `.gitignore`**:
+  - Dihapus aturan wildcard yang secara keliru mengabaikan file produksi Rust (`server.rs` dan file-file `apps/n8n-rust/src/nodes/*.rs`).
+- **Status Akhir Workspace**:
+  - Workspace `c:\Users\user\Downloads\n8n rust` kini siap dan disinkronkan ke branch `main` pada `https://github.com/Catzpro01/n8n-lego-rust-v1`.
+

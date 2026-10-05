@@ -1,0 +1,20 @@
+[package]
+name = "n8n-realtime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "n8n realtime LEGO — WebSocket & Push Engine matching R1..R13 contracts"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tokio = { version = "1.0", features = ["sync", "time", "macros", "rt"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+n8n-common = { path = "../n8n-common" }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full"] }

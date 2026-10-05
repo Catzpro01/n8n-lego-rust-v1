@@ -74,29 +74,9 @@ reference/**/dist/
 reference/**/.turbo/
 reference/**/coverage/
 
-# Local Scratch, Migration Scripts & Temporary Files (Ignore from clean monorepo)
+# Local Scratch & Temporary Files
 *.rs.new
-code_node*.rs
-cron_node.rs
-crypto_node*.rs
-dynamic_integration_node.rs
-execute_workflow_node.rs
-function_item_node.rs
-http_request_node.rs
-if_node*.rs
-manual_trigger_node.rs
-merge_node.rs
-mod_full.rs
-noop_node.rs
-respond_webhook_node.rs
-schedule_trigger_node.rs
-server.rs
-set_node.rs
-split_node.rs
-switch_node.rs
-traits_full.rs
-wait_node.rs
-webhook_node.rs
+*.tmp
 generate_nodes.js
 lokasi-file-dan-port-n8n.txt
 n8n-wsl

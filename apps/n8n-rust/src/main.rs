@@ -118,6 +118,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let app_state = AppState {
         db,
         event_sender,
+        realtime_registry: n8n_realtime::SessionRegistry::new(),
     };
     let app = create_router(app_state);
 

@@ -2,11 +2,11 @@
 	"name": "@lego/realtime",
 	"version": "0.1.0",
 	"private": true,
-	"description": "REALTIME LEGO — n8n 2.9.4 push subsystem (SSE + WebSocket backends, origin validation, pubsub relay). Rust NOT STARTED.",
+	"description": "REALTIME LEGO — n8n 2.9.4 push subsystem (SSE + WebSocket backends, origin validation, pubsub relay). Rust crate: crates/n8n-realtime.",
 	"license": "SEE LICENSE IN reference/n8n/LICENSE.md",
 	"type": "module",
 	"scripts": {
-		"test": "node --test test/*.test.mjs",
+		"test": "node --experimental-strip-types --test test/*.test.mjs",
 		"gate": "node ../../tools/realtime-isolation-gate.mjs"
 	},
 	"devDependencies": {
