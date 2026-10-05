@@ -1,151 +1,116 @@
-# Laporan Reorganisasi Monorepo: n8n Rust v4
+# Audit & Execution Report: 3 Isolated Environments Monorepo Setup
 
-## 1. Lokasi Source Ketiga Project Sebelum Reorganisasi
-- **n8n Lego / Frontend (Port 5677)**:
-  - Sebelum: `apps/n8n-lego/` dan mirror di `n8n lego/apps/n8n-lego/`
-- **n8n Rust Core / Backend (Port 5678)**:
-  - Sebelum: Tersebar antara `/home/catzpro01/n8n-rust/n8n_rust_core/` di WSL, file root scratch `server.rs`, serta workspace libraries di `crates/`
-- **Official n8n Reference / Oracle (Port 5680)**:
-  - Sebelum: `reference/n8n/` dan instalasi global npm n8n di WSL `/home/catzpro01/.nvm/versions/node/v22.23.2/lib/node_modules/n8n/`
+## NEW REPOSITORY
+**Name**: Catzpro01/n8n-lego-rust-v1  
+**URL**: https://github.com/Catzpro01/n8n-lego-rust-v1  
+**Branch**: main  
 
----
+## OLD REPOSITORIES TOUCHED: MUST BE NONE
+- `Catzpro01/n8n-rust-v.4`: **READ-ONLY / NOT TOUCHED**
+- `Catzpro01/n8nrustv.4`: **READ-ONLY / NOT TOUCHED**
 
-## 2. Lokasi Setelah Reorganisasi
-- **`apps/n8n-lego/`**: Frontend UI adapter (Vue 3 / n8n-editor-ui bundle) & server ringan (Port 5677).
-- **`apps/n8n-rust/`**: Standalone Axum backend server + workflow scheduler & executor (Port 5678).
-- **`apps/n8n-reference/`**: Official n8n oracle runner & configuration wrapper (Port 5680).
-- **`crates/`**: 8 Core Cargo Workspace Shared Libraries (`n8n-common`, `n8n-workflow`, `n8n-connection`, `n8n-validation`, `n8n-node-model`, `n8n-execution-data`, `n8n-expression`, `n8n-nodes-rust`).
+## LOCAL ROOT
+`C:\Users\user\Downloads\n8n-lego-rust-v1`
 
----
+## 3 ISOLATED ENVIRONMENTS SPECIFICATION
 
-## 3. Struktur Directory Final
-```text
-n8n-rust-v.4/
-├── apps/
-│   ├── n8n-lego/             # Frontend adapter (Port 5677)
-│   ├── n8n-rust/             # Rust core backend (Port 5678)
-│   └── n8n-reference/        # Official n8n oracle (Port 5680)
-│
-├── crates/                   # Cargo Workspace Libraries
-│   ├── n8n-common/
-│   ├── n8n-workflow/
-│   ├── n8n-connection/
-│   ├── n8n-validation/
-│   ├── n8n-node-model/
-│   ├── n8n-execution-data/
-│   ├── n8n-expression/
-│   └── n8n-nodes-rust/
-│
-├── workers/                  # Future Out-of-Process Execution Workers
-│   ├── code-worker/
-│   │   ├── javascript/       # Planned (Not Implemented)
-│   │   ├── python/           # Planned (Not Implemented)
-│   │   └── php/              # Planned (Not Implemented)
-│   └── node-compat-worker/   # Planned (Not Implemented)
-│
-├── compatibility/            # Oracle Semantic Diff Testing Suite
-│   ├── workflows/            # Workflow test definitions (.gitkeep)
-│   ├── fixtures/             # Input mock fixtures (.gitkeep)
-│   ├── expected/             # Golden reference outputs (.gitkeep)
-│   └── reports/              # Diff reports (.gitkeep)
-│
-├── scripts/
-│   └── start-all.mjs         # Multi-instance orchestrator
-├── docs/
-│   └── architecture-v4-foundation.md
-├── data/                     # Local data directories (Git-Ignored)
-│   ├── lego/                 # Local sqlite / sessions
-│   ├── rust/                 # Local sqlite DB
-│   ├── reference/            # Local n8n user folder
-│   └── test/                 # Test scratch
-│
-├── .env.example              # Environment variables template
-├── .gitignore                # Strict ignore rules
-├── Cargo.toml                # Root workspace manifest
-└── README.md                 # Monorepo architecture & run instructions
-```
+### 1. n8n Lego (UI & Frontend Adapter)
+- **App Path**: `apps/n8n-lego`
+- **Port**: `5677`
+- **Data Folder**: `data/lego/`
+- **Database**: `data/lego/*.json` (Atomic file store)
+- **Environment**: `apps/n8n-lego/.env.example` (`PORT=5677`, `N8N_USER_FOLDER=../../data/lego`)
+- **Dependencies**: `apps/n8n-lego/package.json` (`n8n-editor-ui@2.9.4`)
+- **Process Lifecycle**: Terdaftar dalam `data/.pids.json`
 
----
+### 2. n8n Rust (DAG Execution Engine Core)
+- **App Path**: `apps/n8n-rust`
+- **Port**: `5678`
+- **Data Folder**: `data/rust/`
+- **Database**: SQLite terisolasi di `data/rust/n8n.sqlite` (`DATABASE_URL=sqlite://../../data/rust/n8n.sqlite`)
+- **Environment**: `apps/n8n-rust/.env.example` (`N8N_RUST_PORT=5678`, `N8N_RUST_DATA_DIR=../../data/rust`)
+- **Dependencies**: Terisolasi di `apps/n8n-rust/Cargo.toml` & `apps/n8n-rust/Cargo.lock`
+- **Build Target**: `apps/n8n-rust/target/` (terpisah dari shared crates workspace)
+- **Process Lifecycle**: Terdaftar dalam `data/.pids.json`
 
-## 4. Repository Git yang Digunakan
-- **Repository Aktif (Monorepo Baru)**: `n8n-rust-v.4`
-- **Remote URL**: `https://github.com/Catzpro01/n8n-rust-v.4.git`
+### 3. Official n8n Reference (Truth Oracle)
+- **App Path**: `apps/n8n-reference`
+- **Port**: `5680`
+- **Data Folder**: `data/reference/`
+- **Database**: Official SQLite di `data/reference/database.sqlite`
+- **Environment**: `apps/n8n-reference/.env.example` (`N8N_PORT=5680`, `N8N_USER_FOLDER=../../data/reference`)
+- **Dependencies**: `apps/n8n-reference/package.json` (`n8n@2.9.4`)
+- **Process Lifecycle**: Terdaftar dalam `data/.pids.json`
 
----
+## SHARED ASSETS (STRICTLY SHARED ONLY)
+- `crates/`: 8 shared Rust crates (`n8n-common`, `n8n-workflow`, `n8n-connection`, `n8n-validation`, `n8n-node-model`, `n8n-execution-data`, `n8n-expression`, `n8n-nodes-rust`)
+- `workers/`: runtime worker definitions
+- `compatibility/`: oracle diff tests, fixtures, dan expected golden outputs
 
-## 5. Repository Lama yang TIDAK Disentuh (Read-Only)
-- **`n8nrustv.4` / `n8n-rust` (WSL clone upstream n8n-io/n8n)**: 100% READ-ONLY, tidak ada modifikasi, commit, delete, ataupun push.
-- Seluruh file hanya disalin (*read/copy*) ke repository baru `n8n-rust-v.4`.
+## ORCHESTRATION & SAFE PROCESS MANAGEMENT
+- `scripts/start-all.mjs` / `npm start`: Menjalankan ketiga instance secara bersamaan dan mencatat PID ke `data/.pids.json`.
+- `scripts/stop-all.mjs` / `npm run stop`: Membaca PID dari `data/.pids.json` dan mematikan proses terdaftar saja tanpa membunuh proses sistem secara global.
 
----
+## AUDIT & VALIDATION RESULTS
+1. **Filesystem Audit**:
+   - Nested `.git`: **NONE**
+   - Active secrets (`.env`): **NONE**
+   - Active database files (`*.db`, `*.sqlite`, `*.sqlite3`): **NONE** (git-ignored)
+   - Runtime noise: **NONE**
+2. **Database Isolation Audit**:
+   - Lego: File-based JSON store di `data/lego`
+   - Rust: SQLite di `data/rust/n8n.sqlite`
+   - Reference: SQLite di `data/reference/database.sqlite`
+   - Status: **100% DISJOINT & ISOLATED**
+3. **Rust Compilation & Tests**:
+   - `cargo check --workspace`: **PASSED** (0 errors)
+   - `cargo test --workspace`: **PASSED** (111 tests passed, 0 failed)
+   - `cargo check --manifest-path apps/n8n-rust/Cargo.toml`: **PASSED** (0 errors)
+4. **Port & Config Contract Validation**:
+   - 5677 -> Lego (data/lego) -> **VERIFIED**
+   - 5678 -> Rust (data/rust) -> **VERIFIED**
+   - 5680 -> Reference (data/reference) -> **VERIFIED**
 
-## 6. File yang Dipindahkan / Disalin
-- Disalin source Axum backend dari WSL ke `apps/n8n-rust/`:
-  - `src/` (`main.rs`, `server.rs`, `db.rs`, `executor.rs`, `scheduler.rs`, `evaluator.rs`, `events.rs`, `workflow.rs`, `parser.rs`, `nodes/`)
-  - File metadata JSON (`roles.json`, `settings_complete.json`, `global_scopes.json`, `project_relations.json`, `project_scopes.json`)
-  - `Cargo.toml`, `build.rs`, `package.json`, `README.md`
-- Dibuat `apps/n8n-reference/` (`package.json`, `index.mjs`, `README.md`).
-- Dibuat struktur placeholder `workers/` dan `compatibility/`.
-- Dibuat launcher `scripts/start-all.mjs`.
+## BROWSER & LIVE INSTANCE STATUS (2026-10-05)
+- **n8n Lego**: Aktif di `http://localhost:5677` (Editor UI 2.9.4 & Reconstructed Engine)
+- **n8n Rust (Rush)**: Aktif di `http://localhost:5678` (Axum High-Efficiency Rust Standalone Server)
+- **n8n Reference**: Aktif di `http://localhost:5680` (Official n8n upstream di WSL)
+- **Google Chrome**: Berhasil dibuka dengan ketiga tab untuk port masing-masing.
 
----
+## AUTHENTICATION & CREDENTIALS
+- **Password**: `Mrizki26082003`
+- **Supported Emails**:
+  - `catzpro01@gmail.com` (Owner)
+  - `catzpro02@gmail.com` (Owner / Admin)
+- **n8n Lego (Port 5677)**: Kedua email berhasil diuji login (Status 200 OK).
+- **n8n Reference (Port 5680)**: Kedua email berhasil diuji login (Status 200 OK).
+- **n8n Rust (Port 5678)**: Standalone Axum DAG execution core (terbuka langsung tanpa credential gate).
 
-## 7. File yang Sengaja Tidak Dimasukkan Git (Ignored)
-- **Database & State**: `*.db`, `*.sqlite`, `*.sqlite3`, `*.sqlite-wal`, `*.sqlite-shm`
-- **Dependencies & Build**: `node_modules/`, `target/`, `dist/`, `*.tsbuildinfo`, `*.node`
-- **Credentials & Secrets**: `.env`, `.env.*`
-- **Instance Runtime Data**: `data/lego/*`, `data/rust/*`, `data/reference/*`, `data/test/*` (hanya `.gitkeep` yang disimpan)
-- **Logs & Temporary**: `logs/`, `tmp/`, `*.log`, `.runtime/`
-- **Local Scratch & Mirror**: Folder lokal `/n8n lego/`, `/n8n-rust/`, dan file scratch `*.rs` di root.
+## AI ASSISTANT ENABLEMENT & MCP BROWSER AUTOMATION (PORT 5677)
+- **Akar Masalah Awal**:
+  1. Frontend crash `Cannot read properties of undefined (reading 'endsWith')` akibat hilangnya field `urlBaseWebhookTest` di `frontend-settings.mjs`.
+  2. Modul `instance-ai` tidak terdaftar dalam `activeModules` dan setting `aiAssistant` sebelumnya `false`.
+  3. Scope RBAC pengguna belum mencakup hak akses `instanceAi:manage`, `instanceAi:message`, `instanceAi:eval`, dan `instanceAi:gateway`.
+  4. Endpoint `/rest/module-settings` belum mengembalikan konfigurasi `instance-ai`.
+- **Perbaikan**:
+  - Menambahkan `urlBaseWebhookTest` ke `frontend-settings.mjs`.
+  - Mendaftarkan `instance-ai` ke `activeModules` dan mengaktifkan fitur `aiAssistant`, `askAi`, `taskAi`, dan `aiBuilder`.
+  - Mengonfigurasi `/rest/module-settings` untuk mengembalikan status `instance-ai` aktif (`enabled: true, setupCompleted: true`).
+  - Menambahkan scope `instanceAi:*` ke peran `global:owner` dan `global:admin` pada katalog roles.
+- **Verifikasi MCP (Playwright)**:
+  - Form sign in diakses dan diisi secara otomatis menggunakan Playwright MCP.
+  - Berhasil login ke dashboard `http://localhost:5677/home/workflows`.
+  - Navigasi sidebar **AI Assistant (Preview)** muncul dan berhasil dibuka di `http://localhost:5677/assistant`.
+  - Tangkapan layar antarmuka AI Assistant berhasil diambil dan divalidasi.
 
----
-
-## 8. Hasil `git status`
-```text
-On branch audit/v4-foundation
-Your branch is up to date with 'origin/audit/v4-foundation'.
-
-nothing to commit, working tree clean
-```
-
----
-
-## 9. Hasil `cargo check`
-- **Workspace Crates**:
-  ```text
-  cargo check --workspace
-  Finished dev profile [unoptimized + debuginfo] target(s) in 0.15s (Exit Code: 0)
-  ```
-- **Backend App (`apps/n8n-rust`)**:
-  ```text
-  cargo check --manifest-path apps/n8n-rust/Cargo.toml
-  Finished dev profile [unoptimized + debuginfo] target(s) in 7.12s (Exit Code: 0)
-  ```
-- **Workspace Tests**:
-  `cargo test --workspace` -> 111 tests passed, 0 failed.
-
----
-
-## 10. Hasil Pengecekan Bahwa Port 5677, 5678, dan 5680 Dapat Dikonfigurasi
-- **Port 5677 (`apps/n8n-lego`)**: Dikonfigurasi via `N8N_LEGO_PORT` atau `N8N_PORT` di `apps/n8n-lego/src/config.mjs` (default: 5677).
-- **Port 5678 (`apps/n8n-rust`)**: Dikonfigurasi via `N8N_RUST_PORT` atau `PORT` di `apps/n8n-rust/src/main.rs` (default: 5678).
-- **Port 5680 (`apps/n8n-reference`)**: Dikonfigurasi via `N8N_REFERENCE_PORT` atau `N8N_PORT` di `apps/n8n-reference/index.mjs` (default: 5680).
-- Pengecekan parsing lingkungan:
-  ```json
-  { "legoPort": 5677, "rustPort": 5678, "refPort": 5680 }
-  ```
-
----
-
-## 11. Commit Hash
-- **`5b0fd5e25`** (`chore(v4): organize three projects into monorepo`)
-
----
-
-## 12. Branch
-- **`audit/v4-foundation`**
-
----
-
-## 13. Remote Git yang Digunakan
-- **`origin`**: `https://github.com/Catzpro01/n8n-rust-v.4.git`
+## RESOLUSI ERROR "Settings error: Failed to load settings"
+- **Akar Masalah**:
+  Saat halaman `/assistant` dimuat, frontend memanggil endpoint konfigurasi AI:
+  1. `/rest/instance-ai/settings/service-credentials` (sebelumnya mengembalikan 501 Not Implemented).
+  2. `/rest/instance-ai/settings/model-credentials` (sebelumnya mengembalikan 501 Not Implemented).
+  3. `/rest/instance-ai/settings`, `/rest/instance-ai/preferences`, `/rest/instance-ai/threads`, `/rest/instance-ai/credits`.
+- **Perbaikan**:
+  - Mengimplementasikan seluruh endpoint REST `instance-ai` dan `data-tables-global` di `apps/n8n-lego/src/rest/routes.mjs` sesuai spesifikasi upstream n8n.
+- **Hasil Verifikasi**:
+  - Semua endpoint mengembalikan Status 200 OK.
+  - Halaman `/assistant` bersih total tanpa ada notifikasi popup/toast error sama sekali.

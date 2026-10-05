@@ -125,7 +125,11 @@
         "credentialResolver:read",
         "credentialResolver:update",
         "credentialResolver:delete",
-        "credentialResolver:list"
+        "credentialResolver:list",
+        "instanceAi:manage",
+        "instanceAi:message",
+        "instanceAi:eval",
+        "instanceAi:gateway"
       ],
       "licensed": false,
       "systemRole": true,
@@ -256,7 +260,11 @@
         "credentialResolver:read",
         "credentialResolver:update",
         "credentialResolver:delete",
-        "credentialResolver:list"
+        "credentialResolver:list",
+        "instanceAi:manage",
+        "instanceAi:message",
+        "instanceAi:eval",
+        "instanceAi:gateway"
       ],
       "licensed": false,
       "systemRole": true,

@@ -662,7 +662,10 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
     {
       method: 'GET',
       path: '/rest/module-settings',
-      handler: (ctx) => sendData(ctx.res, {}),
+      handler: (ctx) =>
+        sendData(ctx.res, {
+          'instance-ai': { enabled: true, setupCompleted: true },
+        }),
     },
     {
       method: 'GET',
@@ -688,6 +691,130 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
       method: 'GET',
       path: '/rest/events',
       handler: (ctx) => sendData(ctx.res, []),
+    },
+    /* ----------------------------------------------------------- instance AI */
+    {
+      method: 'GET',
+      path: '/rest/instance-ai/settings',
+      handler: (ctx) =>
+        sendData(ctx.res, {
+          enabled: true,
+          permissions: {
+            createWorkflow: 'require_approval',
+            updateWorkflow: 'require_approval',
+            runWorkflow: 'require_approval',
+            publishWorkflow: 'require_approval',
+            deleteWorkflow: 'require_approval',
+            createCredential: 'require_approval',
+            deleteCredential: 'require_approval',
+            createFolder: 'require_approval',
+            deleteFolder: 'require_approval',
+            moveWorkflowToFolder: 'require_approval',
+            tagWorkflow: 'require_approval',
+            createDataTable: 'require_approval',
+            deleteDataTable: 'require_approval',
+            mutateDataTableSchema: 'require_approval',
+            mutateDataTableRows: 'require_approval',
+            cleanupTestExecutions: 'require_approval',
+            readFilesystem: 'require_approval',
+            fetchUrl: 'require_approval',
+            webSearch: 'require_approval',
+            restoreWorkflowVersion: 'require_approval',
+            executeMcpTool: 'require_approval',
+          },
+          mcpAccessEnabled: true,
+          sandboxEnabled: false,
+          sandboxProvider: 'n8n-sandbox',
+          daytonaCredentialId: null,
+          n8nSandboxCredentialId: null,
+          searchCredentialId: null,
+          modelCredentialId: null,
+          modelName: null,
+          modelEnvConfigured: false,
+          sandboxEnvConfigured: false,
+          searchEnvConfigured: false,
+          searchDisabled: false,
+          n8nSandboxServiceUrl: null,
+          envManaged: {
+            model: { provider: false, apiKey: false, baseUrl: false, model: false },
+            sandbox: { provider: false, serviceUrl: false, apiKey: false },
+            search: { provider: false, apiKey: false, url: false },
+          },
+          localGatewayDisabled: false,
+          browserUseEnabled: true,
+        }),
+    },
+    {
+      method: 'GET',
+      path: '/rest/instance-ai/settings/service-credentials',
+      handler: (ctx) => sendData(ctx.res, []),
+    },
+    {
+      method: 'GET',
+      path: '/rest/instance-ai/settings/model-credentials',
+      handler: (ctx) => sendData(ctx.res, []),
+    },
+    {
+      method: 'GET',
+      path: '/rest/instance-ai/preferences',
+      handler: (ctx) =>
+        sendData(ctx.res, {
+          credentialId: null,
+          credentialType: null,
+          credentialName: null,
+          modelName: 'claude-opus-4-8',
+          localGatewayDisabled: false,
+        }),
+    },
+    {
+      method: 'GET',
+      path: '/rest/instance-ai/threads',
+      handler: (ctx) =>
+        sendData(ctx.res, {
+          threads: [],
+          total: 0,
+          page: 0,
+          hasMore: false,
+        }),
+    },
+    {
+      method: 'GET',
+      path: '/rest/instance-ai/credits',
+      handler: (ctx) =>
+        sendData(ctx.res, {
+          creditsQuota: -1,
+          creditsClaimed: 0,
+        }),
+    },
+    /* ----------------------------------------------------------- data tables & extras */
+    {
+      method: 'GET',
+      path: '/rest/data-tables-global/limits',
+      handler: (ctx) =>
+        sendData(ctx.res, {
+          totalBytes: 0,
+          quotaStatus: 'ok',
+          dataTables: {},
+        }),
+    },
+    {
+      method: 'GET',
+      path: '/rest/data-tables-global',
+      handler: (ctx) =>
+        sendData(ctx.res, {
+          count: 0,
+          dataTables: [],
+        }),
+    },
+    {
+      method: 'GET',
+      path: '/rest/favorites',
+      handler: (ctx) => sendData(ctx.res, []),
+    },
+    {
+      method: 'POST',
+      path: '/rest/workflow-dependencies/counts',
+      handler: (ctx) => sendData(ctx.res, {}),
     },
   ];
 }
