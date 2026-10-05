@@ -539,6 +539,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "n8n-lego"
+version = "0.1.0"
+dependencies = [
+ "n8n-node-model",
+ "n8n-nodes-rust",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "n8n-node-model"
 version = "0.1.0"
 dependencies = [

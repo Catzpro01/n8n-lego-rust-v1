@@ -1,130 +1,84 @@
-# n8n Rust v4
+# n8n LEGO V2
 
-Monorepo containing:
+Rust-first n8n-compatible automation runtime with the official n8n Vue UI kept as the frontend contract.
 
-- **n8n Lego frontend** (`apps/n8n-lego`)
-- **n8n Rust execution backend** (`apps/n8n-rust`)
-- **official n8n reference instance** (`apps/n8n-reference`)
+## Current architecture
 
-## Ports
+- apps/n8n-lego — compatibility gateway and official editor adapter; migration target for Rust control-plane ownership.
+- apps/n8n-rust — Rust execution/API application.
+- apps/n8n-reference — upstream n8n oracle for semantic compatibility testing.
+- crates/* — reusable Rust LEGO modules.
+- crates/n8n-lego — the beginner-friendly public facade for the Rust runtime.
+- compatibility/* — oracle and regression material.
+- workers/* — compatibility and isolation boundary for Node.js/polyglot workloads.
 
-| Port | Service | Directory | Purpose |
-|:---|:---|:---|:---|
-| **5677** | Lego | `apps/n8n-lego/` | Frontend UI adapter (Vue 3 / n8n-editor-ui) & lightweight server |
-| **5678** | Rust | `apps/n8n-rust/` | High-performance standalone Rust DAG execution engine |
-| **5680** | Reference | `apps/n8n-reference/` | Official upstream n8n serving as Truth Oracle for semantic diffs |
+## LEGO V2 direction
 
----
+LEGO V2 reduces the mental model to three concepts:
 
-## Architecture Overview
+1. Workflow — deterministic automation.
+2. Agent — adaptive automation with tools, memory and policy.
+3. Node/Tool — reusable capability.
 
-```text
-                           ┌─────────────────────────┐
-                           │    Browser / Web UI     │
-                           └────────────┬────────────┘
-                                        │
-                 ┌──────────────────────┼──────────────────────┐
-                 │ :5677                │ :5678                │ :5680
-                 ▼                      ▼                      ▼
-        ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-        │  apps/n8n-lego  │    │  apps/n8n-rust  │    │apps/n8n-referenc│
-        │   (Frontend)    │    │ (Rust Backend)  │    │(Official Oracle)│
-        └────────┬────────┘    └────────┬────────┘    └────────┬────────┘
-                 │                      │                      │
-                 │ REST / Workflows     │ Tokio Execution      │ Golden Replay
-                 ▼                      ▼                      ▼
-        ┌───────────────────────────────────────────────────────────────┐
-        │                       crates/ Workspace                       │
-        │  n8n-common  │  n8n-workflow  │  n8n-nodes-rust  │ ...       │
-        └───────────────────────────────┬───────────────────────────────┘
-                                        │
-                                        ▼
-                             ┌─────────────────────┐
-                             │ compatibility/ diff │
-                             │  oracle validation  │
-                             └─────────────────────┘
-```
+Internally, the runtime is still modular and Rust-first:
 
----
+~~~text
+Official n8n Vue UI
+        |
+        v
+LEGO Gateway / API Compatibility
+        |
+        +------------------------------+
+        |                              |
+        v                              v
+Rust Workflow Runtime             Rust Agent Runtime
+        |                              |
+        +--------------+---------------+
+                       |
+                       v
+                LEGO Runtime Kernel
+                       |
+          +------------+-------------+
+          |            |             |
+          v            v             v
+      Native Rust   Integration IR  Compatibility Workers
+                       |
+                       v
+             Durable Storage + Realtime
+~~~
 
-## Directory Layout
+See:
 
-```text
-n8n-rust-v.4/
-├── apps/
-│   ├── n8n-lego/             # Lego frontend adapter (Port 5677)
-│   ├── n8n-rust/             # Rust core backend server (Port 5678)
-│   └── n8n-reference/        # Official n8n oracle instance (Port 5680)
-│
-├── crates/                   # Cargo Workspace Libraries
-│   ├── n8n-common/           # Core contracts and error types
-│   ├── n8n-workflow/         # Workflow graph lowering & runtime engine
-│   ├── n8n-connection/       # Connection routing & graph edges
-│   ├── n8n-validation/       # Parameter & schema validation
-│   ├── n8n-node-model/       # Official node metadata models
-│   ├── n8n-execution-data/   # INodeExecutionData & pairedItem plane
-│   ├── n8n-expression/       # Expression evaluation engine
-│   └── n8n-nodes-rust/       # Native Rust nodes & runtime registry
-│
-├── workers/                  # Future Out-of-Process Execution Workers
-│   ├── code-worker/          # JavaScript, Python, PHP workers (Planned)
-│   └── node-compat-worker/   # Sidecar Node.js compatibility worker (Planned)
-│
-├── compatibility/            # Oracle Semantic Diff Testing Suite
-│   ├── workflows/            # Standard benchmark workflow definitions
-│   ├── fixtures/             # Input mock payloads
-│   ├── expected/             # Golden outputs from port 5680
-│   └── reports/              # Diff verification reports
-│
-├── data/                     # Local Instance State (Ignored in Git)
-│   ├── lego/                 # Lego data folder (sqlite/sessions)
-│   ├── rust/                 # Rust database storage
-│   ├── reference/            # Upstream n8n user folder
-│   └── test/                 # Test scratch data
-│
-├── scripts/                  # Management & multi-instance launchers
-├── docs/                     # Architectural specifications
-├── .env.example              # Environment variables template
-├── .gitignore                # Strict ignore policy (no db, no node_modules)
-└── Cargo.toml                # Root Cargo workspace manifest
-```
+- docs/lego-v2/README.md
+- docs/lego-v2/ARCHITECTURE.md
+- docs/lego-v2/REFERENCE_PLATFORMS.md
+- docs/lego-v2/ROADMAP.md
 
----
+## Beginner path
 
-## Running the Instances
+Start with the facade crate:
 
-### 1. Run All Three Instances Simultaneously
-```bash
-node scripts/start-all.mjs
-```
+~~~rust
+use n8n_lego::LegoRuntime;
 
-### 2. Run Individually
+let runtime = LegoRuntime::new();
+println!("built-in nodes: {}", runtime.node_count());
+~~~
 
-- **Lego Frontend (5677)**:
-  ```bash
-  N8N_LEGO_PORT=5677 node apps/n8n-lego/bin/n8n-lego.mjs start
-  ```
+Then learn the internal workflow/runtime crates only as needed.
 
-- **Rust Backend (5678)**:
-  ```bash
-  N8N_RUST_PORT=5678 cargo run -p n8n-rust-app
-  ```
+## Important compatibility rule
 
-- **Reference Oracle (5680)**:
-  ```bash
-  N8N_REFERENCE_PORT=5680 node apps/n8n-reference/index.mjs
-  ```
+The official n8n editor remains the UI source of truth. Rust migration must be certified against the official n8n reference instance; unsupported behaviour must be reported explicitly rather than masked with fabricated success responses.
 
----
+## Development instances
 
-## Oracle Verification Workflow
+The original project convention remains:
 
-```text
-workflow.json
-   ├──> official n8n :5680  ───> golden_output.json
-   │
-   └──> Rust n8n     :5678  ───> candidate_output.json
-             │
-             ▼
-   semantic diff comparison (node order, item mutation, pairedItem)
-```
+| Port | Service |
+|---:|---|
+| 5677 | LEGO editor/gateway |
+| 5678 | Rust application |
+| 5680 | Official n8n oracle |
+
+Keep their data directories, credentials, processes and environment isolated.
