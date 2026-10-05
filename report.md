@@ -1,68 +1,151 @@
-# Audit Remediation & Workspace Integration Report: n8n Rust v4 Foundation
+# Laporan Reorganisasi Monorepo: n8n Rust v4
 
-**Target Branch**: `audit/v4-foundation`  
-**Repository**: [Catzpro01/n8n-rust-v.4](https://github.com/Catzpro01/n8n-rust-v.4/tree/audit/v4-foundation)  
-**Latest Commit**: `c94b42559` (`fix(v4-foundation): integrate runtime into workspace crates and address audit findings`)  
-**Status**: Verified & Pushed  
-
----
-
-## 1. Ringkasan Eksekutif & Respon Audit ChatGPT
-
-Seluruh poin audit kritis (P0 hingga P3) yang diangkat oleh ChatGPT telah berhasil diselesaikan dan diverifikasi dengan kompilasi serta unit/integration tests 100% lulus:
-
-| No | Temuan Audit ChatGPT | Respon & Tindakan Implementasi | Status |
-|---|---|---|---|
-| **1** | **BLOCKER**: Crate paralel `crates/n8n_rust_core` tidak ada di workspace `Cargo.toml`. | **Pilihan B diterapkan**: Crate paralel `crates/n8n_rust_core` dihapus sepenuhnya dari git. Seluruh runtime dan nodes diintegrasikan langsung ke dalam arsitektur monorepo 8-crate resmi (`crates/n8n-nodes-rust/`). | ✅ **SELESAI** |
-| **2** | `nodes/mod.rs` tidak mengekspos `code_polyglot` dan `dynamic_integration`. | Diperbarui: `pub mod code_polyglot;`, `pub mod dynamic_integration;`, `pub use ...`. Node diekspos dan terdaftar di `NodeRegistry::with_builtins()`. | ✅ **SELESAI** |
-| **3** | Version Pinning `RuntimeRegistry` rusak (fallback diam-diam ke default saat versi spesifik gagal). | Diperbaiki menjadi **deterministik (fail-closed)**: jika versi spesifik (misal `python@3.13`) tidak ditemukan via `mise which`, fungsi mengembalikan `None` dan eksekusi menghasilkan error, tidak ada fallback ke default. | ✅ **SELESAI** |
-| **4** | Code Node lifecycle & security: timeout tanpa `kill_on_drop`, pembacaan stream serial berpotensi deadlock. | - Ditambahkan `Command::kill_on_drop(true)` pada child process.<br>- Pembacaan `stdout` dan `stderr` dilakukan secara paralel melalui `tokio::join!(read_stdout, read_stderr)` untuk mengeliminasi potensi pipe buffer deadlock. | ✅ **SELESAI** |
-| **5** | Dynamic Integration Proxy: fallback berbahaya ke `httpbin.org` dan penyamaran error network jadi fake success JSON. | - Fallback ke `httpbin.org` dihapus total. Node yang tidak didukung langsung ditolak dengan `NodeExecutionError::InvalidParameter`.<br>- Network error dipropagasi sebagai error eksekusi nyata (`NodeExecutionError::ExecutionFailed`). | ✅ **SELESAI** |
-| **6** | Transparansi status test. | Script smoke test ad-hoc (`push_20_nodes.mjs`, `test_20_nodes.json`) dihapus dari branch. Pengujian diverifikasi melalui test suite resmi workspace. | ✅ **SELESAI** |
+## 1. Lokasi Source Ketiga Project Sebelum Reorganisasi
+- **n8n Lego / Frontend (Port 5677)**:
+  - Sebelum: `apps/n8n-lego/` dan mirror di `n8n lego/apps/n8n-lego/`
+- **n8n Rust Core / Backend (Port 5678)**:
+  - Sebelum: Tersebar antara `/home/catzpro01/n8n-rust/n8n_rust_core/` di WSL, file root scratch `server.rs`, serta workspace libraries di `crates/`
+- **Official n8n Reference / Oracle (Port 5680)**:
+  - Sebelum: `reference/n8n/` dan instalasi global npm n8n di WSL `/home/catzpro01/.nvm/versions/node/v22.23.2/lib/node_modules/n8n/`
 
 ---
 
-## 2. Bukti Verifikasi Resmi (Cargo Workspace)
-
-### A. Test Suite `crates/n8n-nodes-rust`
-```
-running 6 tests
-test tests::test_dynamic_integration_rejects_unsupported_without_fallback ... ok
-test tests::test_if_node_branching ... ok
-test tests::test_set_node_execution ... ok
-test tests::test_runtime_registry_deterministic_pinning ... ok
-test tests::test_node_registry_builtins ... ok
-test tests::test_code_polyglot_preserves_paired_item ... ok
-
-test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
-```
-
-### B. Workspace Conformance & Integration Suite (`cargo test --workspace`)
-- `crates/n8n-common`: passed
-- `crates/n8n-workflow`: 96 runtime tests + 2 conformance + 1 graph_expression + 5 reference fixtures + 4 runner + 3 trigger lifecycle passed (total 111 tests passed)
-- `crates/n8n-connection`: passed
-- `crates/n8n-validation`: passed
-- `crates/n8n-node-model`: passed
-- `crates/n8n-execution-data`: passed
-- `crates/n8n-expression`: passed
-- `crates/n8n-nodes-rust`: passed
-- **Total Workspace Test**: 100% Lulus (0 failed).
+## 2. Lokasi Setelah Reorganisasi
+- **`apps/n8n-lego/`**: Frontend UI adapter (Vue 3 / n8n-editor-ui bundle) & server ringan (Port 5677).
+- **`apps/n8n-rust/`**: Standalone Axum backend server + workflow scheduler & executor (Port 5678).
+- **`apps/n8n-reference/`**: Official n8n oracle runner & configuration wrapper (Port 5680).
+- **`crates/`**: 8 Core Cargo Workspace Shared Libraries (`n8n-common`, `n8n-workflow`, `n8n-connection`, `n8n-validation`, `n8n-node-model`, `n8n-execution-data`, `n8n-expression`, `n8n-nodes-rust`).
 
 ---
 
-## 3. Struktur Berkas yang Terhubung
+## 3. Struktur Directory Final
+```text
+n8n-rust-v.4/
+├── apps/
+│   ├── n8n-lego/             # Frontend adapter (Port 5677)
+│   ├── n8n-rust/             # Rust core backend (Port 5678)
+│   └── n8n-reference/        # Official n8n oracle (Port 5680)
+│
+├── crates/                   # Cargo Workspace Libraries
+│   ├── n8n-common/
+│   ├── n8n-workflow/
+│   ├── n8n-connection/
+│   ├── n8n-validation/
+│   ├── n8n-node-model/
+│   ├── n8n-execution-data/
+│   ├── n8n-expression/
+│   └── n8n-nodes-rust/
+│
+├── workers/                  # Future Out-of-Process Execution Workers
+│   ├── code-worker/
+│   │   ├── javascript/       # Planned (Not Implemented)
+│   │   ├── python/           # Planned (Not Implemented)
+│   │   └── php/              # Planned (Not Implemented)
+│   └── node-compat-worker/   # Planned (Not Implemented)
+│
+├── compatibility/            # Oracle Semantic Diff Testing Suite
+│   ├── workflows/            # Workflow test definitions (.gitkeep)
+│   ├── fixtures/             # Input mock fixtures (.gitkeep)
+│   ├── expected/             # Golden reference outputs (.gitkeep)
+│   └── reports/              # Diff reports (.gitkeep)
+│
+├── scripts/
+│   └── start-all.mjs         # Multi-instance orchestrator
+├── docs/
+│   └── architecture-v4-foundation.md
+├── data/                     # Local data directories (Git-Ignored)
+│   ├── lego/                 # Local sqlite / sessions
+│   ├── rust/                 # Local sqlite DB
+│   ├── reference/            # Local n8n user folder
+│   └── test/                 # Test scratch
+│
+├── .env.example              # Environment variables template
+├── .gitignore                # Strict ignore rules
+├── Cargo.toml                # Root workspace manifest
+└── README.md                 # Monorepo architecture & run instructions
 ```
-crates/n8n-nodes-rust/
-├── Cargo.toml                  <-- Terdaftar di root Cargo.toml members
-└── src/
-    ├── lib.rs                  <-- Mengekspor runtime_registry & builtins
-    ├── registry.rs             <-- NodeRegistry::with_builtins()
-    ├── runtime_registry.rs     <-- Deterministic binary resolution & RwLock cache
-    ├── traits.rs               <-- N8nNode, INodeExecutionData, NodeExecutionContext
-    └── nodes/
-        ├── mod.rs              <-- Mengekspos if, set, code_polyglot, dynamic_integration
-        ├── if_node.rs
-        ├── set_node.rs
-        ├── code_polyglot.rs    <-- Piped in-memory IPC, tokio::join! concurrent IO, kill_on_drop
-        └── dynamic_integration.rs <-- Declarative IR, strict validation, no httpbin fallback
+
+---
+
+## 4. Repository Git yang Digunakan
+- **Repository Aktif (Monorepo Baru)**: `n8n-rust-v.4`
+- **Remote URL**: `https://github.com/Catzpro01/n8n-rust-v.4.git`
+
+---
+
+## 5. Repository Lama yang TIDAK Disentuh (Read-Only)
+- **`n8nrustv.4` / `n8n-rust` (WSL clone upstream n8n-io/n8n)**: 100% READ-ONLY, tidak ada modifikasi, commit, delete, ataupun push.
+- Seluruh file hanya disalin (*read/copy*) ke repository baru `n8n-rust-v.4`.
+
+---
+
+## 6. File yang Dipindahkan / Disalin
+- Disalin source Axum backend dari WSL ke `apps/n8n-rust/`:
+  - `src/` (`main.rs`, `server.rs`, `db.rs`, `executor.rs`, `scheduler.rs`, `evaluator.rs`, `events.rs`, `workflow.rs`, `parser.rs`, `nodes/`)
+  - File metadata JSON (`roles.json`, `settings_complete.json`, `global_scopes.json`, `project_relations.json`, `project_scopes.json`)
+  - `Cargo.toml`, `build.rs`, `package.json`, `README.md`
+- Dibuat `apps/n8n-reference/` (`package.json`, `index.mjs`, `README.md`).
+- Dibuat struktur placeholder `workers/` dan `compatibility/`.
+- Dibuat launcher `scripts/start-all.mjs`.
+
+---
+
+## 7. File yang Sengaja Tidak Dimasukkan Git (Ignored)
+- **Database & State**: `*.db`, `*.sqlite`, `*.sqlite3`, `*.sqlite-wal`, `*.sqlite-shm`
+- **Dependencies & Build**: `node_modules/`, `target/`, `dist/`, `*.tsbuildinfo`, `*.node`
+- **Credentials & Secrets**: `.env`, `.env.*`
+- **Instance Runtime Data**: `data/lego/*`, `data/rust/*`, `data/reference/*`, `data/test/*` (hanya `.gitkeep` yang disimpan)
+- **Logs & Temporary**: `logs/`, `tmp/`, `*.log`, `.runtime/`
+- **Local Scratch & Mirror**: Folder lokal `/n8n lego/`, `/n8n-rust/`, dan file scratch `*.rs` di root.
+
+---
+
+## 8. Hasil `git status`
+```text
+On branch audit/v4-foundation
+Your branch is up to date with 'origin/audit/v4-foundation'.
+
+nothing to commit, working tree clean
 ```
+
+---
+
+## 9. Hasil `cargo check`
+- **Workspace Crates**:
+  ```text
+  cargo check --workspace
+  Finished dev profile [unoptimized + debuginfo] target(s) in 0.15s (Exit Code: 0)
+  ```
+- **Backend App (`apps/n8n-rust`)**:
+  ```text
+  cargo check --manifest-path apps/n8n-rust/Cargo.toml
+  Finished dev profile [unoptimized + debuginfo] target(s) in 7.12s (Exit Code: 0)
+  ```
+- **Workspace Tests**:
+  `cargo test --workspace` -> 111 tests passed, 0 failed.
+
+---
+
+## 10. Hasil Pengecekan Bahwa Port 5677, 5678, dan 5680 Dapat Dikonfigurasi
+- **Port 5677 (`apps/n8n-lego`)**: Dikonfigurasi via `N8N_LEGO_PORT` atau `N8N_PORT` di `apps/n8n-lego/src/config.mjs` (default: 5677).
+- **Port 5678 (`apps/n8n-rust`)**: Dikonfigurasi via `N8N_RUST_PORT` atau `PORT` di `apps/n8n-rust/src/main.rs` (default: 5678).
+- **Port 5680 (`apps/n8n-reference`)**: Dikonfigurasi via `N8N_REFERENCE_PORT` atau `N8N_PORT` di `apps/n8n-reference/index.mjs` (default: 5680).
+- Pengecekan parsing lingkungan:
+  ```json
+  { "legoPort": 5677, "rustPort": 5678, "refPort": 5680 }
+  ```
+
+---
+
+## 11. Commit Hash
+- **`5b0fd5e25`** (`chore(v4): organize three projects into monorepo`)
+
+---
+
+## 12. Branch
+- **`audit/v4-foundation`**
+
+---
+
+## 13. Remote Git yang Digunakan
+- **`origin`**: `https://github.com/Catzpro01/n8n-rust-v.4.git`
