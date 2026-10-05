@@ -1,0 +1,13 @@
+[package]
+name = "n8n-lego"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Beginner-friendly facade over the LEGO Rust runtime"
+
+[dependencies]
+n8n-nodes-rust = { path = "../n8n-nodes-rust" }
+n8n-node-model = { path = "../n8n-node-model" }
+serde.workspace = true
+serde_json.workspace = true
