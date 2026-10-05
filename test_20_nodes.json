@@ -1,0 +1,39 @@
+{
+  "name": "TEST ALL 20 NODES (Native Rust & Lego)",
+  "nodes": [
+    { "id": "t1", "name": "Start", "type": "n8n-nodes-base.manualTrigger", "typeVersion": 1, "position": [0, 200], "parameters": {} },
+    { "id": "t2", "name": "Set Data", "type": "n8n-nodes-base.set", "typeVersion": 1, "position": [200, 200], "parameters": { "values": { "string": [ { "name": "test", "value": "hello" } ] } } },
+    { "id": "t3", "name": "Crypto", "type": "n8n-nodes-base.crypto", "typeVersion": 1, "position": [400, 200], "parameters": { "action": "hash", "type": "md5", "value": "={{ $json.test }}", "dataPropertyName": "data", "encoding": "hex" } },
+    { "id": "t4", "name": "Code", "type": "n8n-nodes-base.code", "typeVersion": 1, "position": [600, 200], "parameters": { "jsCode": "item.done = true; return item;" } },
+    { "id": "t5", "name": "If", "type": "n8n-nodes-base.if", "typeVersion": 1, "position": [800, 200], "parameters": { "conditions": { "boolean": [ { "value1": true, "value2": true } ] } } },
+    { "id": "t6", "name": "Wait", "type": "n8n-nodes-base.wait", "typeVersion": 1, "position": [1000, 180], "parameters": { "amount": 1, "unit": "seconds" } },
+    { "id": "t7", "name": "HTTP Request", "type": "n8n-nodes-base.httpRequest", "typeVersion": 1, "position": [1200, 180], "parameters": { "url": "https://httpbin.org/get", "method": "GET" } },
+    { "id": "t8", "name": "Merge", "type": "n8n-nodes-base.merge", "typeVersion": 1, "position": [1400, 200], "parameters": { "mode": "append" } },
+    { "id": "t9", "name": "NoOp", "type": "n8n-nodes-base.noOp", "typeVersion": 1, "position": [1600, 200], "parameters": {} },
+    { "id": "t10", "name": "Switch", "type": "n8n-nodes-base.switch", "typeVersion": 1, "position": [1800, 200], "parameters": { "dataType": "boolean", "value1": true, "rules": { "rules": [ { "operation": "equal", "value2": true, "output": 0 } ] } } },
+    { "id": "t11", "name": "SplitInBatches", "type": "n8n-nodes-base.splitInBatches", "typeVersion": 1, "position": [2000, 200], "parameters": { "batchSize": 1 } },
+    { "id": "t12", "name": "FunctionItem", "type": "n8n-nodes-base.functionItem", "typeVersion": 1, "position": [2200, 200], "parameters": { "functionCode": "item.legacy = true; return item;" } },
+    
+    { "id": "u1", "name": "Schedule Trigger", "type": "n8n-nodes-base.scheduleTrigger", "typeVersion": 1, "position": [0, 400], "parameters": {} },
+    { "id": "u2", "name": "Cron Trigger", "type": "n8n-nodes-base.cron", "typeVersion": 1, "position": [200, 400], "parameters": {} },
+    { "id": "u3", "name": "Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 1, "position": [400, 400], "parameters": { "path": "test-webhook" } },
+    { "id": "u4", "name": "Respond to Webhook", "type": "n8n-nodes-base.respondToWebhook", "typeVersion": 1, "position": [600, 400], "parameters": {} },
+    { "id": "u5", "name": "Execute Workflow", "type": "n8n-nodes-base.executeWorkflow", "typeVersion": 1, "position": [800, 400], "parameters": {} },
+    { "id": "u6", "name": "Postgres", "type": "n8n-nodes-base.postgres", "typeVersion": 1, "position": [1000, 400], "parameters": { "operation": "executeQuery", "query": "SELECT 1;" } },
+    { "id": "u7", "name": "SQLite", "type": "n8n-nodes-base.sqlite", "typeVersion": 1, "position": [1200, 400], "parameters": { "operation": "executeQuery", "query": "SELECT 1;" } },
+    { "id": "u8", "name": "Redis", "type": "n8n-nodes-base.redis", "typeVersion": 1, "position": [1400, 400], "parameters": { "operation": "get", "key": "test" } }
+  ],
+  "connections": {
+    "Start": { "main": [ [ { "node": "Set Data", "type": "main", "index": 0 } ] ] },
+    "Set Data": { "main": [ [ { "node": "Crypto", "type": "main", "index": 0 } ] ] },
+    "Crypto": { "main": [ [ { "node": "Code", "type": "main", "index": 0 } ] ] },
+    "Code": { "main": [ [ { "node": "If", "type": "main", "index": 0 } ] ] },
+    "If": { "main": [ [ { "node": "Wait", "type": "main", "index": 0 } ], [ { "node": "Merge", "type": "main", "index": 1 } ] ] },
+    "Wait": { "main": [ [ { "node": "HTTP Request", "type": "main", "index": 0 } ] ] },
+    "HTTP Request": { "main": [ [ { "node": "Merge", "type": "main", "index": 0 } ] ] },
+    "Merge": { "main": [ [ { "node": "NoOp", "type": "main", "index": 0 } ] ] },
+    "NoOp": { "main": [ [ { "node": "Switch", "type": "main", "index": 0 } ] ] },
+    "Switch": { "main": [ [ { "node": "SplitInBatches", "type": "main", "index": 0 } ] ] },
+    "SplitInBatches": { "main": [ [ { "node": "FunctionItem", "type": "main", "index": 0 } ] ] }
+  }
+}
