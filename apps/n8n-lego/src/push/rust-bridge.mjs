@@ -321,30 +321,24 @@ export function createRustPushBridge({ config = {}, logger, fallbackPush } = {})
 
   /**
    * Broadcasts an event payload to the Rust internal broadcast endpoint if active,
-   * or distributes it via fallbackPush.
+   * and always distributes it directly to local clients via fallbackPush without blocking.
    *
    * @param {Object|string} payload - The event payload to broadcast
    */
   function broadcast(payload) {
-    const hasFallbackClients = (fallbackPush?.clientCount?.() || 0) > 0;
-    if (hasFallbackClients && typeof fallbackPush?.broadcast === 'function') {
-      fallbackPush.broadcast(payload);
+    if (typeof fallbackPush?.broadcast === 'function') {
+      try {
+        fallbackPush.broadcast(payload);
+      } catch (err) {
+        log.debug('Fallback push broadcast failed', { error: err?.message });
+      }
     }
 
-    sendToRustBroadcast(payload)
-      .then((success) => {
-        if (!success && !hasFallbackClients && typeof fallbackPush?.broadcast === 'function') {
-          fallbackPush.broadcast(payload);
-        }
-      })
-      .catch((err) => {
-        log.debug('Rust internal broadcast endpoint unavailable, delegating to fallbackPush', {
-          error: err?.message,
-        });
-        if (!hasFallbackClients && typeof fallbackPush?.broadcast === 'function') {
-          fallbackPush.broadcast(payload);
-        }
+    sendToRustBroadcast(payload).catch((err) => {
+      log.debug('Rust internal broadcast endpoint unavailable', {
+        error: err?.message,
       });
+    });
   }
 
   /**

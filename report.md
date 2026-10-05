@@ -80,8 +80,8 @@
 ## AUTHENTICATION & CREDENTIALS
 - **Password**: `[REDACTED_SECRET - User Managed Credential]`
 - **Supported Emails**:
-  - `catzpro01@gmail.com` (Owner)
-  - `catzpro02@gmail.com` (Owner / Admin)
+  - `[REDACTED_EMAIL_OWNER]` (Owner)
+  - `[REDACTED_EMAIL_ADMIN]` (Owner / Admin)
 - **n8n Lego (Port 5677)**: Kedua email berhasil diuji login (Status 200 OK).
 - **n8n Reference (Port 5680)**: Kedua email berhasil diuji login (Status 200 OK).
 - **n8n Rust (Port 5678)**: Standalone Axum DAG execution core (terbuka langsung tanpa credential gate).
@@ -396,15 +396,104 @@ Melalui audit komparatif mendalam menggunakan agen UI dan inspeksi console brows
    - *Penyebab*: Sandbox engine Node.js menonaktifkan kode evaluasi secara default (`allowCodeEval: false`) dan tidak menyuntikkan transport HTTP untuk node HTTP Request internal.
    - *Solusi*: Mengaktifkan `allowCodeEval: true` dan menyuntikkan `httpTransport: fetch` pada `apps/n8n-lego/src/engine.mjs`.
 
-### 3. Ringkasan Status Verifikasi Akhir
-- **Cargo Workspace (16 Crates)**:
-  - `cargo check --workspace`: **100% GREEN (0 errors)**
-  - `cargo test --workspace`: **111 tests passed, 0 failed**
-  - `cargo test -p n8n-runtime-kernel`: **25 passed, 0 failed**
-  - `cargo test --manifest-path apps/n8n-rust/Cargo.toml`: **7 passed, 0 failed**
-- **Node.js Test Suite (`apps/n8n-lego`)**:
-  - `node --test apps/n8n-lego/test/rest.test.mjs`: **12 passed, 0 failed (100% Green)**
-- **Kondisi Runtime Live**:
-  - Port 5677 (`n8n-lego`): Berjalan stabil, UI terverifikasi bebas dari crash fatal, status "Online", execution viewer kompatibel flatted, dan halaman settings navigabel secara mulus.
-  - Port 5678 (`n8n-rust`): Berjalan stabil dengan Axum + Tokio DAG Kernel scheduler (`/rest/workflows/:id/run`, `/api/v1/executions`), Durable File WAL Journal, dan Declarative Integration IR.
+### 4. Sidebar Navigation & Execution Spinner Fix (2026-10-06)
+1. **Penghilangan Menu "Personal" dan "Shared with you" pada Sidebar Navigasi**:
+   - Di `apps/n8n-lego/src/settings/frontend-settings.mjs`:
+     * Mengatur `folders: { enabled: false }`.
+     * Di dalam `enterpriseSettings()`: mengatur `sharing: false`, `projects: { team: { limit: 0 } }`, dan `personalSpacePolicy: false`.
+   - Hal ini membuat flag `isFoldersFeatureEnabled` dan `isTeamProjectFeatureEnabled` di frontend Vue bernilai `false`, sehingga komponen `ProjectNavigation.vue` tidak lagi merender menu "Personal" dan "Shared with you".
+2. **Perbaikan Workflow Execution Canvas Spinner ("Stuck Berputar")**:
+   - Di `apps/n8n-lego/src/push/rust-bridge.mjs`:
+     * Fungsi `broadcast(payload)` sebelumnya membatasi pengiriman ke `fallbackPush` hanya bila `hasFallbackClients` bernilai true. Kini `fallbackPush.broadcast(payload)` SELALU dipanggil langsung ke semua client lokal Node.js tanpa terblokir, memastikan event push `executionStarted` dan `executionFinished` segera sampai ke browser.
+   - Di `apps/n8n-lego/src/rest/routes.mjs`:
+     * Menambahkan rute `POST /rest/workflows/run` untuk menangani eksekusi workflow unsaved/manual canvas.
+     * Memastikan payload `executionFinished` membawa `{ executionId: String(execution.id), workflowId: stored.id, status: execution.status }` (atau `stored?.id ?? body.workflowId ?? null`) dan dipancarkan ke `push?.broadcast`.
+     * Mengimplementasikan `serializeExecutionData(data)` menggunakan helper `flatted` (`flattedStringify` dan `flattedParse`) agar endpoint `GET /rest/executions/:id` dan `/rest/workflows/:workflowId/executions/last-successful` selalu mengembalikan payload yang valid dan dapat di-parse oleh flatted di browser.
+   - Di `apps/n8n-lego/src/engine.mjs`:
+     * Menambahkan dukungan opsional untuk parameter `destinationNode` pada `engine.execute`.
+3. **Verifikasi Test Suite**:
+   - `node --test apps/n8n-lego/test/rest.test.mjs`: **13 passed, 0 failed (100% Green)**.
 
+### 5. P3 — Real Node Compatibility Worker (2026-10-06)
+1. **Runner Script (`workers/compatibility-worker.mjs`)**:
+   - Script child process Node.js yang membaca payload JSON Lines dari `stdin` dan mengembalikan hasil ke `stdout` (JSON Lines).
+   - Menerima format: `{ id, nodeType, parameters, credentials, inputData }`.
+   - Menjalankan node secara terisolasi (sandbox `node:vm` untuk evaluasi kode JS dan context `$input`, `$parameters`, dll., atau generic compatibility fallback).
+   - Mengembalikan format standar n8n `INodeExecutionData`: `{ id, success: true, data: [...] }` atau `{ id, success: false, error: ... }`.
+2. **Modul Rust Kernel (`crates/n8n-runtime-kernel/src/compat_worker.rs`)**:
+   - Struct `NodeCompatibilityWorker` yang mengelola child process Node.js (`tokio::process::Command` dengan `Stdio::piped()`).
+   - Menyediakan auto-spawn dan self-healing process recovery dengan sinkronisasi IO aman ber-mutex.
+   - Method `async fn execute_job(&self, job: NodeJob) -> Result<NodeOutput, WorkerError>`.
+   - Mengonversi hasil output worker ke representasi internal `Vec<Vec<INodeExecutionData>>`.
+3. **Integrasi Kernel Executor (`crates/n8n-runtime-kernel/src/executor.rs`)**:
+   - Menggantikan simulasi antrean pada step fallback compatibility worker dengan pemanggilan nyata `compat_worker.execute_job(node_job)`.
+   - Mengintegrasikan hasil audit status job ke queue engine (jika queue aktif) dan circuit breaker.
+4. **Verifikasi & Test Suite**:
+   - Unit test di `compat_worker.rs`:
+     * `test_real_node_compatibility_worker_code_execution`: **PASSED**
+     * `test_real_node_compatibility_worker_fallback_node`: **PASSED**
+     * `test_real_node_compatibility_worker_error_handling`: **PASSED**
+   - End-to-end workflow test di `lib.rs`:
+     * `test_workflow_execution_with_real_compatibility_worker_fallback`: **PASSED**
+     * `test_compatibility_worker_queue_execution`: **PASSED**
+   - Validasi Crate:
+     * `cargo check -p n8n-runtime-kernel`: **PASSED (0 errors, 0 warnings)**
+     * `cargo test -p n8n-runtime-kernel`: **PASSED (30 tests passed, 0 failed)**
+
+
+
+
+### 6. P1 — Realtime Push Broadcast, Journal WAL Durability & SSRF Network Policy (2026-10-06)
+1. **Realtime Broadcast API Endpoint (`POST /api/realtime/broadcast`)**:
+   - Di `crates/n8n-realtime/src/session.rs`: Menambahkan method `broadcast_text(&self, text: &str)` pada `SessionRegistry` untuk menyiarkan raw text/JSON langsung ke semua active client channels.
+   - Di `apps/n8n-rust/src/server.rs`: Menambahkan endpoint handler `realtime_broadcast_handler` di bawah rute `/api/realtime/broadcast`. Menerima payload JSON dari `n8n-lego` (`rust-bridge.mjs`), menyiarkan ke WebSocket clients via `SessionRegistry::broadcast_text`, dan meneruskan event ke internal Tokio `event_sender` (jika payload berisi `event`). Mengembalikan status HTTP 200 `{ "success": true }`.
+   - Di `apps/n8n-rust/src/integration_test.rs`: Menambahkan integration test `test_realtime_broadcast_endpoint`.
+   - Verifikasi: `cargo test --manifest-path apps/n8n-rust/Cargo.toml` -> **8 passed, 0 failed (100% Green)**.
+
+2. **Execution Journal Durability & Disk Append Error Propagation**:
+   - Di `crates/n8n-runtime-kernel/src/journal.rs`:
+     * Menambahkan enum `DurabilityPolicy` (`Strict` [default] vs `BestEffort`).
+     * Menambahkan konfigurasi policy pada `ExecutionJournal` (`with_policy`, `with_storage_and_policy`, `set_durability_policy`).
+     * Memperbarui method `record()` agar mengembalikan `Result<JournalEntry, JournalError>` dan tidak menelan disk I/O error (`self.storage.append`). Dalam mode `Strict`, kegagalan disk storage append langsung mengembalikan `Err(e)`.
+     * Menambahkan method `record_step() -> Result<(), JournalError>` dan memperbarui seluruh convenience method (`record_workflow_*`, `record_node_*`).
+     * Menambahkan unit test `test_journal_durability_strict_vs_best_effort`.
+   - Di `crates/n8n-runtime-kernel/src/scheduler.rs`: Menyesuaikan pemanggilan `journal.record_*` dengan error handling yang tepat.
+
+3. **Anti-SSRF Network Policy & URL Validation Matrix**:
+   - Di `crates/n8n-runtime-kernel/src/integration_ir.rs`:
+     * Menambahkan struct `NetworkPolicy` dengan deteksi dan pemblokiran otomatis terhadap:
+       - Loopback addresses (`localhost`, `127.0.0.0/8`, `::1`).
+       - RFC 1918 Private IP addresses (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`, `fe80::/10`).
+       - Cloud Provider Metadata Services (`169.254.169.254`, `169.254.0.0/16`, `metadata.google.internal`).
+     * `NetworkPolicyError` (`BlockedHost(String)`, `InvalidUrl(String)`) dan varian `IntegrationError::NetworkPolicy`.
+     * `IntegrationExecutor` diinisialisasi default dengan `NetworkPolicy::strict()`.
+     * Menambahkan validasi URL pada `IntegrationExecutor::execute_spec` sebelum HTTP request dikirim serta validasi pada `PaginationPolicy::NextPageUrl`.
+     * Menambahkan unit test `test_network_policy_anti_ssrf_matrix` dan `test_pagination_next_page_url_anti_ssrf_blocked`.
+   - Di `crates/n8n-runtime-kernel/src/lib.rs` & `executor.rs`: Mengizinkan injeksi custom policy via `with_network_policy()` pada `KernelNodeExecutor`.
+
+4. **Verifikasi Komprehensif Monorepo**:
+   - `cargo check --workspace`: **PASSED (0 errors)**
+   - `cargo test -p n8n-runtime-kernel`: **PASSED (32 passed, 0 failed, 100% Green)**
+   - `cargo test --manifest-path apps/n8n-rust/Cargo.toml`: **PASSED (8 passed, 0 failed, 100% Green)**
+
+### 7. P4 — 5677 LEGO Gateway to Rust Execution Cut-over (2026-10-06)
+1. **Modul Klien Rust Engine (`apps/n8n-lego/src/rust-engine-client.mjs`)**:
+   - Fungsi utama: `executeWorkflowOnRust({ workflowData, inputData, mode, pushRef, rustUrl })`.
+   - Mengirim HTTP POST request ke Rust runtime kernel (`http://127.0.0.1:5678/rest/workflows/run`).
+   - Normalisasi skema payload workflow sebelum dikirim (`active`, `nodes`, `connections`).
+   - Deserialisasi komprehensif (`deserializeRustExecutionResult`):
+     * Memetakan status Rust kernel (`success`, `error`, `crashed`).
+     * Menyusun struktur `resultData.runData` yang kompatibel 100% dengan n8n frontend editor (`{ data: { main: [ items ] }, executionStatus, startTime, executionTime }`).
+     * Mempertahankan urutan node deterministik sesuai definisi `workflowData.nodes`.
+     * Menjaga normalisasi output data node (termasuk pemetaan parameter modern n8n `assignments`/`Edit Fields`).
+2. **Integrasi Cut-over di LEGO Engine (`apps/n8n-lego/src/engine.mjs`)**:
+   - Menambahkan socket probe dan config flag check (`checkRustAvailable`) untuk memeriksa ketersediaan port 5678 secara non-blocking dengan caching TTL.
+   - **Rust Cut-over Priority**: Menjadikan `rust-engine-client.mjs` sebagai jalur eksekusi utama ketika Rust runtime online.
+   - **Transparent Fallback**: Jika Rust offline atau eksekusi runtime gagal, sistem secara mulus dan transparan beralih kembali ke reconstructed JS engine.
+3. **Peningkatan Kompatibilitas SetNode di Crates Native (`crates/n8n-nodes-rust/src/nodes/set_node.rs`)**:
+   - Menambahkan dukungan parameter modern n8n `assignments: { assignments: [{ name, value }] }` dan `includeOtherFields`.
+   - Menjaga backwards compatibility penuh dengan skema legacy `values`.
+4. **Verifikasi & Test Suite**:
+   - `node --test apps/n8n-lego/test/rest.test.mjs`: **PASSED (13 passed, 0 failed, 100% Green)**.
+   - Verifikasi isolasi jalur Rust Online Cut-over & Simulated Fallback: **PASSED (100% Green)**.
+   - `cargo test -p n8n-nodes-rust`: **PASSED (6 passed, 0 failed, 100% Green)**.

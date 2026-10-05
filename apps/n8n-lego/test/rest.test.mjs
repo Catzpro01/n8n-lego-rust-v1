@@ -104,6 +104,10 @@ test('GET /rest/settings exposes the complete FrontendSettings shape', async () 
   ]) {
     assert.ok(key in settings, `settings.${key} is missing`);
   }
+  assert.equal(settings.folders.enabled, false, 'folders feature must be disabled');
+  assert.equal(settings.enterprise.sharing, false, 'enterprise sharing must be disabled');
+  assert.equal(settings.enterprise.projects.team.limit, 0, 'team projects limit must be 0');
+  assert.equal(settings.enterprise.personalSpacePolicy, false, 'personalSpacePolicy must be disabled');
   assert.equal(settings.userManagement.showSetupOnFirstLoad, true, 'a fresh instance must show the setup screen');
 });
 
@@ -224,6 +228,41 @@ test('workflow CRUD + manual execution', async () => {
   const removed = await api('DELETE', `/rest/workflows/${workflowId}`);
   assert.equal(removed.status, 200);
   assert.equal((await api('GET', '/rest/workflows')).json.count, 0);
+});
+
+test('POST /rest/workflows/run executes unsaved workflow and GET /rest/executions/:id parses with flatted', async () => {
+  const run = await api('POST', '/rest/workflows/run', {
+    workflowData: {
+      name: 'Unsaved run',
+      nodes: [
+        { id: '1', name: 'Manual', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0], parameters: {} },
+        {
+          id: '2',
+          name: 'Edit Fields',
+          type: 'n8n-nodes-base.set',
+          typeVersion: 3.4,
+          position: [220, 0],
+          parameters: {
+            mode: 'manual',
+            includeOtherFields: false,
+            assignments: { assignments: [{ id: 'a1', name: 'status', value: 'unsaved-ok', type: 'string' }] },
+          },
+        },
+      ],
+      connections: { Manual: { main: [[{ node: 'Edit Fields', type: 'main', index: 0 }]] } },
+    },
+    startNodes: [{ name: 'Manual' }],
+  });
+  assert.equal(run.status, 200);
+  assert.equal(run.json.data.status, 'success');
+  const execId = run.json.data.executionId;
+  assert.ok(execId, 'execution id required');
+
+  const execution = await api('GET', `/rest/executions/${execId}`);
+  assert.equal(execution.status, 200);
+  const { parse: flattedParse } = await import('flatted');
+  const executionData = typeof execution.json.data.data === 'string' ? flattedParse(execution.json.data.data) : execution.json.data.data;
+  assert.deepEqual(executionData.resultData.runData['Edit Fields'][0].data.main[0][0].json, { status: 'unsaved-ok' });
 });
 
 test('unknown /rest endpoint answers with explicit unsupported semantics', async () => {

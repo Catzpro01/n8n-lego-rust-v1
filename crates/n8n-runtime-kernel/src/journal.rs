@@ -195,11 +195,22 @@ impl JournalStorage for FileAppendJournalStorage {
     }
 }
 
+/// Policy defining durability guarantees when appending journal entries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum DurabilityPolicy {
+    /// In strict mode, if appending to underlying storage fails, an error is returned.
+    #[default]
+    Strict,
+    /// In best-effort mode, storage write errors are tolerated and the entry is still returned.
+    BestEffort,
+}
+
 /// Thread-safe execution journal for durable checkpoint recording.
 #[derive(Clone)]
 pub struct ExecutionJournal {
     storage: Arc<dyn JournalStorage>,
     step_counter: Arc<AtomicU64>,
+    durability_policy: DurabilityPolicy,
 }
 
 impl Default for ExecutionJournal {
@@ -219,7 +230,33 @@ impl ExecutionJournal {
         Self {
             storage,
             step_counter: Arc::new(AtomicU64::new(1)),
+            durability_policy: DurabilityPolicy::Strict,
         }
+    }
+
+    /// Sets the durability policy for this journal.
+    pub fn with_policy(mut self, policy: DurabilityPolicy) -> Self {
+        self.durability_policy = policy;
+        self
+    }
+
+    /// Creates an ExecutionJournal with storage and durability policy.
+    pub fn with_storage_and_policy(storage: Arc<dyn JournalStorage>, policy: DurabilityPolicy) -> Self {
+        Self {
+            storage,
+            step_counter: Arc::new(AtomicU64::new(1)),
+            durability_policy: policy,
+        }
+    }
+
+    /// Access the current durability policy.
+    pub fn durability_policy(&self) -> DurabilityPolicy {
+        self.durability_policy
+    }
+
+    /// Sets the durability policy.
+    pub fn set_durability_policy(&mut self, policy: DurabilityPolicy) {
+        self.durability_policy = policy;
     }
 
     /// Creates an ExecutionJournal by loading all entries from storage and recovering step counter.
@@ -229,6 +266,7 @@ impl ExecutionJournal {
         Ok(Self {
             storage,
             step_counter: Arc::new(AtomicU64::new(max_step + 1)),
+            durability_policy: DurabilityPolicy::Strict,
         })
     }
 
@@ -259,6 +297,7 @@ impl ExecutionJournal {
     }
 
     /// Appends a new entry to the journal and persists it to underlying storage.
+    /// If storage append fails and DurabilityPolicy is Strict, returns Err(JournalError).
     pub async fn record(
         &self,
         node_name: Option<String>,
@@ -267,7 +306,7 @@ impl ExecutionJournal {
         output_snapshot: Option<Vec<Vec<INodeExecutionData>>>,
         error_message: Option<String>,
         metadata: serde_json::Value,
-    ) -> JournalEntry {
+    ) -> Result<JournalEntry, JournalError> {
         let step_id = self.step_counter.fetch_add(1, Ordering::SeqCst);
         let entry = JournalEntry {
             step_id,
@@ -280,12 +319,31 @@ impl ExecutionJournal {
             metadata,
         };
 
-        let _ = self.storage.append(&entry).await;
-        entry
+        if let Err(e) = self.storage.append(&entry).await {
+            if self.durability_policy == DurabilityPolicy::Strict {
+                return Err(e);
+            }
+        }
+        Ok(entry)
+    }
+
+    /// Records a step returning Result<(), JournalError> for callers expecting unit Result.
+    pub async fn record_step(
+        &self,
+        node_name: Option<String>,
+        step_type: JournalStepType,
+        input_snapshot: Option<Vec<Vec<INodeExecutionData>>>,
+        output_snapshot: Option<Vec<Vec<INodeExecutionData>>>,
+        error_message: Option<String>,
+        metadata: serde_json::Value,
+    ) -> Result<(), JournalError> {
+        self.record(node_name, step_type, input_snapshot, output_snapshot, error_message, metadata)
+            .await
+            .map(|_| ())
     }
 
     /// Records workflow start.
-    pub async fn record_workflow_started(&self, workflow_id: &str, run_id: &str) -> JournalEntry {
+    pub async fn record_workflow_started(&self, workflow_id: &str, run_id: &str) -> Result<JournalEntry, JournalError> {
         self.record(
             None,
             JournalStepType::WorkflowStarted,
@@ -301,7 +359,7 @@ impl ExecutionJournal {
     }
 
     /// Records workflow completion.
-    pub async fn record_workflow_completed(&self, duration_ms: u64) -> JournalEntry {
+    pub async fn record_workflow_completed(&self, duration_ms: u64) -> Result<JournalEntry, JournalError> {
         self.record(
             None,
             JournalStepType::WorkflowCompleted,
@@ -314,7 +372,7 @@ impl ExecutionJournal {
     }
 
     /// Records workflow failure.
-    pub async fn record_workflow_failed(&self, error: &str) -> JournalEntry {
+    pub async fn record_workflow_failed(&self, error: &str) -> Result<JournalEntry, JournalError> {
         self.record(
             None,
             JournalStepType::WorkflowFailed,
@@ -331,7 +389,7 @@ impl ExecutionJournal {
         &self,
         node_name: &str,
         input: Vec<Vec<INodeExecutionData>>,
-    ) -> JournalEntry {
+    ) -> Result<JournalEntry, JournalError> {
         self.record(
             Some(node_name.to_string()),
             JournalStepType::NodeStarted,
@@ -349,7 +407,7 @@ impl ExecutionJournal {
         node_name: &str,
         output: Vec<Vec<INodeExecutionData>>,
         execution_time_ms: u64,
-    ) -> JournalEntry {
+    ) -> Result<JournalEntry, JournalError> {
         self.record(
             Some(node_name.to_string()),
             JournalStepType::NodeCompleted,
@@ -362,7 +420,7 @@ impl ExecutionJournal {
     }
 
     /// Records node execution failure.
-    pub async fn record_node_failed(&self, node_name: &str, error: &str) -> JournalEntry {
+    pub async fn record_node_failed(&self, node_name: &str, error: &str) -> Result<JournalEntry, JournalError> {
         self.record(
             Some(node_name.to_string()),
             JournalStepType::NodeFailed,
@@ -375,7 +433,7 @@ impl ExecutionJournal {
     }
 
     /// Records node skipped.
-    pub async fn record_node_skipped(&self, node_name: &str, reason: &str) -> JournalEntry {
+    pub async fn record_node_skipped(&self, node_name: &str, reason: &str) -> Result<JournalEntry, JournalError> {
         self.record(
             Some(node_name.to_string()),
             JournalStepType::NodeSkipped,
@@ -442,6 +500,7 @@ impl ExecutionJournal {
         Ok(Self {
             storage,
             step_counter: Arc::new(AtomicU64::new(max_step + 1)),
+            durability_policy: DurabilityPolicy::Strict,
         })
     }
 }
@@ -456,8 +515,8 @@ mod tests {
         let storage = Arc::new(InMemoryJournalStorage::new());
         let journal = ExecutionJournal::with_storage(storage.clone());
 
-        journal.record_workflow_started("wf-1", "run-1").await;
-        journal.record_node_completed("StartNode", vec![vec![]], 10).await;
+        journal.record_workflow_started("wf-1", "run-1").await.unwrap();
+        journal.record_node_completed("StartNode", vec![vec![]], 10).await.unwrap();
 
         assert_eq!(journal.count().await, 2);
         assert!(journal.is_node_completed("StartNode").await);
@@ -472,7 +531,7 @@ mod tests {
         // 1. First execution writes to WAL
         {
             let journal = ExecutionJournal::open_file(&wal_path).await.expect("Create WAL journal");
-            journal.record_workflow_started("wf-wal-1", "run-wal-1").await;
+            journal.record_workflow_started("wf-wal-1", "run-wal-1").await.unwrap();
             journal
                 .record_node_completed(
                     "HttpNode",
@@ -483,7 +542,8 @@ mod tests {
                     }]],
                     42,
                 )
-                .await;
+                .await
+                .unwrap();
             journal.checkpoint().await.expect("Checkpoint succeeds");
             assert_eq!(journal.count().await, 2);
         }
@@ -498,7 +558,7 @@ mod tests {
             assert_eq!(output[0][0].json["data"], "persisted");
 
             // Record further after restart
-            let next_entry = restored.record_workflow_completed(150).await;
+            let next_entry = restored.record_workflow_completed(150).await.expect("Record succeeds");
             assert_eq!(next_entry.step_id, 3);
             assert_eq!(restored.count().await, 3);
         }
@@ -513,5 +573,52 @@ mod tests {
 
         // Cleanup
         let _ = tokio::fs::remove_dir_all(&temp_dir).await;
+    }
+
+    #[tokio::test]
+    async fn test_journal_durability_strict_vs_best_effort() {
+        struct FailingStorage;
+
+        #[async_trait::async_trait]
+        impl JournalStorage for FailingStorage {
+            async fn append(&self, _entry: &JournalEntry) -> Result<(), JournalError> {
+                Err(JournalError::Storage("Simulated disk write failure".to_string()))
+            }
+
+            async fn load_all(&self) -> Result<Vec<JournalEntry>, JournalError> {
+                Ok(vec![])
+            }
+
+            async fn checkpoint(&self) -> Result<(), JournalError> {
+                Ok(())
+            }
+        }
+
+        // 1. Strict mode fails when write disk WAL fails
+        let strict_journal = ExecutionJournal::with_storage_and_policy(
+            Arc::new(FailingStorage),
+            DurabilityPolicy::Strict,
+        );
+        let res_strict = strict_journal.record_workflow_started("wf-strict", "run-1").await;
+        assert!(res_strict.is_err(), "Strict durability must return error on WAL failure");
+        match res_strict.unwrap_err() {
+            JournalError::Storage(msg) => assert!(msg.contains("Simulated disk write failure")),
+            other => panic!("Expected JournalError::Storage, got {:?}", other),
+        }
+
+        // Also test record_step returns Result<(), JournalError>
+        let res_step = strict_journal
+            .record_step(None, JournalStepType::WorkflowStarted, None, None, None, json!({}))
+            .await;
+        assert!(res_step.is_err());
+
+        // 2. Best-effort mode tolerates storage errors
+        let best_effort_journal = ExecutionJournal::with_storage_and_policy(
+            Arc::new(FailingStorage),
+            DurabilityPolicy::BestEffort,
+        );
+        let res_be = best_effort_journal.record_workflow_started("wf-be", "run-2").await;
+        assert!(res_be.is_ok(), "BestEffort durability must tolerate WAL failure");
+        assert_eq!(res_be.unwrap().step_id, 1);
     }
 }

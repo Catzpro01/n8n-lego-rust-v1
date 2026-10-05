@@ -47,6 +47,12 @@ const {
   validateWorkflowDefinition,
 } = await import(pathToFileURL(ENGINE_PATH).href);
 import { newExecutionId } from './store.mjs';
+import {
+  executeWorkflowOnRust,
+  isRustEngineAvailable,
+  DEFAULT_RUST_HOST,
+  DEFAULT_RUST_PORT,
+} from './rust-engine-client.mjs';
 
 export const engineMetadata = Object.freeze({
   package: ENGINE_PACKAGE,
@@ -54,7 +60,26 @@ export const engineMetadata = Object.freeze({
   registryVersion: NODE_REGISTRY_VERSION,
 });
 
-export function createEngine(config, logger) {
+export function createEngine(config = {}, logger) {
+  const rustHost = config?.rustHost || process.env.N8N_RUST_HOST || DEFAULT_RUST_HOST;
+  const rustPort = parseInt(String(config?.rustPort || process.env.N8N_RUST_PORT || DEFAULT_RUST_PORT), 10);
+  const rustEngineEnabled = config?.rustEngine !== false && process.env.N8N_RUST_ENGINE !== 'false';
+
+  let lastProbeTime = 0;
+  let lastProbeResult = false;
+  const PROBE_TTL_MS = 1000;
+
+  async function checkRustAvailable() {
+    if (!rustEngineEnabled) return false;
+    const now = Date.now();
+    if (now - lastProbeTime < PROBE_TTL_MS) {
+      return lastProbeResult;
+    }
+    const isAvailable = await isRustEngineAvailable({ host: rustHost, port: rustPort, timeoutMs: 250 });
+    lastProbeTime = now;
+    lastProbeResult = isAvailable;
+    return isAvailable;
+  }
 
   return {
     metadata: engineMetadata,
@@ -64,8 +89,22 @@ export function createEngine(config, logger) {
      * Runs a workflow definition and persists an execution record.
      * Returns the stored record (never throws for engine-level failures — the
      * editor shows a failed execution instead of an error toast, like n8n).
+     *
+     * Prioritizes the high-performance Rust runtime kernel at port 5678 (Rust Cut-over),
+     * with seamless transparent fallback to the JS reconstructed engine if Rust is offline.
      */
-    async execute({ definition, startNode = null, input, workflowId = null, workflowName = null, mode = 'manual', requestedBy = null, store }) {
+    async execute({
+      definition,
+      startNode = null,
+      destinationNode = null,
+      input,
+      workflowId = null,
+      workflowName = null,
+      mode = 'manual',
+      requestedBy = null,
+      store,
+      pushRef = null,
+    }) {
       const executionId = newExecutionId();
       const startedAt = new Date();
       const registry = createNodeRegistry({ locale: config.locale, allowCodeEval: true, httpTransport: fetch });
@@ -99,6 +138,53 @@ export function createEngine(config, logger) {
         return record;
       }
 
+      // Priority 1: Rust Runtime Cut-over
+      const rustOnline = await checkRustAvailable();
+      if (rustOnline) {
+        try {
+          const rustRecord = await executeWorkflowOnRust({
+            workflowData: {
+              id: workflowId || executionId,
+              name: workflowName || definition?.name || 'Workflow',
+              active: definition?.active ?? false,
+              nodes: validation.normalized?.nodes ?? definition?.nodes ?? [],
+              connections: validation.normalized?.connections ?? definition?.connections ?? {},
+            },
+            inputData: input,
+            mode,
+            pushRef,
+            rustUrl: config?.rustUrl || process.env.N8N_RUST_URL,
+          });
+
+          record.finished = rustRecord.finished !== false;
+          record.status = rustRecord.status;
+          record.stoppedAt = rustRecord.stoppedAt || new Date().toISOString();
+          record.data = rustRecord.data;
+          if (Array.isArray(rustRecord.warnings) && rustRecord.warnings.length > 0) {
+            record.data.resultData.warnings = rustRecord.warnings;
+          }
+
+          store.executions.insert(record);
+          logger.info('execution finished (Rust cut-over)', {
+            executionId,
+            workflowId,
+            status: record.status,
+            nodes: Object.keys(record.data.resultData.runData || {}).length,
+          });
+          return record;
+        } catch (rustError) {
+          lastProbeResult = false;
+          lastProbeTime = 0;
+          logger.warn('Rust runtime execution failed, falling back to reconstructed JS engine', {
+            executionId,
+            workflowId,
+            error: rustError.message,
+          });
+          // Fall through to JS engine fallback below
+        }
+      }
+
+      // Priority 2: Fallback to reconstructed JS engine when Rust is offline
       try {
         const result = await runWorkflowDefinition(validation.normalized, {
           startNode,
@@ -120,7 +206,7 @@ export function createEngine(config, logger) {
           record.data.resultData.warnings = result.warnings;
         }
         store.executions.insert(record);
-        logger.info('execution finished', {
+        logger.info('execution finished (JS engine fallback)', {
           executionId,
           workflowId,
           status: record.status,

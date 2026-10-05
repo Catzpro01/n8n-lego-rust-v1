@@ -183,6 +183,7 @@ pub fn create_router(state: AppState) -> Router {
         .route("/ws", get(websocket_handler))
         .route("/push", get(websocket_handler))
         .route("/rest/push", get(websocket_handler))
+        .route("/api/realtime/broadcast", post(realtime_broadcast_handler))
 
         // System Settings, Auth, and Profiles
         .route("/rest/settings", get(settings_handler))
@@ -1995,6 +1996,81 @@ async fn handle_socket(socket: WebSocket, state: AppState, push_ref: String) {
 
     state.realtime_registry.unregister(&push_ref).await;
     println!("🔌 [WebSocket] Klien terputus dari stream. (pushRef: {})", push_ref);
+}
+
+// ==========================================
+// REALTIME PUSH BROADCAST (n8n-lego bridge)
+// ==========================================
+async fn realtime_broadcast_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let payload_str = payload.to_string();
+    state.realtime_registry.broadcast_text(&payload_str).await;
+
+    // Kirimkan juga ke state.event_sender jika relevan
+    if let Ok(event) = serde_json::from_value::<ExecutionEvent>(payload.clone()) {
+        let _ = state.event_sender.send(event);
+    } else if let Some(msg_type) = payload.get("type").and_then(|t| t.as_str()) {
+        let data = payload.get("data");
+        match msg_type {
+            "executionStarted" => {
+                let execution_id = data.and_then(|d| d.get("executionId")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let workflow_id = data.and_then(|d| d.get("workflowId")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let started_at = data.and_then(|d| d.get("startedAt")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let _ = state.event_sender.send(ExecutionEvent::WorkflowStarted {
+                    workflow_id,
+                    execution_id,
+                    started_at,
+                });
+            }
+            "nodeExecuteBefore" => {
+                let execution_id = data.and_then(|d| d.get("executionId")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let workflow_id = data.and_then(|d| d.get("workflowId")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let node_name = data.and_then(|d| d.get("nodeName")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let _ = state.event_sender.send(ExecutionEvent::NodeStarted {
+                    workflow_id,
+                    execution_id,
+                    node_name,
+                });
+            }
+            "nodeExecuteAfter" => {
+                let execution_id = data.and_then(|d| d.get("executionId")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let workflow_id = data.and_then(|d| d.get("workflowId")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let node_name = data.and_then(|d| d.get("nodeName")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let output = data.and_then(|d| d.get("data")).cloned().unwrap_or(serde_json::Value::Null);
+                let _ = state.event_sender.send(ExecutionEvent::NodeCompleted {
+                    workflow_id,
+                    execution_id,
+                    node_name,
+                    output,
+                });
+            }
+            "executionFinished" => {
+                let execution_id = data.and_then(|d| d.get("executionId")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let workflow_id = data.and_then(|d| d.get("workflowId")).and_then(|s| s.as_str()).unwrap_or_default().to_string();
+                let status = data.and_then(|d| d.get("status")).and_then(|s| s.as_str()).unwrap_or("success").to_string();
+                if status == "error" || status == "failed" {
+                    let _ = state.event_sender.send(ExecutionEvent::WorkflowFailed {
+                        workflow_id,
+                        execution_id,
+                        error: "Execution failed".to_string(),
+                    });
+                } else {
+                    let _ = state.event_sender.send(ExecutionEvent::WorkflowCompleted {
+                        workflow_id,
+                        execution_id,
+                        status,
+                        duration_ms: 0,
+                        results: serde_json::Value::Null,
+                    });
+                }
+            }
+            _ => {}
+        }
+    }
+
+    (StatusCode::OK, Json(serde_json::json!({ "success": true })))
 }
 // ==========================================
 // POLYGLOT VERSION SELECTOR

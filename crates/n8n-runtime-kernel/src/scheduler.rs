@@ -129,7 +129,7 @@ impl KernelScheduler {
         let wf_id = context.workflow_id.clone();
 
         // 1. Lifecycle start events
-        journal.record_workflow_started(&wf_id, &run_id).await;
+        let _ = journal.record_workflow_started(&wf_id, &run_id).await;
         if self.options.emit_events {
             context.emit_event(
                 EventType::WorkflowStarted,
@@ -212,7 +212,7 @@ impl KernelScheduler {
                 if has_incoming && input_items.is_empty() {
                     frame.mark_skipped();
                     skipped_nodes.insert(node_name.clone());
-                    journal
+                    let _ = journal
                         .record_node_skipped(&node_name, "No input items routed to node")
                         .await;
 
@@ -232,7 +232,7 @@ impl KernelScheduler {
                 frame.mark_running();
                 running_nodes.insert(node_name.clone());
 
-                journal
+                let _ = journal
                     .record_node_started(&node_name, frame.input_data.clone())
                     .await;
 
@@ -280,7 +280,7 @@ impl KernelScheduler {
                     frame.mark_completed(output_data.clone());
                     completed_nodes.insert(finished_node.clone());
 
-                    journal
+                    let _ = journal
                         .record_node_completed(
                             &finished_node,
                             output_data.clone(),
@@ -345,7 +345,7 @@ impl KernelScheduler {
                 Err(err) => {
                     let err_msg = err.to_string();
                     frame.mark_failed(err_msg.clone());
-                    journal.record_node_failed(&finished_node, &err_msg).await;
+                    let _ = journal.record_node_failed(&finished_node, &err_msg).await;
 
                     if self.options.stop_on_first_error {
                         execution_error = Some(err_msg.clone());
@@ -404,7 +404,7 @@ impl KernelScheduler {
         // Finalize journal and notifications
         match final_status {
             WorkflowExecutionStatus::Success => {
-                journal.record_workflow_completed(duration_ms).await;
+                let _ = journal.record_workflow_completed(duration_ms).await;
                 if self.options.emit_realtime {
                     context
                         .push_realtime(PushMessage::execution_finished(&run_id, &wf_id, "success"))
@@ -413,7 +413,7 @@ impl KernelScheduler {
             }
             WorkflowExecutionStatus::Failed => {
                 let err_str = execution_error.as_deref().unwrap_or("Unknown failure");
-                journal.record_workflow_failed(err_str).await;
+                let _ = journal.record_workflow_failed(err_str).await;
                 if self.options.emit_realtime {
                     context
                         .push_realtime(PushMessage::execution_finished(&run_id, &wf_id, "error"))
@@ -421,7 +421,7 @@ impl KernelScheduler {
                 }
             }
             WorkflowExecutionStatus::Cancelled => {
-                journal
+                let _ = journal
                     .record(
                         None,
                         crate::journal::JournalStepType::WorkflowCancelled,

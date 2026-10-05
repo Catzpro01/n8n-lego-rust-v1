@@ -22,7 +22,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { stringify as flattedStringify } from 'flatted';
+import { stringify as flattedStringify, parse as flattedParse } from 'flatted';
 import { HttpError, badRequest, notFound } from '../compat/error.mjs';
 import { sendBare, sendData, sendJson } from '../compat/response.mjs';
 import { requireUser } from '../compat/auth-context.mjs';
@@ -131,6 +131,26 @@ function executionSummary(execution) {
     customData: {},
     annotation: { tags: [], vote: null },
   };
+}
+
+function serializeExecutionData(data) {
+  if (data === null || data === undefined) {
+    return flattedStringify({});
+  }
+  if (typeof data === 'string') {
+    try {
+      flattedParse(data);
+      return data;
+    } catch {
+      try {
+        const parsed = JSON.parse(data);
+        return flattedStringify(parsed);
+      } catch {
+        return flattedStringify({});
+      }
+    }
+  }
+  return flattedStringify(data);
 }
 
 /* -------------------------------------------------------------------- routes */
@@ -436,12 +456,22 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
           settings: stored.settings ?? {},
         };
         const startNodes = Array.isArray(body.startNodes) ? body.startNodes : [];
-        const startNode = startNodes.length > 0 ? startNodes[0].name ?? startNodes[0] : (body.startNode ?? null);
+        const startNode = startNodes.length > 0 ? (startNodes[0]?.name ?? startNodes[0]) : (body.startNode ?? null);
+        const destinationNode = body.destinationNode ?? null;
+
+        let inputData = body.input ?? body.data;
+        if (!inputData && startNode && body.runData?.[startNode]) {
+          inputData = body.runData[startNode]?.[0]?.data?.main?.[0] ?? body.runData[startNode];
+        }
+        if (!inputData && body.runData) {
+          inputData = body.runData;
+        }
 
         const execution = await engine.execute({
           definition,
           startNode,
-          input: body.input,
+          destinationNode,
+          input: inputData,
           workflowId: stored.id,
           workflowName: stored.name,
           mode: 'manual',
@@ -472,6 +502,65 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
       },
     },
     {
+      method: 'POST',
+      path: '/rest/workflows/run',
+      handler: async (ctx) => {
+        const user = requireUser(ctx);
+        const body = ctx.body ?? {};
+        const stored = body.workflowId ? ctx.store.workflows.get(body.workflowId) : null;
+        const definition = body.workflowData ?? body.workflow ?? (stored ? {
+          name: stored.name,
+          nodes: stored.nodes ?? [],
+          connections: stored.connections ?? {},
+          settings: stored.settings ?? {},
+        } : emptyWorkflow(body.name ?? WORKFLOW_NAME_DEFAULT));
+        const startNodes = Array.isArray(body.startNodes) ? body.startNodes : [];
+        const startNode = startNodes.length > 0 ? (startNodes[0]?.name ?? startNodes[0]) : (body.startNode ?? null);
+        const destinationNode = body.destinationNode ?? null;
+
+        let inputData = body.input ?? body.data;
+        if (!inputData && startNode && body.runData?.[startNode]) {
+          inputData = body.runData[startNode]?.[0]?.data?.main?.[0] ?? body.runData[startNode];
+        }
+        if (!inputData && body.runData) {
+          inputData = body.runData;
+        }
+
+        const workflowId = stored ? stored.id : (body.workflowId ?? null);
+        const workflowName = stored?.name ?? definition.name ?? WORKFLOW_NAME_DEFAULT;
+
+        const execution = await engine.execute({
+          definition,
+          startNode,
+          destinationNode,
+          input: inputData,
+          workflowId,
+          workflowName,
+          mode: 'manual',
+          requestedBy: user.email,
+          store: ctx.store,
+        });
+
+        sendData(ctx.res, { executionId: execution.id, ...executionSummary(execution) });
+        setImmediate(() => {
+          push?.broadcast?.({
+            type: 'executionStarted',
+            data: {
+              executionId: String(execution.id),
+              mode: 'manual',
+              startedAt: execution.startedAt,
+              workflowId,
+              workflowName,
+            },
+          });
+          push?.broadcast?.({
+            type: 'executionFinished',
+            data: { executionId: String(execution.id), workflowId, status: execution.status },
+          });
+        });
+      },
+    },
+    {
       method: 'GET',
       path: '/rest/workflows/:workflowId/executions/last-successful',
       handler: (ctx) => {
@@ -479,7 +568,7 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
         const last = ctx.store.executions
           .filter((execution) => execution.workflowId === ctx.params.workflowId && execution.status === 'success')
           .sort((a, b) => b.id - a.id)[0];
-        sendData(ctx.res, last ? { ...executionSummary(last), data: flattedStringify(last.data ?? {}) } : null);
+        sendData(ctx.res, last ? { ...executionSummary(last), data: serializeExecutionData(last.data) } : null);
       },
     },
     {
@@ -520,7 +609,7 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
         if (!execution) throw notFound('Execution not found');
         sendData(ctx.res, {
           ...executionSummary(execution),
-          data: flattedStringify(execution.data ?? {}),
+          data: serializeExecutionData(execution.data),
           workflowData: execution.workflowData ?? null,
         });
       },

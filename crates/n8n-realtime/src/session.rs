@@ -104,6 +104,14 @@ impl SessionRegistry {
         }
     }
 
+    /// Broadcasts a raw JSON text string directly to all active connections
+    pub async fn broadcast_text(&self, text: &str) {
+        let map = self.sessions.read().await;
+        for session in map.values() {
+            let _ = session.sender.send(text.to_string());
+        }
+    }
+
     /// Marks pong received from a client
     pub async fn on_pong(&self, push_ref: &str) {
         let mut map = self.sessions.write().await;

@@ -180,7 +180,7 @@ export function buildFrontendSettings(config, { hasOwner = false, requestOrigin 
     // P5.6: TOTP MFA is implemented (auth/account-routes.mjs). Enforcement is an
     // enterprise-licensed upstream feature and stays off.
     mfa: { enabled: true, enforced: false },
-    folders: { enabled: true },
+    folders: { enabled: false },
     banners: { dismissed: dismissedBanners },
     workflowHistory: { pruneTime: -1, licensePruneTime: -1 },
     pruning: {
@@ -220,7 +220,7 @@ export function buildFrontendSettings(config, { hasOwner = false, requestOrigin 
 /** Enterprise edition unlocked: all capabilities enabled. */
 function enterpriseSettings() {
   return {
-    sharing: true,
+    sharing: false,
     ldap: true,
     saml: true,
     oidc: true,
@@ -242,8 +242,8 @@ function enterpriseSettings() {
     workflowDiffs: true,
     namedVersions: true,
     provisioning: true,
-    projects: { team: { limit: -1 } },
+    projects: { team: { limit: 0 } },
     customRoles: true,
-    personalSpacePolicy: true,
+    personalSpacePolicy: false,
   };
 }

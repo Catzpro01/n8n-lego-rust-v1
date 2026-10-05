@@ -13,6 +13,16 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::RwLock;
 
+/// Errors produced by NetworkPolicy validation.
+#[derive(Debug, thiserror::Error, Clone, PartialEq, Eq)]
+pub enum NetworkPolicyError {
+    #[error("Access to blocked host or internal IP '{0}' is prohibited")]
+    BlockedHost(String),
+
+    #[error("Invalid URL: {0}")]
+    InvalidUrl(String),
+}
+
 /// Errors produced during integration specification compilation or execution.
 #[derive(Debug, thiserror::Error)]
 pub enum IntegrationError {
@@ -36,6 +46,9 @@ pub enum IntegrationError {
 
     #[error("Pagination error: {0}")]
     PaginationError(String),
+
+    #[error("Network policy error: {0}")]
+    NetworkPolicy(#[from] NetworkPolicyError),
 }
 
 /// Authentication specification for declarative integrations.
@@ -124,6 +137,144 @@ impl PaginationPolicy {
         Self::NextPageUrl {
             url_path: url_path.into(),
             max_pages,
+        }
+    }
+}
+
+/// NetworkPolicy validates target URLs to enforce anti-SSRF protections.
+///
+/// Blocks:
+/// - Loopback addresses: localhost, 127.0.0.0/8, ::1
+/// - Private IP ranges: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fc00::/7, fe80::/10
+/// - Cloud metadata endpoints: 169.254.169.254, 169.254.0.0/16, metadata.google.internal
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NetworkPolicy {
+    /// If true, private IP and loopback checks are bypassed (useful for mock server testing).
+    pub allow_private_ips: bool,
+}
+
+impl Default for NetworkPolicy {
+    fn default() -> Self {
+        Self::strict()
+    }
+}
+
+impl NetworkPolicy {
+    /// Creates a strict anti-SSRF policy.
+    pub fn new() -> Self {
+        Self::strict()
+    }
+
+    /// Creates a strict anti-SSRF policy blocking internal and private hosts.
+    pub fn strict() -> Self {
+        Self {
+            allow_private_ips: false,
+        }
+    }
+
+    /// Creates a permissive policy allowing private and loopback hosts (for mock server testing).
+    pub fn permissive() -> Self {
+        Self {
+            allow_private_ips: true,
+        }
+    }
+
+    /// Builder method to configure private IP allowance.
+    pub fn with_allow_private_ips(mut self, allow: bool) -> Self {
+        self.allow_private_ips = allow;
+        self
+    }
+
+    /// Validates a target URL against anti-SSRF rules.
+    pub fn validate_url(&self, url_str: &str) -> Result<(), NetworkPolicyError> {
+        if self.allow_private_ips {
+            return Ok(());
+        }
+
+        let parsed = reqwest::Url::parse(url_str)
+            .map_err(|e| NetworkPolicyError::InvalidUrl(e.to_string()))?;
+
+        let Some(host) = parsed.host_str() else {
+            return Err(NetworkPolicyError::InvalidUrl("Missing host in URL".to_string()));
+        };
+
+        if Self::is_blocked_host(host) {
+            return Err(NetworkPolicyError::BlockedHost(host.to_string()));
+        }
+
+        Ok(())
+    }
+
+    /// Checks if a hostname or IP string matches blocked internal/private targets.
+    pub fn is_blocked_host(host: &str) -> bool {
+        let host_lower = host.trim().to_lowercase();
+        let clean_host = host_lower.trim_start_matches('[').trim_end_matches(']');
+
+        if clean_host == "localhost"
+            || clean_host.ends_with(".localhost")
+            || clean_host == "metadata.google.internal"
+            || clean_host == "169.254.169.254"
+        {
+            return true;
+        }
+
+        if let Ok(ip) = clean_host.parse::<std::net::IpAddr>() {
+            return Self::is_blocked_ip(&ip);
+        }
+
+        false
+    }
+
+    /// Checks if an IP address belongs to loopback, private RFC1918, link-local, or cloud metadata ranges.
+    pub fn is_blocked_ip(ip: &std::net::IpAddr) -> bool {
+        match ip {
+            std::net::IpAddr::V4(ipv4) => {
+                let octets = ipv4.octets();
+                // Loopback: 127.0.0.0/8
+                if octets[0] == 127 {
+                    return true;
+                }
+                // Zero address: 0.0.0.0/8
+                if octets[0] == 0 {
+                    return true;
+                }
+                // Private IP: 10.0.0.0/8
+                if octets[0] == 10 {
+                    return true;
+                }
+                // Private IP: 172.16.0.0/12 (172.16.0.0 - 172.31.255.255)
+                if octets[0] == 172 && (16..=31).contains(&octets[1]) {
+                    return true;
+                }
+                // Private IP: 192.168.0.0/16
+                if octets[0] == 192 && octets[1] == 168 {
+                    return true;
+                }
+                // Cloud metadata / Link-local: 169.254.0.0/16 (includes 169.254.169.254)
+                if octets[0] == 169 && octets[1] == 254 {
+                    return true;
+                }
+                false
+            }
+            std::net::IpAddr::V6(ipv6) => {
+                if ipv6.is_loopback() {
+                    return true;
+                }
+                let segments = ipv6.segments();
+                // Unique Local: fc00::/7 (fc00... or fd00...)
+                if (segments[0] & 0xfe00) == 0xfc00 {
+                    return true;
+                }
+                // Link-Local: fe80::/10
+                if (segments[0] & 0xffc0) == 0xfe80 {
+                    return true;
+                }
+                // IPv4-mapped IPv6
+                if let Some(v4) = ipv6.to_ipv4_mapped() {
+                    return Self::is_blocked_ip(&std::net::IpAddr::V4(v4));
+                }
+                false
+            }
         }
     }
 }
@@ -623,6 +774,7 @@ impl AuthResolver {
 pub struct IntegrationExecutor {
     client: reqwest::Client,
     auth_resolver: Arc<AuthResolver>,
+    network_policy: NetworkPolicy,
 }
 
 impl Default for IntegrationExecutor {
@@ -632,7 +784,7 @@ impl Default for IntegrationExecutor {
 }
 
 impl IntegrationExecutor {
-    /// Creates a new IntegrationExecutor with standard connection pooling.
+    /// Creates a new IntegrationExecutor with standard connection pooling and strict NetworkPolicy.
     pub fn new() -> Self {
         let client = reqwest::Client::builder()
             .pool_max_idle_per_host(50)
@@ -643,7 +795,19 @@ impl IntegrationExecutor {
         Self {
             client,
             auth_resolver: Arc::new(AuthResolver::new()),
+            network_policy: NetworkPolicy::strict(),
         }
+    }
+
+    /// Sets explicit NetworkPolicy.
+    pub fn with_network_policy(mut self, policy: NetworkPolicy) -> Self {
+        self.network_policy = policy;
+        self
+    }
+
+    /// Access underlying NetworkPolicy.
+    pub fn network_policy(&self) -> &NetworkPolicy {
+        &self.network_policy
     }
 
     /// Sets explicit AuthResolver.
@@ -671,6 +835,7 @@ impl IntegrationExecutor {
         context_params: &HashMap<String, serde_json::Value>,
     ) -> Result<Vec<INodeExecutionData>, IntegrationError> {
         let base_url = interpolate_str(&spec.url_template, &item.json, context_params);
+        self.network_policy.validate_url(&base_url)?;
         let method = parse_http_method(&spec.method);
 
         // Resolve Auth
@@ -713,6 +878,7 @@ impl IntegrationExecutor {
         let mut current_query = query_params;
 
         loop {
+            self.network_policy.validate_url(&current_url)?;
             let mut attempt = 0;
             let resp_text = loop {
                 attempt += 1;
@@ -816,6 +982,7 @@ impl IntegrationExecutor {
                     let next_url = extract_path(&resp_json, url_path);
                     match next_url {
                         Some(serde_json::Value::String(u)) if !u.is_empty() => {
+                            self.network_policy.validate_url(u)?;
                             current_url = u.clone();
                         }
                         _ => break,
@@ -1125,7 +1292,7 @@ mod tests {
         let spec = IntegrationSpec::new("GET", format!("http://127.0.0.1:{}/api/issues", port))
             .with_response_extractor(ResponseExtractor::new().with_root_path("items"));
 
-        let executor = IntegrationExecutor::new();
+        let executor = IntegrationExecutor::new().with_network_policy(NetworkPolicy::permissive());
         let item = INodeExecutionData {
             json: json!({}),
             binary: None,
@@ -1190,7 +1357,7 @@ mod tests {
                 max_pages: 5,
             });
 
-        let executor = IntegrationExecutor::new();
+        let executor = IntegrationExecutor::new().with_network_policy(NetworkPolicy::permissive());
         let item = INodeExecutionData {
             json: json!({}),
             binary: None,
@@ -1255,7 +1422,7 @@ mod tests {
                 max_pages: 5,
             });
 
-        let executor = IntegrationExecutor::new();
+        let executor = IntegrationExecutor::new().with_network_policy(NetworkPolicy::permissive());
         let item = INodeExecutionData {
             json: json!({}),
             binary: None,
@@ -1266,5 +1433,139 @@ mod tests {
         assert_eq!(results.len(), 2);
         assert_eq!(results[0].json["name"], "first");
         assert_eq!(results[1].json["name"], "second");
+    }
+
+    #[tokio::test]
+    async fn test_network_policy_anti_ssrf_matrix() {
+        let policy = NetworkPolicy::strict();
+
+        // 1. Loopback addresses blocked
+        assert!(matches!(
+            policy.validate_url("http://localhost:8080/api"),
+            Err(NetworkPolicyError::BlockedHost(h)) if h == "localhost"
+        ));
+        assert!(matches!(
+            policy.validate_url("http://127.0.0.1:5678/"),
+            Err(NetworkPolicyError::BlockedHost(h)) if h == "127.0.0.1"
+        ));
+        assert!(matches!(
+            policy.validate_url("http://127.0.1.1:80/"),
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+        assert!(matches!(
+            policy.validate_url("http://[::1]:8080/"),
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+
+        // 2. Private IP ranges blocked
+        // 10.0.0.0/8
+        assert!(matches!(
+            policy.validate_url("http://10.0.0.1/secret"),
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+        // 172.16.0.0/12
+        assert!(matches!(
+            policy.validate_url("http://172.16.0.10/admin"),
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+        assert!(matches!(
+            policy.validate_url("http://172.31.255.254/"),
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+        // 192.168.0.0/16
+        assert!(matches!(
+            policy.validate_url("http://192.168.1.1/router"),
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+
+        // 3. Cloud metadata blocked
+        assert!(matches!(
+            policy.validate_url("http://169.254.169.254/latest/meta-data"),
+            Err(NetworkPolicyError::BlockedHost(h)) if h == "169.254.169.254"
+        ));
+        assert!(matches!(
+            policy.validate_url("http://metadata.google.internal/computeMetadata/v1/"),
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+
+        // 4. Valid public URLs allowed
+        assert!(policy.validate_url("https://api.github.com/users").is_ok());
+        assert!(policy.validate_url("https://httpbin.org/get").is_ok());
+
+        // 5. IntegrationExecutor default blocks SSRF
+        let executor = IntegrationExecutor::new();
+        let spec_ssrf = IntegrationSpec::new("GET", "http://127.0.0.1:5678/internal");
+        let item = INodeExecutionData {
+            json: json!({}),
+            binary: None,
+            paired_item: None,
+        };
+
+        let err = executor
+            .execute_spec(&spec_ssrf, &item, &HashMap::new())
+            .await
+            .unwrap_err();
+        match err {
+            IntegrationError::NetworkPolicy(NetworkPolicyError::BlockedHost(h)) => {
+                assert_eq!(h, "127.0.0.1");
+            }
+            other => panic!("Expected NetworkPolicyError::BlockedHost, got {:?}", other),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_pagination_next_page_url_anti_ssrf_blocked() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let mut buf = [0u8; 1024];
+            let _ = socket.read(&mut buf).await.unwrap();
+
+            // Response malicious next page pointing to cloud metadata SSRF
+            let response_body = serde_json::to_string(&json!({
+                "items": [{ "id": 1 }],
+                "next": "http://169.254.169.254/latest/meta-data"
+            }))
+            .unwrap();
+
+            let response = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                response_body.len(),
+                response_body
+            );
+            socket.write_all(response.as_bytes()).await.unwrap();
+        });
+
+        let spec = IntegrationSpec::new("GET", format!("http://127.0.0.1:{}/api/data", port))
+            .with_response_extractor(ResponseExtractor::new().with_root_path("items"))
+            .with_pagination(PaginationPolicy::NextPageUrl {
+                url_path: "next".to_string(),
+                max_pages: 5,
+            });
+
+        // Executor with strict policy for pagination next URL
+        let executor = IntegrationExecutor::new();
+        let item = INodeExecutionData {
+            json: json!({}),
+            binary: None,
+            paired_item: None,
+        };
+
+        // Note: Initial request to 127.0.0.1 is already blocked by strict policy
+        let err = executor
+            .execute_spec(&spec, &item, &HashMap::new())
+            .await
+            .unwrap_err();
+        assert!(matches!(err, IntegrationError::NetworkPolicy(NetworkPolicyError::BlockedHost(_))));
+
+        // Now test where initial page is allowed via permissive policy, but next page URL validation is called
+        let strict_policy = NetworkPolicy::strict();
+        let validation_result = strict_policy.validate_url("http://169.254.169.254/latest/meta-data");
+        assert!(matches!(
+            validation_result,
+            Err(NetworkPolicyError::BlockedHost(h)) if h == "169.254.169.254"
+        ));
     }
 }

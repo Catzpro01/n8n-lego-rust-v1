@@ -27,18 +27,6 @@ const instances = [
     },
   },
   {
-    name: 'n8n-rust (Backend)',
-    port: process.env.N8N_RUST_PORT || 5678,
-    cmd: 'cargo',
-    args: ['run', '-p', 'n8n-rust-app'],
-    env: {
-      ...process.env,
-      N8N_RUST_PORT: process.env.N8N_RUST_PORT || '5678',
-      PORT: process.env.N8N_RUST_PORT || '5678',
-      DATABASE_URL: `sqlite://${resolve(repoRoot, 'data', 'rust', 'n8n.sqlite')}`,
-    },
-  },
-  {
     name: 'n8n-reference (Oracle)',
     port: process.env.N8N_REFERENCE_PORT || 5680,
     cmd: 'node',
@@ -53,7 +41,7 @@ const instances = [
 ];
 
 console.log('====================================================');
-console.log('🚀 Starting n8n Rust v4 Monorepo (3 Instances)...');
+console.log('🚀 Starting Unified n8n LEGO (Port 5677) + Oracle (Port 5680)...');
 console.log('====================================================');
 
 const children = [];

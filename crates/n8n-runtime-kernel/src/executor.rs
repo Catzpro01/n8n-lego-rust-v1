@@ -21,6 +21,7 @@ use serde_json::json;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::compat_worker::{NodeCompatibilityWorker, NodeJob, WorkerError};
 use crate::context::ExecutionContext;
 use crate::integration_ir::{IntegrationExecutor, IntegrationSpec};
 
@@ -44,6 +45,9 @@ pub enum KernelExecutionError {
 
     #[error("Queue worker error: {0}")]
     QueueError(String),
+
+    #[error("Compatibility worker error: {0}")]
+    Worker(#[from] WorkerError),
 
     #[error("Serialization error: {0}")]
     Serialization(#[from] serde_json::Error),
@@ -76,6 +80,8 @@ pub struct KernelNodeExecutor {
     pub subworkflow_executor: Option<Arc<SubworkflowExecutor>>,
     /// Declarative Integration IR executor for HTTP and SaaS requests.
     pub integration_executor: Arc<IntegrationExecutor>,
+    /// Real Node.js compatibility worker supervisor.
+    pub compat_worker: Option<Arc<NodeCompatibilityWorker>>,
 }
 
 impl Default for KernelNodeExecutor {
@@ -85,7 +91,7 @@ impl Default for KernelNodeExecutor {
 }
 
 impl KernelNodeExecutor {
-    /// Creates a KernelNodeExecutor with builtin native nodes.
+    /// Creates a KernelNodeExecutor with builtin native nodes and default compatibility worker.
     pub fn new() -> Self {
         Self {
             registry: Arc::new(NodeRegistry::with_builtins()),
@@ -93,6 +99,7 @@ impl KernelNodeExecutor {
             circuit_breaker: None,
             subworkflow_executor: None,
             integration_executor: Arc::new(IntegrationExecutor::new()),
+            compat_worker: Some(Arc::new(NodeCompatibilityWorker::new())),
         }
     }
 
@@ -123,6 +130,24 @@ impl KernelNodeExecutor {
     /// Sets Integration Executor.
     pub fn with_integration_executor(mut self, executor: Arc<IntegrationExecutor>) -> Self {
         self.integration_executor = executor;
+        self
+    }
+
+    /// Sets NetworkPolicy on the internal integration executor.
+    pub fn with_network_policy(mut self, policy: crate::integration_ir::NetworkPolicy) -> Self {
+        self.integration_executor = Arc::new(IntegrationExecutor::new().with_network_policy(policy));
+        self
+    }
+
+    /// Sets explicit NodeCompatibilityWorker.
+    pub fn with_compat_worker(mut self, worker: Arc<NodeCompatibilityWorker>) -> Self {
+        self.compat_worker = Some(worker);
+        self
+    }
+
+    /// Disables NodeCompatibilityWorker.
+    pub fn without_compat_worker(mut self) -> Self {
+        self.compat_worker = None;
         self
     }
 
@@ -351,7 +376,91 @@ impl KernelNodeExecutor {
             return Ok(vec![all_outputs]);
         }
 
-        // 6. Compatibility Worker via Queue Engine
+        // 6. Compatibility Worker execution (Real Node.js process fallback + optional Queue engine audit)
+        if let Some(worker) = self.compat_worker.as_ref() {
+            let leased_token = if let Some(queue) = self.queue_engine.as_ref() {
+                let q_job = JobDescriptor::new(&context.workflow_id, &context.run_id)
+                    .with_push_ref(context.push_ref.as_deref().unwrap_or_default())
+                    .with_id(format!("{}_{}", context.run_id, node.name));
+
+                if let Err(q_err) = queue.push(q_job) {
+                    return Err(KernelExecutionError::QueueError(q_err.to_string()));
+                }
+
+                if let Ok(Some(leased_job)) = queue.poll_job("kernel-internal-worker") {
+                    Some((leased_job.id.clone(), leased_job.lock_token.clone().unwrap_or_default()))
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            let node_job = NodeJob {
+                id: format!("{}_{}", context.run_id, node.name),
+                node_type: node.node_type.clone(),
+                parameters: node.parameters.0.clone(),
+                credentials: json!({}),
+                input_data: input,
+            };
+
+            let output_res = worker.execute_job(node_job).await;
+
+            match output_res {
+                Ok(output) => {
+                    let execution_data = output.into_execution_data().map_err(|e| {
+                        if let Some((ref job_id, ref token)) = leased_token {
+                            if let Some(queue) = self.queue_engine.as_ref() {
+                                let _ = queue.complete_job(
+                                    job_id,
+                                    "kernel-internal-worker",
+                                    token,
+                                    JobResult::err(e.to_string()),
+                                );
+                            }
+                        }
+                        KernelExecutionError::Worker(e)
+                    })?;
+
+                    if let Some((ref job_id, ref token)) = leased_token {
+                        if let Some(queue) = self.queue_engine.as_ref() {
+                            let _ = queue.complete_job(
+                                job_id,
+                                "kernel-internal-worker",
+                                token,
+                                JobResult::ok(Some(json!({ "workerExecuted": true }))),
+                            );
+                        }
+                    }
+
+                    if let Some(breaker) = cb {
+                        breaker.record_success();
+                    }
+
+                    return Ok(execution_data);
+                }
+                Err(err) => {
+                    if let Some((ref job_id, ref token)) = leased_token {
+                        if let Some(queue) = self.queue_engine.as_ref() {
+                            let _ = queue.complete_job(
+                                job_id,
+                                "kernel-internal-worker",
+                                token,
+                                JobResult::err(err.to_string()),
+                            );
+                        }
+                    }
+
+                    if let Some(breaker) = cb {
+                        breaker.record_failure();
+                    }
+
+                    return Err(KernelExecutionError::Worker(err));
+                }
+            }
+        }
+
+        // 6b. Queue Engine fallback simulation when compatibility worker is explicitly disabled
         let q_engine = self.queue_engine.as_ref();
         if let Some(queue) = q_engine {
             let job = JobDescriptor::new(&context.workflow_id, &context.run_id)

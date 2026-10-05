@@ -3,6 +3,7 @@
 //! Provides the execution context, stack frames, topological DAG planning,
 //! composite node execution, asynchronous parallel scheduling, and durable state journaling.
 
+pub mod compat_worker;
 pub mod context;
 pub mod executor;
 pub mod frame;
@@ -11,16 +12,19 @@ pub mod journal;
 pub mod plan;
 pub mod scheduler;
 
+pub use compat_worker::{NodeCompatibilityWorker, NodeJob, NodeOutput, WorkerError};
+
 pub use context::{ExecutionContext, ExecutionMode};
 pub use executor::{KernelExecutionError, KernelNodeExecutor, NodeExecutor};
 pub use frame::{ExecutionFrame, NodeExecutionStatus};
 pub use integration_ir::{
     AuthResolver, AuthSpec, IntegrationError, IntegrationExecutor, IntegrationSpec,
-    PaginationPolicy, RateLimitPolicy, ResolvedAuth, ResponseExtractor,
+    NetworkPolicy, NetworkPolicyError, PaginationPolicy, RateLimitPolicy, ResolvedAuth,
+    ResponseExtractor,
 };
 pub use journal::{
-    ExecutionJournal, FileAppendJournalStorage, InMemoryJournalStorage, JournalEntry,
-    JournalError, JournalStepType, JournalStorage,
+    DurabilityPolicy, ExecutionJournal, FileAppendJournalStorage, InMemoryJournalStorage,
+    JournalEntry, JournalError, JournalStepType, JournalStorage,
 };
 pub use plan::{ExecutionPlan, ExecutionStage, PlanEdge, PlanError};
 pub use scheduler::{
@@ -528,10 +532,11 @@ mod tests {
     #[tokio::test]
     async fn test_execution_journal_persistence_and_replay() {
         let journal = ExecutionJournal::new();
-        journal.record_workflow_started("wf-100", "run-200").await;
+        journal.record_workflow_started("wf-100", "run-200").await.unwrap();
         journal
             .record_node_completed("Start", vec![vec![]], 12)
-            .await;
+            .await
+            .unwrap();
         journal
             .record_node_completed(
                 "SetData",
@@ -542,7 +547,8 @@ mod tests {
                 }]],
                 45,
             )
-            .await;
+            .await
+            .unwrap();
 
         assert_eq!(journal.count().await, 3);
         assert!(journal.is_node_completed("SetData").await);
@@ -700,7 +706,7 @@ mod tests {
             json!({}),
         );
 
-        let executor = KernelNodeExecutor::new();
+        let executor = KernelNodeExecutor::new().with_network_policy(NetworkPolicy::permissive());
         let context = ExecutionContext::new("wf-http", ExecutionMode::Manual);
         let input_item = INodeExecutionData {
             json: json!({}),
@@ -763,7 +769,7 @@ mod tests {
             json!({}),
         );
 
-        let executor = KernelNodeExecutor::new();
+        let executor = KernelNodeExecutor::new().with_network_policy(NetworkPolicy::permissive());
         let context = ExecutionContext::new("wf-spec", ExecutionMode::Manual);
         let input_item = INodeExecutionData {
             json: json!({
@@ -789,21 +795,23 @@ mod tests {
         // 1. Initial process session: record steps and crash/drop
         {
             let journal = ExecutionJournal::open_file(&wal_path).await.unwrap();
-            journal.record_workflow_started("wf-restart", "run-101").await;
+            journal.record_workflow_started("wf-restart", "run-101").await.unwrap();
             journal
                 .record_node_started("Compute", vec![vec![INodeExecutionData {
                     json: json!({ "x": 10 }),
                     binary: None,
                     paired_item: None,
                 }]])
-                .await;
+                .await
+                .unwrap();
             journal
                 .record_node_completed("Compute", vec![vec![INodeExecutionData {
                     json: json!({ "x": 10, "result": 100 }),
                     binary: None,
                     paired_item: None,
                 }]], 25)
-                .await;
+                .await
+                .unwrap();
             journal.checkpoint().await.unwrap();
         }
 
@@ -817,11 +825,71 @@ mod tests {
             assert_eq!(out[0][0].json["result"], 100);
 
             // Replay sequence: next step must follow monotonically
-            let complete_entry = restored.record_workflow_completed(120).await;
+            let complete_entry = restored.record_workflow_completed(120).await.expect("Record succeeds");
             assert_eq!(complete_entry.step_id, 4);
             assert_eq!(restored.count().await, 4);
         }
 
         let _ = tokio::fs::remove_dir_all(&temp_dir).await;
+    }
+
+    #[tokio::test]
+    async fn test_workflow_execution_with_real_compatibility_worker_fallback() {
+        let node_start = make_test_node("Start", "n8n-nodes-base.start", json!({}), json!({}));
+        let node_compat = make_test_node(
+            "ComputeJs",
+            "n8n-nodes-base.unportedCommunityNode",
+            json!({
+                "jsCode": "return [{ json: { calc: 10 * 5, tag: 'node_processed' } }];"
+            }),
+            json!({}),
+        );
+
+        let connections: Connections = serde_json::from_value(json!({
+            "Start": { "main": [[{ "node": "ComputeJs", "type": "main", "index": 0 }]] }
+        }))
+        .unwrap();
+
+        let workflow = Workflow::new(
+            Some("wf-real-worker".into()),
+            Some("Real Worker Test".into()),
+            vec![node_start, node_compat],
+            connections,
+            true,
+            None,
+            None,
+            None,
+        );
+
+        let context = Arc::new(ExecutionContext::new("wf-real-worker", ExecutionMode::Manual));
+        let executor = Arc::new(KernelNodeExecutor::new());
+        let journal = Arc::new(ExecutionJournal::new());
+        let scheduler = KernelScheduler::default();
+
+        let input_item = INodeExecutionData {
+            json: json!({ "seed": 42 }),
+            binary: None,
+            paired_item: None,
+        };
+
+        let result = scheduler
+            .execute_workflow(
+                &workflow,
+                Some(vec![input_item]),
+                context,
+                executor,
+                journal.clone(),
+            )
+            .await
+            .expect("Workflow execution must succeed with real Node.js compatibility worker");
+
+        assert_eq!(result.status, WorkflowExecutionStatus::Success);
+        let code_frame = result.frames.get("ComputeJs").expect("ComputeJs frame must exist");
+        assert_eq!(code_frame.status, NodeExecutionStatus::Completed);
+
+        let output = code_frame.output_data.as_ref().expect("Output data must exist");
+        assert_eq!(output[0][0].json["calc"], 50);
+        assert_eq!(output[0][0].json["tag"], "node_processed");
+        assert!(journal.is_node_completed("ComputeJs").await);
     }
 }

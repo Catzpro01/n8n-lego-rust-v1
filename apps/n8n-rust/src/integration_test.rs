@@ -367,3 +367,71 @@ async fn test_kernel_workflow_execution_via_api_v1_executions() {
     assert_eq!(json_resp["data"]["workflowId"], "wf-v1-api");
 }
 
+#[tokio::test]
+async fn test_realtime_broadcast_endpoint() {
+    use axum::body::Body;
+    use axum::http::{Request, StatusCode};
+    use tower::ServiceExt;
+    use tokio::sync::{broadcast, mpsc};
+
+    let db = crate::db::Database::init("sqlite::memory:")
+        .await
+        .expect("Database memory init harus sukses");
+    let (event_sender, mut event_rx) = broadcast::channel(32);
+    let realtime_registry = n8n_realtime::SessionRegistry::new();
+
+    // Register a client session
+    let (tx, mut rx_client) = mpsc::unbounded_channel();
+    realtime_registry.register("client-test-1".to_string(), "user-1".to_string(), tx).await;
+
+    let state = crate::server::AppState {
+        db,
+        event_sender,
+        realtime_registry,
+    };
+
+    let router = crate::server::create_router(state);
+
+    let push_payload = serde_json::json!({
+        "type": "executionStarted",
+        "data": {
+            "executionId": "exec-broadcast-1",
+            "workflowId": "wf-broadcast-1",
+            "startedAt": "2026-10-06T00:00:00Z"
+        }
+    });
+
+    let request = Request::builder()
+        .method("POST")
+        .uri("/api/realtime/broadcast")
+        .header("content-type", "application/json")
+        .body(Body::from(serde_json::to_vec(&push_payload).unwrap()))
+        .unwrap();
+
+    let response = router.oneshot(request).await.expect("Request /api/realtime/broadcast harus sukses");
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body_bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
+        .await
+        .expect("Membaca response body");
+    let json_resp: serde_json::Value = serde_json::from_slice(&body_bytes)
+        .expect("Response harus valid JSON");
+    assert_eq!(json_resp["success"], true);
+
+    // Verify WebSocket client received the message
+    let client_msg = rx_client.recv().await.expect("Client harus menerima broadcast");
+    assert!(client_msg.contains("executionStarted"));
+    assert!(client_msg.contains("exec-broadcast-1"));
+
+    // Verify event_sender received matching event
+    let event = event_rx.recv().await.expect("Event sender harus menerima event");
+    match event {
+        crate::events::ExecutionEvent::WorkflowStarted { workflow_id, execution_id, .. } => {
+            assert_eq!(workflow_id, "wf-broadcast-1");
+            assert_eq!(execution_id, "exec-broadcast-1");
+        }
+        other => panic!("Unexpected event received: {:?}", other),
+    }
+}
+
+
