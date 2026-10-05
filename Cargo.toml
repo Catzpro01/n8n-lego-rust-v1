@@ -16,6 +16,7 @@ members = [
     "crates/n8n-subworkflow",
     "crates/n8n-error-recovery",
     "crates/n8n-credentials",
+    "crates/n8n-runtime-kernel",
 ]
 exclude = [
     "apps/n8n-rust",

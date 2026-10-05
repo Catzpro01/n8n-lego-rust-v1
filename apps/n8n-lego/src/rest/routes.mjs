@@ -816,6 +816,86 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
       path: '/rest/workflow-dependencies/counts',
       handler: (ctx) => sendData(ctx.res, {}),
     },
+    {
+      method: 'GET',
+      path: '/rest/source-control/preferences',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, {
+          connected: false,
+          repositoryUrl: '',
+          branchName: 'main',
+          branchReadOnly: false,
+          branchColor: '#5296d6',
+          connectionType: 'ssh',
+          publicKey: '',
+        });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/source-control/get-branches',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, {
+          currentBranch: 'main',
+          branches: ['main'],
+        });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/source-control/status',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, {
+          status: 'clean',
+          ahead: 0,
+          behind: 0,
+          files: [],
+        });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/external-secrets/providers',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, []);
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/ldap/config',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { enabled: false });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/eventbus/eventnames',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, []);
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/eventbus/destination',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, []);
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/sso/saml/config',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { enabled: false });
+      },
+    },
   ];
 }
 

@@ -1,0 +1,36 @@
+[package]
+name = "n8n-runtime-kernel"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "n8n runtime kernel LEGO — Unified execution engine integrating workflow DAG, nodes, data plane, queue, events, realtime, credentials, binary data, error recovery, and subworkflows"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+async-trait = "0.1"
+tokio = { version = "1.0", features = ["sync", "time", "macros", "rt", "rt-multi-thread"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+petgraph = { workspace = true }
+indexmap = { workspace = true }
+
+# LEGO internal crates
+n8n-common = { path = "../n8n-common" }
+n8n-workflow = { path = "../n8n-workflow" }
+n8n-execution-data = { path = "../n8n-execution-data" }
+n8n-node-model = { path = "../n8n-node-model" }
+n8n-nodes-rust = { path = "../n8n-nodes-rust" }
+n8n-queue = { path = "../n8n-queue" }
+n8n-events = { path = "../n8n-events" }
+n8n-realtime = { path = "../n8n-realtime" }
+n8n-credentials = { path = "../n8n-credentials" }
+n8n-binary-data = { path = "../n8n-binary-data" }
+n8n-error-recovery = { path = "../n8n-error-recovery" }
+n8n-subworkflow = { path = "../n8n-subworkflow" }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full"] }
