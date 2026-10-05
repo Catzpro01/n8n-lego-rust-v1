@@ -89,7 +89,7 @@ export class Collection {
   }
 
   get(id) {
-    return this.find((doc) => doc[this.idKey] === id);
+    return this.find((doc) => doc[this.idKey] === id || String(doc[this.idKey]) === String(id));
   }
 
   insert(doc) {
@@ -101,7 +101,7 @@ export class Collection {
   }
 
   update(id, patch) {
-    const index = this.docs.findIndex((doc) => doc[this.idKey] === id);
+    const index = this.docs.findIndex((doc) => doc[this.idKey] === id || String(doc[this.idKey]) === String(id));
     if (index === -1) return null;
     const next = typeof patch === 'function' ? patch(this.docs[index]) : { ...this.docs[index], ...patch };
     if (next === null) return null;
@@ -111,7 +111,7 @@ export class Collection {
   }
 
   remove(id) {
-    const index = this.docs.findIndex((doc) => doc[this.idKey] === id);
+    const index = this.docs.findIndex((doc) => doc[this.idKey] === id || String(doc[this.idKey]) === String(id));
     if (index === -1) return false;
     this.docs.splice(index, 1);
     this.persist();

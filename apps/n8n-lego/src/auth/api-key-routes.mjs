@@ -440,7 +440,17 @@ export function apiKeyRoutes({ logger, policy = DEFAULT_TENANT_SECURITY_POLICY }
       path: '/rest/api-keys',
       handler: (ctx) => {
         const user = requireApiKeyScope(ctx);
-        sendData(ctx.res, publicApiKeys(user).map((key) => apiKeyDto(key, user.id)));
+        const keys = publicApiKeys(user).map((key) => apiKeyDto(key, user.id));
+        if (ctx.req.url?.includes('ownership') || ctx.req.url?.includes('take=')) {
+          sendData(ctx.res, {
+            items: keys,
+            owners: [{ id: user.id, email: user.email, firstName: user.firstName ?? '', lastName: user.lastName ?? '' }],
+            counts: { mine: keys.length, all: keys.length },
+            totals: { mine: keys.length, all: keys.length },
+          });
+          return;
+        }
+        sendData(ctx.res, keys);
       },
     },
     {

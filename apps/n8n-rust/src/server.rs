@@ -15,10 +15,16 @@ use tower_http::cors::CorsLayer;
 use crate::db::Database;
 use crate::events::ExecutionEvent;
 use crate::parser::WorkflowGraph;
-use crate::workflow::Workflow;
 use crate::WorkflowExecutor;
 
 use n8n_realtime::{is_heartbeat_message, PushMessage, SessionRegistry};
+use n8n_common::INodeExecutionData;
+use n8n_runtime_kernel::{
+    ExecutionContext, ExecutionMode, KernelScheduler,
+    WorkflowExecutionStatus,
+};
+use n8n_workflow::Workflow as KernelWorkflow;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -50,6 +56,7 @@ pub fn create_router(state: AppState) -> Router {
         )
         .route("/rest/workflows/{id}/run", post(run_workflow_handler))
         .route("/rest/workflows/run", post(run_workflow_root_handler))
+        .route("/api/v1/executions", post(api_v1_executions_handler))
         .route("/rest/workflows/{id}/exists", get(workflow_exists_handler))
         .route("/rest/workflows/{id}/activate", post(activate_workflow_handler))
         .route("/rest/workflows/{id}/deactivate", post(deactivate_workflow_handler))
@@ -1025,13 +1032,83 @@ async fn run_workflow_root_handler(
     State(state): State<AppState>,
     body: Option<Json<serde_json::Value>>,
 ) -> impl IntoResponse {
-    let id = body.as_ref()
-        .and_then(|Json(b)| b.get("workflowData"))
-        .and_then(|w| w.get("id"))
-        .and_then(|i| i.as_str())
+    let id = body
+        .as_ref()
+        .and_then(|Json(b)| {
+            b.get("workflowData")
+                .and_then(|w| w.get("id"))
+                .or_else(|| b.get("id"))
+                .or_else(|| b.get("workflowId"))
+                .and_then(|i| i.as_str())
+        })
         .map(|s| s.to_string())
         .unwrap_or_else(generate_id);
     execute_workflow_internal(state, id, body).await
+}
+
+async fn api_v1_executions_handler(
+    State(state): State<AppState>,
+    body: Option<Json<serde_json::Value>>,
+) -> impl IntoResponse {
+    let id = body
+        .as_ref()
+        .and_then(|Json(b)| {
+            b.get("workflowId")
+                .or_else(|| b.get("id"))
+                .or_else(|| b.get("workflowData").and_then(|w| w.get("id")))
+                .and_then(|i| i.as_str())
+        })
+        .map(|s| s.to_string())
+        .unwrap_or_else(generate_id);
+    execute_workflow_internal(state, id, body).await
+}
+
+fn parse_kernel_workflow(val: serde_json::Value, fallback_id: &str) -> Result<KernelWorkflow, String> {
+    let wf_val = if let Some(inner) = val.get("workflowData").cloned() {
+        inner
+    } else if let Some(inner) = val.get("workflow").cloned() {
+        inner
+    } else {
+        val
+    };
+
+    let mut normalized = wf_val;
+    if !normalized.is_object() {
+        return Err("Workflow data harus berupa JSON object".to_string());
+    }
+
+    let obj = normalized.as_object_mut().unwrap();
+    if !obj.contains_key("id") {
+        obj.insert("id".to_string(), serde_json::json!(fallback_id));
+    }
+    if !obj.contains_key("name") {
+        obj.insert("name".to_string(), serde_json::json!("Workflow"));
+    }
+    if !obj.contains_key("connections") {
+        obj.insert("connections".to_string(), serde_json::json!({}));
+    }
+
+    if let Some(nodes_arr) = obj.get_mut("nodes").and_then(|v| v.as_array_mut()) {
+        for node in nodes_arr {
+            if let Some(node_obj) = node.as_object_mut() {
+                if !node_obj.contains_key("position") || !node_obj["position"].is_array() {
+                    node_obj.insert("position".to_string(), serde_json::json!([0.0, 0.0]));
+                }
+                if !node_obj.contains_key("id") {
+                    let name = node_obj.get("name").and_then(|n| n.as_str()).unwrap_or("node");
+                    node_obj.insert("id".to_string(), serde_json::json!(format!("id-{}", name)));
+                }
+                if !node_obj.contains_key("typeVersion") {
+                    node_obj.insert("typeVersion".to_string(), serde_json::json!(1.0));
+                }
+            }
+        }
+    } else {
+        obj.insert("nodes".to_string(), serde_json::json!([]));
+    }
+
+    KernelWorkflow::from_wire(&normalized)
+        .map_err(|e| format!("Gagal mendeserialisasi workflow ke KernelWorkflow: {}", e))
 }
 
 async fn execute_workflow_internal(
@@ -1043,98 +1120,245 @@ async fn execute_workflow_internal(
     let start_time = Utc::now();
     let start_str = start_time.to_rfc3339();
 
-    // Broadcast executionStarted via WebSocket
+    // 1. Ambil workflow JSON dari payload atau database
+    let workflow_json: Option<serde_json::Value> = if let Some(Json(ref payload)) = body {
+        if payload.get("workflowData").is_some()
+            || payload.get("workflow").is_some()
+            || payload.get("nodes").is_some()
+        {
+            Some(payload.clone())
+        } else {
+            state.db.get_workflow_raw(&id).await.unwrap_or(None)
+        }
+    } else {
+        state.db.get_workflow_raw(&id).await.unwrap_or(None)
+    };
+
+    let workflow_json = if workflow_json.is_none() {
+        state
+            .db
+            .get_workflow(&id)
+            .await
+            .ok()
+            .flatten()
+            .and_then(|w| serde_json::to_value(w).ok())
+    } else {
+        workflow_json
+    };
+
+    let Some(raw_wf) = workflow_json else {
+        return (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({
+                "error": format!("Workflow dengan ID '{}' tidak ditemukan", id)
+            })),
+        );
+    };
+
+    // 2. Deserialisasi ke KernelWorkflow (n8n_workflow::Workflow)
+    let workflow = match parse_kernel_workflow(raw_wf, &id) {
+        Ok(w) => w,
+        Err(err) => {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(serde_json::json!({
+                    "error": err
+                })),
+            );
+        }
+    };
+
+    // 3. Ekstraksi initial_data dari payload jika ada
+    let initial_data: Option<Vec<INodeExecutionData>> = body.as_ref().and_then(|Json(b)| {
+        let data_val = b
+            .get("triggerData")
+            .or_else(|| b.get("data"))
+            .or_else(|| b.get("inputData"));
+
+        data_val.map(|dv| {
+            if let Some(arr) = dv.as_array() {
+                arr.iter()
+                    .map(|item| {
+                        if item.get("json").is_some() {
+                            serde_json::from_value(item.clone()).unwrap_or_else(|_| INodeExecutionData {
+                                json: item.clone(),
+                                binary: None,
+                                paired_item: None,
+                            })
+                        } else {
+                            INodeExecutionData {
+                                json: item.clone(),
+                                binary: None,
+                                paired_item: None,
+                            }
+                        }
+                    })
+                    .collect()
+            } else {
+                vec![INodeExecutionData {
+                    json: dv.clone(),
+                    binary: None,
+                    paired_item: None,
+                }]
+            }
+        })
+    });
+
+    // 4. Inisialisasi ExecutionContext dan KernelScheduler
+    let push_ref = body.as_ref().and_then(|Json(b)| {
+        b.get("pushRef")
+            .or_else(|| b.get("push_ref"))
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+    });
+
+    let session_registry = Arc::new(state.realtime_registry.clone());
+    let mut ctx = ExecutionContext::new(id.clone(), ExecutionMode::Manual)
+        .with_run_id(exec_id.clone())
+        .with_realtime_sessions(session_registry.clone());
+
+    if let Some(ref p_ref) = push_ref {
+        ctx = ctx.with_push_ref(p_ref);
+    }
+
+    let context = Arc::new(ctx);
+    let scheduler = KernelScheduler::default();
+
+    // 5. Broadcast lifecycle executionStarted via EventBus & internal event sender
     let _ = state.event_sender.send(ExecutionEvent::WorkflowStarted {
         workflow_id: id.clone(),
         execution_id: exec_id.clone(),
         started_at: start_str.clone(),
     });
 
-    // Ambil workflow dari payload atau DB
-    let workflow_opt: Option<Workflow> = if let Some(Json(ref payload)) = body {
-        if let Some(wf_data) = payload.get("workflowData") {
-            serde_json::from_value(wf_data.clone()).ok()
-        } else {
-            state.db.get_workflow(&id).await.unwrap_or(None)
-        }
-    } else {
-        state.db.get_workflow(&id).await.unwrap_or(None)
-    };
+    // 6. Jalankan scheduler.execute(&workflow, initial_data, &context).await
+    let exec_res = scheduler.execute(&workflow, initial_data, &context).await;
 
-    if let Some(workflow) = workflow_opt {
-        let dag = WorkflowGraph::build(&workflow);
-        let executor = WorkflowExecutor::new(dag)
-            .with_events(state.event_sender.clone(), id.clone(), exec_id.clone());
+    match exec_res {
+        Ok(result) => {
+            let status_str = match result.status {
+                WorkflowExecutionStatus::Success => "success",
+                WorkflowExecutionStatus::Failed => "error",
+                WorkflowExecutionStatus::Cancelled => "crashed",
+            };
 
-        let res = executor.execute().await;
-        let stop_time = Utc::now();
-        let stop_str = stop_time.to_rfc3339();
-        let duration = (stop_time - start_time).num_milliseconds() as u64;
+            // Susun format n8n-compatible runData
+            let mut run_data = serde_json::Map::new();
+            for (name, frame) in &result.frames {
+                let mut task_run = serde_json::Map::new();
+                if let Some(st) = frame.start_time {
+                    task_run.insert(
+                        "startTime".to_string(),
+                        serde_json::json!(st.timestamp_millis()),
+                    );
+                }
+                if let Some(dur) = frame.execution_time_ms {
+                    task_run.insert("executionTime".to_string(), serde_json::json!(dur));
+                }
+                let mut data_map = serde_json::Map::new();
+                if let Some(ref out_data) = frame.output_data {
+                    data_map.insert(
+                        "main".to_string(),
+                        serde_json::to_value(out_data).unwrap_or(serde_json::json!([])),
+                    );
+                }
+                task_run.insert("data".to_string(), serde_json::Value::Object(data_map));
+                if let Some(ref err) = frame.error {
+                    task_run.insert("error".to_string(), serde_json::json!({ "message": err }));
+                }
+                run_data.insert(name.clone(), serde_json::json!([task_run]));
+            }
 
-        match res {
-            Ok(results) => {
-                let res_val = serde_json::to_value(&results).unwrap_or_default();
-                let _ = state.db.save_execution(
-                    &exec_id,
-                    &id,
-                    "success",
-                    &res_val,
+            let result_data = serde_json::json!({
+                "resultData": {
+                    "runData": run_data
+                }
+            });
+
+            let stop_str = result.end_time.to_rfc3339();
+
+            // Simpan riwayat eksekusi ke database
+            let _ = state
+                .db
+                .save_execution(
+                    &result.execution_id,
+                    &result.workflow_id,
+                    status_str,
+                    &result_data,
                     &start_str,
                     Some(&stop_str),
-                ).await;
+                )
+                .await;
 
+            if result.status == WorkflowExecutionStatus::Success {
                 let _ = state.event_sender.send(ExecutionEvent::WorkflowCompleted {
-                    workflow_id: id.clone(),
-                    execution_id: exec_id.clone(),
+                    workflow_id: result.workflow_id.clone(),
+                    execution_id: result.execution_id.clone(),
                     status: "success".to_string(),
-                    duration_ms: duration,
-                    results: res_val.clone(),
+                    duration_ms: result.duration_ms,
+                    results: result_data.clone(),
                 });
+            } else {
+                let _ = state.event_sender.send(ExecutionEvent::WorkflowFailed {
+                    workflow_id: result.workflow_id.clone(),
+                    execution_id: result.execution_id.clone(),
+                    error: result
+                        .error
+                        .clone()
+                        .unwrap_or_else(|| "Workflow execution failed".to_string()),
+                });
+            }
 
-                return (StatusCode::OK, Json(serde_json::json!({
+            let response_payload = serde_json::json!({
+                "data": {
+                    "id": result.execution_id,
+                    "executionId": result.execution_id,
+                    "workflowId": result.workflow_id,
+                    "status": status_str,
+                    "finished": true,
+                    "mode": "manual",
+                    "startedAt": start_str,
+                    "stoppedAt": stop_str,
+                    "durationMs": result.duration_ms,
+                    "frames": result.frames,
+                    "error": result.error,
                     "data": {
-                        "executionId": exec_id,
-                        "status": "success",
-                        "finished": true,
-                        "data": {
-                            "resultData": {
-                                "runData": res_val
-                            }
+                        "resultData": {
+                            "runData": run_data
                         }
                     }
-                })));
-            }
-            Err(err) => {
-                let err_val = serde_json::json!({ "error": err.clone() });
-                let _ = state.db.save_execution(
-                    &exec_id,
-                    &id,
-                    "error",
-                    &err_val,
-                    &start_str,
-                    Some(&stop_str),
-                ).await;
+                }
+            });
 
-                let _ = state.event_sender.send(ExecutionEvent::WorkflowFailed {
-                    workflow_id: id.clone(),
-                    execution_id: exec_id.clone(),
-                    error: err.clone(),
-                });
+            let status_code = if result.status == WorkflowExecutionStatus::Failed {
+                StatusCode::INTERNAL_SERVER_ERROR
+            } else {
+                StatusCode::OK
+            };
 
-                return (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({
+            (status_code, Json(response_payload))
+        }
+        Err(err) => {
+            let err_msg = format!("DAG Execution Plan Error: {}", err);
+            let _ = state.event_sender.send(ExecutionEvent::WorkflowFailed {
+                workflow_id: id.clone(),
+                execution_id: exec_id.clone(),
+                error: err_msg.clone(),
+            });
+
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(serde_json::json!({
                     "data": {
                         "executionId": exec_id,
                         "status": "error",
-                        "error": err
+                        "finished": true,
+                        "error": err_msg
                     }
-                })));
-            }
+                })),
+            )
         }
     }
-
-    (StatusCode::BAD_REQUEST, Json(serde_json::json!({
-        "error": "Workflow tidak valid atau tidak ditemukan"
-    })))
 }
 
 // ==========================================

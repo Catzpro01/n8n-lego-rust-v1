@@ -12,11 +12,13 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 async-trait = "0.1"
-tokio = { version = "1.0", features = ["sync", "time", "macros", "rt", "rt-multi-thread"] }
+tokio = { version = "1.0", features = ["sync", "time", "macros", "rt", "rt-multi-thread", "fs", "io-util"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
 petgraph = { workspace = true }
 indexmap = { workspace = true }
+reqwest = { version = "0.12", features = ["json"], default-features = false }
+base64 = "0.22"
 
 # LEGO internal crates
 n8n-common = { path = "../n8n-common" }

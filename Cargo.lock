@@ -824,6 +824,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "base64 0.22.1",
  "chrono",
  "indexmap",
  "n8n-binary-data",
@@ -839,6 +840,7 @@ dependencies = [
  "n8n-subworkflow",
  "n8n-workflow",
  "petgraph",
+ "reqwest",
  "serde",
  "serde_json",
  "thiserror",

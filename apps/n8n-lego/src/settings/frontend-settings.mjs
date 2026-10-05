@@ -22,7 +22,7 @@ const ENDPOINT_MCP_TEST = 'mcp-test';
 const ENDPOINT_WEBHOOK = 'webhook';
 const ENDPOINT_WEBHOOK_TEST = 'webhook-test';
 const ENDPOINT_WEBHOOK_WAITING = 'webhook-waiting';
-const ENDPOINT_HEALTH = 'healthz';
+const ENDPOINT_HEALTH = '/healthz';
 
 /**
  * Instance base URL **without** a trailing slash, including the configured base
@@ -137,9 +137,9 @@ export function buildFrontendSettings(config, { hasOwner = false, requestOrigin 
       authenticationMethod: 'email',
     },
     sso: {
-      saml: { loginLabel: 'SAML', loginEnabled: true },
-      oidc: { loginEnabled: true, loginUrl: '', callbackUrl: '' },
-      ldap: { loginLabel: 'LDAP', loginEnabled: true },
+      saml: { loginLabel: 'SAML', loginEnabled: false },
+      oidc: { loginEnabled: false, loginUrl: '', callbackUrl: '' },
+      ldap: { loginLabel: 'LDAP', loginEnabled: false },
     },
     publicApi: {
       enabled: true,

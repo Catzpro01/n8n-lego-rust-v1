@@ -196,3 +196,174 @@ async fn test_modular_sqlite_node() {
 
     let _ = std::fs::remove_file(db_path);
 }
+
+#[tokio::test]
+async fn test_kernel_workflow_execution_via_server_router() {
+    use axum::body::Body;
+    use axum::http::{Request, StatusCode};
+    use tower::ServiceExt;
+    use tokio::sync::mpsc;
+    use tokio::sync::broadcast;
+
+    let db = crate::db::Database::init("sqlite::memory:")
+        .await
+        .expect("Database memory init harus sukses");
+    let (event_sender, _) = broadcast::channel(32);
+    let realtime_registry = n8n_realtime::SessionRegistry::new();
+
+    // Daftarkan sesi realtime client dengan pushRef 'sess-kernel-test'
+    let (tx_realtime, mut rx_realtime) = mpsc::unbounded_channel();
+    realtime_registry
+        .register("sess-kernel-test".to_string(), "user-test".to_string(), tx_realtime)
+        .await;
+
+    let state = crate::server::AppState {
+        db,
+        event_sender,
+        realtime_registry,
+    };
+
+    let router = crate::server::create_router(state);
+
+    let payload = serde_json::json!({
+        "pushRef": "sess-kernel-test",
+        "workflowData": {
+            "id": "wf-kernel-exec-1",
+            "name": "Kernel End-to-End Test",
+            "nodes": [
+                {
+                    "id": "node-start",
+                    "name": "Start",
+                    "type": "n8n-nodes-base.start",
+                    "position": [0.0, 0.0]
+                },
+                {
+                    "id": "node-set",
+                    "name": "SetValues",
+                    "type": "n8n-nodes-base.set",
+                    "position": [100.0, 0.0],
+                    "parameters": {
+                        "values": {
+                            "service": "n8n-runtime-kernel",
+                            "engine": "rust-async-dag"
+                        }
+                    }
+                }
+            ],
+            "connections": {
+                "Start": {
+                    "main": [[{ "node": "SetValues", "type": "main", "index": 0 }]]
+                }
+            }
+        }
+    });
+
+    let request = Request::builder()
+        .method("POST")
+        .uri("/rest/workflows/wf-kernel-exec-1/run")
+        .header("content-type", "application/json")
+        .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+        .unwrap();
+
+    let response = router.clone().oneshot(request).await.expect("Request execution harus sukses");
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body_bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
+        .await
+        .expect("Membaca response body");
+    let json_resp: serde_json::Value = serde_json::from_slice(&body_bytes)
+        .expect("Response harus valid JSON");
+
+    // Verifikasi struktur JSON n8n-compatible
+    let data = &json_resp["data"];
+    assert_eq!(data["status"], "success");
+    assert_eq!(data["finished"], true);
+    assert_eq!(data["workflowId"], "wf-kernel-exec-1");
+    assert!(data["durationMs"].is_number());
+    assert_eq!(data["frames"]["SetValues"]["status"], "completed");
+
+    let run_data = &data["data"]["resultData"]["runData"];
+    assert!(run_data["SetValues"].is_array());
+    let set_output = &run_data["SetValues"][0]["data"]["main"][0][0]["json"];
+    assert_eq!(set_output["service"], "n8n-runtime-kernel");
+    assert_eq!(set_output["engine"], "rust-async-dag");
+
+    // Verifikasi event realtime yang terkirim melalui SessionRegistry
+    let mut realtime_events = Vec::new();
+    while let Ok(msg) = rx_realtime.try_recv() {
+        realtime_events.push(msg);
+    }
+
+    assert!(
+        realtime_events.iter().any(|msg| msg.contains("executionStarted")),
+        "Harus ada event realtime executionStarted"
+    );
+    assert!(
+        realtime_events.iter().any(|msg| msg.contains("nodeExecuteBefore")),
+        "Harus ada event realtime nodeExecuteBefore"
+    );
+    assert!(
+        realtime_events.iter().any(|msg| msg.contains("executionFinished")),
+        "Harus ada event realtime executionFinished"
+    );
+}
+
+#[tokio::test]
+async fn test_kernel_workflow_execution_via_api_v1_executions() {
+    use axum::body::Body;
+    use axum::http::{Request, StatusCode};
+    use tower::ServiceExt;
+    use tokio::sync::broadcast;
+
+    let db = crate::db::Database::init("sqlite::memory:")
+        .await
+        .expect("Database memory init harus sukses");
+    let (event_sender, _) = broadcast::channel(32);
+    let realtime_registry = n8n_realtime::SessionRegistry::new();
+
+    let state = crate::server::AppState {
+        db,
+        event_sender,
+        realtime_registry,
+    };
+
+    let router = crate::server::create_router(state);
+
+    let payload = serde_json::json!({
+        "workflowId": "wf-v1-api",
+        "workflowData": {
+            "id": "wf-v1-api",
+            "name": "API v1 Endpoint Test",
+            "nodes": [
+                {
+                    "id": "v1-start",
+                    "name": "Start",
+                    "type": "n8n-nodes-base.start",
+                    "position": [0.0, 0.0]
+                }
+            ],
+            "connections": {}
+        }
+    });
+
+    let request = Request::builder()
+        .method("POST")
+        .uri("/api/v1/executions")
+        .header("content-type", "application/json")
+        .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+        .unwrap();
+
+    let response = router.oneshot(request).await.expect("Request api/v1/executions harus sukses");
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body_bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
+        .await
+        .expect("Membaca response body");
+    let json_resp: serde_json::Value = serde_json::from_slice(&body_bytes)
+        .expect("Response harus valid JSON");
+
+    assert_eq!(json_resp["data"]["status"], "success");
+    assert_eq!(json_resp["data"]["finished"], true);
+    assert_eq!(json_resp["data"]["workflowId"], "wf-v1-api");
+}
+

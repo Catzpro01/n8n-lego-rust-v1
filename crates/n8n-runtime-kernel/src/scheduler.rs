@@ -88,6 +88,18 @@ impl KernelScheduler {
         Self { options }
     }
 
+    /// Executes a workflow using default KernelNodeExecutor and ExecutionJournal.
+    pub async fn execute(
+        &self,
+        workflow: &Workflow,
+        initial_data: Option<Vec<INodeExecutionData>>,
+        context: &Arc<ExecutionContext>,
+    ) -> Result<WorkflowExecutionResult, PlanError> {
+        let executor = Arc::new(crate::executor::KernelNodeExecutor::new());
+        let journal = Arc::new(crate::journal::ExecutionJournal::new());
+        self.execute_workflow(workflow, initial_data, Arc::clone(context), executor, journal).await
+    }
+
     /// Executes a workflow end-to-end asynchronously.
     pub async fn execute_workflow(
         &self,

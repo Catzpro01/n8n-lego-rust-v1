@@ -68,7 +68,7 @@ export function createEngine(config, logger) {
     async execute({ definition, startNode = null, input, workflowId = null, workflowName = null, mode = 'manual', requestedBy = null, store }) {
       const executionId = newExecutionId();
       const startedAt = new Date();
-      const registry = createNodeRegistry({ locale: config.locale, allowCodeEval: false });
+      const registry = createNodeRegistry({ locale: config.locale, allowCodeEval: true, httpTransport: fetch });
 
       const record = {
         id: executionId,

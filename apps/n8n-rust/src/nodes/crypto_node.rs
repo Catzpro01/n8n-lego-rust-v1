@@ -33,7 +33,7 @@ impl N8nNode for CryptoNode {
             let target_field = ctx.parameters.get("dataPropertyName")
                 .or_else(|| ctx.parameters.get("targetField"))
                 .and_then(|v| v.as_str())
-                .unwrap_or("data")
+                .unwrap_or(if action == "uuid" || action == "generateUuid" { "uuid" } else { "data" })
                 .to_string();
 
             let algorithm = ctx.parameters.get("type")
@@ -75,6 +75,7 @@ impl N8nNode for CryptoNode {
                                 format!("{:x}", hasher.finalize())
                             }
                         };
+                        out_obj.insert("hash".to_string(), Value::String(hashed.clone()));
                         out_obj.insert(target_field.clone(), Value::String(hashed));
                     }
                     "base64_encode" | "encodeBase64" => {

@@ -21,6 +21,8 @@
  * explicit 501 "unsupported".
  */
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { stringify as flattedStringify } from 'flatted';
 import { HttpError, badRequest, notFound } from '../compat/error.mjs';
 import { sendBare, sendData, sendJson } from '../compat/response.mjs';
 import { requireUser } from '../compat/auth-context.mjs';
@@ -477,7 +479,7 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
         const last = ctx.store.executions
           .filter((execution) => execution.workflowId === ctx.params.workflowId && execution.status === 'success')
           .sort((a, b) => b.id - a.id)[0];
-        sendData(ctx.res, last ? { ...executionSummary(last), data: last.data ?? {} } : null);
+        sendData(ctx.res, last ? { ...executionSummary(last), data: flattedStringify(last.data ?? {}) } : null);
       },
     },
     {
@@ -518,7 +520,7 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
         if (!execution) throw notFound('Execution not found');
         sendData(ctx.res, {
           ...executionSummary(execution),
-          data: execution.data ?? {},
+          data: flattedStringify(execution.data ?? {}),
           workflowData: execution.workflowData ?? null,
         });
       },
@@ -803,6 +805,7 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
       handler: (ctx) =>
         sendData(ctx.res, {
           count: 0,
+          data: [],
           dataTables: [],
         }),
     },
@@ -894,6 +897,160 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
       handler: (ctx) => {
         requireUser(ctx);
         sendData(ctx.res, { enabled: false });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/projects/:projectId',
+      handler: (ctx) => {
+        const user = requireUser(ctx);
+        sendData(ctx.res, personalProject(user));
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/projects/:projectId/data-tables',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { count: 0, data: [], dataTables: [] });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/options/timezones',
+      public: true,
+      handler: (ctx) => {
+        try {
+          const tzPath = new URL('../timezones.json', import.meta.url);
+          const raw = readFileSync(tzPath, 'utf8');
+          sendJson(ctx.res, 200, JSON.parse(raw), { 'cache-control': 'public, max-age=3600' });
+        } catch {
+          sendData(ctx.res, { 'Asia/Jakarta': 'Asia/Jakarta', 'UTC': 'UTC' });
+        }
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/breaking-changes/report',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, {
+          report: {
+            instanceResults: [],
+            workflowResults: [],
+            version: 'v3',
+            generatedAt: new Date().toISOString(),
+          },
+        });
+      },
+    },
+    {
+      method: 'POST',
+      path: '/rest/breaking-changes/report/refresh',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, {
+          report: {
+            instanceResults: [],
+            workflowResults: [],
+            version: 'v3',
+            generatedAt: new Date().toISOString(),
+          },
+        });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/community-packages',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, []);
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/insights/summary',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, {
+          total: { value: 0, deviation: null, unit: 'count' },
+          failed: { value: 0, deviation: null, unit: 'count' },
+          failureRate: { value: 0, deviation: null, unit: 'ratio' },
+          timeSaved: { value: 0, deviation: null, unit: 'minute' },
+          averageRunTime: { value: 0, deviation: null, unit: 'millisecond' },
+        });
+      },
+    },
+    {
+      method: 'POST',
+      path: '/rest/dynamic-node-parameters/options',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { data: [] });
+      },
+    },
+    {
+      method: 'POST',
+      path: '/rest/dynamic-node-parameters/resource-locator-results',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { data: [] });
+      },
+    },
+    {
+      method: 'POST',
+      path: '/rest/dynamic-node-parameters/resource-mapper-fields',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { data: [] });
+      },
+    },
+    {
+      method: 'POST',
+      path: '/rest/dynamic-node-parameters/action-result',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { data: [] });
+      },
+    },
+    {
+      method: 'POST',
+      path: '/rest/me/survey',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { success: true });
+      },
+    },
+    {
+      method: 'PATCH',
+      path: '/rest/user-settings/nps-survey',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { success: true });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/sso/provisioning/config',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, {});
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/ai/build/credits',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { credits: 999999 });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/settings/security',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, { blockFileAccessToN8nFiles: false });
       },
     },
   ];

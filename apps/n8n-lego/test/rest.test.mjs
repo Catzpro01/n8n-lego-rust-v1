@@ -8,7 +8,7 @@
  */
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +20,9 @@ import { startServer } from '../src/server.mjs';
  * points the server at the checkout's copy and keeps every other file it writes
  * inside a throwaway directory.
  */
-const REPO_CATALOG = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'data', 'n8n-lego', 'catalog');
+const CANDIDATE_CATALOG_1 = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'data', 'lego', 'catalog');
+const CANDIDATE_CATALOG_2 = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'data', 'n8n-lego', 'catalog');
+const REPO_CATALOG = existsSync(CANDIDATE_CATALOG_1) ? CANDIDATE_CATALOG_1 : CANDIDATE_CATALOG_2;
 const USER_FOLDER = mkdtempSync(join(tmpdir(), 'n8n-lego-test-'));
 
 let base;
@@ -210,7 +212,9 @@ test('workflow CRUD + manual execution', async () => {
 
   const execution = await api('GET', `/rest/executions/${executionId}`);
   assert.equal(execution.status, 200);
-  const runData = execution.json.data.data.resultData.runData;
+  const { parse: flattedParse } = await import('flatted');
+  const executionData = typeof execution.json.data.data === 'string' ? flattedParse(execution.json.data.data) : execution.json.data.data;
+  const runData = executionData.resultData.runData;
   assert.deepEqual(Object.keys(runData), ['Manual', 'Edit Fields']);
   assert.deepEqual(runData['Edit Fields'][0].data.main[0][0].json, { status: 'ok' });
 

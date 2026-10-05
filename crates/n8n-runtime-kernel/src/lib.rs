@@ -6,6 +6,7 @@
 pub mod context;
 pub mod executor;
 pub mod frame;
+pub mod integration_ir;
 pub mod journal;
 pub mod plan;
 pub mod scheduler;
@@ -13,7 +14,14 @@ pub mod scheduler;
 pub use context::{ExecutionContext, ExecutionMode};
 pub use executor::{KernelExecutionError, KernelNodeExecutor, NodeExecutor};
 pub use frame::{ExecutionFrame, NodeExecutionStatus};
-pub use journal::{ExecutionJournal, JournalEntry, JournalStepType};
+pub use integration_ir::{
+    AuthResolver, AuthSpec, IntegrationError, IntegrationExecutor, IntegrationSpec,
+    PaginationPolicy, RateLimitPolicy, ResolvedAuth, ResponseExtractor,
+};
+pub use journal::{
+    ExecutionJournal, FileAppendJournalStorage, InMemoryJournalStorage, JournalEntry,
+    JournalError, JournalStepType, JournalStorage,
+};
 pub use plan::{ExecutionPlan, ExecutionStage, PlanEdge, PlanError};
 pub use scheduler::{
     KernelScheduler, SchedulerOptions, WorkflowExecutionResult, WorkflowExecutionStatus,
@@ -604,7 +612,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_compatibility_worker_queue_execution() {
-        let queue = Arc::new(n8n_queue::JobQueueEngine::new(5));
+        let queue = n8n_queue::JobQueueEngine::new(5);
         let executor = Arc::new(KernelNodeExecutor::new().with_queue(queue.clone()));
 
         // External compatibility node not in native registry
@@ -646,9 +654,174 @@ mod tests {
         let executor = KernelNodeExecutor::new();
         let context = ExecutionContext::new("wf-retry", ExecutionMode::Manual);
 
-        let res = executor.execute(&node, vec![], &context).await;
+        let input_item = INodeExecutionData {
+            json: json!({}),
+            binary: None,
+            paired_item: None,
+        };
+        let res = executor.execute(&node, vec![input_item], &context).await;
         assert!(res.is_ok());
         let outputs = res.unwrap();
         assert_eq!(outputs[0][0].json["done"], true);
+    }
+
+    #[tokio::test]
+    async fn test_declarative_http_request_node_integration() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let mut buf = [0u8; 1024];
+            let _ = socket.read(&mut buf).await.unwrap();
+
+            let body = serde_json::to_string(&json!([
+                { "id": 1, "name": "Item One" },
+                { "id": 2, "name": "Item Two" }
+            ])).unwrap();
+
+            let resp = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            );
+            socket.write_all(resp.as_bytes()).await.unwrap();
+        });
+
+        let node = make_test_node(
+            "FetchItems",
+            "n8n-nodes-base.httpRequest",
+            json!({
+                "url": format!("http://127.0.0.1:{}/api/items", port),
+                "method": "GET"
+            }),
+            json!({}),
+        );
+
+        let executor = KernelNodeExecutor::new();
+        let context = ExecutionContext::new("wf-http", ExecutionMode::Manual);
+        let input_item = INodeExecutionData {
+            json: json!({}),
+            binary: None,
+            paired_item: None,
+        };
+
+        let result = executor.execute(&node, vec![input_item], &context).await;
+        assert!(result.is_ok());
+        let outputs = result.unwrap();
+        assert_eq!(outputs.len(), 1);
+        assert_eq!(outputs[0].len(), 2);
+        assert_eq!(outputs[0][0].json["name"], "Item One");
+        assert_eq!(outputs[0][1].json["name"], "Item Two");
+    }
+
+    #[tokio::test]
+    async fn test_declarative_integration_spec_node_execution() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let mut buf = [0u8; 2048];
+            let n = socket.read(&mut buf).await.unwrap();
+            let req_str = String::from_utf8_lossy(&buf[..n]);
+
+            // Verify Bearer token was injected
+            assert!(req_str.contains("Authorization: Bearer secret-token-xyz") || req_str.contains("authorization: Bearer secret-token-xyz"));
+            // Verify path parameter was interpolated
+            assert!(req_str.contains("/users/user-42/profile"));
+
+            let body = serde_json::to_string(&json!({
+                "profile": {
+                    "userId": "user-42",
+                    "status": "active"
+                }
+            })).unwrap();
+
+            let resp = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            );
+            socket.write_all(resp.as_bytes()).await.unwrap();
+        });
+
+        let spec = IntegrationSpec::new("GET", format!("http://127.0.0.1:{}/users/{{userId}}/profile", port))
+            .with_auth(AuthSpec::Bearer { token_template: "{{authToken}}".to_string() })
+            .with_response_extractor(ResponseExtractor::new().with_root_path("profile"));
+
+        let node = make_test_node(
+            "UserProfile",
+            "custom.declarativeNode",
+            json!({
+                "integrationSpec": serde_json::to_value(spec).unwrap()
+            }),
+            json!({}),
+        );
+
+        let executor = KernelNodeExecutor::new();
+        let context = ExecutionContext::new("wf-spec", ExecutionMode::Manual);
+        let input_item = INodeExecutionData {
+            json: json!({
+                "userId": "user-42",
+                "authToken": "secret-token-xyz"
+            }),
+            binary: None,
+            paired_item: None,
+        };
+
+        let result = executor.execute(&node, vec![input_item], &context).await;
+        assert!(result.is_ok());
+        let outputs = result.unwrap();
+        assert_eq!(outputs[0][0].json["userId"], "user-42");
+        assert_eq!(outputs[0][0].json["status"], "active");
+    }
+
+    #[tokio::test]
+    async fn test_durable_journal_wal_recovery_after_restart() {
+        let temp_dir = std::env::temp_dir().join(format!("n8n_test_wal_restart_{}", uuid::Uuid::new_v4()));
+        let wal_path = temp_dir.join("execution.wal");
+
+        // 1. Initial process session: record steps and crash/drop
+        {
+            let journal = ExecutionJournal::open_file(&wal_path).await.unwrap();
+            journal.record_workflow_started("wf-restart", "run-101").await;
+            journal
+                .record_node_started("Compute", vec![vec![INodeExecutionData {
+                    json: json!({ "x": 10 }),
+                    binary: None,
+                    paired_item: None,
+                }]])
+                .await;
+            journal
+                .record_node_completed("Compute", vec![vec![INodeExecutionData {
+                    json: json!({ "x": 10, "result": 100 }),
+                    binary: None,
+                    paired_item: None,
+                }]], 25)
+                .await;
+            journal.checkpoint().await.unwrap();
+        }
+
+        // 2. Second process session: recovers entire journal state from WAL file
+        {
+            let restored = ExecutionJournal::open_file(&wal_path).await.unwrap();
+            assert_eq!(restored.count().await, 3);
+            assert!(restored.is_node_completed("Compute").await);
+
+            let out = restored.get_node_output("Compute").await.unwrap();
+            assert_eq!(out[0][0].json["result"], 100);
+
+            // Replay sequence: next step must follow monotonically
+            let complete_entry = restored.record_workflow_completed(120).await;
+            assert_eq!(complete_entry.step_id, 4);
+            assert_eq!(restored.count().await, 4);
+        }
+
+        let _ = tokio::fs::remove_dir_all(&temp_dir).await;
     }
 }

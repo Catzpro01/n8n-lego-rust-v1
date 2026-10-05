@@ -197,8 +197,12 @@ impl ExecutionContext {
 
     /// Pushes a message to the realtime WebSocket/SSE session if configured.
     pub async fn push_realtime(&self, message: PushMessage) {
-        if let (Some(registry), Some(push_ref)) = (&self.realtime_sessions, &self.push_ref) {
-            let _ = registry.send_to_one(push_ref, &message).await;
+        if let Some(registry) = &self.realtime_sessions {
+            if let Some(push_ref) = &self.push_ref {
+                let _ = registry.send_to_one(push_ref, &message).await;
+            } else {
+                registry.send_to_all(&message).await;
+            }
         }
     }
 }

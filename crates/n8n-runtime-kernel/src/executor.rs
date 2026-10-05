@@ -22,6 +22,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::context::ExecutionContext;
+use crate::integration_ir::{IntegrationExecutor, IntegrationSpec};
 
 /// Errors produced during node execution.
 #[derive(Debug, thiserror::Error)]
@@ -73,6 +74,8 @@ pub struct KernelNodeExecutor {
     pub circuit_breaker: Option<Arc<CircuitBreaker>>,
     /// Optional Subworkflow executor for child workflows.
     pub subworkflow_executor: Option<Arc<SubworkflowExecutor>>,
+    /// Declarative Integration IR executor for HTTP and SaaS requests.
+    pub integration_executor: Arc<IntegrationExecutor>,
 }
 
 impl Default for KernelNodeExecutor {
@@ -89,6 +92,7 @@ impl KernelNodeExecutor {
             queue_engine: None,
             circuit_breaker: None,
             subworkflow_executor: None,
+            integration_executor: Arc::new(IntegrationExecutor::new()),
         }
     }
 
@@ -113,6 +117,12 @@ impl KernelNodeExecutor {
     /// Sets Subworkflow Executor.
     pub fn with_subworkflow_executor(mut self, sub_exec: Arc<SubworkflowExecutor>) -> Self {
         self.subworkflow_executor = Some(sub_exec);
+        self
+    }
+
+    /// Sets Integration Executor.
+    pub fn with_integration_executor(mut self, executor: Arc<IntegrationExecutor>) -> Self {
+        self.integration_executor = executor;
         self
     }
 
@@ -307,6 +317,38 @@ impl KernelNodeExecutor {
                     });
                 }
             }
+        }
+
+        // 5b. Declarative Integration IR execution (SaaS & HTTP requests)
+        if let Some(spec) = IntegrationSpec::from_node(node) {
+            let mut all_outputs = Vec::new();
+            let items = if input.is_empty() {
+                vec![INodeExecutionData {
+                    json: serde_json::json!({}),
+                    binary: None,
+                    paired_item: None,
+                }]
+            } else {
+                input
+            };
+
+            for item in items {
+                let step_outputs = self
+                    .integration_executor
+                    .execute_spec(&spec, &item, &context.parameters)
+                    .await
+                    .map_err(|err| KernelExecutionError::NodeExecution {
+                        node_name: node.name.clone(),
+                        reason: err.to_string(),
+                    })?;
+                all_outputs.extend(step_outputs);
+            }
+
+            if let Some(breaker) = cb {
+                breaker.record_success();
+            }
+
+            return Ok(vec![all_outputs]);
         }
 
         // 6. Compatibility Worker via Queue Engine

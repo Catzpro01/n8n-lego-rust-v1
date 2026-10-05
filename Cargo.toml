@@ -34,7 +34,7 @@ serde_json = "1.0"
 thiserror = "1.0"
 anyhow = "1.0"
 petgraph = "0.6"
-indexmap = { version = "=2.2.6", features = ["serde"] }
+indexmap = { version = "2.2", features = ["serde"] }
 
 # Build profiles (recovered from arena-manager 50231cc0/c8dc8567, reviewed in TASK-0005):
 # smaller debug info for dev/test builds; optimise third-party dependencies, which compile once
