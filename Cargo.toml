@@ -10,6 +10,9 @@ members = [
     "crates/n8n-expression",
     "crates/n8n-nodes-rust",
 ]
+exclude = [
+    "apps/n8n-rust",
+]
 
 [workspace.package]
 version = "0.1.0"

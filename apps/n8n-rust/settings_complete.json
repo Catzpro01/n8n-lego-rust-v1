@@ -1,0 +1,264 @@
+{
+  "data": {
+    "settingsMode": "authenticated",
+    "inE2ETests": false,
+    "isDocker": false,
+    "databaseType": "sqlite",
+    "previewMode": false,
+    "endpointForm": "form",
+    "endpointFormTest": "form-test",
+    "endpointFormWaiting": "form-waiting",
+    "endpointMcp": "mcp",
+    "endpointMcpTest": "mcp-test",
+    "endpointWebhook": "webhook",
+    "endpointWebhookTest": "webhook-test",
+    "endpointWebhookWaiting": "webhook-waiting",
+    "endpointHealth": "/healthz",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": false,
+    "executionTimeout": -1,
+    "maxExecutionTimeout": 3600,
+    "workflowCallerPolicyDefaultOption": "workflowsFromSameOwner",
+    "excludeNodes": [
+      "n8n-nodes-base.executeCommand",
+      "n8n-nodes-base.localFileTrigger",
+      "n8n-nodes-base.e2eTest",
+      "n8n-nodes-base.dynamicCredentialCheck"
+    ],
+    "timezone": "America/New_York",
+    "urlBaseWebhook": "http://localhost:5678/",
+    "urlBaseEditor": "http://localhost:5678",
+    "urlBaseWebhookTest": "http://localhost:5678/",
+    "binaryDataMode": "filesystem",
+    "nodeJsVersion": "26.8.1",
+    "versionCli": "2.39.6",
+    "concurrency": -1,
+    "evaluationConcurrencyLimit": 1,
+    "authCookie": {
+      "secure": false
+    },
+    "releaseChannel": "dev",
+    "oauthCallbackUrls": {
+      "oauth1": "http://localhost:5680/rest/oauth1-credential/callback",
+      "oauth2": "http://localhost:5680/rest/oauth2-credential/callback"
+    },
+    "jwksUri": "http://localhost:5680/rest/.well-known/jwks.json",
+    "versionNotifications": {
+      "enabled": true,
+      "endpoint": "https://api.n8n.io/api/versions/",
+      "whatsNewEnabled": true,
+      "whatsNewEndpoint": "https://api.n8n.io/api/whats-new",
+      "infoUrl": "https://docs.n8n.io/hosting/installation/updating/"
+    },
+    "dynamicBanners": {
+      "endpoint": "https://api.n8n.io/api/banners",
+      "enabled": true,
+      "filters": {
+        "publishedWorkflowCount": 0
+      }
+    },
+    "instanceId": "rust-n8n-instance-v2",
+    "telemetry": {
+      "enabled": true,
+      "config": {
+        "key": "1zPn9bgWPzlQc0p8Gj1uiK6DOTn",
+        "url": "https://telemetry.n8n.io",
+        "proxy": "http://localhost:5680/rest/telemetry/proxy",
+        "sourceConfig": "http://localhost:5680/rest/telemetry/rudderstack"
+      }
+    },
+    "posthog": {
+      "enabled": true,
+      "apiHost": "https://ph.n8n.io",
+      "apiKey": "phc_kMstNfAgBcBkWSh6KdsgN09heqqNe5VNmalHP1Ni9Q4",
+      "autocapture": false,
+      "disableSessionRecording": true,
+      "proxy": "http://localhost:5680/rest/ph",
+      "debug": false
+    },
+    "personalizationSurveyEnabled": false,
+    "defaultLocale": "en",
+    "userManagement": {
+      "quota": -1,
+      "showSetupOnFirstLoad": false,
+      "smtpSetup": false,
+      "authenticationMethod": "email",
+      "passwordMinLength": 8
+    },
+    "sso": {
+      "managedByEnv": false,
+      "saml": {
+        "loginEnabled": false,
+        "loginLabel": ""
+      },
+      "ldap": {
+        "loginEnabled": false,
+        "loginLabel": ""
+      },
+      "oidc": {
+        "loginEnabled": false,
+        "loginUrl": "http://localhost:5680/rest/sso/oidc/login",
+        "callbackUrl": "http://localhost:5680/rest/sso/oidc/callback"
+      }
+    },
+    "logStreaming": {
+      "managedByEnv": false
+    },
+    "dataTables": {
+      "maxSize": 209715200
+    },
+    "publicApi": {
+      "enabled": true,
+      "latestVersion": 1,
+      "path": "api",
+      "swaggerUi": {
+        "enabled": true
+      }
+    },
+    "workflowTagsDisabled": false,
+    "workflowsAutosaveDisabled": false,
+    "useWorkflowPublicationService": false,
+    "logLevel": "info",
+    "hiringBannerEnabled": true,
+    "aiAssistant": {
+      "enabled": false,
+      "setup": false
+    },
+    "templates": {
+      "enabled": true,
+      "host": "https://api.n8n.io/api/"
+    },
+    "executionMode": "regular",
+    "isMultiMain": false,
+    "pushBackend": "websocket",
+    "communityNodesEnabled": true,
+    "unverifiedCommunityNodesEnabled": true,
+    "communityNodesManagedByEnv": false,
+    "deployment": {
+      "type": "default"
+    },
+    "allowedModules": {},
+    "enterprise": {
+      "sharing": true,
+      "ldap": true,
+      "saml": true,
+      "oidc": true,
+      "mfaEnforcement": true,
+      "logStreaming": true,
+      "advancedExecutionFilters": true,
+      "variables": true,
+      "sourceControl": true,
+      "auditLogs": true,
+      "externalSecrets": true,
+      "showNonProdBanner": false,
+      "debugInEditor": true,
+      "binaryDataS3": false,
+      "workerView": true,
+      "advancedPermissions": true,
+      "workflowDiffs": true,
+      "namedVersions": true,
+      "provisioning": true,
+      "projects": {
+        "team": {
+          "limit": -1
+        }
+      },
+      "customRoles": true,
+      "personalSpacePolicy": true,
+      "dataRedaction": true,
+      "otelCustomSpanAttributes": false,
+      "workflowReviews": true
+    },
+    "mfa": {
+      "enabled": true,
+      "enforced": false
+    },
+    "hideUsagePage": false,
+    "license": {
+      "planName": "Enterprise",
+      "environment": "production",
+      "consumerId": "rust-license-owner"
+    },
+    "variables": {
+      "limit": 1000
+    },
+    "banners": {
+      "dismissed": [
+        "V1"
+      ]
+    },
+    "askAi": {
+      "enabled": false
+    },
+    "aiBuilder": {
+      "enabled": false,
+      "setup": false
+    },
+    "aiCredits": {
+      "enabled": false,
+      "credits": 0,
+      "setup": false
+    },
+    "ai": {
+      "allowSendingParameterValues": true
+    },
+    "workflowHistory": {
+      "pruneTime": 24,
+      "licensePruneTime": 24
+    },
+    "pruning": {
+      "isEnabled": true,
+      "maxAge": 336,
+      "maxCount": 10000
+    },
+    "security": {
+      "blockFileAccessToN8nFiles": true,
+      "postMessageAllowedOrigins": []
+    },
+    "chatTrigger": {
+      "disablePublicChat": false
+    },
+    "easyAIWorkflowOnboarded": false,
+    "folders": {
+      "enabled": false
+    },
+    "workerPools": {
+      "enabled": false
+    },
+    "evaluation": {
+      "quota": 0,
+      "collectionsEnabled": false,
+      "configEvalsEnabled": false,
+      "agentEvalsEnabled": false
+    },
+    "activeModules": [
+      "workflow-builder",
+      "insights",
+      "community-packages",
+      "data-table",
+      "oauth-server",
+      "mcp",
+      "breaking-changes",
+      "chat-hub",
+      "quick-connect",
+      "favorites",
+      "redaction",
+      "instance-registry",
+      "otel",
+      "instance-version-history",
+      "encryption-key-manager",
+      "oauth-jwe",
+      "n8n-packages",
+      "runtime-credentials",
+      "mcp-registry",
+      "instance-ai"
+    ],
+    "canvasOnly": false,
+    "collaboration": {
+      "crdt": "off"
+    },
+    "envFeatureFlags": {}
+  }
+}

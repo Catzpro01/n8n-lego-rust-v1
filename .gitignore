@@ -1,64 +1,112 @@
-# dependencies
+# ==========================================
+# n8n Rust v4 Monorepo Git Ignore Policy
+# ==========================================
+
+# Dependencies & Build Artefacts
 node_modules/
 target/
+dist/
+*.tsbuildinfo
+__pycache__/
 
-# environment
+# Environment & Secret Files (Rule: Never commit credentials)
 .env
 .env.*
 !.env.example
 
-# generated / local-only artifacts
+# Runtime Databases & Local Data (Rule: Runtime state is strictly isolated from git)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.node
 
-# isolated unit produced by tools/workflow-isolation-extract.mjs (reproducible)
-packages/workflow-lego/.extract/
+# Instance Data Directories (Runtime directories for 5677, 5678, 5680 instances)
+# Each instance stores state locally in data/ but is never checked into git
+data/
+!data/
+data/*
+!data/lego/
+data/lego/*
+!data/lego/.gitkeep
+!data/rust/
+data/rust/*
+!data/rust/.gitkeep
+!data/reference/
+data/reference/*
+!data/reference/.gitkeep
+!data/test/
+data/test/*
+!data/test/.gitkeep
 
-# verification runtime (scripts/setup-reference-runtime.sh)
-.runtime/
+# Application Bundled Static Data Exceptions
+!apps/n8n-lego/data/
+apps/n8n-lego/data/*
+!apps/n8n-lego/data/roles.json
+!apps/n8n-lego/data/api-key-scopes.json
+!apps/n8n-lego/data/public-api-openapi.json
 
-# TypeScript baseline runtime (Worker 1 output + Worker 2 local state)
-apps/n8n-ts/dist/
-apps/n8n-ts/*.tsbuildinfo
-.runtime-ts/
-
-# misc
+# Local Logs & Temporary Directories
+logs/
 *.log
+tmp/
+.runtime/
+.runtime-ts/
+state/
+
+# System & OS Files
 .DS_Store
+Thumbs.db
 
-# agent-2: n8n reference build noise (local sandbox builds; reference/ itself is tracked per main convention)
-reference/**/dist/
-reference/**/.turbo/
-reference/**/coverage/
-__pycache__/
-
-# arena orchestration runtime
+# Arena Runtime State
 .arena/run/
 .arena/worker_logs/
 .arena/dispatch/
 .arena/results/
 .arena/processed/
-
-# typescript runtime (apps/n8n-ts) generated state
-data/
-logs/
-state/
-# ...except the app's bundled data: roles.json is a required runtime artifact for
-# npm/Docker/tarball installs (no reference/ checkout there), regenerated
-# deterministically from reference/n8n by apps/n8n-lego/scripts/fetch-n8n-roles.mjs.
-!apps/n8n-lego/data/
-# ...and inside it only the bundled catalog roles file is tracked.
-apps/n8n-lego/data/*
-!apps/n8n-lego/data/roles.json
-# P5.7: the API-key scope vocabulary, extracted by the same script from @n8n/permissions.
-!apps/n8n-lego/data/api-key-scopes.json
-# P5-M08: the /api/v1/openapi.yml spec of the mounted operations, derived from the
-# pinned upstream spec by apps/n8n-lego/scripts/extract-public-api-spec.py.
-!apps/n8n-lego/data/public-api-openapi.json
-apps/n8n-ts/.tsbuildinfo
-
-# release artifacts (scripts/release.sh)
-dist/
-
-# Runtime token material generated locally by tools/gateway/auth.py — never commit (RUNNER-PROTOCOL.md §9).
 .arena/gateway_tokens.json
-# workforce control-plane operational state (DEC-0002: never committed; heartbeats/leases are runtime)
 .arena/workforce-state/
+
+# Reference Upstream Noise
+reference/**/dist/
+reference/**/.turbo/
+reference/**/coverage/
+
+# Local Scratch, Migration Scripts & Temporary Files (Ignore from clean monorepo)
+*.rs.new
+code_node*.rs
+cron_node.rs
+crypto_node*.rs
+dynamic_integration_node.rs
+execute_workflow_node.rs
+function_item_node.rs
+http_request_node.rs
+if_node*.rs
+manual_trigger_node.rs
+merge_node.rs
+mod_full.rs
+noop_node.rs
+respond_webhook_node.rs
+schedule_trigger_node.rs
+server.rs
+set_node.rs
+split_node.rs
+switch_node.rs
+traits_full.rs
+wait_node.rs
+webhook_node.rs
+generate_nodes.js
+lokasi-file-dan-port-n8n.txt
+n8n-wsl
+universal-test-workflow.json
+sync_all_3_workflows.mjs
+test_all_instances.mjs
+check-users.mjs
+check_wf_*.mjs
+update_rust_official.mjs
+/n8n lego/
+/n8n-rust/
+runtime_registry.rs
+docs/architecture.md
