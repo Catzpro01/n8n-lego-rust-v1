@@ -1,0 +1,556 @@
+{
+  "foundationVersion": "1.0.0",
+  "phase": "P2.8-B",
+  "updated": "2026-09-22",
+  "owner": "manager",
+  "description": "Foundation 1.0 \u2014 the vocabulary every backend LEGO declares itself in. This file is DATA, not a framework: it fixes the legal values for communication modes, operation semantics, runtimes, trust, resources, portability, lifecycle and node-creation routes, so a domain card is machine-checkable and an AI agent can retrieve one small card instead of reading the repository. Nothing here executes; tools/lego/* enforce it and apps/n8n-lego/src/lego/foundation.mjs reads it.",
+  "principles": {
+    "contractAboveImplementation": "The stable contract exists ABOVE JS/Rust/WASM. Rust is an implementation choice, never a new architecture, protocol, contract system or reason to split services. Choosing Rust must never require a compiler on a user device or break JS/community-node compatibility.",
+    "cheapArchitecture": "The architecture itself must stay cheap: direct call -> explicit contract -> lazy runtime -> worker only when necessary. No HTTP between local LEGO, no message bus for appearance, no always-on daemons, no duplicated registries.",
+    "smallestViable": "Prefer the smallest implementation that satisfies the contract. Declarative and community-compatible routes win when they are cheaper overall.",
+    "lowEndFirst": "Core must remain usable on a laptop, a small VPS, Termux and Android: small RAM, few cores, local storage. Heavy capability must be remote-capable rather than mandatory."
+  },
+  "legoModel": {
+    "required": [
+      "id",
+      "owner",
+      "kind",
+      "status",
+      "contract",
+      "paths",
+      "dependsOn",
+      "capabilities",
+      "errorNamespace"
+    ],
+    "foundationFields": [
+      "parent",
+      "dataOwner",
+      "stateOwner",
+      "trust",
+      "resources",
+      "communication",
+      "operations",
+      "lifecyclePolicy",
+      "failureBoundary",
+      "requires"
+    ],
+    "tiers": [
+      "domain",
+      "feature",
+      "sub"
+    ],
+    "tierRule": "Domain LEGO -> Feature LEGO -> meaningful Sub-LEGO. Depth stays capped at 3 unless the Manager explicitly approves an exception. Not every function or helper becomes a LEGO: a LEGO earns its identity by owning a contract, data or state.",
+    "granularityTest": "If it has no independent contract, no independent owner and no independent lifecycle, it is a function \u2014 not a LEGO.",
+    "maxDepth": 3,
+    "attributes": [
+      "identity",
+      "parent",
+      "publicContract",
+      "privateImplementation",
+      "owner",
+      "dataOwner",
+      "stateOwner",
+      "capabilities",
+      "dependencies",
+      "version",
+      "lifecycle",
+      "tests",
+      "resources",
+      "trust",
+      "upgradePolicy"
+    ]
+  },
+  "communication": {
+    "modes": {
+      "call": {
+        "summary": "Synchronous direct contract call. The DEFAULT for in-process communication.",
+        "transport": "direct in-process function call, typed objects, no serialization",
+        "use": "everything, unless another mode is specifically justified"
+      },
+      "event": {
+        "summary": "Asynchronous notification that something occurred or state changed.",
+        "transport": "in-process emitter today; a worker boundary may serialize it later",
+        "use": "state changes other LEGOs may care about; never for request/response"
+      },
+      "stream": {
+        "summary": "Continuous, ordered flow of items with backpressure.",
+        "transport": "async iterator in-process; a framed channel across a worker boundary",
+        "use": "execution output, logs, chat/AI token streams, large result sets"
+      },
+      "batch": {
+        "summary": "Many logical operations carried in one call to amortise overhead.",
+        "transport": "same as call; the unit is an array of operations",
+        "use": "high-frequency small operations, especially across a future worker boundary"
+      }
+    },
+    "rules": [
+      "CALL is the default. A LEGO must not use EVENT or STREAM to avoid declaring a dependency.",
+      "No HTTP between local LEGO. HTTP appears only at a real process or trust boundary.",
+      "No message bus introduced to make the architecture look scalable.",
+      "A contract declares WHICH modes an operation supports; the transport is chosen by the host, not baked into the contract.",
+      "STREAM operations must declare a backpressure policy.",
+      "EVENT delivery is at-most-once in-process today; a consumer that needs durability must say so and is a P11 concern."
+    ],
+    "default": "call",
+    "defaultRule": "CALL is the default. Any other mode must be justified by the semantics of the operation, never by a wish to look distributed."
+  },
+  "transport": {
+    "neutralityRule": "A contract describes WHAT happens, not HOW it is transported. `execute(request)` must never become inherently `HTTP POST /execute`.",
+    "targets": [
+      "in-process-js",
+      "in-process-rust",
+      "wasm",
+      "worker",
+      "remote-api"
+    ],
+    "bindingRule": "Each target is a BINDING of the same logical contract. Adding a binding must never change the contract's operations, error codes or semantics.",
+    "serializationRule": "Direct in-process calls pass typed/structured objects with zero serialization. Only worker and remote bindings serialize, and only at the boundary."
+  },
+  "envelope": {
+    "summary": "A lightweight logical envelope carried alongside a request. Optional by design: a direct call may pass nothing, and an absent envelope must never change semantics.",
+    "fields": {
+      "legoId": "target LEGO identity",
+      "operation": "operation name on the contract",
+      "contractVersion": "version the caller was built against",
+      "requestId": "unique per request",
+      "correlationId": "groups related requests (one user action, one execution)",
+      "causationId": "identifies the immediate parent request that caused this one (a derived envelope defaults it to the parent requestId)",
+      "traceId": "distributed trace identity, for a future worker topology",
+      "actor": "security context: who is asking, with which scopes",
+      "deadline": "absolute epoch-ms after which the callee should stop",
+      "signal": "AbortSignal-shaped cancellation, in-process only",
+      "idempotencyKey": "de-duplication key for retryable, non-idempotent operations"
+    },
+    "costRule": "The envelope must impose no serialization cost on direct calls. It is a plain object passed by reference in-process, and only serialized at a worker/remote boundary \u2014 where `signal` is dropped and replaced by a cancellation message."
+  },
+  "operationSemantics": {
+    "idempotency": {
+      "values": [
+        "idempotent",
+        "non-idempotent",
+        "idempotent-with-key"
+      ],
+      "rule": "Any operation a worker or retry policy may re-issue must declare one of these. `idempotent-with-key` requires the envelope's idempotencyKey."
+    },
+    "determinism": {
+      "values": [
+        "deterministic",
+        "external-state-dependent",
+        "non-deterministic"
+      ],
+      "rule": "Determinism class decides whether an operation can be replayed and compared. It is the precondition for comparing a JS implementation against a future Rust one."
+    },
+    "atomicity": {
+      "values": [
+        "atomic",
+        "best-effort",
+        "retryable",
+        "compensatable"
+      ],
+      "rule": "Local transaction boundaries and compensation only. No distributed transactions."
+    },
+    "concurrency": {
+      "values": [
+        "parallel-safe",
+        "queueable",
+        "exclusive"
+      ],
+      "rule": "Metadata only. No global scheduler is created; the host may honour it when one exists."
+    },
+    "backpressure": {
+      "values": [
+        "block",
+        "buffer",
+        "batch",
+        "spill",
+        "drop",
+        "redirect-to-worker"
+      ],
+      "rule": "Declared per STREAM operation so no LEGO invents its own backpressure logic."
+    },
+    "cancellation": {
+      "rule": "Every potentially blocking operation must accept a deadline and a cancellation signal. No LEGO may wait indefinitely without a declared policy."
+    }
+  },
+  "trust": {
+    "levels": {
+      "core": {
+        "rank": 0,
+        "summary": "First-party infrastructure. May run in-process."
+      },
+      "verified": {
+        "rank": 1,
+        "summary": "Reviewed/signed third party. In-process where its capabilities allow."
+      },
+      "community": {
+        "rank": 2,
+        "summary": "Unreviewed community code. Restricted compatibility environment."
+      },
+      "untrusted": {
+        "rank": 3,
+        "summary": "Unknown or hostile. Sandbox or worker only."
+      }
+    },
+    "capabilities": [
+      "network",
+      "filesystem",
+      "subprocess",
+      "secrets",
+      "native",
+      "env"
+    ],
+    "rule": "Trust level and capabilities are SEPARATE. A high trust level never implicitly grants a capability; every capability is granted explicitly and is checked at the boundary.",
+    "defaultGrants": {
+      "core": [
+        "network",
+        "filesystem",
+        "subprocess",
+        "secrets",
+        "native",
+        "env"
+      ],
+      "verified": [
+        "network"
+      ],
+      "community": [],
+      "untrusted": []
+    }
+  },
+  "runtimes": {
+    "js-compat": {
+      "summary": "Compatibility runtime for existing n8n/community JavaScript nodes.",
+      "sandbox": "restricted",
+      "status": "the current and protected default",
+      "note": "Community nodes MUST keep loading. This runtime is why a node never has to be rewritten to keep working."
+    },
+    "rust-native": {
+      "summary": "Native Rust implementation behind the same contract.",
+      "sandbox": "native-where-safe",
+      "status": "planned \u2014 no implementation exists",
+      "note": "Ships as a PREBUILT artifact. A Rust compiler must never be required on a user device."
+    },
+    "wasm": {
+      "summary": "WASM module, portable and sandboxed by construction.",
+      "sandbox": "sandboxed",
+      "status": "planned \u2014 no implementation exists",
+      "note": "Preferred where portability or isolation matters more than peak speed."
+    },
+    "remote-worker": {
+      "summary": "Execution mode rather than a runtime: the same contract executed elsewhere.",
+      "sandbox": "process-isolated",
+      "status": "planned (P11)",
+      "note": "The escape hatch that lets a constrained device still offer a heavy node."
+    },
+    "selectionRule": "Runtime selection belongs to Node Runtime Resolution and is never mandatory for every node. A node declares what it NEEDS; the host decides what it GETS."
+  },
+  "portability": {
+    "profiles": [
+      "portable",
+      "network-required",
+      "filesystem-required",
+      "process-required",
+      "native-required",
+      "server-only",
+      "remote-capable"
+    ],
+    "rule": "A node may exist on a constrained device even when it must execute remotely \u2014 `remote-capable` is what makes Android/Termux viable without shrinking the catalog."
+  },
+  "resources": {
+    "classes": {
+      "cpu": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ],
+      "memory": [
+        "tiny",
+        "low",
+        "medium",
+        "high"
+      ],
+      "disk": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ],
+      "startup": [
+        "instant",
+        "fast",
+        "slow"
+      ]
+    },
+    "fields": [
+      "cpu",
+      "memory",
+      "disk",
+      "network",
+      "concurrency",
+      "startup"
+    ],
+    "rule": "Metadata and policy input, not a scheduler. It exists so the AI route decision and a future activation policy have real numbers instead of guesses."
+  },
+  "activation": {
+    "states": [
+      "available",
+      "loaded",
+      "active",
+      "idle",
+      "unloaded",
+      "disabled"
+    ],
+    "transitions": {
+      "available": [
+        "loaded",
+        "disabled"
+      ],
+      "loaded": [
+        "active",
+        "unloaded",
+        "disabled"
+      ],
+      "active": [
+        "idle",
+        "unloaded",
+        "disabled"
+      ],
+      "idle": [
+        "active",
+        "unloaded"
+      ],
+      "unloaded": [
+        "loaded",
+        "disabled",
+        "available"
+      ],
+      "disabled": [
+        "available"
+      ]
+    },
+    "rule": "Installed != loaded != active. Nothing is forced into RAM. This is the property that keeps the runtime usable on a low-end laptop, a small VPS, Termux and Android."
+  },
+  "failureBoundaries": {
+    "levels": [
+      "in-process-safe",
+      "sandboxed",
+      "worker-isolated"
+    ],
+    "rule": "A failure inside a dangerous or untrusted LEGO must never be able to take down trusted core infrastructure. Trust level and failure boundary are chosen together.",
+    "recoveryLifecycle": [
+      "failure",
+      "retry-if-safe",
+      "fallback-if-semantically-compatible",
+      "restart-implementation",
+      "move-to-worker-if-supported",
+      "disable-or-quarantine"
+    ],
+    "fallbackRule": "Fallback to another implementation is permitted ONLY when both implementations satisfy the same contract version \u2014 semantic compatibility is a contract statement, not a hope."
+  },
+  "state": {
+    "classes": {
+      "persistent": "survives restart; belongs to a data owner; must go through a storage contract",
+      "runtime": "lives for the process/session; must be explicitly declared",
+      "cache": "derivable and discardable; must declare TTL, scope and invalidation",
+      "configuration": "injected at the edge, never read from the environment inside a domain",
+      "derived": "computed from other state; never a source of truth"
+    },
+    "rules": [
+      "Every meaningful domain declares a dataOwner and a stateOwner.",
+      "No hidden global mutable state. Process-local state is legal only when classified as cache or runtime-transient.",
+      "Storage is an infrastructure contract \u2014 never a licence for one LEGO to reach into another LEGO's persistence internals.",
+      "A cache is owned. There is no universal global cache."
+    ]
+  },
+  "replay": {
+    "model": [
+      "capture",
+      "replay",
+      "compare"
+    ],
+    "rule": "Lightweight by design: capture the declared inputs and the determinism class, replay against another implementation, compare outputs. This is the mechanism that will validate a Rust implementation against the JS one. No time-travel infrastructure is built now.",
+    "comparableWhen": "determinism is `deterministic`, or `external-state-dependent` with its external reads captured"
+  },
+  "checkpoint": {
+    "policies": [
+      "off",
+      "smart",
+      "manual",
+      "always"
+    ],
+    "default": "off",
+    "rule": "Checkpointing is opt-in. Defaulting to `always` would grow disk without consent, which breaks the low-end promise."
+  },
+  "caching": {
+    "fields": [
+      "cacheable",
+      "ttl",
+      "scope",
+      "invalidation",
+      "owner"
+    ],
+    "scopes": [
+      "request",
+      "session",
+      "process",
+      "shared"
+    ],
+    "rule": "A cache declares its owner and invalidation. `shared` scope requires a storage contract, because a process-local cache is invisible to a second worker."
+  },
+  "observability": {
+    "boundaryFields": [
+      "legoId",
+      "version",
+      "contractVersion",
+      "operation",
+      "implementation",
+      "requestId",
+      "correlationId",
+      "durationMs",
+      "status"
+    ],
+    "rule": "Instrument LEGO BOUNDARIES only. Instrumenting every internal function is both a performance cost and a coupling risk."
+  },
+  "audit": {
+    "events": [
+      "contract-changed",
+      "ownership-changed",
+      "dependency-changed",
+      "implementation-changed",
+      "capability-changed",
+      "trust-policy-changed"
+    ],
+    "rule": "Audit records architectural change only. It is deliberately low-volume and is not application logging."
+  },
+  "rollout": {
+    "stages": [
+      "off",
+      "canary",
+      "gradual",
+      "full",
+      "rollback"
+    ],
+    "rule": "A future-neutral model for running an old and a new implementation side by side behind one contract. No feature-flag platform is installed; the stages are vocabulary the replacement lifecycle already supports.",
+    "precondition": "Both implementations satisfy the same contract version \u2014 otherwise it is a migration, not a rollout."
+  },
+  "deviceProfile": {
+    "fields": [
+      "cpuCores",
+      "memoryMb",
+      "diskMb",
+      "os",
+      "arch",
+      "gpu",
+      "network"
+    ],
+    "classes": {
+      "android-termux": {
+        "cpuCores": 4,
+        "memoryMb": 2048,
+        "arch": "arm64",
+        "network": "intermittent",
+        "note": "remote-capable nodes matter most here"
+      },
+      "low-end-vps": {
+        "cpuCores": 1,
+        "memoryMb": 1024,
+        "arch": "x64",
+        "network": "always",
+        "note": "the floor the core must fit inside"
+      },
+      "laptop": {
+        "cpuCores": 8,
+        "memoryMb": 16384,
+        "arch": "x64",
+        "network": "always"
+      },
+      "server": {
+        "cpuCores": 16,
+        "memoryMb": 65536,
+        "arch": "x64",
+        "network": "always"
+      }
+    },
+    "rule": "Used later by the AI route decision and by Execution to choose local vs WASM vs Rust vs remote. It is input to a policy, not a scheduler."
+  },
+  "glossary": {
+    "LEGO": "A unit of architecture with one owner, one reason to change, a public contract and a private implementation. Not every function is a LEGO.",
+    "Domain LEGO": "A top-level LEGO representing a bounded area of the system.",
+    "Feature LEGO": "A LEGO nested inside a domain, composed by its parent.",
+    "Sub-LEGO": "A LEGO nested inside a feature. Depth 3 is the cap unless the Manager approves an exception.",
+    "Public contract": "The only surface another LEGO may use. Stable, versioned, locked.",
+    "Private implementation": "Everything else. Replaceable at any time without a contract version change.",
+    "Contract version": "A promise. Major = breaking, minor = additive, patch = behaviour-preserving.",
+    "Contract lock": "The file recording each public contract's current version, so drift is mechanically detectable.",
+    "Envelope": "The metadata carried alongside every operation: identity, correlation, deadline, cancellation, idempotency, actor. Zero cost on direct in-process calls.",
+    "Transport neutrality": "The same logical contract works in-process, in a worker, over WASM or remotely. `execute(request)` must never become inherently `HTTP POST /execute`.",
+    "Capability": "A declared ability. Feature capabilities describe what a LEGO offers; security capabilities (network, filesystem, subprocess, secrets, native, env) must be granted explicitly.",
+    "Trust level": "How much the system believes in the code: core, verified, community, untrusted. Trust never implies a capability.",
+    "Failure boundary": "How far a failure can travel: in-process-safe, sandboxed, worker-isolated. Untrusted code must never be able to kill the trusted core.",
+    "Data owner": "The single LEGO that owns a dataset. Others read it through its contract, never through its persistence.",
+    "State class": "persistent, runtime, cache, configuration or derived. Unclassified hidden global state is forbidden.",
+    "Blast radius": "How many other LEGOs a change can reach. Drives test selection.",
+    "Strangler boundary": "The controlled edge around the legacy aggregate. It may shrink, never grow.",
+    "Quarantine": "The mandatory holding state for a failed or suspect node. Evidence before deletion.",
+    "Replay": "Capture inputs, replay them against another implementation, compare outputs. The mechanism that would make a JS-to-Rust swap provable.",
+    "Activation": "available -> loaded -> active -> idle -> unloaded -> disabled. Nothing is forced into RAM."
+  },
+  "minimalCore": {
+    "members": [
+      "contracts",
+      "registry",
+      "essential runtime",
+      "scheduler/execution primitives",
+      "storage abstraction"
+    ],
+    "rule": "The core is only these five. Everything else \u2014 nodes, chat, translation, AI providers, workers \u2014 is optional and loaded lazily. A feature that cannot be removed without breaking boot is a core member and must be justified as one.",
+    "test": "If the system cannot boot without it, it is core. If it can, it must not be in core."
+  },
+  "offlineReadiness": {
+    "targets": [
+      "laptop",
+      "low-end VPS",
+      "Termux",
+      "Android"
+    ],
+    "rules": [
+      "The system must start and run useful workflows with no network available.",
+      "No step of installation or execution may require a compiler on an end-user device.",
+      "Binary artifacts (Rust, WASM) are PREBUILT and downloaded per platform, or the feature degrades to a portable implementation.",
+      "A node that cannot run locally declares `remote-capable` rather than disappearing from the catalog.",
+      "Nothing is loaded into memory until it is activated."
+    ],
+    "artifactRule": "Portable build artifacts are a hard requirement for any native implementation. `isRustJustified()` refuses a migration without them."
+  },
+  "chatContract": {
+    "status": "reserved-not-implemented",
+    "shape": "Chat Contract \u251c native chat provider \u2514 Hermes provider",
+    "rule": "Hermes is a FUTURE OPTIONAL capability behind the Chat Contract. It must never become a core dependency, must never be required for boot, and no LEGO may import it directly \u2014 a consumer talks to the Chat Contract and neither knows nor cares which provider answers.",
+    "why": "Reserving the slot costs nothing and prevents the far more expensive mistake of wiring a specific provider into the core later.",
+    "notBuilt": "No chat provider, no Hermes integration and no translation LEGO exists. This is a named empty slot, deliberately."
+  },
+  "securityGate": {
+    "detections": [
+      "secret-in-contract",
+      "unauthorized-capability",
+      "undeclared-dependency",
+      "internal-bypass",
+      "data-owner-bypass",
+      "unsafe-runtime-capability",
+      "undeclared-external-endpoint",
+      "unrestricted-resource-access"
+    ],
+    "implementedNow": [
+      "secret-in-contract (F8)",
+      "undeclared-external-endpoint (F9)",
+      "unauthorized-capability (F4)",
+      "data-owner-bypass (F3)",
+      "undeclared-dependency (R4)",
+      "internal-bypass (R3)"
+    ],
+    "deferred": [
+      "unsafe-runtime-capability and unrestricted-resource-access need a runtime that does not exist yet"
+    ],
+    "rule": "Enforcement stays lightweight: cheap textual and manifest checks at contract boundaries. This is a gate, not a static analyser, and it must never become slow enough that people skip it."
+  }
+}

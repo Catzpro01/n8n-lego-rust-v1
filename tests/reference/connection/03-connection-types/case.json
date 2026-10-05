@@ -1,0 +1,315 @@
+{
+  "description": "Non-main connection types (ai_languageModel, ai_tool) and the ALL / ALL_NON_MAIN traversal filters.",
+  "nodes": [
+    {
+      "id": "Trigger",
+      "name": "Trigger",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "IF",
+      "name": "IF",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "A",
+      "name": "A",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "B",
+      "name": "B",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Merge",
+      "name": "Merge",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Loop",
+      "name": "Loop",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "End",
+      "name": "End",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Agent",
+      "name": "Agent",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Model",
+      "name": "Model",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Tool",
+      "name": "Tool",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Sparse",
+      "name": "Sparse",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "A",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "B",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "A": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "End": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sparse": {
+      "main": [
+        [],
+        null,
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "probes": [
+    {
+      "name": "byDest Agent (all types)",
+      "op": "byDestination",
+      "node": "Agent"
+    },
+    {
+      "name": "parents Agent main",
+      "op": "getParentNodes",
+      "node": "Agent",
+      "type": "main"
+    },
+    {
+      "name": "parents Agent ai_tool",
+      "op": "getParentNodes",
+      "node": "Agent",
+      "type": "ai_tool"
+    },
+    {
+      "name": "parents Agent ALL_NON_MAIN",
+      "op": "getParentNodes",
+      "node": "Agent",
+      "type": "ALL_NON_MAIN"
+    },
+    {
+      "name": "parents Agent ALL",
+      "op": "getParentNodes",
+      "node": "Agent",
+      "type": "ALL"
+    },
+    {
+      "name": "children Tool main (none)",
+      "op": "getChildNodes",
+      "node": "Tool",
+      "type": "main"
+    },
+    {
+      "name": "children Tool ai_tool",
+      "op": "getChildNodes",
+      "node": "Tool",
+      "type": "ai_tool"
+    },
+    {
+      "name": "parent main-input node of Tool (sub-node -> itself)",
+      "op": "wf.getParentMainInputNode",
+      "node": "Tool"
+    },
+    {
+      "name": "hasPath Model->Agent ignores non-main",
+      "op": "hasPath",
+      "start": "Model",
+      "end": "Agent"
+    },
+    {
+      "name": "getNodeConnectionIndexes Agent<-Tool type ai_tool",
+      "op": "wf.getNodeConnectionIndexes",
+      "node": "Agent",
+      "parent": "Tool",
+      "type": "ai_tool"
+    },
+    {
+      "name": "getNodeConnectionIndexes Agent<-Tool default main",
+      "op": "wf.getNodeConnectionIndexes",
+      "node": "Agent",
+      "parent": "Tool"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "description": "P9.19 multi-tenant telemetry isolation fixtures \u2014 A/B isolation, unauthorized cross-scope query, global aggregate separation, metric-label isolation, single-tenant lightweight path.",
+  "multiController": {
+    "mode": "multi",
+    "maxRecords": 100,
+    "maxTenants": 8,
+    "globalAggregates": true
+  },
+  "singleController": {
+    "mode": "single",
+    "maxRecords": 100
+  },
+  "tenants": {
+    "A": {
+      "auth": {
+        "tenantId": "tenant-a"
+      },
+      "records": [
+        {
+          "id": "a-1",
+          "tenantId": "tenant-a",
+          "channel": "logs"
+        },
+        {
+          "id": "a-2",
+          "tenantId": "tenant-a",
+          "channel": "metrics"
+        }
+      ]
+    },
+    "B": {
+      "auth": {
+        "tenantId": "tenant-b"
+      },
+      "records": [
+        {
+          "id": "b-1",
+          "tenantId": "tenant-b",
+          "channel": "logs"
+        },
+        {
+          "id": "b-2",
+          "tenantId": "tenant-b",
+          "channel": "traces"
+        }
+      ]
+    }
+  },
+  "crossQuery": {
+    "auth": {
+      "tenantId": "tenant-a"
+    },
+    "filter": {
+      "tenantId": "tenant-b"
+    },
+    "expectCode": "tenantisolation.cross_scope"
+  },
+  "globalAuth": {
+    "scope": "global"
+  },
+  "deniedLabels": [
+    "tenantId",
+    "tenant",
+    "orgId",
+    "workspaceId",
+    "tenant_identifier"
+  ],
+  "allowedLabels": {
+    "component": "execution",
+    "outcome": "completed",
+    "severity": "INFO"
+  },
+  "exportJobs": {
+    "own": {
+      "id": "a-1",
+      "tenantId": "tenant-a",
+      "channel": "otlp"
+    },
+    "cross": {
+      "id": "a-1",
+      "tenantId": "tenant-b",
+      "channel": "otlp"
+    }
+  },
+  "expect": {
+    "crossCode": "tenantisolation.cross_scope",
+    "globalDeniedCode": "tenantisolation.unauthorized_global",
+    "labelCode": "tenantisolation.tenant_label",
+    "globalScope": "global",
+    "tenantScope": "tenant"
+  }
+}

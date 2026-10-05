@@ -1,0 +1,59 @@
+{
+  "status": "COMPLETED",
+  "finished": true,
+  "executionLog": [
+    {
+      "node": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Manual Trigger",
+      "statusText": "Success"
+    },
+    {
+      "node": "Left",
+      "type": "n8n-nodes-base.set",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Edit Fields (Set)",
+      "statusText": "Success"
+    },
+    {
+      "node": "Right",
+      "type": "n8n-nodes-base.set",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Edit Fields (Set)",
+      "statusText": "Success"
+    }
+  ],
+  "data": {
+    "Start": [
+      {
+        "json": {
+          "branch": true
+        }
+      }
+    ],
+    "Left": [
+      {
+        "json": {
+          "branch": true,
+          "side": "left"
+        }
+      }
+    ],
+    "Right": [
+      {
+        "json": {
+          "branch": true,
+          "side": "right"
+        }
+      }
+    ]
+  },
+  "warnings": []
+}

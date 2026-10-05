@@ -1,0 +1,158 @@
+{
+  "contract": "ai.skill",
+  "version": "1.0.0",
+  "owner": "manager",
+  "phase": "P2.12",
+  "status": "implemented",
+  "statusNote": "The REGISTRY is implemented: registration, validation, lazy discovery and lifecycle are real, tested code. The skills themselves remain data, and nothing here executes a procedure. See notImplemented below.",
+  "definition": "A Skill is procedural knowledge: rules, a procedure, a map of the capabilities the procedure would need, and validators that decide whether it may be selected. It is a document with a lifecycle, not an actor.",
+
+  "isNot": [
+    "an agent — a skill has no goal, no loop and no autonomy",
+    "an Agent Machine — it does not schedule, delegate or supervise",
+    "a tool executor — it never invokes a tool, only names the capability an invoker would need",
+    "a permission grant — naming a capability is a requirement, never an authorisation",
+    "a runtime — nothing here executes anything",
+    "a model provider — a skill neither selects nor calls a model"
+  ],
+
+  "authorityRule": "A skill DECLARES requiredCapabilities. The capability system remains the sole authority on whether a caller may use them. Selection of a skill grants nothing: an invoker still has to pass capability negotiation, permission policy and approval on its own account. A skill that names `workspace.filesystem` has not been given the filesystem; it has stated that without the filesystem its procedure cannot be followed.",
+
+  "lifecycle": {
+    "states": ["registered", "available", "selected", "loaded", "active", "released"],
+    "initial": "registered",
+    "terminal": ["released"],
+    "transitions": {
+      "registered": ["available"],
+      "available": ["selected", "released"],
+      "selected": ["loaded", "released"],
+      "loaded": ["active", "released"],
+      "active": ["released"],
+      "released": []
+    },
+    "rule": "Transitions are linear with an early exit to `released`. Nothing may skip a state: a skill cannot become `active` without having been `loaded`, because `active` asserts the body is in memory. No state implies execution authority — `active` means selected-and-loaded, not permitted-to-run.",
+    "noAuthorityRule": "No transition grants, checks or carries permission. Reaching `active` is not an authorisation event, and the registry deliberately has no API that could make it one."
+  },
+
+  "disclosure": {
+    "levels": {
+      "L0": "identity — id, title, one line. Always loaded; this is what `list` returns.",
+      "L1": "card — when to use it, what it needs, what it produces.",
+      "L2": "procedure — the steps.",
+      "L3": "deep knowledge — references, examples, edge cases."
+    },
+    "rule": "`list` and `resolve` read L0/L1 only. L2/L3 live behind a loader that is not called until `load`. Listing every skill's full body is how a context window is exhausted before any work begins, so lazy discovery is a contract requirement and not an optimisation.",
+    "lazinessGuarantee": "A registered skill's body loader must not be invoked by register, list, resolve, describe or validate-selection. Only `load` may invoke it."
+  },
+
+  "operations": [
+    {
+      "name": "skill.list",
+      "interaction": "call",
+      "permission": "ai:skill:read",
+      "idempotent": true,
+      "status": "implemented",
+      "discloses": "L0",
+      "summary": "Identities of every registered skill. Never loads a body."
+    },
+    {
+      "name": "skill.resolve",
+      "interaction": "call",
+      "permission": "ai:skill:read",
+      "idempotent": true,
+      "status": "implemented",
+      "discloses": "L0",
+      "summary": "One skill's identity by id, or null. Never loads a body."
+    },
+    {
+      "name": "skill.describe",
+      "interaction": "call",
+      "permission": "ai:skill:read",
+      "idempotent": true,
+      "status": "implemented",
+      "discloses": "L1",
+      "summary": "The card: when to use it, required capabilities, validators, degradation and replacement metadata. Still no body."
+    },
+    {
+      "name": "skill.validate-selection",
+      "interaction": "call",
+      "permission": "ai:skill:select",
+      "idempotent": true,
+      "status": "implemented",
+      "discloses": "L1",
+      "summary": "Answers whether this skill could be selected in a given context: are its required capabilities declared, is its contract compatible, do its validators pass. Returns a verdict; never throws for a normal negative answer."
+    }
+  ],
+
+  "interaction": ["call"],
+  "permissions": ["ai:skill:read", "ai:skill:select"],
+  "permissionNote": "Both permissions are read-shaped. There is deliberately no `ai:skill:execute`: execution is not a skill operation, so no permission may imply it. The namespace itself is subject to XA-8, which is open-for-manager.",
+
+  "trustLevels": {
+    "core": "Ships with the product. Its procedure was reviewed as part of the release.",
+    "verified": "Third-party, signed and reviewed.",
+    "community": "Third-party, unreviewed.",
+    "untrusted": "Provenance unknown or failed a check."
+  },
+  "trustDegradation": {
+    "rule": "Trust never raises what a skill may require, it only lowers what it may be selected for. A `community` or `untrusted` skill that requires a destructive capability degrades to `requires-approval`; it is never silently selectable.",
+    "destructiveRequiresApproval": ["community", "untrusted"],
+    "default": "untrusted",
+    "defaultRationale": "A skill whose trust is unstated is untrusted. Defaulting to `community` would let an omission buy privilege."
+  },
+
+  "availability": ["available", "optional-absent", "capability-unavailable", "version-incompatible", "degraded"],
+  "degradation": {
+    "capability-unavailable": "A required capability is not declared by any LEGO. The skill stays registered and listable, and is not selectable.",
+    "version-incompatible": "The skill requires a contract major this registry does not implement.",
+    "optional-absent": "An optional capability is missing; the skill is selectable and its card says which steps will not apply.",
+    "rule": "Degradation is reported, never silently repaired. A skill is never auto-downgraded into a different procedure."
+  },
+
+  "replacement": {
+    "policy": "contract-preserving",
+    "rule": "A skill's procedure, knowledge and validators may be replaced entirely without consumers changing, provided id, contractVersion major and the card's declared inputs/outputs hold. `implementationVersion` moves freely; `contractVersion` follows semver and a major bump is a breaking change the gate detects.",
+    "identityFields": ["id", "contractVersion", "requiredCapabilities", "produces"],
+    "freeFields": ["implementationVersion", "procedure", "knowledge", "validators", "description"]
+  },
+
+  "compatibility": {
+    "registryContract": "1.0.0",
+    "rule": "A skill declares the skill-contract major it was written against. Same major = compatible. Different major = version-incompatible, refused at registration rather than at use, because a skill that cannot be selected should never appear selectable."
+  },
+
+  "validators": {
+    "kinds": ["required-field", "capability-declared", "contract-compatible", "trust-sufficient", "custom"],
+    "rule": "A validator answers a question about SELECTION. It may not perform I/O, call a tool, read a credential or touch the filesystem — it receives a plain context object and returns a verdict. Validators run during validate-selection, never during list or resolve."
+  },
+
+  "security": {
+    "mustNot": [
+      "inherit authority from the Agent Machine",
+      "grant authority to the Agent Machine",
+      "bypass approval",
+      "bypass capability policy",
+      "read or hold credentials",
+      "execute a tool",
+      "touch the filesystem, terminal, git, browser, network or a model"
+    ],
+    "failClosed": "An unknown or undeclared required capability is refused. A skill referencing a capability no LEGO declares is registered-but-not-selectable, and validate-selection returns a negative verdict naming the capability. It is never assumed to be available.",
+    "grantsNothing": "The registry exposes no API that returns a permission, a credential, a token or a handle. The strongest thing a caller obtains is a frozen description."
+  },
+
+  "notImplemented": [
+    "executing a skill's procedure",
+    "an interpreter or DSL for procedure steps",
+    "authoring, editing or generating skills",
+    "skill packs, distribution, signing or installation",
+    "an Agent Machine, or any binding to one",
+    "a model provider, tool gateway, MCP client or runtime adapter",
+    "memory, workspace or a context manager",
+    "persistence — the registry is in-memory and per-process by design"
+  ],
+
+  "openDecisions": {
+    "XA-11": "Which contract publishes a skill, and is a skill a backend concept at all? Open-for-manager. This implementation deliberately does NOT settle it: `ai.skill` is declared under the existing ai-foundation domain rather than as a new top-level domain, so if the manager rules that skills are a frontend or shared concept, the contract moves without a domain having to be deleted.",
+    "XA-8": "Which permission namespace do AI capabilities use? Open-for-manager. `ai:skill:*` follows the prevailing `ai:<concept>:<verb>` shape used by every other AI capability, so it moves with them if the manager renames the namespace."
+  }
+}

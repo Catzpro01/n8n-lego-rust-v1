@@ -1,0 +1,77 @@
+{
+  "outcomes": ["success", "failed"],
+  "failureClasses": ["TIMEOUT", "CAPACITY", "CANCELLED", "DEPENDENCY", "VALIDATION", "INTERNAL", "UNKNOWN"],
+  "identityFields": ["executionId", "workflowId", "workflowVersion", "triggerId", "nodeId", "nodeType", "nodeVersion", "runtimeId"],
+  "successfulDiagnostic": {
+    "outcome": "success",
+    "identity": {
+      "executionId": "exec-ok-1",
+      "workflowId": "wf-1",
+      "workflowVersion": "3",
+      "triggerId": "trg-1",
+      "nodeId": "n1",
+      "nodeType": "n8n-nodes-base.noOp",
+      "nodeVersion": "1",
+      "runtimeId": "rt-1"
+    },
+    "resource": { "memoryUsedBytes": 1048576, "cpuPercent": 12.5 },
+    "expectEvidenceMissingIncludes": []
+  },
+  "failedDiagnostic": {
+    "outcome": "failed",
+    "identity": {
+      "executionId": "exec-fail-9",
+      "workflowId": "wf-42",
+      "workflowVersion": "7",
+      "triggerId": "trg-hooks",
+      "nodeId": "http-1",
+      "nodeType": "n8n-nodes-base.httpRequest",
+      "nodeVersion": "2",
+      "runtimeId": "rt-2"
+    },
+    "failure": {
+      "code": "http.5xx",
+      "class": "DEPENDENCY",
+      "stage": "node.execute",
+      "message": "upstream returned 503"
+    },
+    "resource": { "memoryUsedBytes": 8388608, "queueDepth": 12 },
+    "refs": {
+      "checkpoint": "ckpt-abc",
+      "replay": "replay-xyz",
+      "artifacts": ["artifact-1", "artifact-2"]
+    },
+    "nodes": [
+      { "nodeId": "http-1", "nodeType": "n8n-nodes-base.httpRequest", "nodeVersion": "2", "outcome": "failed" }
+    ],
+    "expectSummary": {
+      "fingerprintPrefix": "FFP:v1:",
+      "code": "http.5xx",
+      "class": "DEPENDENCY",
+      "executionId": "exec-fail-9"
+    }
+  },
+  "missingEvidenceDiagnostic": {
+    "outcome": "failed",
+    "identity": {
+      "executionId": "exec-miss-1",
+      "workflowId": "wf-9"
+    },
+    "failure": { "code": "exec.failed", "class": "UNKNOWN" },
+    "expectUsable": true,
+    "expectEvidenceMissingIncludes": ["workflowVersion", "triggerId", "nodeId", "nodeType", "nodeVersion", "runtimeId", "resource", "refs", "state"]
+  },
+  "largePayload": {
+    "stateBytesOverLimit": 8192,
+    "note": "state larger than maxStateBytes becomes state_ref with bytes — value not copied",
+    "expectStateRef": true
+  },
+  "secretSafe": {
+    "identityWithSecret": "sk-live-shouldneverenter",
+    "messageWithSecret": "failed with token=abc123secrettoken",
+    "expectNull": true
+  },
+  "fingerprintStable": {
+    "note": "identical failed identity+failure → identical FFP; different code → different FFP"
+  }
+}

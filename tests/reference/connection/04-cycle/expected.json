@@ -1,0 +1,84 @@
+{
+  "parents of End through cycle terminate": [
+    "Sparse",
+    "Trigger",
+    "IF",
+    "A",
+    "Merge",
+    "Loop"
+  ],
+  "children of Merge through cycle terminate": [
+    "Agent",
+    "End",
+    "Loop"
+  ],
+  "Merge <- Loop indexes": {
+    "sourceIndex": 0,
+    "destinationIndex": 1
+  },
+  "highest nodes of End": [
+    "Trigger",
+    "Sparse"
+  ],
+  "start node of End": "Trigger",
+  "hasPath Merge->Merge via Loop": true,
+  "extractable {Merge,Loop}": {
+    "start": "Merge",
+    "end": "Loop"
+  },
+  "extractable {A}": {
+    "start": "A",
+    "end": "A"
+  },
+  "extractable {IF,A} output from non-leaf": [
+    {
+      "errorCode": "Output Edge From Non-Leaf Node",
+      "node": "IF"
+    }
+  ],
+  "extractable {A,B} multiple inputs": [
+    {
+      "errorCode": "Multiple Input Nodes",
+      "nodes": [
+        "A",
+        "B"
+      ]
+    }
+  ],
+  "input edges {A,Merge}": [
+    [
+      "IF",
+      {
+        "node": "A",
+        "type": "main",
+        "index": 0
+      }
+    ],
+    [
+      "IF",
+      {
+        "node": "Merge",
+        "type": "main",
+        "index": 1
+      }
+    ],
+    [
+      "Loop",
+      {
+        "node": "Merge",
+        "type": "main",
+        "index": 0
+      }
+    ]
+  ],
+  "output edges {A,Merge}": [
+    [
+      "Merge",
+      {
+        "node": "Loop",
+        "type": "main",
+        "index": 0
+      }
+    ]
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "description": "Auto-pairing rules of WorkflowExecute.assignPairedItems: (a) same count -> index pairing, (b) 1 input -> all outputs item 0, (c) N inputs -> 2N outputs without explicit pairedItem -> left undefined, (d) explicit pairedItem preserved, (e) N inputs -> 1 output -> item 0. Also verifies the engine rewrites INPUT pairedItem to the input index before a node runs (Echo sees {item: i}).",
+  "workflow": {
+    "nodes": [
+      {
+        "id": "trigger",
+        "name": "Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "MapNoPair",
+        "name": "MapNoPair",
+        "type": "ref.mapNoPair",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "ExplodeNoPair1",
+        "name": "ExplodeNoPair1",
+        "type": "ref.explodeNoPair",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Aggregate",
+        "name": "Aggregate",
+        "type": "ref.aggregate",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "ExplodePaired",
+        "name": "ExplodePaired",
+        "type": "ref.explodePaired",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Echo",
+        "name": "Echo",
+        "type": "ref.exprEcho",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "value": "={{ $input.item.pairedItem }}",
+          "obj": {}
+        }
+      },
+      {
+        "id": "ExplodeNoPairN",
+        "name": "ExplodeNoPairN",
+        "type": "ref.explodeNoPair",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Trigger": {
+        "main": [
+          [
+            {
+              "node": "MapNoPair",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "ExplodeNoPairN",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "ExplodePaired",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MapNoPair": {
+        "main": [
+          [
+            {
+              "node": "Aggregate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate": {
+        "main": [
+          [
+            {
+              "node": "ExplodeNoPair1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ExplodePaired": {
+        "main": [
+          [
+            {
+              "node": "Echo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "startItems": [
+    {
+      "json": {
+        "id": 0
+      }
+    },
+    {
+      "json": {
+        "id": 1
+      }
+    },
+    {
+      "json": {
+        "id": 2
+      }
+    }
+  ]
+}

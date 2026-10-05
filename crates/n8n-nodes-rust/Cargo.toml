@@ -1,0 +1,22 @@
+[package]
+name = "n8n-nodes-rust"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+indexmap = { workspace = true }
+async-trait = "0.1"
+tokio = { version = "1.0", features = ["process", "io-util", "time", "sync", "macros"] }
+reqwest = { version = "0.12", features = ["json"], default-features = false }
+
+# Internal model dependency
+n8n-node-model = { path = "../n8n-node-model" }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["rt", "macros"] }

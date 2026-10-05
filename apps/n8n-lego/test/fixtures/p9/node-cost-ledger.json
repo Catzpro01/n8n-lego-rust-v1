@@ -1,0 +1,66 @@
+{
+  "contract": {
+    "id": "observability.node-cost-ledger",
+    "version": "1.0.0",
+    "owner": "agent-6"
+  },
+  "dimensions": ["durationMs", "invocations", "cpuMs", "memoryPeakBytes", "bytesIn", "bytesOut", "storageBytes", "retries", "failures"],
+  "provenance": ["OBSERVED", "ESTIMATED", "REPORTED"],
+  "scopes": ["per-node", "per-execution", "per-workflow"],
+  "outcomes": ["success", "failed"],
+  "identityFields": ["executionId", "workflowId", "workflowVersion", "triggerId", "nodeId", "nodeType", "nodeVersion", "runtimeId"],
+  "limits": {
+    "identifierBytes": 128,
+    "maxNodes": 256,
+    "maxSamplesPerNode": 64,
+    "maxLedgerRows": 4096,
+    "maxWireBytes": 16384
+  },
+  "identity": {
+    "executionId": "exec-9f31",
+    "workflowId": "wf-billing-sync",
+    "workflowVersion": "7",
+    "triggerId": "trg-schedule-hourly",
+    "nodeId": "node-http-request",
+    "nodeType": "n8n-nodes-base.httpRequest",
+    "nodeVersion": "4.2.0",
+    "runtimeId": "rt-lego-1"
+  },
+  "valid": {
+    "outcome": "success",
+    "dimensions": { "durationMs": 412, "invocations": 1, "cpuMs": 88, "bytesOut": 2048 },
+    "provenance": "OBSERVED",
+    "unit": "ms",
+    "at": "2026-09-26T10:15:30.000Z",
+    "refs": ["run-36184852810"]
+  },
+  "estimated": {
+    "outcome": "failed",
+    "dimensions": { "durationMs": 900, "invocations": 1, "retries": 2, "failures": 1 },
+    "provenance": "ESTIMATED",
+    "unit": "ms"
+  },
+  "reported": {
+    "dimensions": { "durationMs": 380, "invocations": 1 },
+    "provenance": "REPORTED",
+    "unit": "usd-micros"
+  },
+  "rejections": {
+    "missingExecutionId": { "identity": { "nodeId": "node-http-request" }, "dimensions": { "durationMs": 1 }, "provenance": "OBSERVED" },
+    "missingNodeId": { "identity": { "executionId": "exec-9f31" }, "dimensions": { "durationMs": 1 }, "provenance": "OBSERVED" },
+    "missingProvenance": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1 } },
+    "unknownProvenance": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1 }, "provenance": "PROBABLY" },
+    "unknownOutcome": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1 }, "provenance": "OBSERVED", "outcome": "maybe" },
+    "unknownDimension": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1, "gpuSeconds": 5 }, "provenance": "OBSERVED" },
+    "negativeDimension": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": -1 }, "provenance": "OBSERVED" },
+    "fractionalDimension": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1.5 }, "provenance": "OBSERVED" },
+    "emptyDimensions": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": {}, "provenance": "OBSERVED" },
+    "oversizedIdentifierBytes": 129,
+    "badTimestamp": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1 }, "provenance": "OBSERVED", "at": "2026-09-26 10:15:30" },
+    "secretLabel": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1 }, "provenance": "OBSERVED", "label": "Bearer abcdefghijklmnopqrstuvwxyz0123456789" },
+    "secretRef": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1 }, "provenance": "OBSERVED", "refs": ["password=hunter2hunter2"] },
+    "unknownSpecKey": { "identity": { "executionId": "exec-9f31", "nodeId": "n1" }, "dimensions": { "durationMs": 1 }, "provenance": "OBSERVED", "costCentre": "eu-1" },
+    "nonPlainIdentity": { "identity": "exec-9f31", "dimensions": { "durationMs": 1 }, "provenance": "OBSERVED" }
+  },
+  "secretDimensions": { "durationMs": 1, "apiKey": "sk-live-abcdefghijklmnopqrstuvwxyz012345" }
+}

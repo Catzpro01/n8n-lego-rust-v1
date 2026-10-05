@@ -1,0 +1,14 @@
+{
+  "name": "n8n-reference-harness",
+  "private": true,
+  "description": "Behavioral harness that drives the REAL n8n 2.9.4 runtime packages (n8n-core 2.9.1 + n8n-workflow 2.9.1, exactly what n8n@2.9.4 depends on) to verify Execution Data and Expression reference cases.",
+  "scripts": {
+    "test": "node run.js",
+    "test:execution-data": "node run.js execution-data",
+    "test:expression": "node run.js expression"
+  },
+  "dependencies": {
+    "n8n-core": "2.9.1",
+    "n8n-workflow": "2.9.1"
+  }
+}

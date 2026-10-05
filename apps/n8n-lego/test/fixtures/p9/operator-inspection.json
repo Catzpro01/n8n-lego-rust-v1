@@ -1,0 +1,813 @@
+{
+  "description": "P9.16 operator inspection fixtures \u2014 normal/large/timeout/cancel/unauthorized/storm.",
+  "dataset": {
+    "health": [
+      {
+        "id": "health-1",
+        "kind": "liveness",
+        "state": "ALIVE"
+      },
+      {
+        "id": "health-2",
+        "kind": "readiness",
+        "state": "READY"
+      }
+    ],
+    "logs": [
+      {
+        "id": "log-0000",
+        "level": "error",
+        "traceId": "t0",
+        "msg": "event 0"
+      },
+      {
+        "id": "log-0001",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 1"
+      },
+      {
+        "id": "log-0002",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 2"
+      },
+      {
+        "id": "log-0003",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 3"
+      },
+      {
+        "id": "log-0004",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 4"
+      },
+      {
+        "id": "log-0005",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 5"
+      },
+      {
+        "id": "log-0006",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 6"
+      },
+      {
+        "id": "log-0007",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 7"
+      },
+      {
+        "id": "log-0008",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 8"
+      },
+      {
+        "id": "log-0009",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 9"
+      },
+      {
+        "id": "log-0010",
+        "level": "error",
+        "traceId": "t3",
+        "msg": "event 10"
+      },
+      {
+        "id": "log-0011",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 11"
+      },
+      {
+        "id": "log-0012",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 12"
+      },
+      {
+        "id": "log-0013",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 13"
+      },
+      {
+        "id": "log-0014",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 14"
+      },
+      {
+        "id": "log-0015",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 15"
+      },
+      {
+        "id": "log-0016",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 16"
+      },
+      {
+        "id": "log-0017",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 17"
+      },
+      {
+        "id": "log-0018",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 18"
+      },
+      {
+        "id": "log-0019",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 19"
+      },
+      {
+        "id": "log-0020",
+        "level": "error",
+        "traceId": "t6",
+        "msg": "event 20"
+      },
+      {
+        "id": "log-0021",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 21"
+      },
+      {
+        "id": "log-0022",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 22"
+      },
+      {
+        "id": "log-0023",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 23"
+      },
+      {
+        "id": "log-0024",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 24"
+      },
+      {
+        "id": "log-0025",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 25"
+      },
+      {
+        "id": "log-0026",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 26"
+      },
+      {
+        "id": "log-0027",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 27"
+      },
+      {
+        "id": "log-0028",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 28"
+      },
+      {
+        "id": "log-0029",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 29"
+      },
+      {
+        "id": "log-0030",
+        "level": "error",
+        "traceId": "t2",
+        "msg": "event 30"
+      },
+      {
+        "id": "log-0031",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 31"
+      },
+      {
+        "id": "log-0032",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 32"
+      },
+      {
+        "id": "log-0033",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 33"
+      },
+      {
+        "id": "log-0034",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 34"
+      },
+      {
+        "id": "log-0035",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 35"
+      },
+      {
+        "id": "log-0036",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 36"
+      },
+      {
+        "id": "log-0037",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 37"
+      },
+      {
+        "id": "log-0038",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 38"
+      },
+      {
+        "id": "log-0039",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 39"
+      },
+      {
+        "id": "log-0040",
+        "level": "error",
+        "traceId": "t5",
+        "msg": "event 40"
+      },
+      {
+        "id": "log-0041",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 41"
+      },
+      {
+        "id": "log-0042",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 42"
+      },
+      {
+        "id": "log-0043",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 43"
+      },
+      {
+        "id": "log-0044",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 44"
+      },
+      {
+        "id": "log-0045",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 45"
+      },
+      {
+        "id": "log-0046",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 46"
+      },
+      {
+        "id": "log-0047",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 47"
+      },
+      {
+        "id": "log-0048",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 48"
+      },
+      {
+        "id": "log-0049",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 49"
+      },
+      {
+        "id": "log-0050",
+        "level": "error",
+        "traceId": "t1",
+        "msg": "event 50"
+      },
+      {
+        "id": "log-0051",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 51"
+      },
+      {
+        "id": "log-0052",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 52"
+      },
+      {
+        "id": "log-0053",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 53"
+      },
+      {
+        "id": "log-0054",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 54"
+      },
+      {
+        "id": "log-0055",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 55"
+      },
+      {
+        "id": "log-0056",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 56"
+      },
+      {
+        "id": "log-0057",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 57"
+      },
+      {
+        "id": "log-0058",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 58"
+      },
+      {
+        "id": "log-0059",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 59"
+      },
+      {
+        "id": "log-0060",
+        "level": "error",
+        "traceId": "t4",
+        "msg": "event 60"
+      },
+      {
+        "id": "log-0061",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 61"
+      },
+      {
+        "id": "log-0062",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 62"
+      },
+      {
+        "id": "log-0063",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 63"
+      },
+      {
+        "id": "log-0064",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 64"
+      },
+      {
+        "id": "log-0065",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 65"
+      },
+      {
+        "id": "log-0066",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 66"
+      },
+      {
+        "id": "log-0067",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 67"
+      },
+      {
+        "id": "log-0068",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 68"
+      },
+      {
+        "id": "log-0069",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 69"
+      },
+      {
+        "id": "log-0070",
+        "level": "error",
+        "traceId": "t0",
+        "msg": "event 70"
+      },
+      {
+        "id": "log-0071",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 71"
+      },
+      {
+        "id": "log-0072",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 72"
+      },
+      {
+        "id": "log-0073",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 73"
+      },
+      {
+        "id": "log-0074",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 74"
+      },
+      {
+        "id": "log-0075",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 75"
+      },
+      {
+        "id": "log-0076",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 76"
+      },
+      {
+        "id": "log-0077",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 77"
+      },
+      {
+        "id": "log-0078",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 78"
+      },
+      {
+        "id": "log-0079",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 79"
+      },
+      {
+        "id": "log-0080",
+        "level": "error",
+        "traceId": "t3",
+        "msg": "event 80"
+      },
+      {
+        "id": "log-0081",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 81"
+      },
+      {
+        "id": "log-0082",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 82"
+      },
+      {
+        "id": "log-0083",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 83"
+      },
+      {
+        "id": "log-0084",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 84"
+      },
+      {
+        "id": "log-0085",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 85"
+      },
+      {
+        "id": "log-0086",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 86"
+      },
+      {
+        "id": "log-0087",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 87"
+      },
+      {
+        "id": "log-0088",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 88"
+      },
+      {
+        "id": "log-0089",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 89"
+      },
+      {
+        "id": "log-0090",
+        "level": "error",
+        "traceId": "t6",
+        "msg": "event 90"
+      },
+      {
+        "id": "log-0091",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 91"
+      },
+      {
+        "id": "log-0092",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 92"
+      },
+      {
+        "id": "log-0093",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 93"
+      },
+      {
+        "id": "log-0094",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 94"
+      },
+      {
+        "id": "log-0095",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 95"
+      },
+      {
+        "id": "log-0096",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 96"
+      },
+      {
+        "id": "log-0097",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 97"
+      },
+      {
+        "id": "log-0098",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 98"
+      },
+      {
+        "id": "log-0099",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 99"
+      },
+      {
+        "id": "log-0100",
+        "level": "error",
+        "traceId": "t2",
+        "msg": "event 100"
+      },
+      {
+        "id": "log-0101",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 101"
+      },
+      {
+        "id": "log-0102",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 102"
+      },
+      {
+        "id": "log-0103",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 103"
+      },
+      {
+        "id": "log-0104",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 104"
+      },
+      {
+        "id": "log-0105",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 105"
+      },
+      {
+        "id": "log-0106",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 106"
+      },
+      {
+        "id": "log-0107",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 107"
+      },
+      {
+        "id": "log-0108",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 108"
+      },
+      {
+        "id": "log-0109",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 109"
+      },
+      {
+        "id": "log-0110",
+        "level": "error",
+        "traceId": "t5",
+        "msg": "event 110"
+      },
+      {
+        "id": "log-0111",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 111"
+      },
+      {
+        "id": "log-0112",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 112"
+      },
+      {
+        "id": "log-0113",
+        "level": "info",
+        "traceId": "t1",
+        "msg": "event 113"
+      },
+      {
+        "id": "log-0114",
+        "level": "info",
+        "traceId": "t2",
+        "msg": "event 114"
+      },
+      {
+        "id": "log-0115",
+        "level": "info",
+        "traceId": "t3",
+        "msg": "event 115"
+      },
+      {
+        "id": "log-0116",
+        "level": "info",
+        "traceId": "t4",
+        "msg": "event 116"
+      },
+      {
+        "id": "log-0117",
+        "level": "info",
+        "traceId": "t5",
+        "msg": "event 117"
+      },
+      {
+        "id": "log-0118",
+        "level": "info",
+        "traceId": "t6",
+        "msg": "event 118"
+      },
+      {
+        "id": "log-0119",
+        "level": "info",
+        "traceId": "t0",
+        "msg": "event 119"
+      }
+    ],
+    "metrics": [
+      {
+        "id": "m-cpu",
+        "kind": "gauge",
+        "value": 0.42
+      },
+      {
+        "id": "m-mem",
+        "kind": "gauge",
+        "value": 0.55
+      }
+    ],
+    "traces": [
+      {
+        "id": "tr-1",
+        "traceId": "t0",
+        "span": "root",
+        "durationMs": 12
+      },
+      {
+        "id": "tr-2",
+        "traceId": "t1",
+        "span": "child",
+        "durationMs": 3
+      }
+    ],
+    "diagnostics": [
+      {
+        "id": "dg-1",
+        "kind": "failure",
+        "class": "TIMEOUT"
+      }
+    ]
+  },
+  "indexes": [
+    "id",
+    "level",
+    "traceId",
+    "kind"
+  ],
+  "normalQuery": {
+    "iface": "logs",
+    "role": "operator",
+    "limit": 10
+  },
+  "unauthorizedQuery": {
+    "iface": "logs",
+    "role": "guest",
+    "limit": 10
+  },
+  "timeoutQuery": {
+    "iface": "logs",
+    "role": "viewer",
+    "limit": 50,
+    "timeoutMs": 1
+  },
+  "cancelQuery": {
+    "iface": "logs",
+    "role": "viewer",
+    "limit": 50
+  },
+  "storm": {
+    "n": 80,
+    "iface": "health",
+    "role": "viewer",
+    "limit": 5
+  },
+  "expect": {
+    "normalCount": 10,
+    "largeMaxLimit": 500,
+    "unauthorizedCode": "operator.unauthorized",
+    "timeoutCode": "operator.timeout",
+    "cancelledCode": "operator.cancelled",
+    "busyCode": "operator.busy"
+  }
+}

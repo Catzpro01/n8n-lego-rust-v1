@@ -1,0 +1,290 @@
+{
+  "description": "P9.20 contract oracle cross-domain fixtures \u2014 P3/P4/P6/P8 producer specimens with clean and intentional-drift cases (missing field, invented field, vocabulary drift, version incompatibility).",
+  "schemas": {
+    "P3": {
+      "id": "workflow.execution-event",
+      "phase": "P3",
+      "versionRange": "^1.0.0",
+      "fields": {
+        "event": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "execution.started",
+            "execution.completed",
+            "execution.failed",
+            "execution.cancelled"
+          ]
+        },
+        "status": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "running",
+            "completed",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "workflowId": {
+          "required": true,
+          "type": "string"
+        },
+        "durationMs": {
+          "required": false,
+          "type": "number"
+        }
+      }
+    },
+    "P4": {
+      "id": "webhook.delivery-event",
+      "phase": "P4",
+      "versionRange": "^1.0.0",
+      "fields": {
+        "event": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "webhook.received",
+            "webhook.accepted",
+            "webhook.rejected"
+          ]
+        },
+        "method": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        },
+        "outcome": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "accepted",
+            "rejected",
+            "rate_limited"
+          ]
+        },
+        "path": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "P6": {
+      "id": "node.registry-event",
+      "phase": "P6",
+      "versionRange": "^0.1.0",
+      "fields": {
+        "event": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "node.registered",
+            "node.quarantined",
+            "node.removed"
+          ]
+        },
+        "name": {
+          "required": true,
+          "type": "string"
+        },
+        "state": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "active",
+            "quarantined",
+            "retired"
+          ]
+        },
+        "epoch": {
+          "required": false,
+          "type": "number"
+        }
+      }
+    },
+    "P8": {
+      "id": "storage.artifact-event",
+      "phase": "P8",
+      "versionRange": "^1.0.0",
+      "fields": {
+        "event": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "storage.written",
+            "storage.read",
+            "storage.deleted"
+          ]
+        },
+        "tier": {
+          "required": true,
+          "type": "string",
+          "vocabulary": [
+            "hot",
+            "warm",
+            "cold"
+          ]
+        },
+        "bytes": {
+          "required": true,
+          "type": "number"
+        }
+      }
+    }
+  },
+  "matrices": {
+    "P3": [
+      {
+        "name": "clean-started",
+        "specimen": {
+          "contractVersion": "1.0.0",
+          "event": "execution.started",
+          "status": "running",
+          "workflowId": "wf-1"
+        },
+        "expectValid": true
+      },
+      {
+        "name": "clean-completed",
+        "specimen": {
+          "contractVersion": "1.0.0",
+          "event": "execution.completed",
+          "status": "completed",
+          "workflowId": "wf-1",
+          "durationMs": 42
+        },
+        "expectValid": true
+      },
+      {
+        "name": "drift-missing-invented-bad-status-old-version",
+        "specimen": {
+          "version": "0.9.0",
+          "event": "execution.completed",
+          "status": "compleet",
+          "retryBudget": 3
+        },
+        "expectValid": false,
+        "expectCodes": [
+          "invented_field",
+          "missing_field",
+          "vocabulary_drift",
+          "version_incompatible"
+        ]
+      }
+    ],
+    "P4": [
+      {
+        "name": "clean-post-accepted",
+        "specimen": {
+          "contractVersion": "1.0.0",
+          "event": "webhook.accepted",
+          "method": "POST",
+          "outcome": "accepted",
+          "path": "/webhook/order"
+        },
+        "expectValid": true
+      },
+      {
+        "name": "drift-method-and-invented",
+        "specimen": {
+          "contractVersion": "1.0.0",
+          "event": "webhook.received",
+          "method": "FETCH",
+          "outcome": "accepted",
+          "path": "/webhook/x",
+          "clientIp": "10.0.0.1"
+        },
+        "expectValid": false,
+        "expectCodes": [
+          "invented_field",
+          "vocabulary_drift"
+        ]
+      },
+      {
+        "name": "drift-missing-path-bad-version",
+        "specimen": {
+          "contractVersion": "2.0.0",
+          "event": "webhook.rejected",
+          "method": "POST",
+          "outcome": "rejected"
+        },
+        "expectValid": false,
+        "expectCodes": [
+          "missing_field",
+          "version_incompatible"
+        ]
+      }
+    ],
+    "P6": [
+      {
+        "name": "clean-registered",
+        "specimen": {
+          "contractVersion": "0.1.0",
+          "event": "node.registered",
+          "name": "n8n-nodes-base.httpRequest",
+          "state": "active",
+          "epoch": 12
+        },
+        "expectValid": true
+      },
+      {
+        "name": "drift-state-and-missing-name",
+        "specimen": {
+          "contractVersion": "0.1.0",
+          "event": "node.quarantined",
+          "state": "banned"
+        },
+        "expectValid": false,
+        "expectCodes": [
+          "missing_field",
+          "vocabulary_drift"
+        ]
+      },
+      {
+        "name": "drift-major-jump",
+        "specimen": {
+          "contractVersion": "1.0.0",
+          "event": "node.registered",
+          "name": "n8n-nodes-base.slack",
+          "state": "active"
+        },
+        "expectValid": false,
+        "expectCodes": [
+          "version_incompatible"
+        ]
+      }
+    ],
+    "P8": [
+      {
+        "name": "clean-written-hot",
+        "specimen": {
+          "contractVersion": "1.0.0",
+          "event": "storage.written",
+          "tier": "hot",
+          "bytes": 2048
+        },
+        "expectValid": true
+      },
+      {
+        "name": "drift-tier-and-missing-bytes",
+        "specimen": {
+          "contractVersion": "1.0.0",
+          "event": "storage.read",
+          "tier": "SSD"
+        },
+        "expectValid": false,
+        "expectCodes": [
+          "missing_field",
+          "vocabulary_drift"
+        ]
+      }
+    ]
+  }
+}

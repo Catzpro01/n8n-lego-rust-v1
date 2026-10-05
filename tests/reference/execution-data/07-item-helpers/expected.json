@@ -1,0 +1,89 @@
+{
+  "status": "success",
+  "finished": true,
+  "lastNodeExecuted": "RJA",
+  "runData": {
+    "Trigger": [
+      {
+        "executionStatus": "success",
+        "source": [],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "Norm": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "a": 1
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "a": 2
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "RJA": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Norm",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "a": 1
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "a": 2
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            }
+          ]
+        ]
+      }
+    ]
+  }
+}

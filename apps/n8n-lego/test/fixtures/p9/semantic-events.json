@@ -1,0 +1,91 @@
+{
+  "contract": { "id": "observability.semantic-event", "version": "1.0.0", "owner": "agent-6" },
+  "vocabulary": [
+    { "name": "execution.started", "domain": "execution", "schemaVersion": "1.0.0" },
+    { "name": "execution.completed", "domain": "execution", "schemaVersion": "1.0.0" },
+    { "name": "execution.failed", "domain": "execution", "schemaVersion": "1.0.0" },
+    { "name": "execution.cancelled", "domain": "execution", "schemaVersion": "1.0.0" },
+    { "name": "checkpoint.created", "domain": "checkpoint", "schemaVersion": "1.0.0" },
+    { "name": "checkpoint.resumed", "domain": "checkpoint", "schemaVersion": "1.0.0" },
+    { "name": "trigger.received", "domain": "trigger", "schemaVersion": "1.0.0" },
+    { "name": "trigger.failed", "domain": "trigger", "schemaVersion": "1.0.0" },
+    { "name": "ingress.admitted", "domain": "ingress", "schemaVersion": "1.0.0" },
+    { "name": "ingress.rejected", "domain": "ingress", "schemaVersion": "1.0.0" },
+    { "name": "ingress.deferred", "domain": "ingress", "schemaVersion": "1.0.0" },
+    { "name": "ingress.duplicate", "domain": "ingress", "schemaVersion": "1.0.0" },
+    { "name": "ingress.rate_limited", "domain": "ingress", "schemaVersion": "1.0.0" },
+    { "name": "node.loaded", "domain": "node", "schemaVersion": "1.0.0" },
+    { "name": "node.quarantined", "domain": "node", "schemaVersion": "1.0.0" },
+    { "name": "node.released", "domain": "node", "schemaVersion": "1.0.0" },
+    { "name": "registry.epoch_published", "domain": "registry", "schemaVersion": "1.0.0" },
+    { "name": "registry.epoch_rolled_back", "domain": "registry", "schemaVersion": "1.0.0" },
+    { "name": "runtime.lease_acquired", "domain": "runtime", "schemaVersion": "1.0.0" },
+    { "name": "runtime.lease_released", "domain": "runtime", "schemaVersion": "1.0.0" }
+  ],
+  "context": {
+    "workflowId": "wf-1",
+    "workflowVersion": "v1",
+    "executionId": "exec-1",
+    "correlationId": "request-1"
+  },
+  "lifecycle": [
+    { "step": 1, "eventName": "trigger.received", "spec": { "timestamp": 1720000000001, "component": "trigger", "operation": "receive", "outcome": "accepted", "sequence": 1 } },
+    { "step": 2, "eventName": "ingress.admitted", "spec": { "timestamp": 1720000000002, "component": "ingress", "operation": "admit", "outcome": "accepted", "sequence": 2 } },
+    { "step": 3, "eventName": "execution.started", "spec": { "timestamp": 1720000000003, "component": "execution", "operation": "execute", "outcome": "started", "sequence": 3, "severity": "INFO" } },
+    { "step": 4, "eventName": "node.loaded", "spec": { "timestamp": 1720000000004, "component": "node", "operation": "load", "outcome": "accepted", "sequence": 4 } },
+    { "step": 5, "eventName": "runtime.lease_acquired", "spec": { "timestamp": 1720000000005, "component": "runtime", "operation": "lease", "outcome": "accepted", "sequence": 5 } },
+    { "step": 6, "eventName": "checkpoint.created", "spec": { "timestamp": 1720000000006, "component": "checkpoint", "operation": "checkpoint", "outcome": "accepted", "sequence": 6 } },
+    { "step": 7, "eventName": "checkpoint.resumed", "spec": { "timestamp": 1720000000007, "component": "checkpoint", "operation": "resume", "outcome": "accepted", "sequence": 7 } },
+    { "step": 8, "eventName": "execution.completed", "spec": { "timestamp": 1720000000008, "component": "execution", "operation": "execute", "outcome": "completed", "sequence": 8, "severity": "INFO" } },
+    { "step": 9, "eventName": "runtime.lease_released", "spec": { "timestamp": 1720000000009, "component": "runtime", "operation": "lease", "outcome": "completed", "sequence": 9 } },
+    { "step": 10, "eventName": "node.released", "spec": { "timestamp": 1720000000010, "component": "node", "operation": "release", "outcome": "completed", "sequence": 10 } }
+  ],
+  "failureLifecycle": [
+    { "step": 1, "eventName": "trigger.failed", "spec": { "timestamp": 1720000001001, "component": "trigger", "operation": "receive", "outcome": "failed", "severity": "ERROR" } },
+    { "step": 2, "eventName": "ingress.rejected", "spec": { "timestamp": 1720000001002, "component": "ingress", "operation": "admit", "outcome": "rejected", "severity": "WARN" } },
+    { "step": 3, "eventName": "ingress.deferred", "spec": { "timestamp": 1720000001003, "component": "ingress", "operation": "admit", "outcome": "deferred", "severity": "WARN" } },
+    { "step": 4, "eventName": "ingress.duplicate", "spec": { "timestamp": 1720000001004, "component": "ingress", "operation": "admit", "outcome": "duplicate", "severity": "WARN" } },
+    { "step": 5, "eventName": "ingress.rate_limited", "spec": { "timestamp": 1720000001005, "component": "ingress", "operation": "admit", "outcome": "rate_limited", "severity": "WARN" } },
+    { "step": 6, "eventName": "execution.failed", "spec": { "timestamp": 1720000001006, "component": "execution", "operation": "execute", "outcome": "failed", "severity": "ERROR" } },
+    { "step": 7, "eventName": "execution.cancelled", "spec": { "timestamp": 1720000001007, "component": "execution", "operation": "execute", "outcome": "cancelled", "severity": "WARN" } },
+    { "step": 8, "eventName": "node.quarantined", "spec": { "timestamp": 1720000001008, "component": "node", "operation": "quarantine", "outcome": "rejected", "severity": "ERROR" } },
+    { "step": 9, "eventName": "registry.epoch_published", "spec": { "timestamp": 1720000001009, "component": "registry", "operation": "publish", "outcome": "accepted", "sequence": 1 } },
+    { "step": 10, "eventName": "registry.epoch_rolled_back", "spec": { "timestamp": 1720000001010, "component": "registry", "operation": "rollback", "outcome": "accepted", "sequence": 2 } }
+  ],
+  "canonical": {
+    "spec": {
+      "timestamp": 1720000000000,
+      "eventName": "execution.started",
+      "sequence": 0,
+      "severity": "INFO",
+      "component": "execution",
+      "operation": "execute",
+      "outcome": "started",
+      "artifactRef": "art-1",
+      "diagnosticRef": "diag-1",
+      "attributes": { "durationMs": 10, "itemCount": 3, "cacheHit": false }
+    }
+  },
+  "versionCompatibility": [
+    { "case": "unknown_contract_version", "wire": "{\"contractVersion\":\"2.0.0\",\"eventName\":\"execution.started\",\"schemaVersion\":\"1.0.0\",\"envelope\":{},\"attributes\":{}}", "expect": "rejected" },
+    { "case": "older_contract_version", "wire": "{\"contractVersion\":\"0.9.0\",\"eventName\":\"execution.started\",\"schemaVersion\":\"1.0.0\",\"envelope\":{},\"attributes\":{}}", "expect": "rejected" },
+    { "case": "unknown_event_name", "wire": "{\"contractVersion\":\"1.0.0\",\"eventName\":\"execution.exploded\",\"schemaVersion\":\"1.0.0\",\"envelope\":{},\"attributes\":{}}", "expect": "rejected" },
+    { "case": "unsupported_schema_version", "wire": "{\"contractVersion\":\"1.0.0\",\"eventName\":\"execution.started\",\"schemaVersion\":\"1.1.0\",\"envelope\":{},\"attributes\":{}}", "expect": "rejected" },
+    { "case": "missing_schema_version", "wire": "{\"contractVersion\":\"1.0.0\",\"eventName\":\"execution.started\",\"envelope\":{},\"attributes\":{}}", "expect": "rejected" },
+    { "case": "schema_version_wrong_type", "wire": "{\"contractVersion\":\"1.0.0\",\"eventName\":\"execution.started\",\"schemaVersion\":1,\"envelope\":{},\"attributes\":{}}", "expect": "rejected" }
+  ],
+  "orderPolicy": {
+    "monotonic": [
+      { "sequence": 0, "expect": "accepted" },
+      { "sequence": 1, "expect": "accepted" },
+      { "sequence": 1, "expect": "duplicate" },
+      { "sequence": 0, "expect": "out_of_order" },
+      { "sequence": 5, "expect": "accepted" }
+    ],
+    "unordered": [
+      { "sequence": 0, "expect": "accepted" },
+      { "sequence": 0, "expect": "accepted" },
+      { "sequence": 0, "expect": "accepted" }
+    ]
+  }
+}

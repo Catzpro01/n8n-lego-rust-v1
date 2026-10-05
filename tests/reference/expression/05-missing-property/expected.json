@@ -1,0 +1,35 @@
+{
+  "$json.missing": {
+    "undefined": true
+  },
+  "$json.missing.deep (optional chaining by proxy)": {
+    "undefined": true
+  },
+  "missing inside text -> empty": "v=",
+  "$json.a.notAFunction()": {
+    "undefined": true
+  },
+  "syntax error": {
+    "error": "ApplicationError",
+    "message": "invalid syntax"
+  },
+  "undefined variable": {
+    "undefined": true
+  },
+  "$('Start').first().json.missing": {
+    "undefined": true
+  },
+  "$vars without provider": {
+    "undefined": true
+  },
+  "$env access denied (no provider)": {
+    "error": "ExpressionError",
+    "message": "access to env vars denied"
+  },
+  "constructor access blocked": {
+    "error": "ExpressionError",
+    "message": "Expression contains invalid constructor function call"
+  },
+  "$binary when item has none": {},
+  "runExecutionData null: $json still works from input": 10
+}

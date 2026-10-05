@@ -1,0 +1,173 @@
+{
+  "resources": {
+    "tag": [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "list"
+    ],
+    "workflow": [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "list",
+      "move",
+      "activate",
+      "deactivate"
+    ],
+    "variable": [
+      "create",
+      "update",
+      "delete",
+      "list"
+    ],
+    "securityAudit": [
+      "generate"
+    ],
+    "project": [
+      "create",
+      "update",
+      "delete",
+      "list"
+    ],
+    "user": [
+      "read",
+      "list",
+      "create",
+      "changeRole",
+      "delete",
+      "enforceMfa"
+    ],
+    "execution": [
+      "delete",
+      "read",
+      "retry",
+      "list",
+      "get"
+    ],
+    "credential": [
+      "create",
+      "update",
+      "move",
+      "delete",
+      "list"
+    ],
+    "sourceControl": [
+      "pull"
+    ],
+    "workflowTags": [
+      "update",
+      "list"
+    ],
+    "executionTags": [
+      "update",
+      "list"
+    ],
+    "dataTable": [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "list"
+    ],
+    "dataTableRow": [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "upsert"
+    ]
+  },
+  "all": [
+    "tag:create",
+    "tag:read",
+    "tag:update",
+    "tag:delete",
+    "tag:list",
+    "workflow:create",
+    "workflow:read",
+    "workflow:update",
+    "workflow:delete",
+    "workflow:list",
+    "workflow:move",
+    "workflow:activate",
+    "workflow:deactivate",
+    "variable:create",
+    "variable:update",
+    "variable:delete",
+    "variable:list",
+    "securityAudit:generate",
+    "project:create",
+    "project:update",
+    "project:delete",
+    "project:list",
+    "user:read",
+    "user:list",
+    "user:create",
+    "user:changeRole",
+    "user:delete",
+    "user:enforceMfa",
+    "execution:delete",
+    "execution:read",
+    "execution:retry",
+    "execution:list",
+    "execution:get",
+    "credential:create",
+    "credential:update",
+    "credential:move",
+    "credential:delete",
+    "credential:list",
+    "sourceControl:pull",
+    "workflowTags:update",
+    "workflowTags:list",
+    "executionTags:update",
+    "executionTags:list",
+    "dataTable:create",
+    "dataTable:read",
+    "dataTable:update",
+    "dataTable:delete",
+    "dataTable:list",
+    "dataTableRow:create",
+    "dataTableRow:read",
+    "dataTableRow:update",
+    "dataTableRow:delete",
+    "dataTableRow:upsert"
+  ],
+  "implicitPersonalProject": [
+    "workflowTags:update",
+    "workflowTags:list",
+    "executionTags:update",
+    "executionTags:list",
+    "workflow:create",
+    "workflow:read",
+    "workflow:update",
+    "workflow:delete",
+    "workflow:list",
+    "workflow:move",
+    "workflow:activate",
+    "workflow:deactivate",
+    "execution:delete",
+    "execution:read",
+    "execution:retry",
+    "execution:list",
+    "credential:create",
+    "credential:update",
+    "credential:move",
+    "credential:delete",
+    "dataTable:create",
+    "dataTable:read",
+    "dataTable:update",
+    "dataTable:delete",
+    "dataTable:list",
+    "dataTableRow:create",
+    "dataTableRow:read",
+    "dataTableRow:update",
+    "dataTableRow:delete",
+    "dataTableRow:upsert"
+  ],
+  "noKeyRoles": [
+    "global:chatUser"
+  ]
+}

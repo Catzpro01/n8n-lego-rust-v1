@@ -1,0 +1,139 @@
+{
+  "description": "P9.13 failure correlation fixtures — direct chain, correlation-only, unknown root, cycle, confidence/source. `expect` keys are test annotations stripped before compile.",
+  "directCausalChain": {
+    "events": [
+      { "id": "trigger.fail", "kind": "trigger.failure", "evidence": ["log:trigger-403"] },
+      { "id": "exec.not_started", "kind": "execution.not.started" },
+      { "id": "exec.fail", "kind": "execution.failed", "evidence": ["log:exec-500"] }
+    ],
+    "edges": [
+      {
+        "from": "trigger.fail",
+        "to": "exec.not_started",
+        "kind": "OBSERVED_CAUSE",
+        "evidence": ["log:trigger-403", "span:gate-01"]
+      },
+      {
+        "from": "exec.not_started",
+        "to": "exec.fail",
+        "kind": "OBSERVED_CAUSE",
+        "evidence": ["log:exec-500"]
+      }
+    ],
+    "rootId": "exec.fail",
+    "expect": {
+      "rootKind": "OBSERVED_CAUSE",
+      "pathLength": 2,
+      "cycleDetected": false
+    }
+  },
+  "correlationOnly": {
+    "events": [
+      { "id": "resource.pressure", "kind": "resource.budget.exceeded" },
+      { "id": "exec.cancel", "kind": "execution.cancelled", "evidence": ["metric:cancel-rate"] }
+    ],
+    "edges": [
+      {
+        "from": "resource.pressure",
+        "to": "exec.cancel",
+        "kind": "CORRELATED_WITH",
+        "confidence": 0.4,
+        "source": "operator.note",
+        "evidence": ["metric:cancel-rate"]
+      }
+    ],
+    "rootId": "exec.cancel",
+    "expect": {
+      "rootKind": "UNKNOWN",
+      "note": "correlation-only-not-promoted",
+      "cycleDetected": false
+    }
+  },
+  "unknownRoot": {
+    "events": [
+      { "id": "mystery.fail", "kind": "execution.failed" }
+    ],
+    "edges": [],
+    "rootId": "mystery.fail",
+    "expect": {
+      "rootKind": "UNKNOWN",
+      "note": "no-inbound-causal-claims",
+      "evidenceMissingIncludes": "causalEdges"
+    }
+  },
+  "cycleProtection": {
+    "events": [
+      { "id": "a", "kind": "stage.a" },
+      { "id": "b", "kind": "stage.b" },
+      { "id": "c", "kind": "stage.c" },
+      { "id": "fail", "kind": "execution.failed", "evidence": ["log:f"] }
+    ],
+    "edges": [
+      { "from": "a", "to": "b", "kind": "INFERRED_CAUSE", "confidence": 0.6, "source": "heuristic.v1", "evidence": ["trace:t1"] },
+      { "from": "b", "to": "c", "kind": "INFERRED_CAUSE", "confidence": 0.55, "source": "heuristic.v1", "evidence": ["trace:t1"] },
+      { "from": "c", "to": "a", "kind": "INFERRED_CAUSE", "confidence": 0.5, "source": "heuristic.v1", "evidence": ["trace:t2"] },
+      { "from": "c", "to": "fail", "kind": "OBSERVED_CAUSE", "evidence": ["log:f"] }
+    ],
+    "rootId": "fail",
+    "expect": {
+      "rootKind": "OBSERVED_CAUSE",
+      "cycleDetected": true,
+      "terminates": true
+    }
+  },
+  "confidenceSource": {
+    "events": [
+      { "id": "upstream.timeout", "kind": "dependency.timeout", "evidence": ["trace:up-9"] },
+      { "id": "node.fail", "kind": "node.failure" }
+    ],
+    "edges": [
+      {
+        "from": "upstream.timeout",
+        "to": "node.fail",
+        "kind": "INFERRED_CAUSE",
+        "confidence": 0.72,
+        "source": "correlator.v2",
+        "evidence": ["trace:up-9"]
+      }
+    ],
+    "rootId": "node.fail",
+    "expect": {
+      "rootKind": "INFERRED_CAUSE",
+      "confidence": 0.72,
+      "source": "correlator.v2",
+      "note": "inferred-not-observed"
+    }
+  },
+  "invalid": {
+    "inferredMissingSource": {
+      "events": [{ "id": "x" }, { "id": "y" }],
+      "edges": [{ "from": "x", "to": "y", "kind": "INFERRED_CAUSE", "confidence": 0.9 }],
+      "rootId": "y"
+    },
+    "observedMissingEvidence": {
+      "events": [{ "id": "x" }, { "id": "y" }],
+      "edges": [{ "from": "x", "to": "y", "kind": "OBSERVED_CAUSE" }],
+      "rootId": "y"
+    },
+    "unknownEdgeKind": {
+      "events": [{ "id": "x" }, { "id": "y" }],
+      "edges": [{ "from": "x", "to": "y", "kind": "DEFINITELY_CAUSE", "evidence": ["log:z"] }],
+      "rootId": "y"
+    },
+    "secretEvidence": {
+      "events": [{ "id": "x" }, { "id": "y" }],
+      "edges": [{ "from": "x", "to": "y", "kind": "OBSERVED_CAUSE", "evidence": ["bearer abc123secret"] }],
+      "rootId": "y"
+    },
+    "confidenceOutOfRange": {
+      "events": [{ "id": "x" }, { "id": "y" }],
+      "edges": [{ "from": "x", "to": "y", "kind": "INFERRED_CAUSE", "confidence": 1.5, "source": "s" }],
+      "rootId": "y"
+    },
+    "unknownEventRef": {
+      "events": [{ "id": "x" }],
+      "edges": [{ "from": "x", "to": "ghost", "kind": "CORRELATED_WITH", "evidence": ["log:z"] }],
+      "rootId": "x"
+    }
+  }
+}

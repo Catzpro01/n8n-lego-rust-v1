@@ -1,0 +1,61 @@
+{
+  "status": "COMPLETED",
+  "finished": true,
+  "executionLog": [
+    {
+      "node": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "inputCount": 3,
+      "outputCount": 3,
+      "status": "success",
+      "nodeLabel": "Manual Trigger",
+      "statusText": "Success"
+    },
+    {
+      "node": "Done",
+      "type": "n8n-nodes-base.noOp",
+      "inputCount": 3,
+      "outputCount": 3,
+      "status": "success",
+      "nodeLabel": "No Operation, do nothing",
+      "statusText": "Success"
+    }
+  ],
+  "data": {
+    "Start": [
+      {
+        "json": {
+          "n": 1
+        }
+      },
+      {
+        "json": {
+          "n": 2
+        }
+      },
+      {
+        "json": {
+          "n": 3
+        }
+      }
+    ],
+    "Done": [
+      {
+        "json": {
+          "n": 1
+        }
+      },
+      {
+        "json": {
+          "n": 2
+        }
+      },
+      {
+        "json": {
+          "n": 3
+        }
+      }
+    ]
+  },
+  "warnings": []
+}

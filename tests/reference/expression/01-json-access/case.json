@@ -1,0 +1,265 @@
+{
+  "workflow": {
+    "nodes": [
+      {
+        "id": "Start",
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Set",
+        "name": "Set",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "End",
+        "name": "End",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Set",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set": {
+        "main": [
+          [
+            {
+              "node": "End",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "runData": {
+    "Start": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 0,
+        "source": [],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "id": 0,
+                  "name": "x"
+                }
+              },
+              {
+                "json": {
+                  "id": 1,
+                  "name": "y"
+                }
+              },
+              {
+                "json": {
+                  "id": 2,
+                  "name": "z"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "Set": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 1,
+        "source": [
+          {
+            "previousNode": "Start"
+          }
+        ],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "a": 10
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "a": 20
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              },
+              {
+                "json": {
+                  "a": 30
+                },
+                "pairedItem": {
+                  "item": 2
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "activeNodeName": "End",
+  "connectionInputData": [
+    {
+      "json": {
+        "a": 10
+      },
+      "pairedItem": {
+        "item": 0
+      }
+    },
+    {
+      "json": {
+        "a": 20
+      },
+      "pairedItem": {
+        "item": 1
+      }
+    },
+    {
+      "json": {
+        "a": 30
+      },
+      "pairedItem": {
+        "item": 2
+      }
+    }
+  ],
+  "executeData": {
+    "data": {
+      "main": [
+        [
+          {
+            "json": {
+              "a": 10
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          },
+          {
+            "json": {
+              "a": 20
+            },
+            "pairedItem": {
+              "item": 1
+            }
+          },
+          {
+            "json": {
+              "a": 30
+            },
+            "pairedItem": {
+              "item": 2
+            }
+          }
+        ]
+      ]
+    },
+    "source": {
+      "main": [
+        {
+          "previousNode": "Set",
+          "previousNodeOutput": 0,
+          "previousNodeRun": 0
+        }
+      ]
+    }
+  },
+  "description": "$json = json of the CURRENT input item (connectionInputData[itemIndex]). Also plain values, string interpolation and typed returns.",
+  "probes": [
+    {
+      "name": "plain string (no '=' prefix) is returned as-is",
+      "value": "hello"
+    },
+    {
+      "name": "$json.a item 0",
+      "value": "={{ $json.a }}"
+    },
+    {
+      "name": "$json.a item 1",
+      "value": "={{ $json.a }}",
+      "itemIndex": 1
+    },
+    {
+      "name": "string interpolation",
+      "value": "=Value: {{ $json.a }}!"
+    },
+    {
+      "name": "two expressions concatenate to string",
+      "value": "={{ $json.a }}-{{ $json.a }}"
+    },
+    {
+      "name": "single expression keeps number type",
+      "value": "={{ $json.a + 1 }}"
+    },
+    {
+      "name": "single expression returns object",
+      "value": "={{ $json }}"
+    },
+    {
+      "name": "object inside text becomes [object Object]",
+      "value": "=x {{ $json }}"
+    },
+    {
+      "name": "boolean",
+      "value": "={{ $json.a > 15 }}"
+    },
+    {
+      "name": "null",
+      "value": "={{ null }}"
+    },
+    {
+      "name": "$data alias of $json",
+      "value": "={{ $data.a }}"
+    },
+    {
+      "name": "$json out of range item index",
+      "value": "={{ $json.a }}",
+      "itemIndex": 5
+    },
+    {
+      "name": "$json with empty input",
+      "value": "={{ $json.a }}",
+      "connectionInputData": []
+    }
+  ]
+}

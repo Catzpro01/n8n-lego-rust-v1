@@ -1,0 +1,57 @@
+{
+  "states": ["NORMAL", "PRESSURED", "CONSTRAINED", "CRITICAL", "UNKNOWN"],
+  "provenance": ["OBSERVED", "ESTIMATED", "REPORTED"],
+  "dimensions": ["cpu", "memory", "disk", "network", "activeExecutions", "queueDepth", "openConnections", "fileDescriptors"],
+  "resourceFixtures": [
+    { "dimension": "cpu", "value": 0.32, "provenance": "OBSERVED", "expectLevel": "NORMAL" },
+    { "dimension": "cpu", "value": 0.75, "provenance": "OBSERVED", "expectLevel": "PRESSURED" },
+    { "dimension": "memory", "value": 0.88, "provenance": "ESTIMATED", "expectLevel": "CONSTRAINED" },
+    { "dimension": "disk", "value": 0.99, "provenance": "OBSERVED", "expectLevel": "CRITICAL" },
+    { "dimension": "queueDepth", "value": 42, "provenance": "REPORTED", "expectLevel": "NORMAL" },
+    { "dimension": "network", "value": 0.5, "provenance": "OBSERVED", "expectLevel": "NORMAL" },
+    { "dimension": "activeExecutions", "value": 70, "provenance": "OBSERVED", "expectLevel": "CONSTRAINED" }
+  ],
+  "provenanceMatrix": {
+    "observedAllowed": true,
+    "estimatedAllowed": true,
+    "reportedAllowedOnlyWhenProvided": true,
+    "fabricatedRejected": ["SOMETHING_ELSE", "REPORTED_GUESS", null, 42]
+  },
+  "pressureTransitions": [
+    { "seq": [
+      { "dimension": "memory", "value": 0.4, "provenance": "OBSERVED" }
+    ], "expectState": "NORMAL", "expectDegradation": 0 },
+    { "seq": [
+      { "dimension": "memory", "value": 0.75, "provenance": "OBSERVED" }
+    ], "expectState": "PRESSURED", "expectDegradation": 1 },
+    { "seq": [
+      { "dimension": "memory", "value": 0.88, "provenance": "OBSERVED" }
+    ], "expectState": "CONSTRAINED", "expectDegradation": 2 },
+    { "seq": [
+      { "dimension": "cpu", "value": 0.97, "provenance": "OBSERVED" }
+    ], "expectState": "CRITICAL", "expectDegradation": 3 },
+    { "seq": [
+      { "dimension": "memory", "value": 0.3, "provenance": "OBSERVED" },
+      { "dimension": "cpu", "value": 0.2, "provenance": "OBSERVED" }
+    ], "expectState": "NORMAL", "expectDegradation": 0 }
+  ],
+  "policyThresholds": {
+    "memory": { "warn": 0.5, "high": 0.7, "critical": 0.9 },
+    "note": "tighter than defaults — 0.55 must become PRESSURED under this policy only"
+  },
+  "collectorFailure": {
+    "note": "throwing collector must yield UNKNOWN path + collectorFailures, never throw to caller"
+  },
+  "lowResource": {
+    "historySize": 16,
+    "floodReadings": 200,
+    "expectHistoryMax": 16,
+    "expectOverflowDrops": true,
+    "critical": { "dimension": "memory", "value": 0.97, "provenance": "OBSERVED" }
+  },
+  "unboundedGuard": {
+    "historySize": 8,
+    "readings": 1000,
+    "expectHistoryCount": 8
+  }
+}

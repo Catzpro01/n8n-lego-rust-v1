@@ -1,0 +1,272 @@
+{
+  "contract": "ai.memory",
+  "version": "1.0.0",
+  "owner": "manager",
+  "phase": "P2.14",
+  "status": "implemented",
+  "statusNote": "Bounded Memory is implemented: in-memory provider behind an explicit provider boundary, deterministic retrieval, scope isolation, integrity verification and explicit forget semantics. No vector search, no embedding, no model/Provider dependency. See notImplemented for the honest remainder.",
+  "definition": "Memory is information intentionally retained beyond context replacement. Context is what is loaded now; Session is the lifecycle of an interaction; Memory is what survives the replacement of a context window. Memory MUST NOT be hidden inside Context or Session state and MUST have an explicit provider/storage boundary.",
+  "distinction": "Context = temporary active state that can be compacted, rolled over and replaced. Session = identity plus references that track continuity across windows. Memory = deliberately retained records with their own identity, retention and provenance that remain available after any context is replaced. Loading memory into context is an explicit, bounded, relevance-driven operation; Memory is never dumped.",
+  "isNot": [
+    "the context window",
+    "the session lifecycle",
+    "a transcript dump",
+    "a second copy of the context payload",
+    "an agent execution log",
+    "a vector store or embedding index",
+    "an external provider, database or filesystem",
+    "a permission grant or capability authority",
+    "model inference, tool execution or provider integration",
+    "an unbounded chat history"
+  ],
+  "scopes": [
+    "GLOBAL",
+    "PROJECT",
+    "WORKFLOW",
+    "AGENT",
+    "SESSION"
+  ],
+  "scopeRule": "Scope owns isolation. A memory record's scope and scopeOwner determine its namespace; a list filtered to one scope never returns records from another. GLOBAL has no owner; every other scope requires a scopeOwner that is itself a stable identity (projectId, workflowId, agentId, sessionId). Memory never leaks across unrelated scopes and the provider boundary never infers a scope.",
+  "kinds": [
+    "note",
+    "decision",
+    "artifact",
+    "task",
+    "execution",
+    "reference"
+  ],
+  "kindRule": "Kind is the declared category of what is remembered, drawn from the memory graph's node vocabulary. A memory's kind does not grant execution semantics: a `task` memory is a record about a task, not a running task; a `decision` memory is a record about a choice, not the choice itself.",
+  "retention": [
+    "EPHEMERAL",
+    "WORKING",
+    "IMPORTANT",
+    "DURABLE",
+    "PERMANENT"
+  ],
+  "retentionRule": "Retention is an explicit declaration of how long the record is intended to survive. EPHEMERAL and WORKING are expected to be forgotten; IMPORTANT, DURABLE and PERMANENT require an explicit forget operation. Retention never silently upgrades: a record's retention is set at remember-time and only changes via an explicit update.",
+  "graph": {
+    "nodes": [
+      "project",
+      "workflow",
+      "node",
+      "execution",
+      "agent",
+      "session",
+      "decision",
+      "evidence",
+      "artifact",
+      "task"
+    ],
+    "edges": [
+      "depends_on",
+      "caused",
+      "derived_from",
+      "supports",
+      "contradicts",
+      "implements",
+      "belongs_to",
+      "delegated_to",
+      "decided_by",
+      "observed_in",
+      "related_to"
+    ],
+    "rule": "The graph is the logical shape of memory, not a storage engine. Nodes are addressable references that already exist elsewhere (a decision id, an artifact id, a workflow id). Edges are the declared vocabulary above, not free text. The P2.14 bounded implementation stores references as explicitly declared linkage; full graph traversal is deferred and retrieval remains bounded and deterministic."
+  },
+  "fields": [
+    "memoryId",
+    "scope",
+    "scopeOwner",
+    "kind",
+    "retention",
+    "content",
+    "references",
+    "provenance",
+    "version",
+    "size",
+    "checksum",
+    "createdAt",
+    "updatedAt"
+  ],
+  "fieldRule": "Every record carries the ten fields above plus a two-field integrity envelope (size, checksum). `content` is a JSON-serializable bounded value; `references` is an explicitly declared array of graph linkages; `provenance` records who and when. Nothing else is stored, and no field is optional except scopeOwner for GLOBAL.",
+  "referencesRule": "References are explicit graph edges carried inside a memory record. Each reference declares an id and a relation from the graph edge vocabulary. References are validated, bounded and never dereferenced automatically: they are linkage, not a load.",
+  "lifecycle": {
+    "states": [
+      "active",
+      "forgotten"
+    ],
+    "initial": "active",
+    "terminal": [
+      "forgotten"
+    ],
+    "transitions": {
+      "active": [
+        "forgotten"
+      ],
+      "forgotten": []
+    },
+    "rule": "A memory is active once remembered and only becomes forgotten via an explicit forget operation. There is no implicit expiry: EPHEMERAL records are not auto-deleted, they are candidates for explicit forgetting. Forgetting is terminal and idempotent: forgetting an already-forgotten identity returns forgotten without error."
+  },
+  "integrity": {
+    "algorithm": "sha256",
+    "encoding": "hex",
+    "input": "canonical JSON (sorted keys, recursive) of the record without the two integrity fields size and checksum",
+    "rule": "Every stored record's checksum and size are computed from the canonical serialization that excludes size and checksum themselves. Verification recomputes the same digest; a tampered field fails verification without silently repairing the record."
+  },
+  "isolation": {
+    "rule": "A memory record is isolated to its scope namespace. Listing with a scope filter returns only records whose scope and scopeOwner exactly match. Global memories are not returned when a workflow scope is requested, and a workflow's memories are not visible from a different workflow id. Isolation is tested explicitly and failure is fail-closed."
+  },
+  "persistence": {
+    "meaning": "Persistent memory means a record remains addressable after the context that created it has been replaced, compacted or rehydrated. Its persistence boundary is the provider, not the context object.",
+    "boundary": "The public contract is ai.memory; the storage implementation lives behind MemoryProvider. The default provider is an in-memory map for testing and bounded local use; it may be replaced by a SQLite, filesystem or graph store behind the same interface without changing the contract, operations, permissions or serialization.",
+    "providerNote": "Obsidian is a Memory Provider / human knowledge interface adapter. It is NOT the internal source of truth, and the memory graph must remain valid with no provider connected. The provider boundary is replaceable; the contract is not hard-wired to any storage engine.",
+    "hardWireRefusal": "The contract never names Supabase, filesystem, SQLite, PostgreSQL, Redis, browser storage or any external API as its storage. A concrete provider for persistence is always injected behind the boundary and never appears in the public API shape."
+  },
+  "operations": [
+    {
+      "name": "memory.remember",
+      "interaction": "call",
+      "permission": "ai:memory:write",
+      "idempotent": false,
+      "status": "implemented",
+      "summary": "Create or update a memory record. Validates identity, scope, kind and retention, rejects secrets and unbounded payloads, computes bounded size and deterministic checksum, and stores it via the provider. Calling remember twice with the same memoryId and identical content is a no-op (same version, same checksum); with different content it bumps the version.",
+      "input": {
+        "memoryId": "stable identity, 1..128 chars, ^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+        "scope": "one of GLOBAL, PROJECT, WORKFLOW, AGENT, SESSION",
+        "scopeOwner": "required unless GLOBAL, 1..128 chars, same identity pattern",
+        "kind": "one of note, decision, artifact, task, execution, reference",
+        "retention": "one of EPHEMERAL, WORKING, IMPORTANT, DURABLE, PERMANENT",
+        "content": "bounded JSON-serializable value, max 64 KiB canonical",
+        "references": "optional array of { id: string, relation: edge, kind?: string }, bounded to 32 entries, edge from graph vocabulary",
+        "provenance": "optional { createdBy?: string, source?: string }",
+        "idempotencyKey": "optional via envelope, not required"
+      },
+      "output": {
+        "record": "frozen memory record with all fields plus size, checksum, version, createdAt, updatedAt"
+      },
+      "errors": [
+        "lego.contract_violation",
+        "lego.interaction_mismatch"
+      ],
+      "idempotency": "Same memoryId + canonical content -> same version and checksum (no bump). Different content -> version increments and checksum changes."
+    },
+    {
+      "name": "memory.recall",
+      "interaction": "call",
+      "permission": "ai:memory:read",
+      "idempotent": true,
+      "status": "implemented",
+      "summary": "Retrieve one record by its memoryId. Returns the frozen record or null. Never throws for a missing id; throws for a malformed id.",
+      "input": {
+        "memoryId": "stable identity"
+      },
+      "output": {
+        "record": "frozen memory record or null, with verified size and checksum"
+      },
+      "errors": [
+        "lego.contract_violation"
+      ],
+      "empty": "null, not an exception"
+    },
+    {
+      "name": "memory.list",
+      "interaction": "call",
+      "permission": "ai:memory:read",
+      "idempotent": true,
+      "status": "implemented",
+      "summary": "Deterministic, bounded retrieval. Filters by scope, scopeOwner, kind and retention; orders by createdAt asc then memoryId asc; pages by limit and cursor. No full-store dump: every list is scoped and bounded.",
+      "input": {
+        "scope": "optional filter, must be a valid scope when present",
+        "scopeOwner": "optional, required to exactly match when filtering a non-GLOBAL scope",
+        "kind": "optional filter, must be a valid kind when present",
+        "retention": "optional filter, must be a valid retention when present",
+        "limit": "optional 1..100, default 50",
+        "cursor": "optional opaque cursor from a previous list's nextCursor",
+        "order": "optional createdAt asc (default) - no server-side relevance ranking is claimed"
+      },
+      "output": {
+        "results": "array of frozen records in deterministic order",
+        "total": "number of records matching the filter",
+        "nextCursor": "opaque cursor or null when no more results"
+      },
+      "empty": "[] with total 0",
+      "limits": "limit is clamped to 1..100; a missing or empty store returns 0 results deterministically"
+    },
+    {
+      "name": "memory.forget",
+      "interaction": "call",
+      "permission": "ai:memory:write",
+      "idempotent": true,
+      "status": "implemented",
+      "summary": "Delete a memory record by its memoryId. Explicit deletion only; no silent expiry. Forgetting an absent identity is a no-op that returns forgotten: false, never an error.",
+      "input": {
+        "memoryId": "stable identity"
+      },
+      "output": {
+        "forgotten": "boolean - true if a record was removed, false if none existed",
+        "memoryId": "the requested identity"
+      },
+      "errors": [
+        "lego.contract_violation"
+      ],
+      "idempotency": "Calling forget twice on the same identity yields false the second time; the state does not reappear."
+    }
+  ],
+  "interaction": [
+    "call",
+    "batch"
+  ],
+  "permissions": [
+    "ai:memory:read",
+    "ai:memory:write"
+  ],
+  "permissionNote": "Read covers recall and list; write covers remember and forget. There is no ai:memory:admin and no broad permission is introduced in P2.14. A memory record never carries a permission grant.",
+  "degradation": [
+    "available",
+    "degraded",
+    "optional-absent"
+  ],
+  "replacement": {
+    "policy": "contract-preserving",
+    "rule": "Graph storage may move from local JSON to SQLite to a graph store behind the same contract. The provider interface preserves operations, permissions, deterministic serialization, ordering and isolation, so a consumer never detects the swap except by provisioning."
+  },
+  "observability": "memory read/write/forget counts; never content",
+  "versioning": "1.0.0",
+  "tests": [
+    "apps/n8n-lego/test/lego-memory.test.mjs (focused backend: create, retrieve, empty, invalid input, duplicate/idempotent, update, scope isolation, persistence boundary, integrity, failure, ordering, limits)"
+  ],
+  "futureStages": [
+    "traverse: relevance-ranked graph traversal beyond deterministic list ordering",
+    "relate: explicit edge creation as a first-class operation beyond references array",
+    "retention enforcement: policy-driven archival rather than explicit forget only",
+    "provider adapters: SQLite, filesystem snapshot, Obsidian projection as adapters"
+  ],
+  "notImplemented": [
+    "model inference or provider API calls",
+    "Agent Machine execution loop, delegation or multi-agent runtime",
+    "Workspace executor, filesystem or terminal authority",
+    "MCP runtime, Runtime Adapter runtime, Node Creator or Translation runtime",
+    "vector search, embeddings or relevance ranking",
+    "automatic retention expiry - every forget is explicit",
+    "automatic memory-to-context injection - loading is always an explicit, bounded caller choice",
+    "external agent runtime integration",
+    "token provider integration",
+    "Rust implementation"
+  ],
+  "security": {
+    "mustNot": [
+      "store credentials, secrets, tokens, cookie or private model material in content or references",
+      "store host paths, terminal commands or unrestricted filesystem handles",
+      "store raw transcripts, reasoning traces or hidden prompts",
+      "grant a capability or permission",
+      "leak a record across scopes",
+      "silently repair a checksum mismatch"
+    ],
+    "failClosed": "A malformed identity, an unknown scope/kind/retention, a sensitive key in content, an invalid reference or a payload that exceeds bounded limits is refused with lego.contract_violation. A checksum mismatch is reported as a failure, never repaired.",
+    "sensitiveRefusal": "Content and reference keys are scanned by the same sensitive pattern that guards context state: credential, secret, password, token, cookie, authorization, api-key, private-key, hidden-prompt and raw-transcript variants are refused by name and by pattern."
+  },
+  "openDecisions": {
+    "XA-12": "Open-for-manager: ai.memory@1.0.0 bounded surface (four operations, provider boundary) is published and tested. The remaining deferred items are relevance-ranked traversal and retention-policy enforcement, which stay future stages.",
+    "XA-21": "Heed the existing 4,096 KB descriptor assembly pin. Memory adds no descriptor entry beyond the ai.memory capability and therefore no pin increase.",
+    "XA-11": "Remains open-for-manager (is a skill/memory a backend concept at all?); this implementation keeps ai.memory under the existing ai-foundation domain rather than a new top-level domain so a relocation moves a contract, not a domain."
+  }
+}

@@ -1,0 +1,1735 @@
+{
+  "version": "1.0.0",
+  "phase": "P2.27",
+  "owner": "manager",
+  "status": "in-progress",
+  "description": "The fifteen OFFICIAL AI/Agent LEGO. This file is the single authoritative declaration of the AI/Agent LEGO set: every generated master document is produced from it. It declares responsibilities, boundaries and roadmap. It implements nothing.",
+  "setRule": "These fifteen are official LEGO. They are not collapsed into one AI module, and no sixteenth top-level LEGO is created merely because a feature exists — a new feature is a sub-LEGO, a capability or an operation of an existing LEGO unless it owns a genuinely distinct lifecycle and data set.",
+  "statusVocabulary": {
+    "implemented": "Code exists, runs and is covered by tests.",
+    "contract-only": "The contract is fixed and testable; no implementation exists.",
+    "planned": "Intended; no contract is fixed yet.",
+    "blocked": "Cannot proceed until a named blocker is resolved.",
+    "deferred": "Deliberately postponed; no owner is scheduled.",
+    "in-progress": "Implementation is underway; completion still requires reconciliation and protected-main verification."
+  },
+  "conceptKinds": {
+    "lego": "A unit of ownership with its own contract, lifecycle, data and tests.",
+    "sub-lego": "A nested unit inside a LEGO. Reaching it requires an explicit declaration naming the child; nesting grants nothing.",
+    "contract": "The stable public surface. Lives above JS/Rust/WASM.",
+    "provider": "Where an implementation is sourced from.",
+    "adapter": "A translator at an edge between an external protocol and an internal contract.",
+    "runtime": "Where an agent or system executes.",
+    "capability": "An abstraction of WHAT can be done, independent of how.",
+    "operation": "One named, permissioned, interaction-classed action on a capability.",
+    "ui-experience": "A product surface rendered by the frontend. Not a LEGO.",
+    "artifact": "A referenced result. Never inlined into an event.",
+    "event": "A small, bounded record of something that happened.",
+    "implementation": "The swappable realisation of a contract."
+  },
+  "architecture": {
+    "rule": "AI Foundation is the FOUNDATION, not the agent loop. It owns identity, policy binding, capability resolution and provider abstraction. The agent loop belongs to Agent Machine.",
+    "chain": [
+      "ai-foundation",
+      "capability",
+      "context-session",
+      "policy",
+      "skill",
+      "agent-machine",
+      "workspace",
+      "memory",
+      "artifact",
+      "approval",
+      "agent-event",
+      "token-usage",
+      "mcp-adapter",
+      "runtime-adapter",
+      "translation",
+      "node-creator"
+    ],
+    "policyNote": "`policy` in the chain is not a sixteenth LEGO. Policy binding is owned by AI Foundation and enforced at Capability and Approval; it is a responsibility, not a unit."
+  },
+  "experiences": {
+    "rule": "Three product experiences over ONE AI Foundation. Three independent AI engines would triple the policy, capability and approval surface and guarantee they drift.",
+    "items": [
+      {
+        "id": "ai-assistant",
+        "kind": "ui-experience",
+        "owner": "agent-1",
+        "summary": "Global, system-wide AI help.",
+        "primaryScope": "GLOBAL",
+        "scopes": [
+          "GLOBAL"
+        ],
+        "examples": [
+          "n8n settings",
+          "project management",
+          "workflow assistance",
+          "credentials",
+          "system configuration",
+          "general n8n help"
+        ],
+        "backendContracts": [
+          "ai.model-gateway",
+          "ai.context",
+          "ai.agent-session"
+        ]
+      },
+      {
+        "id": "ai-copilot",
+        "kind": "ui-experience",
+        "owner": "agent-1",
+        "summary": "Context-aware work assistant that narrows as the user focuses.",
+        "primaryScope": "WORKFLOW",
+        "scopes": [
+          "GLOBAL",
+          "WORKFLOW",
+          "NODE",
+          "EXECUTION",
+          "EVENT"
+        ],
+        "modes": [
+          "inspect",
+          "explain",
+          "plan",
+          "modify",
+          "validate",
+          "test",
+          "observe",
+          "fix",
+          "review"
+        ],
+        "note": "Execution AI is a Copilot MODE, not a separate engine. It is the same contracts with the scope narrowed to EXECUTION.",
+        "backendContracts": [
+          "ai.model-gateway",
+          "ai.tool-gateway",
+          "ai.context",
+          "ai.agent-session",
+          "ai.approval"
+        ]
+      },
+      {
+        "id": "ai-node",
+        "kind": "ui-experience",
+        "owner": "agent-4",
+        "summary": "AI as a workflow runtime component, executing inside a run.",
+        "primaryScope": "NODE",
+        "scopes": [
+          "WORKFLOW",
+          "NODE",
+          "EXECUTION"
+        ],
+        "mustRespect": [
+          "workflow context",
+          "node context",
+          "execution context",
+          "capability permissions",
+          "approval policy",
+          "resource budget"
+        ],
+        "backendContracts": [
+          "ai.model-gateway",
+          "ai.tool-gateway",
+          "ai.approval",
+          "ai.artifact"
+        ]
+      }
+    ]
+  },
+  "lego": [
+    {
+      "id": "ai-foundation",
+      "index": 1,
+      "title": "AI Foundation",
+      "owner": "manager",
+      "status": "contract-only",
+      "phase": "A",
+      "reconciles": {
+        "coreDomain": "ai-foundation",
+        "rule": "Same unit. The official LEGO IS the existing core domain `ai-foundation`; this entry describes it, it does not create a second one."
+      },
+      "mission": "Own the AI request lifecycle, AI identity, policy binding, capability resolution, provider abstraction and the shared AI contract surface.",
+      "scope": [
+        "AI request lifecycle",
+        "AI identity",
+        "policy binding",
+        "capability resolution",
+        "provider abstraction",
+        "resource policy",
+        "lifecycle integration",
+        "shared AI contract surface"
+      ],
+      "nonScope": [
+        "filesystem implementation",
+        "MCP client/server implementation",
+        "model-specific code",
+        "memory persistence",
+        "terminal execution",
+        "agent business logic",
+        "the agent loop itself"
+      ],
+      "contracts": [
+        "ai.model-gateway",
+        "ai.tool-gateway",
+        "ai.application-provider"
+      ],
+      "entities": [
+        "provider",
+        "model",
+        "tool",
+        "policy binding"
+      ],
+      "lifecycle": [
+        "declared",
+        "available",
+        "active",
+        "degraded",
+        "disabled"
+      ],
+      "operations": [
+        "models.list",
+        "model.describe",
+        "generate",
+        "stream",
+        "embed",
+        "countTokens",
+        "tools.list",
+        "tool.describe",
+        "tool.call",
+        "resources.list",
+        "resource.read",
+        "prompts.list",
+        "prompt.get"
+      ],
+      "interaction": [
+        "call",
+        "stream",
+        "batch"
+      ],
+      "permissions": [
+        "ai:model:read",
+        "ai:model:invoke",
+        "ai:tool:read",
+        "ai:tool:invoke",
+        "ai:app:read",
+        "ai:app:invoke"
+      ],
+      "dependsOn": [],
+      "replacementBoundary": "A provider is replaced by binding a different implementation to the same contract. No consumer changes.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "capability-unavailable",
+        "optional-absent",
+        "version-incompatible"
+      ],
+      "observability": "Boundary events only: provider connected/unavailable.",
+      "versioning": "ai.model-gateway@1.0.0, ai.tool-gateway@1.0.0, ai.application-provider@1.0.0",
+      "tests": [
+        "test/lego-ai-foundation.test.mjs"
+      ],
+      "futureStages": [
+        "A: contracts (DONE)",
+        "E: first provider adapter",
+        "F: measured optimisation"
+      ]
+    },
+    {
+      "id": "skill",
+      "index": 2,
+      "title": "Skill",
+      "owner": "manager",
+      "status": "implemented",
+      "phase": "B",
+      "mission": "Package knowledge, rules, procedure and a capability map into a selectable, progressively disclosed unit.",
+      "definition": "Skill = knowledge + rules + procedure + capability map.",
+      "scope": [
+        "skill registration",
+        "skill selection",
+        "progressive disclosure",
+        "capability mapping"
+      ],
+      "nonScope": [
+        "executing tools directly",
+        "being an agent",
+        "owning model choice",
+        "owning memory"
+      ],
+      "contracts": [
+        "ai.skill"
+      ],
+      "entities": [
+        "skill",
+        "skill card",
+        "procedure",
+        "capability map"
+      ],
+      "lifecycle": [
+        "registered",
+        "available",
+        "selected",
+        "loaded",
+        "active",
+        "released"
+      ],
+      "disclosureLevels": {
+        "L0": "identity — id, title, one line. Always cheap to list.",
+        "L1": "card — when to use it, what it needs, what it produces.",
+        "L2": "procedure — the steps.",
+        "L3": "deep knowledge — references, examples, edge cases."
+      },
+      "disclosureRule": "A skill is selected on L0/L1 and only then loaded deeper. Loading every skill's L3 into context is how a context window is exhausted before any work starts.",
+      "operations": [
+        "list",
+        "resolve",
+        "describe",
+        "validate-selection"
+      ],
+      "interaction": [
+        "call"
+      ],
+      "permissions": [
+        "ai:skill:read",
+        "ai:skill:select"
+      ],
+      "dependsOn": [
+        "ai-foundation",
+        "capability"
+      ],
+      "replacementBoundary": "A skill's procedure may be rewritten without changing its identity or card.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "optional-absent"
+      ],
+      "observability": "skill selected / loaded / released.",
+      "versioning": "ai.skill@1.0.0",
+      "tests": [
+        "test/lego-skill.test.mjs"
+      ],
+      "futureStages": [
+        "D: authoring",
+        "E: skill packs"
+      ],
+      "versioningNote": "Published in P2.12. The REGISTRY is implemented: registration, validation, lazy discovery and the six-state lifecycle are real, tested code declared as capability ai.skill on the ai-foundation domain. Skills remain declarative documents — nothing executes a procedure.",
+      "phaseNote": "Phase B, delivered in repository phase P2.12 — the skill registry only. Memory, Workspace and the agent loop remain planned."
+    },
+    {
+      "id": "agent-machine",
+      "index": 3,
+      "title": "Agent Machine",
+      "owner": "manager",
+      "status": "contract-only",
+      "statusNote": "P2.16 implements the bounded execution FOUNDATION of this LEGO as ai.agent-machine@1.1.0 (machine/agent/task identity, canonical agent lifecycle incl. ready, bounded step bookkeeping, budgets, registry-validated capability scope, bounded delegation bookkeeping, graph validation, event derivation, provider/executor seam). The loop, delegation execution, parallel runtime and fan-out/fan-in scheduling remain contract-only: this LEGO stays contract-only until the runtime is real.",
+      "phase": "B",
+      "mission": "Own the agent loop: agent and task lifecycle, delegation, parallelism and cancellation.",
+      "scope": [
+        "agent lifecycle",
+        "task lifecycle",
+        "child agents",
+        "delegation",
+        "parallel execution",
+        "fan-out",
+        "fan-in",
+        "join",
+        "cancellation",
+        "retry",
+        "budgets",
+        "execution state"
+      ],
+      "nonScope": [
+        "model inference",
+        "tool implementation",
+        "memory persistence",
+        "approval policy decisions",
+        "being the AI Foundation"
+      ],
+      "contracts": [
+        "ai.agent-machine",
+        "ai.agent-runtime",
+        "ai.agent-delegation"
+      ],
+      "entities": [
+        "agent",
+        "task",
+        "delegation edge",
+        "budget"
+      ],
+      "lifecycle": [
+        "created",
+        "ready",
+        "running",
+        "waiting",
+        "paused",
+        "completed",
+        "failed",
+        "cancelled"
+      ],
+      "operations": [
+        "create",
+        "start",
+        "send",
+        "pause",
+        "resume",
+        "cancel",
+        "status",
+        "stream",
+        "artifact",
+        "close",
+        "delegate"
+      ],
+      "interaction": [
+        "call",
+        "event",
+        "stream",
+        "batch"
+      ],
+      "permissions": [
+        "ai:agent:create",
+        "ai:agent:invoke",
+        "ai:agent:control",
+        "ai:agent:read",
+        "ai:agent:delegate"
+      ],
+      "graphExample": [
+        "main",
+        "research",
+        "builder",
+        "tester",
+        "reviewer",
+        "aggregator"
+      ],
+      "authorityRule": "Delegation NEVER implies permission inheritance. A child receives only an explicit subset of what the parent holds.",
+      "dependsOn": [
+        "ai-foundation",
+        "capability",
+        "context-session",
+        "approval"
+      ],
+      "replacementBoundary": "A JS agent loop and a Rust agent loop satisfy the same contract. An external runtime satisfies it through Runtime Adapter.",
+      "resourceProfile": "standard",
+      "degradation": [
+        "available",
+        "degraded",
+        "capability-unavailable",
+        "dependency-disabled"
+      ],
+      "observability": "agent.* and tool.* events; no reasoning.",
+      "versioning": "ai.agent-machine@1.1.0, ai.agent-runtime@1.0.0, ai.agent-delegation@1.0.0",
+      "tests": [
+        "test/lego-ai-foundation.test.mjs (contract level)",
+        "test/lego-agent-machine.test.mjs (P2.16 execution foundation)",
+        "planned: loop, fan-out/fan-in, cancellation propagation"
+      ],
+      "futureStages": [
+        "B: runtime",
+        "C: delegation graph",
+        "F: measured Rust candidate"
+      ]
+    },
+    {
+      "id": "memory",
+      "index": 4,
+      "title": "Memory",
+      "owner": "manager",
+      "status": "implemented",
+      "phase": "B",
+      "mission": "Own persistent knowledge as a traversable graph — not the current context window.",
+      "distinction": "Memory is persistent knowledge. Context is what is loaded right now. Conflating them produces a system that either forgets everything or loads everything.",
+      "scope": [
+        "memory graph",
+        "retention classes",
+        "relevance traversal",
+        "memory providers"
+      ],
+      "nonScope": [
+        "being the context window",
+        "being the session",
+        "dumping full memory into a prompt"
+      ],
+      "contracts": [
+        "ai.memory"
+      ],
+      "lifecycle": [
+        "declared",
+        "available",
+        "active",
+        "degraded",
+        "disabled"
+      ],
+      "graph": {
+        "nodes": [
+          "project",
+          "workflow",
+          "node",
+          "execution",
+          "agent",
+          "session",
+          "decision",
+          "evidence",
+          "artifact",
+          "task"
+        ],
+        "edges": [
+          "depends_on",
+          "caused",
+          "derived_from",
+          "supports",
+          "contradicts",
+          "implements",
+          "belongs_to",
+          "delegated_to",
+          "decided_by",
+          "observed_in",
+          "related_to"
+        ]
+      },
+      "retention": [
+        "EPHEMERAL",
+        "WORKING",
+        "IMPORTANT",
+        "DURABLE",
+        "PERMANENT"
+      ],
+      "loadRule": "Never dump full memory into context. Load by graph traversal plus relevance, bounded by the caller's budget.",
+      "providerNote": "Obsidian is a Memory Provider / human knowledge interface adapter. It is NOT the internal source of truth, and the memory graph must remain valid with no provider connected.",
+      "operations": [
+        "memory.remember",
+        "memory.recall",
+        "memory.list",
+        "memory.forget"
+      ],
+      "interaction": [
+        "call",
+        "batch"
+      ],
+      "permissions": [
+        "ai:memory:read",
+        "ai:memory:write"
+      ],
+      "dependsOn": [
+        "ai-foundation",
+        "storage"
+      ],
+      "replacementBoundary": "Graph storage may move from local JSON to SQLite to a graph store behind the same contract.",
+      "resourceProfile": "standard",
+      "degradation": [
+        "available",
+        "degraded",
+        "optional-absent"
+      ],
+      "observability": "memory read/write counts; never content.",
+      "versioning": "ai.memory@1.0.0",
+      "tests": [
+        "test/lego-memory.test.mjs (create, recall, empty, invalid, duplicate, update, isolation, provider, integrity, forget, ordering, limits)"
+      ],
+      "futureStages": [
+        "traverse: relevance-ranked graph traversal",
+        "relate: explicit edge creation as first-class operation",
+        "retention enforcement: policy-driven archival",
+        "provider adapters: SQLite, filesystem snapshot, Obsidian projection as adapters"
+      ],
+      "phaseNote": "P2.14 backend implementation: bounded local provider, scope-isolated retrieval, checksum lineage, explicit forget. No retrieval ranking, no embeddings, no vector store.",
+      "statusNote": "P2.14 implemented: memory survives context replacement, scope-isolated and provider-replaceable. Four operations only; traverse/relate deferred as future stages via explicit references."
+    },
+    {
+      "id": "workspace",
+      "index": 5,
+      "title": "Workspace",
+      "owner": "manager",
+      "status": "implemented",
+      "phase": "B",
+      "reconciles": {
+        "coreDomain": "workspace",
+        "rule": "Same unit. `workspace` is the existing core domain and P2.15 extends that domain with the bounded ai.workspace contract. There is no ai-workspace duplicate. Agent-1 owns the P2.15 implementation while Manager retains contract governance; Agent-2 remains frozen."
+      },
+      "mission": "Own the explicit workspace identity and bounded logical lifecycle an agent may later act within; do not execute the action.",
+      "scope": [
+        "workspace identity",
+        "workspace metadata",
+        "opaque resource references",
+        "logical lifecycle",
+        "provider capability seam"
+      ],
+      "nonScope": [
+        "filesystem authority",
+        "terminal or shell authority",
+        "arbitrary process execution",
+        "credential or secret ownership",
+        "model inference",
+        "tool execution",
+        "MCP/runtime adapter",
+        "Agent Machine loop",
+        "being the agent",
+        "automatic persistence policy"
+      ],
+      "contracts": [
+        "ai.workspace"
+      ],
+      "lifecycle": [
+        "declared",
+        "created",
+        "mounted",
+        "active",
+        "released"
+      ],
+      "kinds": [
+        "LOCAL",
+        "CONTAINER",
+        "REMOTE",
+        "VPS",
+        "EPHEMERAL",
+        "PERSISTENT"
+      ],
+      "contains": [
+        "workspace metadata",
+        "opaque resource references",
+        "provider-declared kind",
+        "logical lifecycle state"
+      ],
+      "scopingRule": "Every operation names one workspaceId. The core uses exact identity lookup and never grants host-wide access, filesystem access or terminal access; future execution must consume this boundary through its own contract.",
+      "operations": [
+        "workspace.create",
+        "workspace.describe",
+        "workspace.mount",
+        "workspace.release"
+      ],
+      "interaction": [
+        "call"
+      ],
+      "permissions": [
+        "ai:workspace:read",
+        "ai:workspace:create"
+      ],
+      "dependsOn": [
+        "ai-foundation",
+        "capability"
+      ],
+      "replacementBoundary": "InMemoryWorkspaceProvider is the default bounded provider; a replacement provider must preserve ai.workspace@1.0.0 and explicitly answer supports(kind). Provider durability and execution capabilities remain outside Workspace.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "capability-unavailable",
+        "permission-denied",
+        "invalid-input",
+        "conflict"
+      ],
+      "observability": "workspace identity/lifecycle transitions may be observed by the owning application; no provider internals, paths, commands or credentials are exposed.",
+      "versioning": "ai.workspace@1.0.0",
+      "tests": [
+        "test/lego-workspace.test.mjs"
+      ],
+      "futureStages": [
+        "B: LOCAL",
+        "C: CONTAINER",
+        "E: REMOTE/VPS"
+      ],
+      "permissionRule": "Read describes an exact identity. Create covers bounded lifecycle mutations. There is no ai:workspace:execute permission in P2.15.",
+      "implementationBoundary": "P2.15 implements identity, bounded metadata, opaque references, exact-id isolation, logical create/describe/mount/release and an explicit provider seam. It does not mount a filesystem or start a process.",
+      "limits": {
+        "maxWorkspaces": 256,
+        "maxIdentifierLength": 64,
+        "maxMetadataBytes": 16384,
+        "maxMetadataKeys": 32,
+        "maxMetadataDepth": 4,
+        "maxResourceReferences": 16
+      }
+    },
+    {
+      "id": "context-session",
+      "index": 6,
+      "title": "Context & Session",
+      "owner": "manager",
+      "status": "in-progress",
+      "phase": "A",
+      "mission": "Own the distinction between conversation, session, context window, memory and execution — and manage rollover before a limit is hit.",
+      "distinction": "Conversation != Session != Context Window != Memory != Execution. One conversation may contain many sessions and many context windows.",
+      "scope": [
+        "context scopes",
+        "session identity",
+        "usage monitoring",
+        "threshold detection",
+        "compaction",
+        "continuation package",
+        "session rollover",
+        "rehydration",
+        "verification"
+      ],
+      "nonScope": [
+        "being persistent memory",
+        "storing transcripts inside session state"
+      ],
+      "contracts": [
+        "ai.context",
+        "ai.agent-session"
+      ],
+      "lifecycle": [
+        "declared",
+        "active",
+        "prepare",
+        "compacting",
+        "rolled-over",
+        "closed"
+      ],
+      "scopes": [
+        "GLOBAL",
+        "WORKFLOW",
+        "NODE",
+        "EXECUTION",
+        "EVENT",
+        "AGENT",
+        "TASK"
+      ],
+      "continuationPackage": [
+        "identity",
+        "objective",
+        "plan",
+        "completedWork",
+        "unfinishedWork",
+        "constraints",
+        "decisions",
+        "activeEntities",
+        "toolStateReferences",
+        "artifacts",
+        "importantReferences",
+        "errors",
+        "unresolvedQuestions",
+        "compressedHistory"
+      ],
+      "rolloverRule": "Never wait for the exact context limit. Rollover is triggered at a declared threshold, because a rollover attempted at 100% has no room left to write the continuation package — the one operation that makes the rollover survivable.",
+      "operations": [
+        "load",
+        "compact",
+        "rollover",
+        "rehydrate",
+        "verify"
+      ],
+      "interaction": [
+        "call"
+      ],
+      "permissions": [
+        "ai:context:read",
+        "ai:context:write"
+      ],
+      "dependsOn": [
+        "ai-foundation"
+      ],
+      "replacementBoundary": "Compaction strategy is swappable behind the contract.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "degraded",
+        "migration-required"
+      ],
+      "observability": "context.loaded, context.compacted.",
+      "versioning": "ai.context@1.0.0, ai.agent-session@1.0.0",
+      "tests": [
+        "test/lego-context-session.test.mjs",
+        "planned: frontend/backend alignment and full reconciliation"
+      ],
+      "futureStages": [
+        "A: contracts (DONE)",
+        "B: manager",
+        "D: verification"
+      ],
+      "versioningNote": "The contracts were conceptual in the P2.12 baseline. P2.13 publishes the smallest additive lock rows from the established fields and lifecycle vocabulary. The implementation is in-progress on the Agent 2 branch; Manager reconciliation is still required before milestone completion.",
+      "phaseNote": "P2.13 implementation milestone. Memory remains separate and follows this foundation."
+    },
+    {
+      "id": "translation",
+      "index": 7,
+      "title": "Universal Translation",
+      "owner": "manager",
+      "status": "planned",
+      "phase": "D",
+      "mission": "Own translation, detection, localization and normalization as a capability — not merely a UI dictionary.",
+      "scope": [
+        "translation",
+        "language detection",
+        "localization",
+        "normalization",
+        "markup preservation",
+        "context-aware translation"
+      ],
+      "nonScope": [
+        "owning frontend dictionaries",
+        "becoming a core dependency",
+        "being required for boot"
+      ],
+      "contracts": [
+        "ai.translation"
+      ],
+      "lifecycle": [
+        "declared",
+        "available",
+        "active",
+        "optional-absent"
+      ],
+      "locales": [
+        "id",
+        "en",
+        "ar",
+        "zh",
+        "ru",
+        "jv"
+      ],
+      "rtl": [
+        "ar"
+      ],
+      "localeNote": "The locale baseline is a PLAN, not shipped support. Arabic is RTL, which is a layout concern the frontend owns; the backend owns the direction declaration.",
+      "operations": [
+        "translate",
+        "detect",
+        "localize",
+        "normalize"
+      ],
+      "interaction": [
+        "call",
+        "batch"
+      ],
+      "permissions": [
+        "ai:translation:invoke"
+      ],
+      "dependsOn": [
+        "ai-foundation"
+      ],
+      "replacementBoundary": "A model-backed translator and a dictionary translator satisfy the same contract.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "optional-absent"
+      ],
+      "observability": "translation requested/completed; never content.",
+      "versioning": "publicationPending",
+      "tests": [
+        "planned: markup preservation, RTL declaration, fallback when absent"
+      ],
+      "futureStages": [
+        "D: contract + detection",
+        "E: provider-backed translation"
+      ]
+    },
+    {
+      "id": "node-creator",
+      "index": 8,
+      "title": "Node Creator",
+      "owner": "agent-4",
+      "status": "planned",
+      "phase": "D",
+      "reconciles": {
+        "coreDomain": "node-registry",
+        "rule": "Node Creator is a sub-LEGO boundary of `node-registry` (owner agent-4), not a new top-level domain. The Node Contract it produces is already declared in manifest/node-contract.json."
+      },
+      "mission": "Create and transform nodes through multiple declared strategies, each ending in conformance.",
+      "scope": [
+        "creation strategies",
+        "generation",
+        "validation",
+        "conformance",
+        "packaging"
+      ],
+      "nonScope": [
+        "the Node Registry",
+        "installing nodes",
+        "choosing Rust for its own sake"
+      ],
+      "contracts": [
+        "node.creator"
+      ],
+      "strategies": [
+        "template",
+        "visual",
+        "declarative",
+        "openapi",
+        "transform",
+        "formula",
+        "subworkflow",
+        "script",
+        "native-js",
+        "rust-wasm",
+        "connector",
+        "agent-generated"
+      ],
+      "lifecycle": [
+        "draft",
+        "validate",
+        "generate",
+        "test",
+        "conformance",
+        "package",
+        "install",
+        "activate"
+      ],
+      "rustRule": "Rust/WASM is one strategy among twelve. It must never be selected merely because it exists — only on measured benefit, and never requiring a compiler on an end-user device.",
+      "operations": [
+        "draft",
+        "validate",
+        "generate",
+        "test",
+        "package"
+      ],
+      "interaction": [
+        "call",
+        "batch"
+      ],
+      "permissions": [
+        "node:create",
+        "node:validate"
+      ],
+      "dependsOn": [
+        "node-registry",
+        "capability"
+      ],
+      "replacementBoundary": "Each strategy is an implementation of one creation contract.",
+      "resourceProfile": "standard",
+      "degradation": [
+        "available",
+        "capability-unavailable"
+      ],
+      "observability": "creation lifecycle transitions.",
+      "versioning": "publicationPending",
+      "tests": [
+        "planned: per-strategy conformance, generated-node validity"
+      ],
+      "futureStages": [
+        "D: template + declarative",
+        "E: OpenAPI + connector",
+        "F: measured rust-wasm"
+      ]
+    },
+    {
+      "id": "capability",
+      "index": 9,
+      "title": "Capability",
+      "owner": "manager",
+      "status": "implemented",
+      "phase": "A",
+      "reconciles": {
+        "coreDomain": "lego-foundation",
+        "rule": "Same mechanism. The official Capability LEGO is the existing capability/negotiation infrastructure owned by `lego-foundation` (contracts lego.domain-registry, lego.negotiation). No parallel AI capability registry is created."
+      },
+      "mission": "Own the abstraction that separates WHAT can be done from HOW and WHERE it is done.",
+      "distinction": "Capability != tool implementation. `filesystem.write` is one capability with many possible implementations: native, container, remote worker, MCP, external runtime.",
+      "scope": [
+        "capability registry",
+        "operations",
+        "permissions",
+        "interaction class",
+        "locality",
+        "availability",
+        "lifecycle",
+        "replacement",
+        "degradation",
+        "migration state"
+      ],
+      "nonScope": [
+        "implementing any capability",
+        "owning transport"
+      ],
+      "contracts": [
+        "lego.domain-registry",
+        "lego.negotiation"
+      ],
+      "lifecycle": [
+        "declared",
+        "registered",
+        "available",
+        "active",
+        "degraded",
+        "retired"
+      ],
+      "registryFields": [
+        "id",
+        "version",
+        "owner",
+        "provider",
+        "operations",
+        "permissions",
+        "interactionClass",
+        "locality",
+        "latency",
+        "resourceProfile",
+        "availability",
+        "lifecycle",
+        "replacement",
+        "degradation",
+        "migrationState"
+      ],
+      "interactionClasses": [
+        "call",
+        "event",
+        "stream",
+        "batch"
+      ],
+      "classRule": "Exactly four interaction classes. No internal fifth class may be added.",
+      "operations": [
+        "register",
+        "resolve",
+        "negotiate",
+        "describe",
+        "list"
+      ],
+      "interaction": [
+        "call"
+      ],
+      "permissions": [
+        "lego:read",
+        "lego:admin"
+      ],
+      "dependsOn": [],
+      "replacementBoundary": "This IS the replacement mechanism.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "capability-unavailable",
+        "version-incompatible",
+        "dependency-disabled",
+        "access-denied"
+      ],
+      "observability": "negotiation outcomes.",
+      "versioning": "lego.domain-registry@1.1.0, lego.negotiation@1.0.0",
+      "tests": [
+        "test/lego-capability-contract.test.mjs",
+        "test/lego-communication.test.mjs",
+        "test/lego-foundation.test.mjs"
+      ],
+      "futureStages": [
+        "A: DONE — 82 capabilities, 139 operations declared"
+      ],
+      "countCorrection": "P2.10 prose and its evidence file stated 173 operations. The manifest has always declared 139 (82 capabilities, 62 of which declare operations); the 173 figure was an arithmetic error, not a change in the data. `manifest/domains.json` is byte-identical to its P2.10 state. The count is now generated rather than written, so it cannot drift again."
+    },
+    {
+      "id": "mcp-adapter",
+      "index": 10,
+      "title": "MCP Adapter",
+      "owner": "manager",
+      "status": "contract-only",
+      "phase": "C",
+      "mission": "Translate between MCP and internal capability contracts at the edge.",
+      "scope": [
+        "MCP server role",
+        "MCP client role",
+        "controlled discovery",
+        "lazy tool loading",
+        "explicit capability export"
+      ],
+      "nonScope": [
+        "being the internal business contract",
+        "being the AI Foundation",
+        "being the Agent Machine",
+        "being a universal internal transport"
+      ],
+      "contracts": [
+        "ai.tool-gateway"
+      ],
+      "lifecycle": [
+        "declared",
+        "discovered",
+        "connected",
+        "active",
+        "degraded",
+        "disconnected"
+      ],
+      "objects": [
+        "server",
+        "client",
+        "tool",
+        "resource",
+        "prompt",
+        "connection",
+        "authorization",
+        "capability"
+      ],
+      "boundaryRule": "MCP maps ONTO the tool gateway; the tool gateway is not defined in MCP terms. If MCP changes, one adapter changes.",
+      "internalRule": "No internal LEGO may call another over MCP. Native capabilities use native contracts.",
+      "discoveryRule": "Controlled discovery with lazy loading. Never load hundreds of external tools into context by default — tool descriptions are context, and an unbounded tool list exhausts the window before any work begins.",
+      "operations": [
+        "connect",
+        "discover",
+        "describe",
+        "call",
+        "disconnect"
+      ],
+      "interaction": [
+        "call",
+        "event",
+        "stream"
+      ],
+      "permissions": [
+        "ai:tool:read",
+        "ai:tool:invoke"
+      ],
+      "dependsOn": [
+        "ai-foundation",
+        "capability"
+      ],
+      "replacementBoundary": "The adapter is replaceable; the tool gateway contract is not affected.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "capability-unavailable",
+        "optional-absent"
+      ],
+      "observability": "connection state; tool call boundaries.",
+      "versioning": "publicationPending",
+      "tests": [
+        "test/lego-ai-foundation.test.mjs (boundary rules)",
+        "planned: adapter conformance, lazy discovery bounds"
+      ],
+      "futureStages": [
+        "C: client adapter",
+        "C: server export list",
+        "E: external servers"
+      ],
+      "versioningNote": "The tool-gateway contract it binds to is published at 1.0.0; the adapter contract itself is unpublished.",
+      "statusNote": "P2.20 publishes ai.mcp-boundary@1.0.0: the four-state MCP boundary declaration (declared / permission-required / exposed / blocked) with an explicit permission gate, fail-closed unknown-server/capability/permission handling and strict authority separation from Agent Control, in src/lego/mcp-boundary.mjs. The LEGO stays contract-only: no MCP server, no MCP client, no adapter runtime, no SDK and no network — adapter implementation stays P3/FUTURE."
+    },
+    {
+      "id": "runtime-adapter",
+      "index": 11,
+      "title": "Runtime Adapter",
+      "owner": "manager",
+      "status": "contract-only",
+      "phase": "C",
+      "mission": "Let an external agent runtime participate through one canonical lifecycle.",
+      "scope": [
+        "runtime registration",
+        "lifecycle translation",
+        "capability declaration",
+        "locality",
+        "availability"
+      ],
+      "nonScope": [
+        "reimplementing external runtimes",
+        "requiring a local install",
+        "owning the agent loop"
+      ],
+      "contracts": [
+        "ai.agent-runtime"
+      ],
+      "lifecycle": [
+        "connect",
+        "start",
+        "send",
+        "stream",
+        "pause",
+        "resume",
+        "cancel",
+        "status",
+        "artifacts",
+        "disconnect"
+      ],
+      "exampleRuntimes": [
+        "Hermes",
+        "Claude Code",
+        "Gemini CLI",
+        "OpenClaw",
+        "Antigravity",
+        "other agent harnesses"
+      ],
+      "noRewriteRule": "External runtimes are NEVER reimplemented — in Rust or otherwise. They are adapted. Reimplementing a third-party agent harness means owning its bugs and its release cycle for no architectural gain.",
+      "operations": [
+        "connect",
+        "start",
+        "send",
+        "stream",
+        "pause",
+        "resume",
+        "cancel",
+        "status",
+        "artifact",
+        "disconnect"
+      ],
+      "interaction": [
+        "call",
+        "stream"
+      ],
+      "permissions": [
+        "ai:agent:invoke",
+        "ai:agent:control",
+        "ai:agent:read"
+      ],
+      "dependsOn": [
+        "ai-foundation",
+        "agent-machine"
+      ],
+      "replacementBoundary": "Every runtime is one implementation of ai.agent-runtime.",
+      "resourceProfile": "remote",
+      "degradation": [
+        "available",
+        "capability-unavailable",
+        "optional-absent",
+        "version-incompatible"
+      ],
+      "observability": "runtime.connected / disconnected / unavailable.",
+      "versioning": "ai.agent-runtime@1.0.0",
+      "tests": [
+        "test/lego-ai-foundation.test.mjs",
+        "planned: adapter conformance per runtime"
+      ],
+      "futureStages": [
+        "C: contract conformance harness",
+        "E: first external runtime"
+      ],
+      "statusNote": "P2.21 publishes ai.runtime-adapter@1.0.0: the contract-preserving adapter seam (explicit provider registration, EXTERNAL executorKind fail-closed without an eligible provider, lifecycle translation onto ai.agent-machine@1.1.0) plus a deterministic in-process/simulated harness, in src/lego/runtime-adapter.mjs. The LEGO stays contract-only: no external runtime is implemented, nothing is rewritten — external runtimes are adapted, never reimplemented. ai.agent-runtime stays the lifecycle contract; no MCP, no model, no scheduler, no shell/filesystem authority."
+    },
+    {
+      "id": "artifact",
+      "index": 12,
+      "title": "Artifact",
+      "owner": "manager",
+      "status": "contract-only",
+      "statusNote": "P2.19 implements the bounded ai.artifact@1.0.0 foundation (opaque reference-only identity, sha256 integrity semantics, lifecycle, secret-safe bounded metadata) in src/lego/artifact.mjs. The LEGO stays contract-only: no storage engine and no filesystem authority — storage providers remain contract-only.",
+      "phase": "C",
+      "mission": "Hold results by reference, with checksum and retention.",
+      "scope": [
+        "artifact identity",
+        "metadata",
+        "retention",
+        "storage reference",
+        "checksum"
+      ],
+      "nonScope": [
+        "storing payloads inside events",
+        "owning the storage backend"
+      ],
+      "contracts": [
+        "ai.artifact"
+      ],
+      "lifecycle": [
+        "declared",
+        "created",
+        "referenced",
+        "retained",
+        "expired"
+      ],
+      "kinds": [
+        "patch",
+        "diff",
+        "log",
+        "report",
+        "screenshot",
+        "generated_file",
+        "model_output",
+        "test_result",
+        "simulation_result"
+      ],
+      "metadata": [
+        "artifactId",
+        "kind",
+        "size",
+        "mime",
+        "createdAt",
+        "owner",
+        "storageRef",
+        "checksum",
+        "retention"
+      ],
+      "retention": [
+        "ephemeral",
+        "session",
+        "retained",
+        "pinned"
+      ],
+      "referenceRule": "Artifacts are referenced, never inlined. A giant payload inside an event makes every consumer of that event pay for data it usually does not read.",
+      "operations": [
+        "create",
+        "read",
+        "describe"
+      ],
+      "interaction": [
+        "call"
+      ],
+      "permissions": [
+        "ai:artifact:read",
+        "ai:artifact:write"
+      ],
+      "dependsOn": [
+        "ai-foundation",
+        "storage"
+      ],
+      "replacementBoundary": "storageRef is opaque: local file, SQLite row or object store.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "capability-unavailable"
+      ],
+      "observability": "artifact.created / updated.",
+      "versioning": "ai.artifact@1.0.0",
+      "tests": [
+        "test/lego-ai-foundation.test.mjs"
+      ],
+      "futureStages": [
+        "C: store + retention",
+        "E: remote artifact stores"
+      ]
+    },
+    {
+      "id": "approval",
+      "index": 13,
+      "title": "Approval",
+      "owner": "manager",
+      "status": "contract-only",
+      "statusNote": "P2.19 implements the bounded ai.approval@1.0.0 foundation (request/grant/deny with required scope, fail-closed evaluation, deterministic duplicates, expiration and the dependency-side waiting resolution for Agent Machine approvalReferences) in src/lego/approval.mjs. The LEGO stays contract-only: no approval UI, no executor, no enforcement middleware.",
+      "phase": "C",
+      "mission": "Be the formal control boundary for consequential actions.",
+      "scope": [
+        "approval request",
+        "resolution",
+        "risk classification",
+        "fail-closed policy"
+      ],
+      "nonScope": [
+        "approval UI",
+        "being an audit log",
+        "deciding policy for a domain it does not own"
+      ],
+      "contracts": [
+        "ai.approval"
+      ],
+      "lifecycle": [
+        "declared",
+        "requested",
+        "pending",
+        "granted",
+        "denied",
+        "expired"
+      ],
+      "requiresApproval": [
+        "workflow execution",
+        "credential changes",
+        "system settings",
+        "resource deletion",
+        "git push",
+        "merge",
+        "external message",
+        "high-risk terminal activity"
+      ],
+      "failClosedRule": "Unknown and destructive actions FAIL CLOSED. An expired or unanswered approval is a DENY. Read-only must be proven, never assumed — the tempting `list.includes(action)` implementation returns false for anything new, so a newly added destructive action would need no approval until someone remembered to extend the list.",
+      "authorityRule": "Child agents never inherit authority automatically.",
+      "operations": [
+        "request",
+        "resolve",
+        "inspect"
+      ],
+      "interaction": [
+        "call",
+        "event"
+      ],
+      "permissions": [
+        "ai:approval:request",
+        "ai:approval:resolve",
+        "ai:approval:read"
+      ],
+      "dependsOn": [
+        "ai-foundation",
+        "capability"
+      ],
+      "replacementBoundary": "Policy engine swappable behind the contract.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "permission-denied",
+        "capability-unavailable"
+      ],
+      "observability": "approval.requested / granted / denied.",
+      "versioning": "ai.approval@1.0.0",
+      "tests": [
+        "test/lego-ai-foundation.test.mjs (fail-closed proven)"
+      ],
+      "futureStages": [
+        "C: store + policy",
+        "D: UI surface (agent-1)"
+      ]
+    },
+    {
+      "id": "agent-event",
+      "index": 14,
+      "title": "Agent Event & Work Trace",
+      "owner": "manager",
+      "status": "contract-only",
+      "phase": "D",
+      "mission": "Record operational activity in small, bounded, reference-based events.",
+      "scope": [
+        "event vocabulary",
+        "work trace",
+        "bounded payloads"
+      ],
+      "nonScope": [
+        "chain-of-thought",
+        "raw prompts",
+        "full model output",
+        "credentials"
+      ],
+      "contracts": [
+        "ai.agent-events"
+      ],
+      "lifecycle": [
+        "declared",
+        "emitting",
+        "active",
+        "degraded"
+      ],
+      "eventFields": [
+        "timestamp",
+        "sessionId",
+        "agentId",
+        "parentId",
+        "taskId",
+        "type",
+        "status",
+        "duration",
+        "summary",
+        "refs"
+      ],
+      "privacyRule": "Work Trace represents operational activity, NOT private reasoning. Chain-of-thought is never stored: it is not an audit format, and retaining it creates a liability with no operational benefit.",
+      "eventCount": 26,
+      "operations": [
+        "emit",
+        "subscribe",
+        "query"
+      ],
+      "interaction": [
+        "event",
+        "stream"
+      ],
+      "permissions": [
+        "ai:event:read",
+        "ai:event:write"
+      ],
+      "dependsOn": [
+        "ai-foundation"
+      ],
+      "replacementBoundary": "Event sink swappable; vocabulary is not.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "degraded"
+      ],
+      "observability": "this LEGO IS the observability surface for AI.",
+      "versioning": "ai.agent-events@1.0.0",
+      "tests": [
+        "test/lego-ai-foundation.test.mjs"
+      ],
+      "futureStages": [
+        "D: trace store + query",
+        "D: UI surface (agent-1)"
+      ]
+    },
+    {
+      "id": "token-usage",
+      "index": 15,
+      "title": "Token & Usage",
+      "owner": "manager",
+      "status": "in-progress",
+      "phase": "D",
+      "mission": "Account for token and resource usage honestly, distinguishing reported from estimated.",
+      "scope": [
+        "message tokens",
+        "model input tokens",
+        "output tokens",
+        "total tokens",
+        "budget",
+        "resource accounting",
+        "context rollover input",
+        "session statistics",
+        "agent usage",
+        "provider usage"
+      ],
+      "nonScope": [
+        "fabricating provider metrics",
+        "billing",
+        "owning the UI"
+      ],
+      "contracts": [
+        "ai.token-usage"
+      ],
+      "lifecycle": [
+        "declared",
+        "accounting",
+        "active",
+        "degraded",
+        "optional-absent"
+      ],
+      "sources": [
+        "reported",
+        "estimated"
+      ],
+      "honestyRule": "Never fabricate provider metrics. A token count that the provider did not report is `estimated` and must be labelled as such — an estimate presented as a measurement is worse than no number, because it cannot be audited.",
+      "uiRule": "Message text stays dominant; per-message token metadata stays subtle (e.g. `· 8 tokens`). A detailed view may expose message/context/output/total/source. Context-level usage may show e.g. `Context 61%`.",
+      "uiOwner": "agent-1 owns the rendering; this LEGO owns the numbers and their provenance.",
+      "operations": [
+        "record",
+        "query",
+        "budget"
+      ],
+      "interaction": [
+        "call",
+        "event"
+      ],
+      "permissions": [
+        "ai:usage:read",
+        "ai:usage:write"
+      ],
+      "dependsOn": [
+        "ai-foundation",
+        "context-session"
+      ],
+      "replacementBoundary": "Accounting backend swappable.",
+      "resourceProfile": "low-resource",
+      "degradation": [
+        "available",
+        "degraded",
+        "optional-absent"
+      ],
+      "observability": "usage per session/agent/provider.",
+      "versioning": "ai.token-usage@1.0.0",
+      "tests": [
+        "test/lego-token-usage.test.mjs (record provenance, zero-vs-unavailable, estimator identity, idempotent requestId, budget derivation, cost pricing basis, secret/content refusal)",
+        "planned: UI surface (agent-1), provider-reported metrics (stage E)"
+      ],
+      "futureStages": [
+        "D: accounting",
+        "D: UI surface (agent-1)",
+        "E: provider-reported metrics"
+      ]
+    }
+  ],
+  "externalActionModel": {
+    "rule": "Every external action routes through Capability + Policy + Workspace. An agent never receives unrestricted OS authority by default.",
+    "examples": [
+      {
+        "capability": "filesystem.read",
+        "sideEffects": "read-only",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "filesystem.write",
+        "sideEffects": "writes",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "filesystem.patch",
+        "sideEffects": "writes",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "terminal.execute",
+        "sideEffects": "destructive",
+        "workspaceScoped": true,
+        "approval": "high-risk activity requires approval"
+      },
+      {
+        "capability": "project.create",
+        "sideEffects": "writes",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "project.build",
+        "sideEffects": "writes",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "project.test",
+        "sideEffects": "writes",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "browser.open",
+        "sideEffects": "external",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "git.status",
+        "sideEffects": "read-only",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "git.diff",
+        "sideEffects": "read-only",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "git.commit",
+        "sideEffects": "writes",
+        "workspaceScoped": true
+      },
+      {
+        "capability": "github.create_pr",
+        "sideEffects": "external",
+        "workspaceScoped": false,
+        "approval": "required"
+      }
+    ],
+    "status": "contract-only — none of these capabilities is implemented"
+  },
+  "deploymentModes": {
+    "CORE": {
+      "summary": "n8n alone. No AI provider configured.",
+      "inference": "none",
+      "valid": true,
+      "note": "This is the zero-install state and it is fully supported."
+    },
+    "REMOTE_AI": {
+      "summary": "n8n plus a remote model provider.",
+      "inference": "remote",
+      "valid": true
+    },
+    "CONNECTED": {
+      "summary": "n8n plus remote model and tool/application providers.",
+      "inference": "remote",
+      "valid": true
+    },
+    "POWER": {
+      "summary": "n8n plus local and remote runtimes, workspaces and providers.",
+      "inference": "local or remote",
+      "valid": true
+    },
+    "rule": "Zero-install must work with no inference provider. The system reports 'AI foundation ready, no inference provider configured' and never fakes a completion."
+  },
+  "performanceRules": [
+    "Direct local dispatch for same-process calls.",
+    "Zero internal HTTP between local LEGO.",
+    "No broker for simple local interactions.",
+    "No full transcript held in hot RAM.",
+    "AI metadata is lazy.",
+    "Artifacts are reference-based.",
+    "MCP and tool loading are lazy.",
+    "Boot stays lightweight; no AI code loads unless used.",
+    "Minimal dependencies.",
+    "Use a transport only when a real boundary requires one."
+  ],
+  "securityInvariants": [
+    "A child or nested LEGO does not inherit authority automatically.",
+    "Credentials never appear in envelopes.",
+    "An unknown capability fails closed.",
+    "An unknown operation fails closed.",
+    "An unknown permission fails closed.",
+    "An unknown transport fails closed.",
+    "An unknown owner fails closed.",
+    "A vendor adapter cannot silently become a business contract.",
+    "External runtimes remain optional.",
+    "A destructive or unknown action requires explicit policy resolution.",
+    "Approval semantics are explicit, never implied."
+  ],
+  "rustStrategy": {
+    "rule": "Rust is not a goal. It is a measured implementation choice behind a stable contract.",
+    "candidates": [
+      "execution state",
+      "scheduler",
+      "event router",
+      "cancellation",
+      "delegation graph",
+      "budget accounting",
+      "capability checks",
+      "lightweight persistence/cache"
+    ],
+    "candidateRule": "These are n8n-CONTROLLED components where the workload is hot, long-lived and measurable. A candidate is only migrated after measurement, never on principle.",
+    "neverRewrite": [
+      "Hermes",
+      "Claude Code",
+      "Gemini CLI",
+      "OpenClaw",
+      "Antigravity",
+      "other external runtimes"
+    ],
+    "neverRewriteReason": "Reimplementing a third-party agent harness means owning its bugs and release cycle for no architectural gain. They are adapted through Runtime Adapter.",
+    "contractRule": "Every JS -> Rust replacement stays behind a stable contract and changes no consumer."
+  },
+  "phases": {
+    "A": {
+      "title": "Contracts / vocabulary / foundation",
+      "status": "done",
+      "delivers": [
+        "capability contracts",
+        "operation vocabulary",
+        "AI Foundation contracts",
+        "context/session contracts"
+      ]
+    },
+    "B": {
+      "title": "Skill / Memory / Workspace / Agent Machine",
+      "status": "in-progress",
+      "delivers": [
+        "skill registry",
+        "memory graph",
+        "LOCAL workspace",
+        "agent loop"
+      ],
+      "delivered": [
+        "skill registry (P2.12): registration, validation, lazy discovery, lifecycle",
+        "Context & Session foundation implementation target (P2.13): bounded lifecycle and continuation mechanics"
+      ],
+      "stillPlanned": [
+        "memory graph",
+        "LOCAL workspace",
+        "agent loop"
+      ]
+    },
+    "C": {
+      "title": "Artifact / Approval / MCP / Runtime Adapter",
+      "status": "planned",
+      "delivers": [
+        "artifact store",
+        "approval policy",
+        "MCP client + export list",
+        "runtime conformance harness"
+      ]
+    },
+    "D": {
+      "title": "Work Trace / Node Creator / Translation / Token",
+      "status": "planned",
+      "delivers": [
+        "trace store",
+        "node creation strategies",
+        "translation contract",
+        "usage accounting"
+      ]
+    },
+    "E": {
+      "title": "External provider integration",
+      "status": "planned",
+      "delivers": [
+        "first model provider adapter",
+        "first tool provider adapter",
+        "first external runtime"
+      ]
+    },
+    "F": {
+      "title": "Native agent execution and measured optimisation",
+      "status": "planned",
+      "delivers": [
+        "measured Rust candidates",
+        "native execution paths"
+      ]
+    },
+    "rule": "No phase may silently skip contract compatibility. A phase that needs a contract change declares it, versions it and migrates consumers."
+  },
+  "currentLimits": [
+    "AI runtime is NOT implemented: no model inference, provider API calls, Agent Machine loop or multi-agent runtime.",
+    "Model inference is NOT implemented; no provider API calls are made.",
+    "Memory persistent store remains NOT IMPLEMENTED; Context is what is loaded now and Memory is what survives replacement.",
+    "Workspace runtime, MCP runtime, Runtime Adapter runtime, Node Creator runtime and Translation runtime remain NOT IMPLEMENTED.",
+    "Rust is ACTIVE (PHASE 3): 8 workspace crates under crates/, cargo workspace green as of main f63a91e7. The backend is NOT scale-out ready; scale-out remains NOT READY.",
+    "Next implementation milestone is NOT AUTHORIZED after P2.27 + P3/P4/P6/P9 integration; P2.17+ is an umbrella planning bucket only (Issue #81 stop rule)."
+  ],
+  "reconciliationRule": "A LEGO in this set whose id collides with, or whose mechanism is already owned by, a core domain in manifest/domains.json MUST declare `reconciles`. This is what stops the AI set from silently forking a second domain (ai-workspace beside workspace, an AI capability registry beside lego-foundation). Gate rule F17 enforces it.",
+  "phaseDependencyRule": "A LEGO must not depend on a LEGO scheduled in a later phase, because a roadmap that cannot run in its own stated order is not a roadmap. Exceptions are declared below with the degradation that makes the earlier phase viable on its own — never left implicit.",
+  "phaseDependencyExceptions": [
+    {
+      "lego": "agent-machine",
+      "phase": "B",
+      "dependsOn": "approval",
+      "dependencyPhase": "C",
+      "why": "The phase split places Agent Machine in B and Approval in C, so the agent loop is built before the approval LEGO exists. This is deliberate and safe ONLY because approval fails closed: with no Approval LEGO present, any action whose approval requirement is unknown or destructive is refused, not permitted. Phase B therefore ships an Agent Machine that can orchestrate read-only and explicitly-safe work and refuses the rest.",
+      "degradation": "Without approval: `lego.access_denied` on any action requiring or of unknown approval status.",
+      "closes": "Phase C, when ai.approval is published."
+    }
+  ],
+  "currentMilestone": "P2.27",
+  "previousCompletedMilestone": "P2.26",
+  "milestoneRegister": "docs/n8n-lego/milestones.json",
+  "protectedBranch": "main",
+  "mainBaseline": "fc54c8c2bfc2557ddecf466e662869f197fc9595",
+  "statusNote": "P2.27 Contract-Driven Pluggable Runtime & Security Foundation is complete on protected main. P0-P6 and P9 are complete; P7, P8, P10 and P11 are planned; legacy P12-P23 are consolidated into thematic future programs (governance reset #256, docs/n8n-lego/milestones.json). Rust is ACTIVE (PHASE 3, 8 workspace crates). No new implementation slice is authorized. Protected main HEAD = fc54c8c2 (governance reset merge #257; mainBaseline reconciled per Issue #81)."
+}

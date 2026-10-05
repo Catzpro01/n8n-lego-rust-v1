@@ -1,0 +1,164 @@
+{
+  "description": "P9.14 replay/compatibility evidence fixtures \u2014 P3 checkpoint ref, P6 compatibility ref, missing, incompatible version/contract, secret-shaped, end-to-end correlation. `expect` keys are test annotations stripped before compile.",
+  "p3Checkpoint": {
+    "refs": [
+      {
+        "source": "P3",
+        "contract": "execution.state-stream",
+        "contractVersion": "0.1.0",
+        "snapshotVersion": 1,
+        "refId": "ckpt:exec-42:seq-7",
+        "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ],
+    "expect": {
+      "compatible": 1,
+      "incompatible": 0,
+      "bundleSlot": "checkpoint"
+    }
+  },
+  "p6Compatibility": {
+    "refs": [
+      {
+        "source": "P6",
+        "contract": "node.semantics",
+        "contractVersion": "0.1.0",
+        "schemaVersion": 1,
+        "refId": "compat:n8n-nodes-base.noOp:epoch-1",
+        "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "verdict": "DIFF"
+      }
+    ],
+    "expect": {
+      "compatible": 1,
+      "incompatible": 0,
+      "bundleSlot": "replay",
+      "verdictCarried": "DIFF"
+    }
+  },
+  "missingReference": {
+    "refs": [],
+    "expect": {
+      "evidenceMissing": [
+        "replayRefs"
+      ],
+      "compatible": 0,
+      "incompatible": 0
+    }
+  },
+  "incompatibleVersion": {
+    "refs": [
+      {
+        "source": "P3",
+        "contract": "execution.state-stream",
+        "contractVersion": "0.1.0",
+        "snapshotVersion": 2,
+        "refId": "ckpt:exec-42:seq-8"
+      }
+    ],
+    "expect": {
+      "compatible": 0,
+      "incompatible": 1,
+      "reason": "snapshotVersion-mismatch",
+      "neverEvidence": true
+    }
+  },
+  "incompatibleContract": {
+    "refs": [
+      {
+        "source": "P6",
+        "contract": "node.semantics",
+        "contractVersion": "9.9.9",
+        "schemaVersion": 1,
+        "refId": "compat:foreign:epoch-1"
+      }
+    ],
+    "expect": {
+      "compatible": 0,
+      "incompatible": 1,
+      "reason": "contract-mismatch",
+      "neverEvidence": true
+    }
+  },
+  "secretRef": {
+    "refs": [
+      {
+        "source": "P3",
+        "contract": "execution.state-stream",
+        "contractVersion": "0.1.0",
+        "snapshotVersion": 1,
+        "refId": "bearer abcdef123secret"
+      }
+    ],
+    "expect": {
+      "compile": "null",
+      "failClosed": true
+    }
+  },
+  "endToEnd": {
+    "refs": [
+      {
+        "source": "P3",
+        "contract": "execution.state-stream",
+        "contractVersion": "0.1.0",
+        "snapshotVersion": 1,
+        "refId": "ckpt:exec-e2e:seq-1",
+        "digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "source": "P6",
+        "contract": "node.semantics",
+        "contractVersion": "0.1.0",
+        "schemaVersion": 1,
+        "refId": "compat:node-e2e:epoch-1",
+        "verdict": "MATCH"
+      }
+    ],
+    "diagnostic": {
+      "executionId": "exec-e2e",
+      "workflowId": "wf-e2e"
+    },
+    "correlation": {
+      "events": [
+        {
+          "id": "exec-e2e",
+          "kind": "execution.failed",
+          "evidence": [
+            "log:e2e-500"
+          ]
+        },
+        {
+          "id": "node.missing",
+          "kind": "node.plugin.missing",
+          "evidence": [
+            "log:node-404"
+          ]
+        }
+      ],
+      "edges": [
+        {
+          "from": "node.missing",
+          "to": "exec-e2e",
+          "kind": "OBSERVED_CAUSE",
+          "evidence": [
+            "log:node-404",
+            "ckpt:exec-e2e:seq-1"
+          ]
+        }
+      ],
+      "rootId": "exec-e2e"
+    },
+    "artifacts": [
+      "artifacts/report-e2e.json"
+    ],
+    "expect": {
+      "executionId": "exec-e2e",
+      "rootId": "exec-e2e",
+      "rootKind": "OBSERVED_CAUSE",
+      "slots": [
+        "checkpoint",
+        "replay"
+      ]
+    }
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "status": "success",
+  "finished": true,
+  "lastNodeExecuted": "Pass",
+  "runData": {
+    "Trigger": [
+      {
+        "executionStatus": "success",
+        "source": [],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 1
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "id": 2
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "Pass": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 1
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "id": 2
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            }
+          ]
+        ]
+      }
+    ]
+  }
+}

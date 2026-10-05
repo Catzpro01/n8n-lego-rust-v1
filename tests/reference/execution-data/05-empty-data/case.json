@@ -1,0 +1,115 @@
+{
+  "description": "(a) A node that returns [[]]: task recorded with empty branch, downstream node is NOT executed, run still succeeds. (b) Same node with alwaysOutputData=true: engine synthesises one item {json:{}} whose pairedItem lists every input item; downstream executes.",
+  "workflow": {
+    "nodes": [
+      {
+        "id": "trigger",
+        "name": "Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Empty",
+        "name": "Empty",
+        "type": "ref.empty",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "After",
+        "name": "After",
+        "type": "ref.passthrough",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "EmptyAlways",
+        "name": "EmptyAlways",
+        "type": "ref.empty",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {},
+        "alwaysOutputData": true
+      },
+      {
+        "id": "AfterAlways",
+        "name": "AfterAlways",
+        "type": "ref.passthrough",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Trigger": {
+        "main": [
+          [
+            {
+              "node": "Empty",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "EmptyAlways",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Empty": {
+        "main": [
+          [
+            {
+              "node": "After",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "EmptyAlways": {
+        "main": [
+          [
+            {
+              "node": "AfterAlways",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "startItems": [
+    {
+      "json": {
+        "id": 0
+      }
+    },
+    {
+      "json": {
+        "id": 1
+      }
+    }
+  ]
+}

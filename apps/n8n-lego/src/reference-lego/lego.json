@@ -1,0 +1,26 @@
+{
+  "$comment": "Domain card for the reference LEGO. A real domain copies this file, rewrites it, and mirrors the same facts into src/lego/manifest/domains.json (the registry is authoritative; this card is the local, human-readable copy that lives next to the code).",
+  "id": "reference-lego",
+  "title": "Reference LEGO (template, not a feature)",
+  "owner": "manager",
+  "kind": "template",
+  "status": "template",
+  "contract": {
+    "id": "reference.lego",
+    "version": "1.0.0",
+    "public": ["contract/index.mjs"],
+    "private": ["internal/"]
+  },
+  "capabilities": [
+    {
+      "id": "reference.echo",
+      "status": "template",
+      "summary": "Stores and echoes a value. Exists purely to demonstrate the contract/internal split."
+    }
+  ],
+  "dependsOn": ["platform-kernel", "lego-foundation"],
+  "mustNotDependOn": ["compatibility", "workflow", "execution", "auth", "storage", "legacy-rest", "runtime-host"],
+  "errorNamespace": "reference",
+  "tests": ["apps/n8n-lego/test/lego-foundation.test.mjs"],
+  "mounted": false
+}

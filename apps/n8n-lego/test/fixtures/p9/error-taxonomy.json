@@ -1,0 +1,186 @@
+{
+  "version": "1.0.0",
+  "sourceContractVersion": "1.2.0",
+  "entries": [
+    {
+      "code": "auth.forbidden",
+      "errorClass": "AUTHORIZATION",
+      "retryable": null
+    },
+    {
+      "code": "auth.invalid_credentials",
+      "errorClass": "AUTHENTICATION",
+      "retryable": null
+    },
+    {
+      "code": "auth.owner_already_exists",
+      "errorClass": "AUTHORIZATION",
+      "retryable": null
+    },
+    {
+      "code": "auth.unauthorized",
+      "errorClass": "AUTHENTICATION",
+      "retryable": null
+    },
+    {
+      "code": "auth.user_not_found",
+      "errorClass": "NOT_FOUND",
+      "retryable": null
+    },
+    {
+      "code": "compat.bad_request",
+      "errorClass": "VALIDATION",
+      "retryable": null
+    },
+    {
+      "code": "compat.internal_error",
+      "errorClass": "INTERNAL",
+      "retryable": null
+    },
+    {
+      "code": "compat.payload_too_large",
+      "errorClass": "CAPACITY",
+      "retryable": null
+    },
+    {
+      "code": "credential.not_found",
+      "errorClass": "NOT_FOUND",
+      "retryable": null
+    },
+    {
+      "code": "credential.type_unknown",
+      "errorClass": "VALIDATION",
+      "retryable": null
+    },
+    {
+      "code": "execution.failed",
+      "errorClass": "INTERNAL",
+      "retryable": null
+    },
+    {
+      "code": "execution.not_found",
+      "errorClass": "NOT_FOUND",
+      "retryable": null
+    },
+    {
+      "code": "execution.timeout",
+      "errorClass": "TIMEOUT",
+      "retryable": null
+    },
+    {
+      "code": "lego.access_denied",
+      "errorClass": "AUTHORIZATION",
+      "retryable": false
+    },
+    {
+      "code": "lego.backpressure",
+      "errorClass": "CAPACITY",
+      "retryable": true
+    },
+    {
+      "code": "lego.cancelled",
+      "errorClass": "CANCELLATION",
+      "retryable": false
+    },
+    {
+      "code": "lego.capability_unavailable",
+      "errorClass": "UNSUPPORTED",
+      "retryable": false
+    },
+    {
+      "code": "lego.deadline_exceeded",
+      "errorClass": "TIMEOUT",
+      "retryable": true
+    },
+    {
+      "code": "lego.dependency_disabled",
+      "errorClass": "UNAVAILABLE",
+      "retryable": true
+    },
+    {
+      "code": "lego.interaction_mismatch",
+      "errorClass": "VALIDATION",
+      "retryable": false
+    },
+    {
+      "code": "lego.migration_required",
+      "errorClass": "CONFLICT",
+      "retryable": false
+    },
+    {
+      "code": "lego.operation_unsupported",
+      "errorClass": "UNSUPPORTED",
+      "retryable": false
+    },
+    {
+      "code": "lego.unavailable",
+      "errorClass": "UNAVAILABLE",
+      "retryable": true
+    },
+    {
+      "code": "lego.version_incompatible",
+      "errorClass": "CONFLICT",
+      "retryable": false
+    },
+    {
+      "code": "lego.contract_violation",
+      "errorClass": "VALIDATION",
+      "retryable": false
+    },
+    {
+      "code": "node.catalog_unavailable",
+      "errorClass": "UNAVAILABLE",
+      "retryable": null
+    },
+    {
+      "code": "node.not_found",
+      "errorClass": "NOT_FOUND",
+      "retryable": null
+    },
+    {
+      "code": "storage.conflict",
+      "errorClass": "CONFLICT",
+      "retryable": null
+    },
+    {
+      "code": "storage.not_found",
+      "errorClass": "NOT_FOUND",
+      "retryable": null
+    },
+    {
+      "code": "storage.unavailable",
+      "errorClass": "UNAVAILABLE",
+      "retryable": null
+    },
+    {
+      "code": "unsupported",
+      "errorClass": "UNSUPPORTED",
+      "retryable": null
+    },
+    {
+      "code": "webhook.not_registered",
+      "errorClass": "NOT_FOUND",
+      "retryable": null
+    },
+    {
+      "code": "workflow.checksum_mismatch",
+      "errorClass": "CONFLICT",
+      "retryable": null
+    },
+    {
+      "code": "workflow.invalid",
+      "errorClass": "VALIDATION",
+      "retryable": null
+    },
+    {
+      "code": "workflow.not_found",
+      "errorClass": "NOT_FOUND",
+      "retryable": null
+    },
+    {
+      "code": "workspace.project_not_found",
+      "errorClass": "NOT_FOUND",
+      "retryable": null
+    }
+  ]
+}

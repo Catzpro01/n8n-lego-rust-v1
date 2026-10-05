@@ -1,0 +1,62 @@
+{
+  "id": "07-set-assignments-2x",
+  "description": "n8n 2.x assignments shape with type coercion, keeping other fields.",
+  "input": [
+    {
+      "json": {
+        "kept": "yes"
+      }
+    }
+  ],
+  "workflow": {
+    "name": "set assignments 2x",
+    "nodes": [
+      {
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {}
+      },
+      {
+        "name": "Edit",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "parameters": {
+          "mode": "manual",
+          "assignments": {
+            "assignments": [
+              {
+                "name": "total",
+                "value": 3,
+                "type": "number"
+              },
+              {
+                "name": "flag",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "name": "label",
+                "value": "hello",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Edit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

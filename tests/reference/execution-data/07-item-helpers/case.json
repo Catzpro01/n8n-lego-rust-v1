@@ -1,0 +1,71 @@
+{
+  "description": "normalizeItems and returnJsonArray wrap raw objects into {json} envelopes; engine then auto-assigns pairedItem (single input -> item 0 for both).",
+  "workflow": {
+    "nodes": [
+      {
+        "id": "trigger",
+        "name": "Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Norm",
+        "name": "Norm",
+        "type": "ref.normalizeItems",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "RJA",
+        "name": "RJA",
+        "type": "ref.returnJsonArray",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Trigger": {
+        "main": [
+          [
+            {
+              "node": "Norm",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Norm": {
+        "main": [
+          [
+            {
+              "node": "RJA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "startItems": [
+    {
+      "json": {
+        "id": 0
+      }
+    }
+  ]
+}

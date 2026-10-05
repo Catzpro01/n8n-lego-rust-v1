@@ -1,0 +1,20 @@
+{
+  "name": "n8n_rust_core",
+  "version": "1.0.0",
+  "description": "High-Performance Rust Core for n8n Workflow Engine",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "name": "n8n_rust_core",
+    "triples": {
+      "default": true
+    }
+  },
+  "scripts": {
+    "build": "napi build --platform --features napi-binding",
+    "test": "node test_napi.js"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.10.6"
+  }
+}

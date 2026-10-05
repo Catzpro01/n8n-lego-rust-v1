@@ -1,0 +1,337 @@
+{
+  "reference": "n8n 2.9.4",
+  "recordedAt": "2026-09-16T21:28:09.130Z",
+  "cases": {
+    "healthz": {
+      "input": "GET /healthz",
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "ok"
+        }
+      }
+    },
+    "readiness": {
+      "input": "GET /healthz/readiness",
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "ok"
+        }
+      }
+    },
+    "unauthenticated": {
+      "input": "GET /rest/workflows (no cookie)",
+      "expected": {
+        "status": 401,
+        "body": {
+          "status": "error",
+          "message": "Unauthorized"
+        }
+      }
+    },
+    "loginWrongPassword": {
+      "input": "POST /rest/login {emailOrLdapLoginId, password:\"wrong\"}",
+      "expected": {
+        "status": 401,
+        "body": {
+          "code": 401,
+          "message": "Wrong username or password. Do you have caps lock on?"
+        }
+      }
+    },
+    "loginValidationError": {
+      "input": "POST /rest/login {} (zod DTO failure → 400 with first zod issue, no {code,message} envelope)",
+      "expected": {
+        "status": 400,
+        "body": {
+          "code": "invalid_type",
+          "expected": "string",
+          "received": "undefined",
+          "path": [
+            "emailOrLdapLoginId"
+          ],
+          "message": "Required"
+        }
+      }
+    },
+    "ownerSetupTwice": {
+      "input": "POST /rest/owner/setup when owner exists",
+      "expected": {
+        "status": 400,
+        "body": {
+          "code": 400,
+          "message": "Instance owner already setup"
+        }
+      }
+    },
+    "me": {
+      "input": "GET /rest/login (cookie)",
+      "expected": {
+        "status": 200,
+        "envelope": [
+          "data"
+        ],
+        "role": "global:owner",
+        "userKeys": [
+          "createdAt",
+          "disabled",
+          "email",
+          "featureFlags",
+          "firstName",
+          "globalScopes",
+          "id",
+          "isOwner",
+          "isPending",
+          "lastActiveAt",
+          "lastName",
+          "mfaAuthenticated",
+          "mfaEnabled",
+          "personalizationAnswers",
+          "role",
+          "settings",
+          "signInType"
+        ]
+      }
+    },
+    "workflowCreateValidation": {
+      "input": "POST /rest/workflows {name:\"\", nodes:\"x\"}",
+      "expected": {
+        "status": 400,
+        "body": {
+          "code": "too_small",
+          "minimum": 1,
+          "type": "string",
+          "inclusive": true,
+          "exact": false,
+          "message": "Workflow name is required",
+          "path": [
+            "name"
+          ]
+        }
+      }
+    },
+    "workflowCreateNodesNotArray": {
+      "input": "POST /rest/workflows {name:\"ok\", nodes:{}, connections:{}}",
+      "expected": {
+        "status": 400,
+        "body": {
+          "code": "custom",
+          "message": "Nodes must be an array",
+          "fatal": true,
+          "path": [
+            "nodes"
+          ]
+        }
+      }
+    },
+    "workflowCreateMissingBody": {
+      "input": "POST /rest/workflows {}",
+      "expected": {
+        "status": 400,
+        "body": {
+          "code": "invalid_type",
+          "expected": "string",
+          "received": "undefined",
+          "path": [
+            "name"
+          ],
+          "message": "Required"
+        }
+      }
+    },
+    "workflowCreateEmpty": {
+      "input": "POST /rest/workflows {name, nodes:[], connections:{}}",
+      "expected": {
+        "status": 200,
+        "envelope": [
+          "data"
+        ],
+        "dataKeys": [
+          "active",
+          "activeVersion",
+          "activeVersionId",
+          "checksum",
+          "connections",
+          "createdAt",
+          "description",
+          "homeProject",
+          "id",
+          "isArchived",
+          "meta",
+          "name",
+          "nodes",
+          "parentFolder",
+          "pinData",
+          "scopes",
+          "settings",
+          "sharedWithProjects",
+          "staticData",
+          "tags",
+          "triggerCount",
+          "updatedAt",
+          "usedCredentials",
+          "versionCounter",
+          "versionId"
+        ],
+        "active": false,
+        "activeVersionId": null,
+        "versionCounter": 1,
+        "triggerCount": 0,
+        "idLength": 16,
+        "scopes": [
+          "workflow:create",
+          "workflow:delete",
+          "workflow:execute",
+          "workflow:execute-chat",
+          "workflow:list",
+          "workflow:move",
+          "workflow:publish",
+          "workflow:read",
+          "workflow:share",
+          "workflow:unpublish",
+          "workflow:update"
+        ]
+      },
+      "sideEffect": "workflow_entity row + shared_workflow(owner) + workflow_history row (transaction)"
+    },
+    "workflowDuplicateName": {
+      "input": "POST /rest/workflows with an existing name",
+      "expected": {
+        "status": 200,
+        "body": {
+          "data": {
+            "updatedAt": "2026-09-16T21:28:08.069Z",
+            "createdAt": "2026-09-16T21:28:08.069Z",
+            "id": "d15L75urCMRLvEkt",
+            "name": "Agent4 API golden 1789594088024",
+            "description": null,
+            "active": false,
+            "isArchived": false,
+            "nodes": [],
+            "connections": {},
+            "settings": null,
+            "staticData": null,
+            "meta": null,
+            "pinData": null,
+            "versionId": "7eb35832-9f51-4bf3-9f78-4536ad412ecf",
+            "activeVersionId": null,
+            "versionCounter": 1,
+            "triggerCount": 0,
+            "tags": [],
+            "parentFolder": null,
+            "activeVersion": null,
+            "homeProject": {
+              "id": "GkR7LFyKWSOYUUBB",
+              "type": "personal",
+              "name": "Agent Four <agent4@example.com>",
+              "icon": null
+            },
+            "sharedWithProjects": [],
+            "usedCredentials": [],
+            "scopes": [
+              "workflow:create",
+              "workflow:delete",
+              "workflow:execute",
+              "workflow:execute-chat",
+              "workflow:list",
+              "workflow:move",
+              "workflow:publish",
+              "workflow:read",
+              "workflow:share",
+              "workflow:unpublish",
+              "workflow:update"
+            ],
+            "checksum": "ea7805fe22b18f01f9a6046f09843d7dd5cd262d99c748b07d2879c2789efcfd"
+          }
+        }
+      }
+    },
+    "workflowGet": {
+      "input": "GET /rest/workflows/:id",
+      "expected": {
+        "status": 200,
+        "envelope": [
+          "data"
+        ],
+        "id": true
+      }
+    },
+    "workflowNotFound": {
+      "input": "GET /rest/workflows/nope",
+      "expected": {
+        "status": 404,
+        "body": {
+          "code": 404,
+          "message": "Could not load the workflow - you can only access workflows owned by you"
+        }
+      }
+    },
+    "workflowActivateWithoutTrigger": {
+      "input": "POST /rest/workflows/:id/activate on a workflow with no trigger node",
+      "expected": {
+        "status": 400,
+        "body": {
+          "code": 400,
+          "message": "Workflow cannot be activated because it has no trigger node. At least one trigger, webhook, or polling node is required.",
+          "meta": {
+            "validationError": true
+          }
+        }
+      }
+    },
+    "executionNotANumber": {
+      "input": "GET /rest/executions/abc",
+      "expected": {
+        "status": 400,
+        "body": {
+          "code": 400,
+          "message": "Execution ID is not a number"
+        }
+      }
+    },
+    "executionNotFound": {
+      "input": "GET /rest/executions/999999",
+      "expected": {
+        "status": 200,
+        "body": {}
+      }
+    },
+    "unknownRestRouteFallsThroughToSpa": {
+      "input": "GET /rest/this-does-not-exist",
+      "expected": {
+        "status": 404,
+        "contentType": "text/html; charset=utf-8",
+        "isHtml": true
+      }
+    },
+    "publicApiNoKey": {
+      "input": "GET /api/v1/workflows (no key)",
+      "expected": {
+        "status": 401,
+        "body": {
+          "message": "'X-N8N-API-KEY' header required"
+        }
+      }
+    },
+    "publicApiBadKey": {
+      "input": "GET /api/v1/workflows (bad key)",
+      "expected": {
+        "status": 401,
+        "body": {
+          "message": "unauthorized"
+        }
+      }
+    },
+    "workflowDelete": {
+      "input": "DELETE /rest/workflows/:id",
+      "expected": {
+        "status": 400,
+        "body": {
+          "code": 400,
+          "message": "Workflow must be archived before it can be deleted."
+        }
+      }
+    }
+  }
+}

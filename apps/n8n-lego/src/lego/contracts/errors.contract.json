@@ -1,0 +1,231 @@
+{
+  "contractId": "lego.error-contract",
+  "version": "1.2.0",
+  "owner": "manager",
+  "description": "Machine-readable backend error identity. A code is a stable, language-independent identifier the frontend maps to presentation; the backend never ships display language beyond a developer-facing English message. Codes are `<namespace>.<reason>`, namespaces come from the domain registry (domains[].errorNamespace).",
+  "rules": [
+    "A code is stable once published. Renaming or removing a code is a BREAKING change (see contract-lock.json).",
+    "A code's namespace must equal an errorNamespace declared in manifest/domains.json.",
+    "`status` is the HTTP status the compatibility layer emits for the code.",
+    "Message text is developer-facing English only. Localisation is the frontend's job (future Translation LEGO) and must key off `code`, never off the message string.",
+    "Adding a new code is a MINOR change; changing an existing code's `status` is BREAKING.",
+    "A code MAY declare `retryable` plus a `retryRationale`. Retryability is a property of the failure, not of the caller: it answers \"could the identical call succeed later without anything else changing?\". A caller must branch on this field rather than on the message string.",
+    "The `lego` namespace belongs to the lego-foundation domain and covers failures of the communication foundation itself (dispatch, negotiation, cancellation, backpressure) rather than of any feature domain."
+  ],
+  "statusSemantics": {
+    "400": "the request itself is malformed",
+    "401": "not authenticated",
+    "403": "authenticated but not allowed",
+    "404": "the addressed entity does not exist",
+    "409": "state conflict (checksum/version mismatch)",
+    "413": "payload too large",
+    "500": "unexpected server failure",
+    "501": "the capability is known but not implemented on this instance"
+  },
+  "codes": [
+    {
+      "code": "auth.forbidden",
+      "status": 403,
+      "summary": "Authenticated but the required scope is missing."
+    },
+    {
+      "code": "auth.invalid_credentials",
+      "status": 401,
+      "summary": "Login rejected."
+    },
+    {
+      "code": "auth.owner_already_exists",
+      "status": 403,
+      "summary": "Owner setup attempted on an instance that already has an owner."
+    },
+    {
+      "code": "auth.unauthorized",
+      "status": 401,
+      "summary": "No valid session for a protected route."
+    },
+    {
+      "code": "auth.user_not_found",
+      "status": 404,
+      "summary": "The addressed user does not exist."
+    },
+    {
+      "code": "compat.bad_request",
+      "status": 400,
+      "summary": "Malformed request (body, query or params)."
+    },
+    {
+      "code": "compat.internal_error",
+      "status": 500,
+      "summary": "Unexpected server failure."
+    },
+    {
+      "code": "compat.payload_too_large",
+      "status": 413,
+      "summary": "The request body exceeded the configured limit."
+    },
+    {
+      "code": "credential.not_found",
+      "status": 404,
+      "summary": "The addressed credential does not exist."
+    },
+    {
+      "code": "credential.type_unknown",
+      "status": 400,
+      "summary": "The credential type is not in the registry."
+    },
+    {
+      "code": "execution.failed",
+      "status": 500,
+      "summary": "The run ended in an unhandled engine failure."
+    },
+    {
+      "code": "execution.not_found",
+      "status": 404,
+      "summary": "The addressed execution does not exist."
+    },
+    {
+      "code": "execution.timeout",
+      "status": 500,
+      "summary": "The run exceeded its time budget."
+    },
+    {
+      "code": "lego.access_denied",
+      "status": 403,
+      "summary": "The consumer has no declared dependency on the capability it called.",
+      "retryable": false,
+      "retryRationale": "An architecture violation. Requires a manifest declaration, not a retry."
+    },
+    {
+      "code": "lego.backpressure",
+      "status": 429,
+      "summary": "A stream consumer could not keep up and the declared policy is `reject`.",
+      "retryable": true,
+      "retryRationale": "Transient. The producer is ahead of the consumer, not broken."
+    },
+    {
+      "code": "lego.cancelled",
+      "status": 499,
+      "summary": "A caller deliberately cancelled the operation.",
+      "retryable": false,
+      "retryRationale": "Deliberate. Retrying without a new decision would ignore the cancellation."
+    },
+    {
+      "code": "lego.capability_unavailable",
+      "status": 501,
+      "summary": "The capability exists in the registry but has no implementation here.",
+      "retryable": false,
+      "retryRationale": "Structural. Retrying cannot create an implementation."
+    },
+    {
+      "code": "lego.deadline_exceeded",
+      "status": 504,
+      "summary": "The operation deadline passed before completion.",
+      "retryable": true,
+      "retryRationale": "Environmental. A retry with a fresh deadline may succeed."
+    },
+    {
+      "code": "lego.dependency_disabled",
+      "status": 503,
+      "summary": "A dependency is registered but its lifecycle state is not callable.",
+      "retryable": true,
+      "retryRationale": "Operational. The dependency may be re-enabled."
+    },
+    {
+      "code": "lego.interaction_mismatch",
+      "status": 400,
+      "summary": "The caller used an interaction class the operation does not support.",
+      "retryable": false,
+      "retryRationale": "A caller bug. The same call will fail identically."
+    },
+    {
+      "code": "lego.migration_required",
+      "status": 409,
+      "summary": "The capability needs a declared migration before it can be used.",
+      "retryable": false,
+      "retryRationale": "Requires the migration to be run."
+    },
+    {
+      "code": "lego.operation_unsupported",
+      "status": 501,
+      "summary": "The capability is available but does not implement this operation.",
+      "retryable": false,
+      "retryRationale": "Structural. The operation is absent from the contract."
+    },
+    {
+      "code": "lego.unavailable",
+      "status": 503,
+      "summary": "The provider for a capability is not registered in this process.",
+      "retryable": true,
+      "retryRationale": "May become available once the owning LEGO is loaded."
+    },
+    {
+      "code": "lego.version_incompatible",
+      "status": 409,
+      "summary": "The consumer requires a contract version the provider does not satisfy.",
+      "retryable": false,
+      "retryRationale": "Requires a migration or a version bump."
+    },
+    {
+      "code": "lego.contract_violation",
+      "status": 400,
+      "summary": "A declaration does not satisfy the contract it claims to implement — a missing required field, a malformed id, an unknown enum value or a duplicate registration.",
+      "retryable": false,
+      "retryRationale": "The declaration itself is wrong. The identical call will fail identically until the declaration is corrected."
+    },
+    {
+      "code": "node.catalog_unavailable",
+      "status": 500,
+      "summary": "The node catalog could not be read."
+    },
+    {
+      "code": "node.not_found",
+      "status": 404,
+      "summary": "The addressed node type/version is not in the catalog."
+    },
+    {
+      "code": "storage.conflict",
+      "status": 409,
+      "summary": "Concurrent write conflict."
+    },
+    {
+      "code": "storage.not_found",
+      "status": 404,
+      "summary": "The addressed record does not exist."
+    },
+    {
+      "code": "storage.unavailable",
+      "status": 500,
+      "summary": "The persistence backend could not be reached."
+    },
+    {
+      "code": "unsupported",
+      "status": 501,
+      "summary": "The capability is known but not implemented on this instance. `meta.feature`, `meta.owner` and `meta.phase` identify it. Kept namespace-free for backward compatibility with the P2 contract."
+    },
+    {
+      "code": "webhook.not_registered",
+      "status": 404,
+      "summary": "No workflow is listening on that webhook path."
+    },
+    {
+      "code": "workflow.checksum_mismatch",
+      "status": 409,
+      "summary": "The workflow changed since it was loaded."
+    },
+    {
+      "code": "workflow.invalid",
+      "status": 400,
+      "summary": "The workflow payload failed validation."
+    },
+    {
+      "code": "workflow.not_found",
+      "status": 404,
+      "summary": "The addressed workflow does not exist."
+    },
+    {
+      "code": "workspace.project_not_found",
+      "status": 404,
+      "summary": "The addressed project does not exist."
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schemaStrategyVersion": "1.0.0",
+  "phase": "P2.8-B",
+  "owner": "manager",
+  "description": "Language-neutral contract definition strategy. Contracts must not depend on TypeScript, because the same contract must one day be honoured by JS, Rust, a WASM adapter and an external API. This file fixes the strategy and the minimal type vocabulary. It deliberately does NOT build a code generator — that is a later phase, and a generator written before there are real contracts to generate is a liability.",
+
+  "decision": {
+    "chosen": "JSON Schema (draft 2020-12) subset, stored as data next to each contract",
+    "alternatives": [
+      { "option": "TypeScript types as the source of truth", "rejectedBecause": "not language-neutral: Rust and WASM cannot consume it, and it would make TS the architecture rather than an implementation detail" },
+      { "option": "Protocol Buffers / Cap'n Proto", "rejectedBecause": "imposes a serialization model on in-process direct calls, which the foundation forbids; also adds a compiler to the toolchain" },
+      { "option": "OpenAPI as the source of truth", "rejectedBecause": "HTTP-shaped by construction, which would violate transport neutrality" },
+      { "option": "A bespoke IDL", "rejectedBecause": "maximum cost, no ecosystem, and nothing here needs it" }
+    ],
+    "because": "A JSON Schema subset is data, has generators for every target language when we eventually need them, validates at runtime without a build step, and imposes nothing on direct in-process calls."
+  },
+
+  "typeVocabulary": {
+    "primitives": ["string", "number", "integer", "boolean", "null"],
+    "composites": ["object", "array"],
+    "semantic": {
+      "id": "string, stable identifier",
+      "timestamp": "integer, epoch milliseconds",
+      "duration": "integer, milliseconds",
+      "json": "arbitrary JSON value — use sparingly; it defeats cross-language checking",
+      "binaryRef": "reference to binary data held by the binary-data contract, never inline bytes"
+    },
+    "rule": "Prefer the narrowest type. `json` is an escape hatch that a future Rust binding cannot type — every use is technical debt and should be justified in the contract."
+  },
+
+  "contractDefinition": {
+    "location": "each public contract MAY ship `contract.schema.json` next to its `contract/index.mjs`",
+    "shape": {
+      "contractId": "matching the contract-lock row",
+      "version": "matching the contract-lock version",
+      "operations": {
+        "<operationName>": {
+          "summary": "what it does",
+          "modes": "which communication modes it supports (call/event/stream/batch)",
+          "request": "JSON Schema of the request",
+          "response": "JSON Schema of the response",
+          "errors": "error codes this operation may raise, from the LEGO error contract",
+          "semantics": "idempotency, determinism, atomicity, concurrency, cancellable, backpressure"
+        }
+      }
+    },
+    "adoptionRule": "OPTIONAL in P2.8-B and MANDATORY for any contract that gains a second binding (worker, remote, Rust or WASM). A purely in-process JS contract does not pay the cost until it has to."
+  },
+
+  "bindings": {
+    "in-process-js": { "serialization": "none", "validation": "development-time only", "note": "typed objects passed by reference; validating on every direct call would be a pointless tax" },
+    "in-process-rust": { "serialization": "none", "validation": "compile-time from generated types", "note": "planned; nothing generated yet" },
+    "wasm": { "serialization": "at the module boundary", "validation": "on entry" },
+    "worker": { "serialization": "JSON or structured clone", "validation": "on entry" },
+    "remote-api": { "serialization": "JSON", "validation": "on entry, always — it is a trust boundary" }
+  },
+
+  "generationPolicy": {
+    "now": "none. Schemas are hand-written data where they exist.",
+    "later": "a small generator may emit JS validators, Rust structs and an OpenAPI document from the same schema. It must remain optional — the schema is the source of truth, generated code is a convenience.",
+    "rule": "No generated artifact may ever become the source of truth."
+  }
+}

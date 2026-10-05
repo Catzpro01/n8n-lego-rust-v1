@@ -1,0 +1,51 @@
+{
+  "id": "04-multi-item",
+  "description": "Three input items flowing through a passthrough node.",
+  "input": [
+    {
+      "json": {
+        "n": 1
+      }
+    },
+    {
+      "json": {
+        "n": 2
+      }
+    },
+    {
+      "json": {
+        "n": 3
+      }
+    }
+  ],
+  "workflow": {
+    "name": "multi item",
+    "nodes": [
+      {
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {}
+      },
+      {
+        "name": "Done",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Done",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

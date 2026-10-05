@@ -1,0 +1,314 @@
+{
+  "description": "IF with 2 main outputs; Merge with 2 main inputs; sparse output index (empty [] and null slots).",
+  "nodes": [
+    {
+      "id": "Trigger",
+      "name": "Trigger",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "IF",
+      "name": "IF",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "A",
+      "name": "A",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "B",
+      "name": "B",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Merge",
+      "name": "Merge",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Loop",
+      "name": "Loop",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "End",
+      "name": "End",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Agent",
+      "name": "Agent",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Model",
+      "name": "Model",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Tool",
+      "name": "Tool",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Sparse",
+      "name": "Sparse",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "A",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "B",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "A": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "End": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sparse": {
+      "main": [
+        [],
+        null,
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "probes": [
+    {
+      "name": "byDest Merge (input 0 <- A, Loop ; input 1 <- IF out 1)",
+      "op": "byDestination",
+      "node": "Merge"
+    },
+    {
+      "name": "byDest B (from IF output 1)",
+      "op": "byDestination",
+      "node": "B"
+    },
+    {
+      "name": "byDest End (dest index 2 padded with [])",
+      "op": "byDestination",
+      "node": "End"
+    },
+    {
+      "name": "IF -> B output index",
+      "op": "wf.getNodeConnectionIndexes",
+      "node": "B",
+      "parent": "IF"
+    },
+    {
+      "name": "Merge <- IF (BFS finds first reachable path)",
+      "op": "wf.getNodeConnectionIndexes",
+      "node": "Merge",
+      "parent": "IF"
+    },
+    {
+      "name": "Merge <- Sparse (not connected)",
+      "op": "wf.getNodeConnectionIndexes",
+      "node": "Merge",
+      "parent": "Sparse"
+    },
+    {
+      "name": "children of IF depth 1",
+      "op": "getChildNodes",
+      "node": "IF",
+      "depth": 1
+    },
+    {
+      "name": "parents by depth of Merge (indicies)",
+      "op": "wf.getParentNodesByDepth",
+      "node": "Merge"
+    },
+    {
+      "name": "root nodes of {IF,A,B,Merge}",
+      "op": "getRootNodes",
+      "graph": [
+        "IF",
+        "A",
+        "B",
+        "Merge"
+      ]
+    },
+    {
+      "name": "leaf nodes of {IF,A,B,Merge}",
+      "op": "getLeafNodes",
+      "graph": [
+        "IF",
+        "A",
+        "B",
+        "Merge"
+      ]
+    }
+  ]
+}

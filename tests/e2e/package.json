@@ -1,0 +1,13 @@
+{
+  "name": "n8n-lego-e2e",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Browser/E2E smoke test for n8n lego — drives the real n8n editor UI against a running instance.",
+  "type": "module",
+  "scripts": {
+    "smoke": "node lego-smoke.mjs"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.0.0"
+  }
+}

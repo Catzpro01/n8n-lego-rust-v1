@@ -1,0 +1,329 @@
+{
+  "description": "Merge <-> Loop is a legal cycle in n8n 2.9.4. Traversal terminates (checkedNodes), getNodeConnectionIndexes terminates (visited set), hasPath handles it, extractable-subgraph tolerates a loop back into its single input.",
+  "nodes": [
+    {
+      "id": "Trigger",
+      "name": "Trigger",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "IF",
+      "name": "IF",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "A",
+      "name": "A",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "B",
+      "name": "B",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Merge",
+      "name": "Merge",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Loop",
+      "name": "Loop",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "End",
+      "name": "End",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Agent",
+      "name": "Agent",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Model",
+      "name": "Model",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Tool",
+      "name": "Tool",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Sparse",
+      "name": "Sparse",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "A",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "B",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "A": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "End": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sparse": {
+      "main": [
+        [],
+        null,
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "probes": [
+    {
+      "name": "parents of End through cycle terminate",
+      "op": "getParentNodes",
+      "node": "End"
+    },
+    {
+      "name": "children of Merge through cycle terminate",
+      "op": "getChildNodes",
+      "node": "Merge"
+    },
+    {
+      "name": "Merge <- Loop indexes",
+      "op": "wf.getNodeConnectionIndexes",
+      "node": "Merge",
+      "parent": "Loop"
+    },
+    {
+      "name": "highest nodes of End",
+      "op": "wf.getHighestNode",
+      "node": "End"
+    },
+    {
+      "name": "start node of End",
+      "op": "wf.getStartNode",
+      "node": "End"
+    },
+    {
+      "name": "hasPath Merge->Merge via Loop",
+      "op": "hasPath",
+      "start": "Loop",
+      "end": "Merge"
+    },
+    {
+      "name": "extractable {Merge,Loop}",
+      "op": "parseExtractable",
+      "graph": [
+        "Merge",
+        "Loop"
+      ]
+    },
+    {
+      "name": "extractable {A}",
+      "op": "parseExtractable",
+      "graph": [
+        "A"
+      ]
+    },
+    {
+      "name": "extractable {IF,A} output from non-leaf",
+      "op": "parseExtractable",
+      "graph": [
+        "IF",
+        "A"
+      ]
+    },
+    {
+      "name": "extractable {A,B} multiple inputs",
+      "op": "parseExtractable",
+      "graph": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "name": "input edges {A,Merge}",
+      "op": "getInputEdges",
+      "graph": [
+        "A",
+        "Merge"
+      ]
+    },
+    {
+      "name": "output edges {A,Merge}",
+      "op": "getOutputEdges",
+      "graph": [
+        "A",
+        "Merge"
+      ]
+    }
+  ]
+}

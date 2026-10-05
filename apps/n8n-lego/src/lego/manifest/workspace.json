@@ -1,0 +1,180 @@
+{
+  "contract": "ai.workspace",
+  "version": "1.0.0",
+  "owner": "manager",
+  "phase": "P2.15",
+  "status": "implemented",
+  "definition": "Workspace is a bounded identity and lifecycle boundary for a working environment. It stores metadata and opaque resource references; it does not provide filesystem, terminal, process, credential, model, tool, MCP or runtime authority.",
+  "purpose": "Give future callers one explicit workspace scope without making the workspace an execution engine.",
+  "identity": {
+    "field": "workspaceId",
+    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$",
+    "maxLength": 64,
+    "rule": "Identity is explicit and stable. An unknown identity never resolves to another workspace."
+  },
+  "kinds": [
+    "LOCAL",
+    "CONTAINER",
+    "REMOTE",
+    "VPS",
+    "EPHEMERAL",
+    "PERSISTENT"
+  ],
+  "kindRule": "A kind is a declaration, not an authority. The provider must explicitly support a requested kind; the Workspace core never infers filesystem, process or remote capabilities from it.",
+  "fields": [
+    "workspaceId",
+    "kind",
+    "lifecycle",
+    "metadata",
+    "resourceReferences",
+    "version",
+    "createdAt",
+    "updatedAt"
+  ],
+  "metadata": {
+    "type": "JSON object",
+    "maxBytes": 16384,
+    "maxKeys": 32,
+    "maxDepth": 4,
+    "maxKeyLength": 64,
+    "rule": "Metadata is descriptive and bounded. Authority-bearing keys, credentials, secrets, paths, commands, processes, runtimes and provider handles are refused."
+  },
+  "resourceReferences": {
+    "type": "opaque identifier array",
+    "maxCount": 16,
+    "maxIdentifierLength": 128,
+    "rule": "References identify resources owned by another contract. Workspace never dereferences them and never stores their provider-specific location."
+  },
+  "lifecycle": {
+    "states": [
+      "declared",
+      "created",
+      "mounted",
+      "active",
+      "released"
+    ],
+    "initial": "declared",
+    "terminal": [
+      "released"
+    ],
+    "transitions": {
+      "declared": ["created"],
+      "created": ["mounted", "released"],
+      "mounted": ["active", "released"],
+      "active": ["released"],
+      "released": []
+    },
+    "mountRule": "workspace.mount performs the bounded logical transition created -> mounted -> active atomically. It does not mount a filesystem, start a process or bind a runtime.",
+    "releaseRule": "workspace.release is terminal and idempotent after the first release. It releases Workspace bookkeeping only; provider resource cleanup belongs to an explicit future provider/executor contract."
+  },
+  "operations": [
+    {
+      "name": "workspace.create",
+      "interaction": "call",
+      "permission": "ai:workspace:create",
+      "idempotent": false,
+      "status": "implemented",
+      "input": ["workspaceId", "kind", "metadata", "resourceReferences"],
+      "output": "Workspace record in lifecycle created",
+      "errors": ["lego.contract_violation", "storage.conflict", "lego.unavailable"],
+      "rule": "Creates one bounded identity in the provider namespace; duplicate identities are refused."
+    },
+    {
+      "name": "workspace.describe",
+      "interaction": "call",
+      "permission": "ai:workspace:read",
+      "idempotent": true,
+      "status": "implemented",
+      "input": ["workspaceId"],
+      "output": "Workspace record or null when the exact identity is not present",
+      "errors": ["lego.contract_violation"],
+      "rule": "Reads only the exact requested identity. Null is an explicit absent result, never a fallback or cross-workspace lookup."
+    },
+    {
+      "name": "workspace.mount",
+      "interaction": "call",
+      "permission": "ai:workspace:create",
+      "idempotent": true,
+      "status": "implemented",
+      "input": ["workspaceId"],
+      "output": "Workspace record in lifecycle active",
+      "errors": ["lego.contract_violation", "workspace.project_not_found", "lego.interaction_mismatch"],
+      "rule": "Advances only the logical lifecycle. It does not grant execution authority or call a runtime."
+    },
+    {
+      "name": "workspace.release",
+      "interaction": "call",
+      "permission": "ai:workspace:create",
+      "idempotent": true,
+      "status": "implemented",
+      "input": ["workspaceId"],
+      "output": "Workspace record in terminal lifecycle released",
+      "errors": ["lego.contract_violation", "workspace.project_not_found", "lego.interaction_mismatch"],
+      "rule": "Makes the exact identity terminal. There is no reopen, delete, execute or cleanup authority in this contract."
+    }
+  ],
+  "permissions": [
+    "ai:workspace:read",
+    "ai:workspace:create"
+  ],
+  "permissionRule": "Read is limited to exact identity description. Create covers bounded lifecycle mutations. There is deliberately no ai:workspace:execute permission in P2.15.",
+  "provider": {
+    "interface": ["supports(kind)", "put(record)", "get(workspaceId)", "list()"],
+    "default": "InMemoryWorkspaceProvider",
+    "replacement": "Any provider may replace the default when it preserves the interface and explicit supports(kind) answer.",
+    "semantics": "Provider state is isolated by workspaceId. Provider implementation and durability are not part of the Workspace contract.",
+    "forbidden": ["filesystem", "SQLite", "Supabase", "Redis", "browser storage", "VPS storage", "GitHub", "Arena"]
+  },
+  "limits": {
+    "maxWorkspaces": 256,
+    "maxIdentifierLength": 64,
+    "maxMetadataBytes": 16384,
+    "maxMetadataKeys": 32,
+    "maxMetadataDepth": 4,
+    "maxMetadataKeyLength": 64,
+    "maxResourceReferences": 16,
+    "maxReferenceIdLength": 128
+  },
+  "isolation": {
+    "mechanism": "exact workspaceId namespace lookup",
+    "guarantees": [
+      "describing A cannot return B",
+      "mutating A cannot mutate B",
+      "unknown identities fail closed for mutations",
+      "provider capabilities are never inferred from identity or kind"
+    ]
+  },
+  "persistence": "The provider owns storage semantics. The default in-memory provider is process-local and makes no durability claim; Workspace does not select or configure persistence.",
+  "notScope": [
+    "filesystem authority",
+    "terminal or shell authority",
+    "arbitrary process execution",
+    "MCP runtime",
+    "model inference",
+    "tool execution",
+    "Agent Machine or multi-agent orchestration",
+    "Runtime Adapter",
+    "Node Creator",
+    "Translation runtime",
+    "credentials or secrets",
+    "automatic persistence policy",
+    "frontend or browser storage",
+    "Rust implementation"
+  ],
+  "security": {
+    "failClosed": "Malformed identities, unsupported kinds, duplicate references, forbidden metadata and invalid lifecycle transitions are refused deterministically.",
+    "noAuthorityEscalation": "Workspace metadata and references never grant permission, capability, process access or provider access.",
+    "secrets": "Credential-shaped keys and values are not accepted by the bounded metadata surface."
+  },
+  "ownership": {
+    "domain": "workspace",
+    "implementationOwner": "agent-1",
+    "governanceOwner": "manager",
+    "aiSetReconciliation": "The official Workspace LEGO extends this one core workspace domain; no ai-workspace duplicate exists."
+  },
+  "compatibility": {
+    "ui": "The frontend consumes declared metadata on demand and does not redesign or replace stock n8n UI behavior.",
+    "transport": ["in-process"],
+    "replaceability": "A provider or future executor may replace the bounded implementation without changing ai.workspace@1.0.0."
+  }
+}

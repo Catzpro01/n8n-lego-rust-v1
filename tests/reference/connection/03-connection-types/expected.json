@@ -1,0 +1,71 @@
+{
+  "byDest Agent (all types)": {
+    "main": [
+      [
+        {
+          "node": "End",
+          "type": "main",
+          "index": 0
+        }
+      ]
+    ],
+    "ai_languageModel": [
+      [
+        {
+          "node": "Model",
+          "type": "ai_languageModel",
+          "index": 0
+        }
+      ]
+    ],
+    "ai_tool": [
+      [
+        {
+          "node": "Tool",
+          "type": "ai_tool",
+          "index": 0
+        }
+      ]
+    ]
+  },
+  "parents Agent main": [
+    "Sparse",
+    "Trigger",
+    "IF",
+    "A",
+    "Merge",
+    "Loop",
+    "End"
+  ],
+  "parents Agent ai_tool": [
+    "Tool"
+  ],
+  "parents Agent ALL_NON_MAIN": [
+    "Tool",
+    "Model"
+  ],
+  "parents Agent ALL": [
+    "Tool",
+    "Model",
+    "Sparse",
+    "Trigger",
+    "IF",
+    "A",
+    "Merge",
+    "Loop",
+    "End"
+  ],
+  "children Tool main (none)": [],
+  "children Tool ai_tool": [
+    "Agent"
+  ],
+  "parent main-input node of Tool (sub-node -> itself)": "Tool",
+  "hasPath Model->Agent ignores non-main": false,
+  "getNodeConnectionIndexes Agent<-Tool type ai_tool": {
+    "sourceIndex": 0,
+    "destinationIndex": 0
+  },
+  "getNodeConnectionIndexes Agent<-Tool default main": {
+    "undefined": true
+  }
+}

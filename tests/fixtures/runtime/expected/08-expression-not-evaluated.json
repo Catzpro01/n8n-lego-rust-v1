@@ -1,0 +1,48 @@
+{
+  "status": "COMPLETED",
+  "finished": true,
+  "executionLog": [
+    {
+      "node": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Manual Trigger",
+      "statusText": "Success"
+    },
+    {
+      "node": "Edit",
+      "type": "n8n-nodes-base.set",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Edit Fields (Set)",
+      "statusText": "Success"
+    }
+  ],
+  "data": {
+    "Start": [
+      {
+        "json": {
+          "name": "ada"
+        }
+      }
+    ],
+    "Edit": [
+      {
+        "json": {
+          "name": "ada",
+          "greeting": "{{ $json.name }}"
+        }
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "code": "EXPRESSION_NOT_EVALUATED",
+      "message": "expression value in \"greeting\" was used verbatim (expression evaluation is not implemented in the baseline)",
+      "node": "Edit"
+    }
+  ]
+}

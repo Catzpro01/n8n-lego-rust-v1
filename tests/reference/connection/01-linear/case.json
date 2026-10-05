@@ -1,0 +1,127 @@
+{
+  "description": "Trigger -> A -> B. Basic source/destination inversion and traversal.",
+  "nodes": [
+    {
+      "id": "Trigger",
+      "name": "Trigger",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "A",
+      "name": "A",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "B",
+      "name": "B",
+      "type": "x",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "A",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "A": {
+      "main": [
+        [
+          {
+            "node": "B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "probes": [
+    {
+      "name": "byDestination",
+      "op": "byDestination"
+    },
+    {
+      "name": "children of Trigger (order: farthest first)",
+      "op": "getChildNodes",
+      "node": "Trigger"
+    },
+    {
+      "name": "parents of B",
+      "op": "getParentNodes",
+      "node": "B"
+    },
+    {
+      "name": "parents of Trigger (none)",
+      "op": "getParentNodes",
+      "node": "Trigger"
+    },
+    {
+      "name": "children of B (none)",
+      "op": "getChildNodes",
+      "node": "B"
+    },
+    {
+      "name": "unknown node",
+      "op": "getConnectedNodes",
+      "node": "Nope"
+    },
+    {
+      "name": "connection indexes B<-A",
+      "op": "wf.getNodeConnectionIndexes",
+      "node": "B",
+      "parent": "A"
+    },
+    {
+      "name": "connection indexes B<-Trigger (transitive)",
+      "op": "wf.getNodeConnectionIndexes",
+      "node": "B",
+      "parent": "Trigger"
+    },
+    {
+      "name": "highest node of B",
+      "op": "wf.getHighestNode",
+      "node": "B"
+    },
+    {
+      "name": "start node for B",
+      "op": "wf.getStartNode",
+      "node": "B"
+    },
+    {
+      "name": "hasPath Trigger->B",
+      "op": "hasPath",
+      "start": "Trigger",
+      "end": "B"
+    },
+    {
+      "name": "hasPath B->Trigger",
+      "op": "hasPath",
+      "start": "B",
+      "end": "Trigger"
+    }
+  ]
+}

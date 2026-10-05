@@ -1,0 +1,4 @@
+{
+  "traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01",
+  "remoteParent": { "traceId": "0123456789abcdef0123456789abcdef", "spanId": "0123456789abcdef", "sampled": true }
+}

@@ -1,0 +1,53 @@
+{
+  "nested parameter object": {
+    "value": 10,
+    "nested": {
+      "deep": 20,
+      "static": "text"
+    },
+    "list": [
+      10,
+      "plain",
+      7
+    ],
+    "num": 5,
+    "bool": true,
+    "nul": null
+  },
+  "array of objects": [
+    {
+      "k": 1
+    },
+    {
+      "k": 20
+    }
+  ],
+  "resource locator object": {
+    "__rl": true,
+    "mode": "id",
+    "value": 10
+  },
+  "leading '=' with no braces -> empty string": "",
+  "'=' followed by literal text": "just text",
+  "escaped-looking braces are literal": "a {{ b",
+  "$parameter of active node (End has none)": {},
+  "$('Set').params": {},
+  "$now is DateTime": {
+    "error": "ExpressionError",
+    "message": "Expression contains invalid constructor function call"
+  },
+  "$now.toFormat": "string",
+  "extension method .toUpperCase() on node data": "X",
+  "n8n extension .isEmpty()": false,
+  "$workflow": {
+    "active": false,
+    "id": "ref",
+    "name": "ref"
+  },
+  "$runIndex / $mode / $nodeVersion / $nodeId": [
+    0,
+    "manual",
+    1,
+    "End"
+  ]
+}

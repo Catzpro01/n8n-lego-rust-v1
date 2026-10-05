@@ -1,0 +1,59 @@
+{
+  "description": "Three items flow Trigger -> Passthrough. Verifies item order is preserved and pairedItem.item equals input index.",
+  "workflow": {
+    "nodes": [
+      {
+        "id": "trigger",
+        "name": "Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Pass",
+        "name": "Pass",
+        "type": "ref.passthrough",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Trigger": {
+        "main": [
+          [
+            {
+              "node": "Pass",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "startItems": [
+    {
+      "json": {
+        "id": 0
+      }
+    },
+    {
+      "json": {
+        "id": 1
+      }
+    },
+    {
+      "json": {
+        "id": 2
+      }
+    }
+  ]
+}

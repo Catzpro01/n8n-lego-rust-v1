@@ -1,0 +1,449 @@
+{
+  "contractId": "node.contract",
+  "version": "1.0.0",
+  "phase": "P2.8-B",
+  "owner": "agent-4",
+  "governance": "manager",
+  "description": "The Node Contract: what a node IS, independent of how it is implemented or where it runs. This is a DEFINITION, not a Node Registry implementation \u2014 P6 implements the registry, this fixes the shape it must honour. The central promise: a node's identity never changes because its implementation changed.",
+  "identityRule": "A node is identified by `type` + `typeVersion`. Neither may change because the implementation, runtime or language changed. A workflow referencing `n8n-nodes-base.httpRequest@4` keeps working whether that node is served by the JS compatibility runtime today or a prebuilt Rust artifact later.",
+  "descriptor": {
+    "identity": {
+      "type": "stable node type id, e.g. `n8n-nodes-base.httpRequest`",
+      "typeVersion": "integer node version, as upstream n8n uses",
+      "displayName": "human label \u2014 presentation only, never identity",
+      "package": "owning package name",
+      "packageVersion": "pinned package version"
+    },
+    "manifest": {
+      "group": "n8n node group (trigger/transform/output\u2026)",
+      "description": "developer-facing summary",
+      "icon": "icon reference",
+      "documentationUrl": "optional"
+    },
+    "parameters": {
+      "schema": "language-neutral parameter schema (see contract-schema.json)",
+      "dynamic": "whether options are resolved at edit time (P7 dynamic-parameters)",
+      "credentialsRefs": "parameter paths that reference a credential"
+    },
+    "io": {
+      "inputs": "declared input ports and their data shapes",
+      "outputs": "declared output ports and their data shapes",
+      "binary": "whether binary data is produced or consumed"
+    },
+    "credentials": {
+      "required": "credential type ids this node needs",
+      "optional": "credential type ids it can use",
+      "rule": "A node declares credential TYPES. It never reaches into credential storage \u2014 resolution is the credentials domain's job, passed in at execution."
+    },
+    "execution": {
+      "operationClass": "one of the foundation operation classes (atomic/best-effort/retryable/compensatable)",
+      "idempotency": "idempotent | non-idempotent | idempotent-with-key",
+      "determinism": "deterministic | external-state-dependent | non-deterministic",
+      "concurrency": "parallel-safe | queueable | exclusive",
+      "cancellable": "must honour deadline + cancellation from the envelope",
+      "streaming": "whether output is a STREAM (and then its backpressure policy)"
+    },
+    "events": "events the node emits during execution (progress, partial output, log)",
+    "errors": {
+      "rule": "Errors use stable codes from the LEGO error contract, namespaced `node.*` or the node's own declared namespace. Display text is never the identity \u2014 the frontend owns presentation, which is what keeps a future Translation LEGO possible."
+    },
+    "capabilities": {
+      "required": [
+        "network",
+        "filesystem",
+        "subprocess",
+        "secrets",
+        "native",
+        "env"
+      ],
+      "rule": "Requested explicitly and granted explicitly. A node's trust level never implicitly grants a capability."
+    },
+    "portability": "one of the foundation portability profiles",
+    "runtimeRequirements": {
+      "runtimes": "which runtimes can serve this node (js-compat | rust-native | wasm | remote-worker)",
+      "os": "os constraints, if any",
+      "arch": "cpu architecture constraints, if any",
+      "native": "native dependencies, if any"
+    },
+    "resources": "a foundation resource profile (cpu/memory/disk/network/concurrency/startup)",
+    "trust": "core | verified | community | untrusted"
+  },
+  "creationRoutes": {
+    "rule": "Twelve legitimate ways a node can come into existence. P2.8-B defines route IDENTITY, use, compatibility, cost, portability, security and migration rules ONLY \u2014 none of the routes is implemented here. The future AI Node Creator picks among them.",
+    "routes": [
+      {
+        "id": "no-code-api",
+        "name": "No-code API node",
+        "use": "a REST API wrapped by configuration alone",
+        "implementation": "declarative config, no user code",
+        "runtimes": [
+          "js-compat"
+        ],
+        "resources": {
+          "cpu": "low",
+          "memory": "tiny",
+          "startup": "instant"
+        },
+        "portability": "network-required",
+        "trust": "verified",
+        "security": "no code execution; only the declared endpoints are reachable",
+        "migration": "trivially re-describable; the cheapest route to keep",
+        "status": "defined"
+      },
+      {
+        "id": "declarative",
+        "name": "Declarative node",
+        "use": "n8n's declarative style: routing described as data",
+        "implementation": "manifest + routing rules",
+        "runtimes": [
+          "js-compat",
+          "wasm"
+        ],
+        "resources": {
+          "cpu": "low",
+          "memory": "tiny",
+          "startup": "instant"
+        },
+        "portability": "network-required",
+        "trust": "verified",
+        "security": "no arbitrary code; the safest executable route",
+        "migration": "portable across runtimes because it carries no host assumptions",
+        "status": "defined"
+      },
+      {
+        "id": "openapi",
+        "name": "OpenAPI \u2192 node",
+        "use": "generate a node from an OpenAPI/Swagger document",
+        "implementation": "generator producing a declarative node",
+        "runtimes": [
+          "js-compat",
+          "wasm"
+        ],
+        "resources": {
+          "cpu": "low",
+          "memory": "low",
+          "startup": "instant"
+        },
+        "portability": "network-required",
+        "trust": "verified",
+        "security": "inherits the declarative route's safety; the spec URL is an input, not a runtime dependency",
+        "migration": "regenerate from the spec rather than hand-patching",
+        "status": "defined"
+      },
+      {
+        "id": "visual-builder",
+        "name": "Visual node builder",
+        "use": "a node assembled in a UI by a non-programmer",
+        "implementation": "produces a declarative node",
+        "runtimes": [
+          "js-compat"
+        ],
+        "resources": {
+          "cpu": "low",
+          "memory": "tiny",
+          "startup": "instant"
+        },
+        "portability": "portable",
+        "trust": "verified",
+        "security": "no free-form code; output is data",
+        "migration": "same as declarative",
+        "status": "defined"
+      },
+      {
+        "id": "transform-formula",
+        "name": "Transform / formula node",
+        "use": "pure data transformation via an expression",
+        "implementation": "expression evaluated in a restricted evaluator",
+        "runtimes": [
+          "js-compat",
+          "wasm",
+          "rust-native"
+        ],
+        "resources": {
+          "cpu": "low",
+          "memory": "tiny",
+          "startup": "instant"
+        },
+        "portability": "portable",
+        "trust": "verified",
+        "security": "restricted evaluator: no network, filesystem or subprocess",
+        "migration": "the strongest Rust/WASM candidate \u2014 pure, deterministic, hot",
+        "status": "defined"
+      },
+      {
+        "id": "workflow-as-node",
+        "name": "Workflow as node",
+        "use": "an existing workflow reused as a single node",
+        "implementation": "sub-workflow invocation",
+        "runtimes": [
+          "js-compat"
+        ],
+        "resources": {
+          "cpu": "medium",
+          "memory": "medium",
+          "startup": "fast"
+        },
+        "portability": "portable",
+        "trust": "core",
+        "security": "inherits the capabilities of the nodes inside it \u2014 never more",
+        "migration": "no migration: it is composition, not code",
+        "status": "defined"
+      },
+      {
+        "id": "javascript",
+        "name": "JavaScript / TypeScript node",
+        "use": "arbitrary logic, and the entire existing n8n ecosystem",
+        "implementation": "JS module implementing the node interface",
+        "runtimes": [
+          "js-compat"
+        ],
+        "resources": {
+          "cpu": "medium",
+          "memory": "medium",
+          "startup": "fast"
+        },
+        "portability": "portable",
+        "trust": "community",
+        "security": "restricted compatibility environment; capabilities granted explicitly",
+        "migration": "may later be re-implemented behind the SAME Node Contract in Rust/WASM without changing node identity",
+        "status": "supported-today"
+      },
+      {
+        "id": "python",
+        "name": "Python node",
+        "use": "data/ML work where the Python ecosystem is decisive",
+        "implementation": "external interpreter",
+        "runtimes": [
+          "remote-worker"
+        ],
+        "resources": {
+          "cpu": "high",
+          "memory": "high",
+          "startup": "slow"
+        },
+        "portability": "process-required",
+        "trust": "community",
+        "security": "subprocess capability required; worker-isolated",
+        "migration": "usually stays Python \u2014 rewriting loses the ecosystem that justified it",
+        "status": "defined"
+      },
+      {
+        "id": "wasm",
+        "name": "WASM node",
+        "use": "portable, sandboxed compute",
+        "implementation": "prebuilt .wasm module",
+        "runtimes": [
+          "wasm"
+        ],
+        "resources": {
+          "cpu": "medium",
+          "memory": "low",
+          "startup": "fast"
+        },
+        "portability": "portable",
+        "trust": "community",
+        "security": "sandboxed by construction \u2014 the best default for untrusted compute",
+        "migration": "ships prebuilt; no toolchain on the user device",
+        "status": "defined"
+      },
+      {
+        "id": "rust",
+        "name": "Rust native node",
+        "use": "hot paths where CPU/memory cost is material",
+        "implementation": "prebuilt native artifact",
+        "runtimes": [
+          "rust-native"
+        ],
+        "resources": {
+          "cpu": "low",
+          "memory": "low",
+          "startup": "fast"
+        },
+        "portability": "native-required",
+        "trust": "core",
+        "security": "native access is powerful \u2014 reserved for core/verified code",
+        "migration": "MUST ship prebuilt per platform. Requiring a compiler on a user device is forbidden.",
+        "status": "defined-not-implemented"
+      },
+      {
+        "id": "remote",
+        "name": "Remote node",
+        "use": "execution that cannot or should not happen on this device",
+        "implementation": "the same contract invoked over a real process/network boundary",
+        "runtimes": [
+          "remote-worker"
+        ],
+        "resources": {
+          "cpu": "none",
+          "memory": "tiny",
+          "startup": "fast",
+          "network": true
+        },
+        "portability": "remote-capable",
+        "trust": "verified",
+        "security": "a genuine trust boundary: authenticate, authorise, and never forward raw secrets",
+        "migration": "what lets a constrained device keep a heavy node in its catalog",
+        "status": "defined"
+      },
+      {
+        "id": "community",
+        "name": "Existing community node",
+        "use": "reuse what the n8n ecosystem already has",
+        "implementation": "installed npm package",
+        "runtimes": [
+          "js-compat"
+        ],
+        "resources": {
+          "cpu": "medium",
+          "memory": "medium",
+          "startup": "fast"
+        },
+        "portability": "portable",
+        "trust": "community",
+        "security": "package isolation + explicit capability grants",
+        "migration": "PROTECTED. Community nodes must keep loading unchanged; adopting the Node Contract must never be a precondition for working.",
+        "status": "supported-today"
+      }
+    ]
+  },
+  "decisionModel": {
+    "summary": "How a future AI Node Creator picks a route. Inputs are measurable, weights are explicit, and the rule set is small enough to audit.",
+    "inputs": [
+      "functionality",
+      "complexity",
+      "cpuCost",
+      "ramCost",
+      "diskCost",
+      "startupCost",
+      "portability",
+      "compatibility",
+      "security",
+      "ecosystemAvailability",
+      "upgradeCost",
+      "maintenanceCost",
+      "scaleOutCost"
+    ],
+    "rules": [
+      {
+        "id": "D1",
+        "when": "an existing community node already does it",
+        "prefer": "community",
+        "because": "zero implementation and zero maintenance beat any rewrite"
+      },
+      {
+        "id": "D2",
+        "when": "it is a REST API wrapper",
+        "prefer": "no-code-api or declarative",
+        "because": "no code means no attack surface and no upgrade cost"
+      },
+      {
+        "id": "D3",
+        "when": "an OpenAPI document exists",
+        "prefer": "openapi",
+        "because": "regeneration is cheaper than maintenance"
+      },
+      {
+        "id": "D4",
+        "when": "it is a pure, hot, deterministic transform",
+        "prefer": "rust or wasm",
+        "because": "this is where native speed is actually material"
+      },
+      {
+        "id": "D5",
+        "when": "portability or sandboxing matters more than peak speed",
+        "prefer": "wasm",
+        "because": "one prebuilt artifact runs everywhere, isolated"
+      },
+      {
+        "id": "D6",
+        "when": "the device is constrained and the work is heavy",
+        "prefer": "remote",
+        "because": "the catalog should not shrink on a phone"
+      },
+      {
+        "id": "D7",
+        "when": "the Python ecosystem is the reason it exists",
+        "prefer": "python",
+        "because": "rewriting discards the only justification"
+      },
+      {
+        "id": "D8",
+        "when": "nothing above applies",
+        "prefer": "javascript",
+        "because": "it is the ecosystem default and always compatible"
+      }
+    ],
+    "rustPolicy": {
+      "preferWhen": [
+        "high-frequency execution",
+        "material CPU or memory savings",
+        "long-term maintainability",
+        "portability via a prebuilt artifact"
+      ],
+      "neverBecause": [
+        "it is Rust",
+        "it sounds faster",
+        "another component is written in Rust"
+      ],
+      "hardConstraints": [
+        "must ship prebuilt per platform \u2014 never require a compiler on a user device",
+        "must implement the SAME Node Contract, with the same identity and error codes",
+        "must not break JS or community-node compatibility",
+        "must be replaceable back to JS if it regresses"
+      ]
+    },
+    "tieBreak": "When two routes score equally, choose the one with the lower total lifecycle cost: maintenance + upgrade + scale-out, not implementation time."
+  },
+  "lifecycle": {
+    "install": [
+      "install",
+      "scan",
+      "validate",
+      "test",
+      "enable"
+    ],
+    "upgrade": [
+      "compatibility-check",
+      "test",
+      "activate"
+    ],
+    "removal": [
+      "disable",
+      "quarantine",
+      "rollback",
+      "remove"
+    ],
+    "quarantineRule": "Quarantine is MANDATORY as a concept: a node that fails validation, breaks at runtime, or violates its declared capabilities is quarantined \u2014 kept installed and inspectable, but not loaded \u2014 rather than silently deleted or left running.",
+    "isolation": {
+      "requirements": [
+        "version-pinned dependencies per package",
+        "package scope so two packages cannot collide",
+        "runtime compatibility recorded per package",
+        "dependency conflicts detected at install, not at execution",
+        "a package lock so an install is reproducible"
+      ],
+      "rule": "One community package must never be able to silently destabilise another."
+    }
+  },
+  "compatibilityMatrix": {
+    "dimensions": [
+      "node",
+      "contract",
+      "implementation",
+      "runtime",
+      "os",
+      "arch",
+      "n8nCompatibility",
+      "portability"
+    ],
+    "rule": "The matrix is what turns the decision model from opinion into lookup. P2.8-B defines the dimensions and seeds them from the route table; P6 populates it per installed node."
+  },
+  "compatibilityPromise": [
+    "Existing n8n community nodes keep loading. The compatibility runtime is the default, not a fallback.",
+    "Node identity (`type` + `typeVersion`) never changes because of a migration, a runtime change or a reimplementation. A saved workflow that referenced a node must keep resolving it.",
+    "The migration path is one-directional and optional: JS node -> Node Contract descriptor -> compatibility runtime -> (much later, only if justified) an alternative implementation behind the same contract.",
+    "A node author is never required to adopt the Node Contract. Adoption buys better metadata, capability declarations and portability information; it is not a condition of running.",
+    "No community node is ever rewritten in Rust in order to keep working. Rust is an optional additional implementation, never a requirement.",
+    "A node whose package fails verification is quarantined, never silently disabled and never deleted before the cause is recorded."
+  ]
+}

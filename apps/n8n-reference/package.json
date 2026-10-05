@@ -1,0 +1,14 @@
+{
+  "name": "n8n-reference",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Official upstream n8n reference instance (Port 5680) acting as oracle for semantic diff testing",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "n8n": "2.9.4"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "wf-one-node",
+  "name": "Single Manual Trigger",
+  "nodes": [
+    {
+      "id": "node-1",
+      "name": "When clicking \u2018Test step\u2019",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {}
+}

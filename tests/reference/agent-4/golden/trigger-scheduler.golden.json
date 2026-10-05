@@ -1,0 +1,74 @@
+{
+  "reference": "n8n 2.9.4",
+  "recordedAt": "2026-09-16T21:28:30.409Z",
+  "cases": {
+    "activate": {
+      "input": "POST /rest/workflows/:id/activate (Schedule Trigger every 30s)",
+      "expected": {
+        "status": 200,
+        "active": true,
+        "activeVersionIdSet": true,
+        "triggerCount": 1
+      },
+      "sideEffect": "ActiveWorkflowManager.add → ActiveWorkflows.add → ScheduleTrigger.trigger → helpers.registerCron → ScheduledTaskManager (in memory, leader only); workflow_entity.activeVersionId set; workflow_publish_history row"
+    },
+    "activeWorkflowsList": {
+      "input": "GET /rest/active-workflows",
+      "expected": {
+        "status": 200,
+        "containsId": true
+      }
+    },
+    "activateAlreadyActive": {
+      "input": "POST /activate again",
+      "expected": {
+        "status": 200,
+        "body": {
+          "active": true
+        }
+      }
+    },
+    "scheduledExecution": {
+      "input": "wait for cron tick",
+      "expected": {
+        "recorded": true,
+        "mode": "trigger",
+        "status": "success"
+      },
+      "sideEffect": "execution_entity row with mode=\"trigger\""
+    },
+    "deactivate": {
+      "input": "POST /rest/workflows/:id/deactivate",
+      "expected": {
+        "status": 200,
+        "active": false,
+        "activeVersionId": null
+      },
+      "sideEffect": "ActiveWorkflowManager.remove → ActiveWorkflows.remove → deregisterCrons(workflowId); closeFunction()"
+    },
+    "deactivateAlreadyInactive": {
+      "input": "POST /deactivate again",
+      "expected": {
+        "status": 200,
+        "body": {
+          "active": false
+        }
+      }
+    },
+    "activeWorkflowsAfterDeactivate": {
+      "input": "GET /rest/active-workflows",
+      "expected": {
+        "containsId": false
+      }
+    },
+    "activationErrorNone": {
+      "input": "GET /rest/active-workflows/error/:id",
+      "expected": {
+        "status": 200,
+        "body": {
+          "data": null
+        }
+      }
+    }
+  }
+}

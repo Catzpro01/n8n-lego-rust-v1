@@ -1,0 +1,1136 @@
+{
+  "version": "1.0.0",
+  "phase": "P2.10",
+  "owner": "manager",
+  "status": "contract-only",
+  "description": "Provider-neutral AI vocabulary for a future AI Foundation, plus the first provider adapters behind the declared seams (P2.25). The vocabulary declares shapes; the adapters translate one explicitly configured external provider each onto the canonical contract through an injected transport. No default provider, no vendor SDK, no stored credential, no new dependency.",
+  "notImplemented": [
+    "No LLM inference of any kind is performed by LEGO itself — every token comes from an external provider reached through an explicitly configured adapter transport; no canned completion ever stands in for a provider.",
+    "No default model gateway client and no vendor SDK. The P2.25 model provider adapter speaks only through an injected exchange binding, configuration is explicit, and credentials are supplied per call — never stored, defaulted or echoed. 9Router remains an example of a provider kind only.",
+    "No default tool gateway client. The P2.25 tool provider adapter binds declared tools behind the same injected-transport, per-call-authorization boundary; Composio remains an example of a provider kind only.",
+    "No owned or bundled agent runtime. External agent runtimes are adapted behind the P2.21 seam (P2.25 ships the first real external runtime binding), never reimplemented — Hermes, Claude Code, Gemini CLI, Antigravity, OpenClaw and DeepSeek remain examples of runtime kinds.",
+    "No MCP server and no MCP client.",
+    "No ambient network call, no daemon, no background process and no new dependency: transports exist only at the explicitly configured adapter edge.",
+    "No GitHub client and no standing GitHub token: GitHub and every application provider are integration boundaries reached only through explicitly handed-over, scoped, request-bound authorization — never a stored credential, never a global repository authority, never implicit account discovery (P2.26).",
+    "No provider discovery and no automatic provider selection: a provider exists in the system only where its declaration profile (sim/local/cloud) was made explicitly — absence is the honest not-configured state, never a default (P2.26)."
+  ],
+  "vendorRule": "A vendor name may appear in this file ONLY inside an `examples` array, and only as an illustration of a provider kind. No vendor may appear in an id, a required field, a code path or a default. If a vendor name is ever needed to make a contract work, the contract is wrong.",
+  "taxonomy": {
+    "rule": "These five concepts are deliberately distinct. Conflating them is the single most common way an AI integration becomes unreplaceable, because it welds a capability to one vendor's transport.",
+    "concepts": {
+      "capability": "WHAT the system can do. Owned by a LEGO. Stable. Example: `agent.session`.",
+      "implementation": "HOW a capability is realised. Swappable. Example: a JS implementation or a Rust implementation.",
+      "provider": "WHERE an implementation is sourced from. Example kinds: model-provider, tool-provider, application-provider.",
+      "transport": "HOW bytes move. Example: in-process, worker, http, mcp.",
+      "runtime": "WHERE an agent or system executes. Example kinds: agent-runtime, simulation-runtime."
+    },
+    "layering": "capability -> contract -> operations -> interaction -> implementation -> provider -> transport -> runtime",
+    "antiPattern": "Declaring `composio.github.repo.read` as a capability. That fuses capability (repo read), provider (Composio) and application (GitHub) into one identifier that cannot be replaced without a rename."
+  },
+  "providerKinds": {
+    "model-provider": {
+      "summary": "Supplies inference. Text, embeddings, possibly tool-calling.",
+      "contract": "ai.model-gateway",
+      "examples": [
+        "a hosted model gateway such as 9Router",
+        "a direct vendor API",
+        "a local model server"
+      ],
+      "required": [
+        "providerId",
+        "kind",
+        "availability",
+        "transport",
+        "models"
+      ]
+    },
+    "tool-provider": {
+      "summary": "Supplies callable tools and readable resources to an agent.",
+      "contract": "ai.tool-gateway",
+      "examples": [
+        "a tool/app gateway such as Composio",
+        "a local tool pack",
+        "an MCP server"
+      ],
+      "required": [
+        "providerId",
+        "kind",
+        "availability",
+        "transport",
+        "tools"
+      ]
+    },
+    "application-provider": {
+      "summary": "An external application exposed as capabilities. Independent of whichever gateway reaches it.",
+      "contract": "ai.application-provider",
+      "examples": [
+        "GitHub",
+        "an issue tracker",
+        "a chat platform"
+      ],
+      "required": [
+        "providerId",
+        "kind",
+        "availability",
+        "transport",
+        "capabilities"
+      ]
+    },
+    "agent-runtime": {
+      "summary": "Executes an agent session. Owns the agent loop, not the model.",
+      "contract": "ai.agent-runtime",
+      "examples": [
+        "Hermes",
+        "Claude Code",
+        "Gemini CLI",
+        "Antigravity",
+        "OpenClaw",
+        "a DeepSeek harness"
+      ],
+      "required": [
+        "runtimeId",
+        "kind",
+        "availability",
+        "transport",
+        "locality",
+        "supports"
+      ]
+    },
+    "simulation-runtime": {
+      "summary": "Executes a scenario or simulation rather than a task-directed agent.",
+      "contract": "ai.agent-runtime",
+      "examples": [
+        "MiroFish"
+      ],
+      "required": [
+        "runtimeId",
+        "kind",
+        "availability",
+        "transport",
+        "locality",
+        "supports"
+      ]
+    }
+  },
+  "providerProfiles": {
+    "rule": "Provider declarations are EXPLICIT: declared, not assumed. No hidden discovery, no automatic provider selection, no standing provider authority, no stored credential — configuration remains explicit on the P2.25 adapters and the absence of a declaration is the honest not-configured state, never a default.",
+    "profiles": {
+      "sim": {
+        "summary": "A simulated/fixture provider declared for offline and test execution.",
+        "authority": "simulation authority only — never reaches an external service",
+        "configRule": "explicit declaration required; sim never becomes a fallback for an undeclared provider"
+      },
+      "local": {
+        "summary": "A provider running on the same host, reached through an explicitly named local endpoint.",
+        "authority": "local processes are still explicitly declared — no process or port discovery",
+        "configRule": "explicit declaration required; local never implies trusted or standing"
+      },
+      "cloud": {
+        "summary": "A remotely hosted provider reached over the network through an explicitly configured endpoint.",
+        "authority": "remote authority stays at the adapter edge; credentials are handed over per call, never stored",
+        "configRule": "explicit declaration required; cloud never implies an account, a token or an auto-selected vendor"
+      }
+    }
+  },
+  "modelGateway": {
+    "contract": "ai.model-gateway",
+    "rule": "Provider-neutral. An implementation maps these operations onto whatever the provider actually speaks.",
+    "operations": [
+      {
+        "name": "models.list",
+        "interaction": "call",
+        "permission": "ai:model:read",
+        "idempotent": true
+      },
+      {
+        "name": "model.describe",
+        "interaction": "call",
+        "permission": "ai:model:read",
+        "idempotent": true
+      },
+      {
+        "name": "generate",
+        "interaction": "call",
+        "permission": "ai:model:invoke",
+        "idempotent": false
+      },
+      {
+        "name": "stream",
+        "interaction": "stream",
+        "permission": "ai:model:invoke",
+        "idempotent": false,
+        "backpressure": "block"
+      },
+      {
+        "name": "embed",
+        "interaction": "batch",
+        "permission": "ai:model:invoke",
+        "idempotent": true
+      },
+      {
+        "name": "countTokens",
+        "interaction": "call",
+        "permission": "ai:model:read",
+        "idempotent": true
+      }
+    ],
+    "modelMetadata": {
+      "required": [
+        "modelId",
+        "provider",
+        "availability"
+      ],
+      "optional": [
+        "contextSize",
+        "maxOutput",
+        "streaming",
+        "toolCalling",
+        "embedding",
+        "modalities",
+        "costPerInputToken",
+        "costPerOutputToken",
+        "latencyProfile",
+        "region"
+      ],
+      "rule": "Cost and latency are OPTIONAL and may be absent or stale. A consumer must treat a missing value as unknown, never as zero. A router that reads absent cost as free will always pick the unpriced model."
+    },
+    "streamRule": "`stream` must declare a backpressure policy. `block` is the default because a token stream a consumer cannot keep up with should slow the producer, not accumulate in memory."
+  },
+  "toolGateway": {
+    "contract": "ai.tool-gateway",
+    "rule": "Tool-shaped, not vendor-shaped. MCP is one possible transport adapter, never the internal model.",
+    "operations": [
+      {
+        "name": "tools.list",
+        "interaction": "call",
+        "permission": "ai:tool:read",
+        "idempotent": true
+      },
+      {
+        "name": "tool.describe",
+        "interaction": "call",
+        "permission": "ai:tool:read",
+        "idempotent": true
+      },
+      {
+        "name": "tool.call",
+        "interaction": "call",
+        "permission": "ai:tool:invoke",
+        "idempotent": false
+      },
+      {
+        "name": "resources.list",
+        "interaction": "call",
+        "permission": "ai:tool:read",
+        "idempotent": true
+      },
+      {
+        "name": "resource.read",
+        "interaction": "call",
+        "permission": "ai:tool:read",
+        "idempotent": true
+      },
+      {
+        "name": "prompts.list",
+        "interaction": "call",
+        "permission": "ai:tool:read",
+        "idempotent": true
+      },
+      {
+        "name": "prompt.get",
+        "interaction": "call",
+        "permission": "ai:tool:read",
+        "idempotent": true
+      }
+    ],
+    "toolMetadata": {
+      "required": [
+        "toolId",
+        "provider",
+        "inputSchema",
+        "sideEffects",
+        "availability"
+      ],
+      "optional": [
+        "outputSchema",
+        "description",
+        "riskClass",
+        "requiresApproval",
+        "rateLimit"
+      ],
+      "rule": "`sideEffects` is REQUIRED and one of read-only | writes | destructive | external. It drives the approval contract. A tool that does not declare its side effects must be treated as destructive, because the safe default for an unknown effect is the most restrictive one."
+    }
+  },
+  "applicationProvider": {
+    "contract": "ai.application-provider",
+    "rule": "An application is modelled by its capabilities, independent of the path used to reach it. The same application may be reachable natively AND through a tool gateway; both are providers of the same capabilities.",
+    "firstClassRule": "A native integration must never be forced through a gateway. GitHub access via a direct native provider and GitHub access via a tool gateway are two provider bindings of ONE capability set, and the native path must remain available with no gateway configured.",
+    "exampleCapabilities": {
+      "application": "github",
+      "note": "Illustrative capability decomposition. No GitHub client is implemented here.",
+      "capabilities": [
+        {
+          "id": "repo.read",
+          "permission": "app:github:read",
+          "sideEffects": "read-only"
+        },
+        {
+          "id": "repo.write",
+          "permission": "app:github:write",
+          "sideEffects": "writes"
+        },
+        {
+          "id": "branch.read",
+          "permission": "app:github:read",
+          "sideEffects": "read-only"
+        },
+        {
+          "id": "branch.create",
+          "permission": "app:github:write",
+          "sideEffects": "writes"
+        },
+        {
+          "id": "commit.create",
+          "permission": "app:github:write",
+          "sideEffects": "writes"
+        },
+        {
+          "id": "pr.read",
+          "permission": "app:github:read",
+          "sideEffects": "read-only"
+        },
+        {
+          "id": "pr.create",
+          "permission": "app:github:write",
+          "sideEffects": "writes"
+        },
+        {
+          "id": "issue.read",
+          "permission": "app:github:read",
+          "sideEffects": "read-only"
+        },
+        {
+          "id": "issue.create",
+          "permission": "app:github:write",
+          "sideEffects": "writes"
+        },
+        {
+          "id": "actions.read",
+          "permission": "app:github:read",
+          "sideEffects": "read-only"
+        },
+        {
+          "id": "webhook.receive",
+          "permission": "app:github:receive",
+          "sideEffects": "read-only"
+        }
+      ]
+    },
+    "handedOverAccess": {
+      "rule": "Application integration access (GitHub is the canonical example) is an integration boundary, not a privileged Core capability: access is explicitly handed over, scoped to declared capability words, and request-bound by a requestId.",
+      "handoff": [
+        "grantReference (opaque reference, never a raw credential)",
+        "scope (declared capability words)",
+        "requestId (request-bound — no standing access)"
+      ],
+      "never": [
+        "stored credential",
+        "standing GitHub token",
+        "global repository authority",
+        "implicit account discovery"
+      ],
+      "replaceable": "the GitHub integration must remain replaceable and must not become a built-in dependency of every plugin",
+      "decides": "ai.approval decides the grant; the handoff proves well-formedness only — configuration is never authority"
+    }
+  },
+  "agentRuntime": {
+    "contract": "ai.agent-runtime",
+    "rule": "A runtime-neutral agent lifecycle that an external runtime can satisfy without any core change. This is the contract Hermes, Claude Code, Gemini CLI and others could implement; none is implemented here.",
+    "lifecycle": [
+      {
+        "name": "create",
+        "interaction": "call",
+        "permission": "ai:agent:create",
+        "idempotent": false
+      },
+      {
+        "name": "start",
+        "interaction": "call",
+        "permission": "ai:agent:invoke",
+        "idempotent": false
+      },
+      {
+        "name": "send",
+        "interaction": "call",
+        "permission": "ai:agent:invoke",
+        "idempotent": false
+      },
+      {
+        "name": "pause",
+        "interaction": "call",
+        "permission": "ai:agent:control",
+        "idempotent": true
+      },
+      {
+        "name": "resume",
+        "interaction": "call",
+        "permission": "ai:agent:control",
+        "idempotent": true
+      },
+      {
+        "name": "cancel",
+        "interaction": "call",
+        "permission": "ai:agent:control",
+        "idempotent": true
+      },
+      {
+        "name": "status",
+        "interaction": "call",
+        "permission": "ai:agent:read",
+        "idempotent": true
+      },
+      {
+        "name": "stream",
+        "interaction": "stream",
+        "permission": "ai:agent:read",
+        "idempotent": false,
+        "backpressure": "coalesce"
+      },
+      {
+        "name": "artifact",
+        "interaction": "call",
+        "permission": "ai:agent:read",
+        "idempotent": true
+      },
+      {
+        "name": "close",
+        "interaction": "call",
+        "permission": "ai:agent:control",
+        "idempotent": true
+      }
+    ],
+    "runtimeMetadata": {
+      "required": [
+        "runtimeId",
+        "kind",
+        "version",
+        "availability",
+        "transport",
+        "locality",
+        "supports"
+      ],
+      "optional": [
+        "capabilities",
+        "resourceProfile",
+        "region",
+        "maxConcurrentSessions"
+      ],
+      "locality": [
+        "in-process",
+        "local-process",
+        "local-network",
+        "remote"
+      ],
+      "supports": {
+        "session": "boolean — can it hold a multi-turn session",
+        "background": "boolean — can it keep working after the caller disconnects",
+        "stream": "boolean — can it emit incremental output",
+        "cancellation": "boolean — can it actually stop, or only be abandoned",
+        "delegation": "boolean — can it spawn child agents"
+      },
+      "rule": "`supports.cancellation: false` is a legitimate, declarable answer. A runtime that cannot stop must say so, because the alternative is a cancel that silently does nothing while the caller believes work stopped."
+    },
+    "pauseRule": "pause/resume are optional. A runtime that cannot pause declares it and answers `lego.operation_unsupported` rather than faking a pause by buffering output."
+  },
+  "agentSession": {
+    "contract": "ai.agent-session",
+    "rule": "Session state is identity plus references. Transcripts, contexts and artifacts are referenced, never inlined, so session state stays small enough to persist cheaply and to survive a storage backend change.",
+    "fields": [
+      "sessionId",
+      "agentId",
+      "parentSessionId",
+      "taskId",
+      "workflowId",
+      "executionId",
+      "runtimeId",
+      "status",
+      "createdAt",
+      "updatedAt"
+    ],
+    "references": [
+      "contextRef",
+      "artifactRef",
+      "traceRef"
+    ],
+    "states": [
+      "created",
+      "running",
+      "waiting",
+      "paused",
+      "completed",
+      "failed",
+      "cancelled"
+    ],
+    "sizeRule": "A session record must remain bounded. Storing a transcript inside it would make session size grow without limit and would put model output into the same row as control state — see the artifact contract.",
+    "implementationStatus": "in-progress",
+    "implementationBoundary": [
+      "bounded registry mechanics",
+      "explicit lifecycle transitions",
+      "parent/child references",
+      "context references",
+      "continuation linkage"
+    ],
+    "notImplemented": [
+      "unbounded transcript storage",
+      "model/runtime execution",
+      "Memory persistence",
+      "provider integration",
+      "capability grants"
+    ],
+    "transitions": {
+      "created": [
+        "running",
+        "waiting",
+        "cancelled"
+      ],
+      "running": [
+        "waiting",
+        "paused",
+        "completed",
+        "failed",
+        "cancelled"
+      ],
+      "waiting": [
+        "running",
+        "paused",
+        "completed",
+        "failed",
+        "cancelled"
+      ],
+      "paused": [
+        "running",
+        "cancelled"
+      ],
+      "completed": [],
+      "failed": [],
+      "cancelled": []
+    }
+  },
+  "agentMachine": {
+    "contract": "ai.agent-machine",
+    "rule": "The bounded execution FOUNDATION of the Agent Machine: one canonical state machine for machine, agent and task identity, lifecycle (incl. ready), step bookkeeping, budgets, bounded delegation bookkeeping, bounded graph validation and deterministic transitions. It is a foundation, not an engine: nothing in P2.16 executes a step, runs a model or calls a tool, and delegation is bookkeeping metadata only — never child execution or permission inheritance. The future full loop (ai.agent-runtime) builds on this contract.",
+    "fields": [
+      "machineId",
+      "taskId",
+      "agentId",
+      "executorKind",
+      "lifecycle",
+      "sessionReference",
+      "contextReference",
+      "workspaceReference",
+      "capabilityScope",
+      "budgets",
+      "metadata",
+      "steps",
+      "stepCount",
+      "delegations",
+      "failure",
+      "version",
+      "createdAt",
+      "updatedAt",
+      "startedAt"
+    ],
+    "executorKinds": [
+      "IN_MEMORY",
+      "EXTERNAL"
+    ],
+    "executorKindRule": "A kind is a declaration, not an authority. The provider must explicitly support the requested kind; the core never infers shell, filesystem, process or remote execution from it.",
+    "referenceRule": "Context, Session, Memory and Workspace are consumed by opaque reference only (contextReference, sessionReference, workspaceReference). Agent Machine never redefines or drives their lifecycles, and Memory is deliberately not referenced at all.",
+    "states": [
+      "created",
+      "ready",
+      "running",
+      "waiting",
+      "paused",
+      "completed",
+      "failed",
+      "cancelled"
+    ],
+    "stateRule": "The canonical agent vocabulary quoted from the AI set and ai.agent-session@1.0.0, plus the machine-level ready state added by agentMachine.prepare in 1.1.0. waiting is entered only by an approval-required step and left only by cancel: approval resolution belongs to the fail-closed ai.approval contract, not to P2.16.",
+    "transitions": {
+      "created": [
+        "ready",
+        "running",
+        "cancelled"
+      ],
+      "ready": [
+        "running",
+        "cancelled"
+      ],
+      "running": [
+        "waiting",
+        "paused",
+        "completed",
+        "failed",
+        "cancelled"
+      ],
+      "waiting": [
+        "cancelled"
+      ],
+      "paused": [
+        "running",
+        "cancelled"
+      ],
+      "completed": [],
+      "failed": [],
+      "cancelled": []
+    },
+    "operations": [
+      "agentMachine.create",
+      "agentMachine.describe",
+      "agentMachine.prepare",
+      "agentMachine.start",
+      "agentMachine.step",
+      "agentMachine.pause",
+      "agentMachine.resume",
+      "agentMachine.delegate",
+      "agentMachine.cancel"
+    ],
+    "permissions": [
+      "ai:agent:create",
+      "ai:agent:invoke",
+      "ai:agent:control",
+      "ai:agent:read",
+      "ai:agent:delegate"
+    ],
+    "stepOutcomes": [
+      "succeeded",
+      "failed",
+      "cancelled",
+      "approval-required"
+    ],
+    "budgetDimensions": [
+      "maxSteps",
+      "maxDurationMs",
+      "maxContinuationBytes",
+      "maxReferences",
+      "maxChildren",
+      "maxTasksPerAgent"
+    ],
+    "budgetRule": "Budgets are first-class, declared at create, clamped to bounded ceilings and always positive. There is no unlimited mode; exhaustion is a stable error and a stable terminal failure (budget-exhausted). maxChildren bounds delegation edges (undeclared = 0) and maxTasksPerAgent bounds machines per agent identity.",
+    "concurrencyRule": "Every mutation carries expectedVersion (optimistic concurrency). Stale or duplicate step submissions are deterministic conflicts, never silent reorders.",
+    "providerSeam": "replaceable; InMemoryAgentMachineProvider is the bounded default. The provider stores opaque records only and never receives work to execute.",
+    "implementationStatus": "implemented",
+    "implementationBoundary": [
+      "bounded identity (machineId, agentId, taskId — three distinct forms)",
+      "explicit lifecycle (incl. ready via prepare) and deterministic transitions",
+      "bounded step bookkeeping with sequence and identity rules",
+      "first-class execution budgets (incl. maxChildren and maxTasksPerAgent)",
+      "registry-validated capability scope (fail-closed)",
+      "bounded delegation bookkeeping with narrowed, clamped edges (no inheritance)",
+      "bounded execution-graph representation and validation",
+      "deterministic, session-scoped Universal Agent Event derivation",
+      "approval reference boundary (fail-closed, no resolution)",
+      "replaceable provider/executor seam"
+    ],
+    "notImplemented": [
+      "the agent loop or any autonomous runtime",
+      "model inference",
+      "tool execution",
+      "delegation execution, child-agent spawning or multi-agent runtime orchestration (bookkeeping edges only)",
+      "parallel execution runtime, fan-out or fan-in scheduling (graph representation only)",
+      "stream, send, artifact and close operations",
+      "approval request, grant or deny",
+      "shell, filesystem, process or network authority"
+    ],
+    "capabilityScopeRule": "capabilityScope is a bounded list validated against the lego-foundation capability registry; unknown ids, duplicates and overlong lists fail closed. Delegation grants are an explicit narrowed subset of this scope — never inherited, never widened.",
+    "graphRule": "Execution graphs are bounded representation: sequential, parallel, branch, fan-out, fan-in, join and retry with at most 128 nodes, 16 dependencies per node and 8 retry attempts. Cycles, dangling refs, multi-entry graphs and permission-bearing nodes are rejected. Validation never executes and never mutates the input.",
+    "eventRule": "Six session-scoped derived event types (agent.created/started/delegated/completed/failed/cancelled). Deterministic, sanitized, reference-only: no payload, no secret, no hidden reasoning, no transport emission."
+  },
+  "delegation": {
+    "contract": "ai.agent-delegation",
+    "rule": "Delegation is a graph edge with an explicit, NARROWED authority grant.",
+    "fields": [
+      "delegationId",
+      "parentSessionId",
+      "childSessionId",
+      "task",
+      "grantedCapabilities",
+      "budget",
+      "deadline",
+      "status"
+    ],
+    "authorityRule": "A child receives only capabilities explicitly listed in `grantedCapabilities`, and that list must be a SUBSET of the parent's. Parent authority never propagates automatically. Automatic propagation means one delegation chain quietly ends in an agent holding every permission in the system.",
+    "budget": {
+      "fields": [
+        "maxTokens",
+        "maxToolCalls",
+        "maxDurationMs",
+        "maxChildren"
+      ],
+      "rule": "A budget is required. An unbudgeted delegation can recurse until a resource limit stops it, which on a low-end device means the device stops."
+    },
+    "deadlineRule": "A child deadline is clamped to the parent's, exactly as the operation envelope already clamps derived deadlines."
+  },
+  "events": {
+    "contract": "ai.agent-events",
+    "rule": "One authoritative event vocabulary. Events are small, structured and reference-based.",
+    "envelope": {
+      "required": [
+        "eventId",
+        "timestamp",
+        "type",
+        "sessionId",
+        "scope"
+      ],
+      "optional": [
+        "agentId",
+        "parentId",
+        "taskId",
+        "status",
+        "durationMs",
+        "summary",
+        "references"
+      ],
+      "rule": "`summary` is a short operational string. `references` point at artifacts, contexts and traces."
+    },
+    "privacyRule": "No event may carry hidden chain-of-thought, raw prompts, credentials or full model output. An event says what happened and where the detail lives. Reasoning traces are not an audit format and storing them creates a liability with no operational benefit.",
+    "sizeRule": "Events are capped and reference-based. Large payloads go to the artifact contract.",
+    "types": [
+      "agent.created",
+      "agent.started",
+      "agent.waiting",
+      "agent.paused",
+      "agent.resumed",
+      "agent.delegated",
+      "agent.completed",
+      "agent.failed",
+      "agent.cancelled",
+      "context.loaded",
+      "context.compacted",
+      "tool.requested",
+      "tool.started",
+      "tool.completed",
+      "tool.failed",
+      "decision.created",
+      "decision.approved",
+      "decision.rejected",
+      "approval.requested",
+      "approval.granted",
+      "approval.denied",
+      "artifact.created",
+      "artifact.updated",
+      "runtime.connected",
+      "runtime.disconnected",
+      "runtime.unavailable"
+    ]
+  },
+  "decision": {
+    "contract": "ai.decision",
+    "rule": "An auditable operational rationale, not a reasoning transcript.",
+    "fields": [
+      "decisionId",
+      "timestamp",
+      "agentId",
+      "taskId",
+      "selectedOption",
+      "alternativeRefs",
+      "reasonSummary",
+      "evidenceRefs",
+      "risk",
+      "approvalState"
+    ],
+    "risk": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ],
+    "approvalState": [
+      "not-required",
+      "pending",
+      "granted",
+      "denied"
+    ],
+    "privacyRule": "`reasonSummary` is a concise operational justification. Private chain-of-thought must NOT be stored. The auditable question is what was chosen and on what evidence, not what the model internally considered."
+  },
+  "approval": {
+    "contract": "ai.approval",
+    "rule": "Fail-closed. An action requiring approval does not proceed on timeout, on error, or on a missing approver.",
+    "fields": [
+      "approvalId",
+      "action",
+      "actor",
+      "risk",
+      "requestedAt",
+      "resolvedAt",
+      "decision",
+      "reason"
+    ],
+    "decision": [
+      "granted",
+      "denied",
+      "expired"
+    ],
+    "failClosedRule": "An expired or unanswered approval is a DENY. Defaulting to allow would make the safety layer disappear exactly when the system is under stress or unattended.",
+    "actionsRequiringApproval": [
+      "execute workflow",
+      "modify credential",
+      "change system setting",
+      "delete resource",
+      "push code",
+      "merge pull request",
+      "send external message"
+    ],
+    "notBuilt": "No approval UI, no approval store and no enforcement middleware exists. This declares the shape a future safety layer must satisfy."
+  },
+  "artifact": {
+    "contract": "ai.artifact",
+    "rule": "Reference-based. Large data never travels inside an event or a session record.",
+    "fields": [
+      "artifactId",
+      "kind",
+      "size",
+      "mime",
+      "createdAt",
+      "owner",
+      "storageRef",
+      "checksum",
+      "retention"
+    ],
+    "kinds": [
+      "patch",
+      "diff",
+      "log",
+      "report",
+      "screenshot",
+      "file",
+      "model-output",
+      "simulation-result"
+    ],
+    "retention": [
+      "ephemeral",
+      "session",
+      "retained",
+      "pinned"
+    ],
+    "storageRule": "`storageRef` is an opaque reference resolved by the storage domain. The AI contracts must not know whether it is a local file, SQLite row or object store — that is exactly the abstraction the storage domain owns."
+  },
+  "context": {
+    "contract": "ai.context",
+    "rule": "Hierarchical and selectively loadable. An agent loads the narrowest scope that answers its question.",
+    "scopes": [
+      "GLOBAL",
+      "WORKFLOW",
+      "NODE",
+      "EXECUTION",
+      "EVENT",
+      "AGENT",
+      "TASK"
+    ],
+    "fields": [
+      "contextId",
+      "scope",
+      "parent",
+      "snapshot",
+      "version",
+      "source",
+      "dependencies",
+      "size",
+      "checksum"
+    ],
+    "selectiveLoadRule": "There is no mandatory load-everything context. Requiring the whole instance as context makes cost scale with instance size instead of task size, which fails first on exactly the low-end devices this project targets.",
+    "compactionRule": "Compaction must emit `context.compacted` and preserve the checksum chain, so a later reader can tell that what it is reading is a reduction rather than the original.",
+    "implementationStatus": "in-progress",
+    "implementationBoundary": [
+      "registry mechanics",
+      "context lifecycle",
+      "snapshots",
+      "parent/child references",
+      "compaction bookkeeping",
+      "checksum lineage",
+      "rollover orchestration",
+      "continuation serialization",
+      "rehydration",
+      "continuity verification",
+      "bounded local state"
+    ],
+    "notImplemented": [
+      "model inference",
+      "provider API calls",
+      "Agent Machine execution loop",
+      "Memory persistent store",
+      "Workspace executor",
+      "filesystem/terminal authority",
+      "MCP runtime",
+      "Runtime Adapter runtime",
+      "Rust implementation"
+    ],
+    "securityRule": "Context state rejects credentials, tokens, secrets, cookies, private model reasoning, raw hidden prompts, arbitrary host paths and unrestricted capability grants. References are preferred over payloads."
+  },
+  "memory": {
+    "contract": "ai.memory",
+    "rule": "Persistent knowledge that survives context replacement. Context is what is loaded now; Session tracks continuity; Memory is what is intentionally retained. Loading memory into context is always an explicit, bounded caller choice.",
+    "scopes": [
+      "GLOBAL",
+      "PROJECT",
+      "WORKFLOW",
+      "AGENT",
+      "SESSION"
+    ],
+    "kinds": [
+      "note",
+      "decision",
+      "artifact",
+      "task",
+      "execution",
+      "reference"
+    ],
+    "retentions": [
+      "EPHEMERAL",
+      "WORKING",
+      "IMPORTANT",
+      "DURABLE",
+      "PERMANENT"
+    ],
+    "fields": [
+      "memoryId",
+      "scope",
+      "scopeOwner",
+      "kind",
+      "retention",
+      "content",
+      "references",
+      "provenance",
+      "version",
+      "size",
+      "checksum",
+      "createdAt",
+      "updatedAt"
+    ],
+    "referencesRule": "Each reference declares an id and a graph edge relation from the memory vocabulary; linkage is explicit and never auto-dereferenced.",
+    "graph": {
+      "nodes": [
+        "project",
+        "workflow",
+        "node",
+        "execution",
+        "agent",
+        "session",
+        "decision",
+        "evidence",
+        "artifact",
+        "task"
+      ],
+      "edges": [
+        "depends_on",
+        "caused",
+        "derived_from",
+        "supports",
+        "contradicts",
+        "implements",
+        "belongs_to",
+        "delegated_to",
+        "decided_by",
+        "observed_in",
+        "related_to"
+      ]
+    },
+    "retentionRule": "Retention is an explicit declaration; EPHEMERAL and WORKING are candidates for forgetting, IMPORTANT/DURABLE/PERMANENT persist until an explicit forget.",
+    "loadRule": "Never dump full memory into context. Retrieval is deterministic, scoped, ordered by creation time and bounded by the caller's limit. Relevance ranking is deferred; list returns a deterministic page.",
+    "providerNote": "Obsidian is a Memory Provider / human knowledge interface adapter. It is NOT the internal source of truth, and the memory graph must remain valid with no provider connected.",
+    "implementationStatus": "implemented",
+    "implementationBoundary": [
+      "bounded in-memory provider behind the provider boundary",
+      "memory identity and namespace/scope",
+      "content and reference validation with sensitive rejection",
+      "deterministic checksum and size",
+      "scope-isolated retrieval with deterministic ordering and pagination",
+      "explicit forget semantics",
+      "provider replaceability"
+    ],
+    "notImplemented": [
+      "vector search, embeddings or relevance-ranked traversal",
+      "automatic retention expiry",
+      "automatic memory-to-context injection",
+      "model inference or provider integration",
+      "Agent Machine loop, Workspace or Runtime Adapter runtime",
+      "Rust implementation"
+    ],
+    "operations": [
+      "memory.remember",
+      "memory.recall",
+      "memory.list",
+      "memory.forget"
+    ],
+    "permissions": [
+      "ai:memory:read",
+      "ai:memory:write"
+    ],
+    "securityRule": "Memory content and references reject credentials, secrets, tokens, host paths and transcripts by name and pattern. Checksum mismatches are reported, never silently repaired."
+  },
+  "resourceProfiles": {
+    "rule": "Resource metadata describes requirements. It is not a scheduler and grants no enforcement.",
+    "dimensions": [
+      "cpu",
+      "memory",
+      "disk",
+      "network",
+      "latency",
+      "locality",
+      "startupCost",
+      "estimatedCost",
+      "availability"
+    ],
+    "profiles": {
+      "low-resource": "Runs on a phone, a Termux session or a 1GB VPS. No GPU, no persistent daemon, minimal memory.",
+      "standard": "A normal laptop or small server.",
+      "high-resource": "Needs substantial CPU or memory; not assumable on a user device.",
+      "remote": "Executes elsewhere. Local cost is a network call; availability becomes a real failure mode."
+    },
+    "deploymentShapes": [
+      "n8n only",
+      "n8n + remote model",
+      "n8n + remote agent",
+      "n8n + local runtime",
+      "mixed local and remote"
+    ],
+    "noLocalInstallRule": "No external runtime may become a local installation requirement. Every AI provider is optional and remotely satisfiable, because requiring a local agent runtime would exclude the low-end targets the foundation explicitly supports."
+  },
+  "zeroInstall": {
+    "rule": "AI Foundation present with NO provider configured is a VALID, fully supported system state — not an error and not a degraded install.",
+    "state": {
+      "aiFoundation": "ready",
+      "modelProvider": "not-configured",
+      "toolProvider": "not-configured",
+      "agentRuntime": "not-configured"
+    },
+    "reportedAs": "capability-unavailable with reason 'no inference provider configured'",
+    "honestyRule": "The system must never fake inference, never return a canned completion and never pretend a provider exists. It reports that the foundation is ready and no provider is connected. A fake answer is worse than no answer, because the user cannot tell it is fake.",
+    "why": "This is what allows a provider such as a model gateway to be connected later as configuration rather than as an architectural change."
+  },
+  "mcp": {
+    "rule": "MCP is an interoperability ADAPTER at the edge. It must never become the internal application architecture.",
+    "boundary": "external world <-> MCP adapter <-> LEGO capability contract <-> implementation",
+    "roles": {
+      "mcp-server": "Exposes selected n8n capabilities to external MCP clients. An explicit export list, never the whole registry.",
+      "mcp-client": "Consumes an external MCP server as a tool-provider implementation."
+    },
+    "concepts": [
+      "server",
+      "client",
+      "tool",
+      "resource",
+      "prompt",
+      "connection",
+      "authorization",
+      "capability"
+    ],
+    "internalRule": "No internal LEGO may call another LEGO over MCP. Internal communication stays CALL/EVENT/STREAM/BATCH over the local dispatcher, as ADR-0004 requires.",
+    "mappingRule": "MCP concepts map ONTO the tool gateway contract; the tool gateway is not defined in MCP terms. If MCP changes, one adapter changes.",
+    "exportRule": "Capabilities are exported explicitly and individually. There is no export-everything switch, because the set of capabilities safe to hand to an external client is never the full set.",
+    "contract": "ai.mcp-boundary",
+    "states": [
+      "declared",
+      "permission-required",
+      "exposed",
+      "blocked"
+    ],
+    "capabilityKinds": [
+      "tool",
+      "resource",
+      "prompt"
+    ],
+    "stateRule": "declared = known as a declaration, with no authority implied; permission-required = known but not exposed until an explicit permission/approval decision; exposed = explicitly exposed after the permission gate passes; blocked = prohibited, unknown, invalid or denied. Exposure and Agent Control authority are separate dimensions: neither ever implies the other.",
+    "transitions": {
+      "declared": [
+        "permission-required",
+        "exposed",
+        "blocked"
+      ],
+      "permission-required": [
+        "exposed",
+        "blocked"
+      ],
+      "exposed": [
+        "blocked"
+      ],
+      "blocked": []
+    },
+    "permissionGate": [
+      "is server declared?",
+      "is capability declared?",
+      "is capability supported?",
+      "is permission required?",
+      "has an explicit permission/approval grant been presented?",
+      "exposed — any unknown or invalid condition is blocked"
+    ],
+    "authorityRule": "MCP exposure never implies Agent Control authority, and Agent Control authority never implies MCP exposure. A declared server is not a trusted server; a declared capability is not an exposed capability; an exposed capability grants no agent permission. Every boundary transition is explicit: no export-everything switch, no inference from names, descriptions, transports, server identities or provider names.",
+    "failClosedRule": "Unknown server, unknown capability, unknown permission claims and invalid inputs fail closed to blocked (or are rejected as contract violations when the input itself is malformed). A pending, expired, scope-mismatched or identity-mismatched approval never exposes: only an explicit granted ai.approval decision can.",
+    "approvalRule": "A capability that declares requiresApproval or requiresPermission is satisfied only by presenting an ai.approval reference whose decision is granted with matching identity and scope (ai.approval@1.0.0, P2.19). Agent permissions are never accepted as evidence at this boundary.",
+    "notBuilt": "No MCP server, client, adapter or dependency exists in this repository."
+  },
+  "transportRouting": {
+    "rule": "Transport is selected by locality, never by habit. The business contract does not change when the transport does.",
+    "ladder": [
+      {
+        "when": "same process",
+        "transport": "in-process",
+        "mechanism": "direct dispatcher"
+      },
+      {
+        "when": "local event",
+        "transport": "in-process",
+        "mechanism": "event dispatcher"
+      },
+      {
+        "when": "process boundary",
+        "transport": "worker",
+        "mechanism": "IPC / worker adapter"
+      },
+      {
+        "when": "remote service",
+        "transport": "remote",
+        "mechanism": "HTTP or a provider-defined protocol"
+      },
+      {
+        "when": "external interoperability",
+        "transport": "mcp",
+        "mechanism": "MCP adapter"
+      }
+    ],
+    "kinds": [
+      "in-process",
+      "worker",
+      "remote",
+      "mcp"
+    ],
+    "prohibition": "Never force every call through HTTP. An HTTP hop between two objects in one process is the most expensive available way to call a function.",
+    "carryRule": "A transport advertises which interaction classes it can carry. The OPERATION owns its interaction class; a transport that cannot carry it is simply not eligible. A transport must never silently downgrade a STREAM to a CALL — the caller asked for incremental output and would instead wait for a single late response."
+  },
+  "rustPolicy": {
+    "rule": "Rust remains an implementation choice beneath these contracts, exactly as ADR-0005 states.",
+    "appliesTo": "Any AI Foundation component may later have a JS implementation and a Rust implementation under the same contract, selected by configuration.",
+    "justification": [
+      "memory",
+      "cpu",
+      "latency",
+      "concurrency",
+      "startup",
+      "operational simplicity"
+    ],
+    "prohibition": "No Rust is written in this phase. Rust is never chosen merely to demonstrate that Rust exists, and must never require a compiler on an end-user device.",
+    "contractPreservation": "A Rust implementation must satisfy the identical contract, operations and interaction classes. If it needs a different contract, it is a different capability and must be justified as one."
+  },
+  "workspaceBoundary": {
+    "rule": "Workspace integration preserves the existing Workspace contract: ai.workspace@1.0.0 keeps its identity, metadata, opaque resource-reference and lifecycle model. Workspace internals are never moved into AI Foundation, no second Workspace implementation is created, and no integration boundary introduces unrestricted filesystem, shell or subprocess authority.",
+    "contract": "ai.workspace@1.0.0",
+    "never": [
+      "workspace internals moved into AI Foundation",
+      "second Workspace implementation",
+      "unrestricted filesystem authority",
+      "unrestricted shell authority",
+      "unrestricted subprocess authority"
+    ]
+  }
+}

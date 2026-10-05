@@ -1,0 +1,163 @@
+{
+  "status": "success",
+  "finished": true,
+  "lastNodeExecuted": "A",
+  "runData": {
+    "Trigger": [
+      {
+        "executionStatus": "success",
+        "source": [],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 1
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "id": 2
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            },
+            {
+              "json": {
+                "id": 3
+              },
+              "pairedItem": {
+                "item": 3
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "Split": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 2
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            }
+          ],
+          [
+            {
+              "json": {
+                "id": 1
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "id": 3
+              },
+              "pairedItem": {
+                "item": 3
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "B": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Split",
+            "previousNodeOutput": 1,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 1
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 3
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "A": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Split",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 2
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            }
+          ]
+        ]
+      }
+    ]
+  }
+}

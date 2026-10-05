@@ -1,0 +1,99 @@
+{
+  "status": "success",
+  "finished": true,
+  "lastNodeExecuted": "Empty",
+  "runData": {
+    "Trigger": [
+      {
+        "executionStatus": "success",
+        "source": [],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 1
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "EmptyAlways": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {},
+              "pairedItem": [
+                {
+                  "item": 0,
+                  "input": 0
+                },
+                {
+                  "item": 1,
+                  "input": 0
+                }
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "AfterAlways": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "EmptyAlways",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {},
+              "pairedItem": {
+                "item": 0
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "Empty": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          []
+        ]
+      }
+    ]
+  }
+}

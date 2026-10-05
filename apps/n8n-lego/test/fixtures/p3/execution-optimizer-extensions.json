@@ -1,0 +1,21 @@
+{
+  "transforms": ["elimination", "subgraphCache", "resourceAwareCompile", "incremental", "selfProfile", "hotColdSplit"],
+  "eliminablePureTypes": ["n8n-nodes-base.noOp", "n8n-nodes-base.set"],
+  "nonEliminableFlags": ["credentials", "retry", "onError", "continueOnFail", "alwaysOutputData", "webhook", "trigger"],
+  "provenance": ["OBSERVED", "ESTIMATED"],
+  "planShapes": ["sequential", "bounded-parallel"],
+  "sha256Vectors": {
+    "empty": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "abc": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    "fox": "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"
+  },
+  "limits": {
+    "maxSteps": 4096,
+    "maxDepsPerStep": 64,
+    "maxSubgraphSteps": 256,
+    "maxCacheEntries": 1024,
+    "maxSubgraphBytes": 65536,
+    "maxProfileSteps": 4096,
+    "maxPlanWidth": 256
+  }
+}

@@ -1,0 +1,242 @@
+{
+  "description": "compareConnections(prev,next): added/removed keyed by source node, type, sourceIndex; comparison is by JSON identity of the IConnection.",
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "A",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "B",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "A": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "End": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sparse": {
+      "main": [
+        [],
+        null,
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "probes": [
+    {
+      "name": "diff",
+      "op": "compareConnections",
+      "next": {
+        "Trigger": {
+          "main": [
+            [
+              {
+                "node": "IF",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "IF": {
+          "main": [
+            [
+              {
+                "node": "A",
+                "type": "main",
+                "index": 0
+              }
+            ],
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "A": {
+          "main": [
+            [
+              {
+                "node": "Merge",
+                "type": "main",
+                "index": 0
+              },
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Merge": {
+          "main": [
+            [
+              {
+                "node": "Loop",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Loop": {
+          "main": [
+            [
+              {
+                "node": "Merge",
+                "type": "main",
+                "index": 0
+              }
+            ],
+            [
+              {
+                "node": "End",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "End": {
+          "main": [
+            [
+              {
+                "node": "Agent",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Model": {
+          "ai_languageModel": [
+            [
+              {
+                "node": "Agent",
+                "type": "ai_languageModel",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Sparse": {
+          "main": [
+            [],
+            null,
+            [
+              {
+                "node": "End",
+                "type": "main",
+                "index": 2
+              }
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

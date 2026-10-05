@@ -1,0 +1,104 @@
+{
+  "description": "Node with two main outputs. Items alternate between outputs; downstream tasks record previousNodeOutput 0 / 1 in their source.",
+  "workflow": {
+    "nodes": [
+      {
+        "id": "trigger",
+        "name": "Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Split",
+        "name": "Split",
+        "type": "ref.split2",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "A",
+        "name": "A",
+        "type": "ref.passthrough",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "B",
+        "name": "B",
+        "type": "ref.passthrough",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Trigger": {
+        "main": [
+          [
+            {
+              "node": "Split",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split": {
+        "main": [
+          [
+            {
+              "node": "A",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "B",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "startItems": [
+    {
+      "json": {
+        "id": 0
+      }
+    },
+    {
+      "json": {
+        "id": 1
+      }
+    },
+    {
+      "json": {
+        "id": 2
+      }
+    },
+    {
+      "json": {
+        "id": 3
+      }
+    }
+  ]
+}

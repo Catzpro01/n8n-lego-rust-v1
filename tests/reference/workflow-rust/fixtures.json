@@ -1,0 +1,1066 @@
+{
+  "generatedAt": "2026-09-16T23:02:31.596Z",
+  "source": "reference runtime (n8n-workflow 2.9.1 — the 2.9.4 dependency set)",
+  "runtimeDir": "/home/user/n8n-rust-v.4/.runtime/node_modules",
+  "provenance": {
+    "package": "n8n-workflow",
+    "version": "2.9.1",
+    "referenceSource": "reference/n8n/packages/workflow/src @ b6dc2787c45677a29a9612cd27eb911302961a83"
+  },
+  "checksum": {
+    "algorithm": "SHA-256 (hex, lowercase) over JSON.stringify(sortObjectKeys(whitelist(snapshot)))",
+    "whitelist": [
+      "name",
+      "description",
+      "nodes",
+      "connections",
+      "settings",
+      "meta",
+      "pinData",
+      "isArchived",
+      "activeVersionId"
+    ],
+    "cases": [
+      {
+        "id": "base",
+        "note": "name + nodes + connections",
+        "snapshot": {
+          "name": "Checksum Base",
+          "nodes": [
+            {
+              "id": "id-A",
+              "name": "A",
+              "type": "n8n-nodes-base.manualTrigger",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "note": "x"
+              }
+            },
+            {
+              "id": "id-B",
+              "name": "B",
+              "type": "n8n-nodes-base.noOp",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "value": 1,
+                "nested": {
+                  "z": 1,
+                  "a": 2
+                }
+              }
+            }
+          ],
+          "connections": {
+            "A": {
+              "main": [
+                [
+                  {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        "sha256": "1013c813a8ac41416a2ea35898e1655d7bd5352ed1e2bf4a54da09abf3b80cf0"
+      },
+      {
+        "id": "key-order-invariance",
+        "note": "top-level key order differs — must hash identically (sortObjectKeys)",
+        "snapshot": {
+          "connections": {
+            "A": {
+              "main": [
+                [
+                  {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                ]
+              ]
+            }
+          },
+          "nodes": [
+            {
+              "id": "id-A",
+              "name": "A",
+              "type": "n8n-nodes-base.manualTrigger",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "note": "x"
+              }
+            },
+            {
+              "id": "id-B",
+              "name": "B",
+              "type": "n8n-nodes-base.noOp",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "value": 1,
+                "nested": {
+                  "z": 1,
+                  "a": 2
+                }
+              }
+            }
+          ],
+          "name": "Checksum Base"
+        },
+        "sha256": "1013c813a8ac41416a2ea35898e1655d7bd5352ed1e2bf4a54da09abf3b80cf0"
+      },
+      {
+        "id": "nested-key-order-invariance",
+        "note": "nested object key order differs — must hash identically",
+        "snapshot": {
+          "name": "Checksum Base",
+          "nodes": [
+            {
+              "id": "id-A",
+              "name": "A",
+              "type": "n8n-nodes-base.manualTrigger",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "note": "x"
+              }
+            },
+            {
+              "id": "id-B",
+              "name": "B",
+              "type": "n8n-nodes-base.noOp",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "nested": {
+                  "a": 2,
+                  "z": 1
+                },
+                "value": 1
+              }
+            }
+          ],
+          "connections": {
+            "A": {
+              "main": [
+                [
+                  {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                ]
+              ]
+            }
+          },
+          "settings": {
+            "executionOrder": "v1",
+            "timezone": "Asia/Jakarta"
+          }
+        },
+        "sha256": "d48befe5ae70e179cbe160275f34a24f74a30b63da2bc2bb87d190b4e77b1fe2"
+      },
+      {
+        "id": "excluded-fields-ignored",
+        "note": "id/active/versionId/timestamps/staticData are NOT in the 9 whitelisted fields — must hash like `base`",
+        "snapshot": {
+          "name": "Checksum Base",
+          "nodes": [
+            {
+              "id": "id-A",
+              "name": "A",
+              "type": "n8n-nodes-base.manualTrigger",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "note": "x"
+              }
+            },
+            {
+              "id": "id-B",
+              "name": "B",
+              "type": "n8n-nodes-base.noOp",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "value": 1,
+                "nested": {
+                  "z": 1,
+                  "a": 2
+                }
+              }
+            }
+          ],
+          "connections": {
+            "A": {
+              "main": [
+                [
+                  {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                ]
+              ]
+            }
+          },
+          "id": "wf-123",
+          "active": true,
+          "versionId": "v9",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "staticData": {
+            "lastId": 7
+          }
+        },
+        "sha256": "1013c813a8ac41416a2ea35898e1655d7bd5352ed1e2bf4a54da09abf3b80cf0"
+      },
+      {
+        "id": "node-order-matters",
+        "note": "`nodes` is an ARRAY in the snapshot — element order is part of the payload",
+        "snapshot": {
+          "name": "Checksum Base",
+          "nodes": [
+            {
+              "id": "id-B",
+              "name": "B",
+              "type": "n8n-nodes-base.noOp",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "value": 1,
+                "nested": {
+                  "z": 1,
+                  "a": 2
+                }
+              }
+            },
+            {
+              "id": "id-A",
+              "name": "A",
+              "type": "n8n-nodes-base.manualTrigger",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "note": "x"
+              }
+            }
+          ],
+          "connections": {
+            "A": {
+              "main": [
+                [
+                  {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        "sha256": "462b6b0d4601e7d0c6f725af1549e89b4474eb1e57811bd4a1c0ed9b1ecb2022"
+      },
+      {
+        "id": "pin-data-included",
+        "note": "pinData IS whitelisted — adding it must change the digest",
+        "snapshot": {
+          "name": "Checksum Base",
+          "nodes": [
+            {
+              "id": "id-A",
+              "name": "A",
+              "type": "n8n-nodes-base.manualTrigger",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "note": "x"
+              }
+            },
+            {
+              "id": "id-B",
+              "name": "B",
+              "type": "n8n-nodes-base.noOp",
+              "typeVersion": 1,
+              "position": [
+                0,
+                0
+              ],
+              "parameters": {
+                "value": 1,
+                "nested": {
+                  "z": 1,
+                  "a": 2
+                }
+              }
+            }
+          ],
+          "connections": {
+            "A": {
+              "main": [
+                [
+                  {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                ]
+              ]
+            }
+          },
+          "pinData": {
+            "B": [
+              {
+                "json": {
+                  "value": 1
+                }
+              }
+            ]
+          }
+        },
+        "sha256": "95e1321299730cd97e728fe19783b84765af9841c7fc8cfa5b13ef1e511201bd"
+      },
+      {
+        "id": "empty-workflow",
+        "note": "empty structures still hash",
+        "snapshot": {
+          "nodes": [],
+          "connections": {}
+        },
+        "sha256": "dc1a7988bf52eb42d43239ddf69fd3dc08f211be56b5438a39da1fd3b72e2dcb"
+      },
+      {
+        "id": "golden-03-linear",
+        "note": "golden fixture 03",
+        "snapshot": {
+          "name": "Linear Two Nodes",
+          "nodes": [
+            {
+              "id": "node-1",
+              "name": "Manual Trigger",
+              "type": "n8n-nodes-base.manualTrigger",
+              "typeVersion": 1,
+              "position": [
+                240,
+                300
+              ],
+              "parameters": {}
+            },
+            {
+              "id": "node-2",
+              "name": "Code",
+              "type": "n8n-nodes-base.code",
+              "typeVersion": 2,
+              "position": [
+                460,
+                300
+              ],
+              "parameters": {
+                "jsCode": "return [{ json: { status: 'ok', count: 42 } }];"
+              }
+            }
+          ],
+          "connections": {
+            "Manual Trigger": {
+              "main": [
+                [
+                  {
+                    "node": "Code",
+                    "type": "main",
+                    "index": 0
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        "sha256": "901a27d7fea9199f1588e0f3d0838f6ac0d98f34f3db8548b742edd6ac15e1dc"
+      }
+    ]
+  },
+  "compareConnections": [
+    {
+      "id": "identical",
+      "prev": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "next": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "result": {
+        "added": {},
+        "removed": {}
+      }
+    },
+    {
+      "id": "destination-changed",
+      "prev": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "next": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "C",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "result": {
+        "added": {
+          "A": {
+            "main": [
+              {
+                "sourceIndex": 0,
+                "value": {
+                  "index": 0,
+                  "connection": {
+                    "node": "C",
+                    "type": "main",
+                    "index": 0
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "removed": {
+          "A": {
+            "main": [
+              {
+                "sourceIndex": 0,
+                "value": {
+                  "index": 0,
+                  "connection": {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "second-output-added",
+      "prev": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ],
+            [
+              {
+                "node": "C",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "next": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "result": {
+        "added": {},
+        "removed": {
+          "A": {
+            "main": [
+              {
+                "sourceIndex": 1,
+                "value": {
+                  "index": 0,
+                  "connection": {
+                    "node": "C",
+                    "type": "main",
+                    "index": 0
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "empty-to-one",
+      "prev": {},
+      "next": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 1
+              }
+            ]
+          ]
+        }
+      },
+      "result": {
+        "added": {
+          "A": {
+            "main": [
+              {
+                "sourceIndex": 0,
+                "value": {
+                  "index": 0,
+                  "connection": {
+                    "node": "B",
+                    "type": "main",
+                    "index": 1
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "removed": {}
+      }
+    },
+    {
+      "id": "connection-type-changed",
+      "prev": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "next": {
+        "A": {
+          "ai_tool": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "result": {
+        "added": {
+          "A": {
+            "ai_tool": [
+              {
+                "sourceIndex": 0,
+                "value": {
+                  "index": 0,
+                  "connection": {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "removed": {
+          "A": {
+            "main": [
+              {
+                "sourceIndex": 0,
+                "value": {
+                  "index": 0,
+                  "connection": {
+                    "node": "B",
+                    "type": "main",
+                    "index": 0
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "slot-shifted",
+      "prev": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              },
+              {
+                "node": "C",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "next": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "C",
+                "type": "main",
+                "index": 0
+              },
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "result": {
+        "added": {},
+        "removed": {}
+      }
+    }
+  ],
+  "toJSON": [
+    {
+      "id": "wf-empty",
+      "note": "empty workflow — settings/staticData default to {}, pinData stays undefined",
+      "nodeKeys": [],
+      "nodesAreKeyedByName": true,
+      "nodeCount": 0,
+      "connectionsBySourceNode": {},
+      "connectionsByDestinationNode": {},
+      "settings": {},
+      "staticData": {},
+      "pinData": null,
+      "timezone": "America/New_York",
+      "active": false,
+      "name": "Empty Workflow"
+    },
+    {
+      "id": "wf-one-node",
+      "note": "single node",
+      "nodeKeys": [
+        "When clicking ‘Test step’"
+      ],
+      "nodesAreKeyedByName": true,
+      "nodeCount": 1,
+      "connectionsBySourceNode": {},
+      "connectionsByDestinationNode": {},
+      "settings": {},
+      "staticData": {},
+      "pinData": null,
+      "timezone": "America/New_York",
+      "active": false,
+      "name": "Single Manual Trigger"
+    },
+    {
+      "id": "wf-linear",
+      "note": "two nodes, one edge — destination index is derived at construction",
+      "nodeKeys": [
+        "Code",
+        "Manual Trigger"
+      ],
+      "nodesAreKeyedByName": true,
+      "nodeCount": 2,
+      "connectionsBySourceNode": {
+        "Manual Trigger": {
+          "main": [
+            [
+              {
+                "node": "Code",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "connectionsByDestinationNode": {
+        "Code": {
+          "main": [
+            [
+              {
+                "node": "Manual Trigger",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "settings": {},
+      "staticData": {},
+      "pinData": null,
+      "timezone": "America/New_York",
+      "active": false,
+      "name": "Linear Two Nodes"
+    },
+    {
+      "id": "wf-all",
+      "note": "settings pass through unchanged (unknown keys preserved); timezone comes from settings",
+      "nodeKeys": [
+        "A",
+        "B"
+      ],
+      "nodesAreKeyedByName": true,
+      "nodeCount": 2,
+      "connectionsBySourceNode": {
+        "A": {
+          "main": [
+            [
+              {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "connectionsByDestinationNode": {
+        "B": {
+          "main": [
+            [
+              {
+                "node": "A",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      },
+      "settings": {
+        "timezone": "Asia/Jakarta",
+        "executionOrder": "v1",
+        "saveDataErrorExecution": "all"
+      },
+      "staticData": {
+        "lastId": 42
+      },
+      "pinData": {
+        "A": [
+          {
+            "json": {
+              "pinned": true
+            }
+          }
+        ]
+      },
+      "timezone": "Asia/Jakarta",
+      "active": false,
+      "name": "Everything"
+    },
+    {
+      "id": "wf-dup",
+      "note": "documented invariant gap: setNodes() silently overwrites — last node wins",
+      "nodeKeys": [
+        "A"
+      ],
+      "nodesAreKeyedByName": true,
+      "nodeCount": 1,
+      "connectionsBySourceNode": {},
+      "connectionsByDestinationNode": {},
+      "settings": {},
+      "staticData": {},
+      "pinData": null,
+      "timezone": "America/New_York",
+      "active": false,
+      "name": "Duplicate"
+    },
+    {
+      "id": "wf-proto",
+      "note": "a node literally named `__proto__` must not corrupt the map",
+      "nodeKeys": [
+        "A"
+      ],
+      "nodesAreKeyedByName": true,
+      "nodeCount": 1,
+      "connectionsBySourceNode": {},
+      "connectionsByDestinationNode": {},
+      "settings": {},
+      "staticData": {},
+      "pinData": null,
+      "timezone": "America/New_York",
+      "active": false,
+      "name": "Proto"
+    }
+  ],
+  "rename": [
+    {
+      "id": "restricted-hasOwnProperty",
+      "note": "restricted JS-prototype name",
+      "outcome": {
+        "threw": true,
+        "errorName": "UserError",
+        "message": "Node name \"hasOwnProperty\" is a restricted name."
+      }
+    },
+    {
+      "id": "restricted-constructor",
+      "note": "restricted JS-prototype name",
+      "outcome": {
+        "threw": true,
+        "errorName": "UserError",
+        "message": "Node name \"constructor\" is a restricted name."
+      }
+    },
+    {
+      "id": "restricted-__proto__",
+      "note": "restricted JS-prototype name",
+      "outcome": {
+        "threw": true,
+        "errorName": "UserError",
+        "message": "Node name \"__proto__\" is a restricted name."
+      }
+    },
+    {
+      "id": "collision-overwrites",
+      "note": "rename D → C when C exists",
+      "outcome": {
+        "threw": false,
+        "nodeNames": [
+          "A",
+          "B",
+          "C"
+        ],
+        "ownerOfC": "id-D",
+        "cStillHasItsEdges": [
+          "A",
+          "B"
+        ]
+      }
+    },
+    {
+      "id": "d-08-stale-destination-index",
+      "note": "after renaming B → Beta: source map is re-keyed and rewritten, destination index keeps the OLD key",
+      "outcome": {
+        "sourceKeys": [
+          "A",
+          "Beta"
+        ],
+        "destinationKeys": [
+          "B",
+          "C"
+        ],
+        "childNodesOfA": [
+          "C",
+          "Beta"
+        ],
+        "parentNodesOfBeta": [],
+        "parentNodesOfOldName": [
+          "A"
+        ],
+        "sourceEdgeToBeta": {
+          "main": [
+            [
+              {
+                "node": "C",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "afterRederive": [
+          "A"
+        ],
+        "nodeNames": [
+          "A",
+          "Beta",
+          "C",
+          "D"
+        ]
+      }
+    },
+    {
+      "id": "parameter-references-rewritten",
+      "note": "P-NODE-REFERENCE rewrites expression strings; a plain (non-expression) string is left alone",
+      "outcome": {
+        "value": "={{ $('Alpha').item.json.x }}",
+        "plain": "A"
+      }
+    }
+  ],
+  "traversal": [
+    {
+      "id": "default-main-depth-unlimited",
+      "from": "A",
+      "type": "main",
+      "depth": -1,
+      "result": [
+        "D",
+        "C",
+        "B"
+      ]
+    },
+    {
+      "id": "main-depth-0",
+      "from": "A",
+      "type": "main",
+      "depth": 0,
+      "result": []
+    },
+    {
+      "id": "main-depth-1",
+      "from": "A",
+      "type": "main",
+      "depth": 1,
+      "result": [
+        "B"
+      ]
+    },
+    {
+      "id": "main-depth-2",
+      "from": "A",
+      "type": "main",
+      "depth": 2,
+      "result": [
+        "C",
+        "B"
+      ]
+    },
+    {
+      "id": "all-types",
+      "from": "A",
+      "type": "ALL",
+      "depth": -1,
+      "result": [
+        "M",
+        "D",
+        "C",
+        "B"
+      ]
+    },
+    {
+      "id": "all-non-main",
+      "from": "A",
+      "type": "ALL_NON_MAIN",
+      "depth": -1,
+      "result": [
+        "M"
+      ]
+    },
+    {
+      "id": "ai-language-model",
+      "from": "A",
+      "type": "ai_languageModel",
+      "depth": -1,
+      "result": [
+        "M"
+      ]
+    },
+    {
+      "id": "leaf-node",
+      "from": "D",
+      "type": "main",
+      "depth": -1,
+      "result": []
+    },
+    {
+      "id": "unknown-node",
+      "from": "ZZZ",
+      "type": "main",
+      "depth": -1,
+      "result": []
+    }
+  ]
+}

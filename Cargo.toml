@@ -1,0 +1,46 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/n8n-common",
+    "crates/n8n-workflow",
+    "crates/n8n-connection",
+    "crates/n8n-validation",
+    "crates/n8n-node-model",
+    "crates/n8n-execution-data",
+    "crates/n8n-expression",
+    "crates/n8n-nodes-rust",
+]
+exclude = [
+    "apps/n8n-rust",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["n8n-rust team"]
+license = "Apache-2.0"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+anyhow = "1.0"
+petgraph = "0.6"
+indexmap = { version = "=2.2.6", features = ["serde"] }
+
+# Build profiles (recovered from arena-manager 50231cc0/c8dc8567, reviewed in TASK-0005):
+# smaller debug info for dev/test builds; optimise third-party dependencies, which compile once
+# and are cached, so test binaries run faster. split-debuginfo and codegen-units are left at the
+# platform defaults (split-debuginfo="unpacked" is not supported on windows-msvc runners; the dev
+# default of 256 codegen units already parallelises compilation).
+[profile.dev]
+debug = 1
+
+[profile.test]
+debug = 1
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.test.package."*"]
+opt-level = 2

@@ -1,0 +1,67 @@
+{
+  "reference": "n8n 2.9.4",
+  "recordedAt": "2026-09-16T21:28:09.760Z",
+  "cases": {
+    "firstActivation": {
+      "input": "activate workflow A (POST agent4-conflict)",
+      "expected": {
+        "status": 200,
+        "active": true
+      }
+    },
+    "secondActivationSamePath": {
+      "input": "activate workflow B (same method+path)",
+      "expected": {
+        "status": 409,
+        "body": {
+          "code": 409,
+          "message": "There is a conflict with one of the webhooks.",
+          "hint": "[{\"trigger\":{\"id\":\"wh-2\",\"name\":\"Webhook\",\"type\":\"n8n-nodes-base.webhook\",\"typeVersion\":2.1,\"position\":[0,0],\"webhookId\":\"00000000-0000-4000-8000-000000000002\",\"parameters\":{\"multipleMethods\":false,\"httpMethod\":\"POST\",\"path\":\"agent4-conflict\",\"authentication\":\"none\",\"responseMode\":\"onReceived\",\"contentTypeNotice\":\"\",\"options\":{}}},\"conflict\":{\"workflowId\":\"ew4DLlD5WPAl2iNQ\",\"webhookPath\":\"agent4-conflict\",\"method\":\"POST\",\"node\":\"Webhook\"}}]"
+        }
+      },
+      "error": "WebhookPathTakenError / conflict detection",
+      "sideEffect": "webhook_entity PK (webhookPath, method) — only one row can exist"
+    },
+    "callDefaultResponse": {
+      "input": "POST /webhook/agent4-conflict (responseMode default onReceived, no responseData)",
+      "expected": {
+        "status": 200,
+        "body": {
+          "message": "Workflow was started"
+        }
+      }
+    },
+    "corsPreflight": {
+      "input": "OPTIONS /webhook/agent4-conflict with Origin",
+      "expected": {
+        "status": 204,
+        "allowMethods": "OPTIONS, POST",
+        "allowOrigin": "http://example.test",
+        "maxAge": "300"
+      }
+    },
+    "testUrlNotListening": {
+      "input": "POST /webhook-test/agent4-conflict (no test registration)",
+      "expected": {
+        "status": 404,
+        "body": {
+          "code": 404,
+          "message": "The requested webhook \"agent4-conflict\" is not registered.",
+          "hint": "Click the 'Execute workflow' button on the canvas, then try again. (In test mode, the webhook only works for one call after you click this button)"
+        }
+      }
+    },
+    "afterDeactivate": {
+      "input": "POST /webhook/agent4-conflict after deactivation",
+      "expected": {
+        "status": 404,
+        "body": {
+          "code": 404,
+          "message": "The requested webhook \"POST agent4-conflict\" is not registered.",
+          "hint": "The workflow must be active for a production URL to run successfully. You can activate the workflow using the toggle in the top-right of the editor. Note that unlike test URL calls, production URL calls aren't shown on the canvas (only in the executions list)"
+        }
+      },
+      "sideEffect": "webhook_entity row deleted by clearWebhooks"
+    }
+  }
+}

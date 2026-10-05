@@ -1,0 +1,70 @@
+{
+  "id": "03-branching",
+  "description": "One output feeding two branches: both targets receive the same items.",
+  "input": [
+    {
+      "json": {
+        "branch": true
+      }
+    }
+  ],
+  "workflow": {
+    "name": "branching",
+    "nodes": [
+      {
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {}
+      },
+      {
+        "name": "Left",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "parameters": {
+          "values": {
+            "string": [
+              {
+                "name": "side",
+                "value": "left"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "Right",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "parameters": {
+          "values": {
+            "string": [
+              {
+                "name": "side",
+                "value": "right"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Left",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Right",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

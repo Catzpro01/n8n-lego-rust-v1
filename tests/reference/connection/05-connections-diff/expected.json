@@ -1,0 +1,53 @@
+{
+  "diff": {
+    "added": {
+      "A": {
+        "main": [
+          {
+            "sourceIndex": 0,
+            "value": {
+              "index": 1,
+              "connection": {
+                "node": "B",
+                "type": "main",
+                "index": 0
+              }
+            }
+          }
+        ]
+      }
+    },
+    "removed": {
+      "IF": {
+        "main": [
+          {
+            "sourceIndex": 1,
+            "value": {
+              "index": 1,
+              "connection": {
+                "node": "Merge",
+                "type": "main",
+                "index": 1
+              }
+            }
+          }
+        ]
+      },
+      "Tool": {
+        "ai_tool": [
+          {
+            "sourceIndex": 0,
+            "value": {
+              "index": 0,
+              "connection": {
+                "node": "Agent",
+                "type": "ai_tool",
+                "index": 0
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

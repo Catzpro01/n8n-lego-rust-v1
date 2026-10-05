@@ -1,0 +1,206 @@
+{
+  "description": "P9.15 retention fixtures \u2014 transitions, expiry, incident extension, storage pressure, deletion isolation. `expect` are test annotations.",
+  "defaultPolicy": {},
+  "strictLogPolicy": {
+    "signals": {
+      "log": {
+        "hotMs": 1000,
+        "warmMs": 5000,
+        "ttlMs": 10000,
+        "incidentExtendMs": 2000,
+        "maxIncidentExtendMs": 4000
+      },
+      "diagnostic": {
+        "hotMs": 1000,
+        "warmMs": 5000,
+        "ttlMs": 10000,
+        "incidentExtendMs": 2000,
+        "maxIncidentExtendMs": 4000
+      }
+    },
+    "incident": {
+      "allowExtension": true,
+      "maxExtendMs": 4000,
+      "signals": [
+        "log",
+        "diagnostic"
+      ]
+    }
+  },
+  "auditDistinctPolicy": {
+    "signals": {
+      "log": {
+        "hotMs": 1000,
+        "warmMs": 5000,
+        "ttlMs": 10000
+      },
+      "audit": {
+        "hotMs": 60000,
+        "warmMs": 600000,
+        "ttlMs": 86400000
+      },
+      "security": {
+        "hotMs": 60000,
+        "warmMs": 600000,
+        "ttlMs": 604800000
+      }
+    }
+  },
+  "extensionDisabledPolicy": {
+    "incident": {
+      "allowExtension": false
+    }
+  },
+  "transitionRecords": [
+    {
+      "id": "log:hot",
+      "signal": "log",
+      "priority": "P2",
+      "bytes": 100,
+      "createdAt": 0,
+      "body": "line-1"
+    },
+    {
+      "id": "log:warm",
+      "signal": "log",
+      "priority": "P2",
+      "bytes": 100,
+      "createdAt": 0,
+      "body": "line-2"
+    },
+    {
+      "id": "log:cold",
+      "signal": "log",
+      "priority": "P2",
+      "bytes": 100,
+      "createdAt": 0,
+      "body": "line-3"
+    },
+    {
+      "id": "metric:m",
+      "signal": "metric",
+      "priority": "P3",
+      "bytes": 50,
+      "createdAt": 0
+    }
+  ],
+  "transitionTimeline": {
+    "t0": 0,
+    "tHotEdge": 999,
+    "tWarm": 1000,
+    "tCold": 5000,
+    "tExpire": 10000,
+    "expect": {
+      "t0": [
+        "HOT",
+        "HOT",
+        "HOT",
+        "HOT"
+      ],
+      "tWarm": [
+        "WARM",
+        "WARM",
+        "HOT",
+        "HOT"
+      ],
+      "tCold": [
+        "COLD",
+        "COLD",
+        "WARM",
+        "WARM"
+      ]
+    }
+  },
+  "expiryRecord": {
+    "id": "log:old",
+    "signal": "log",
+    "priority": "P2",
+    "bytes": 10,
+    "createdAt": 0
+  },
+  "incidentRecords": [
+    {
+      "id": "log:inc",
+      "signal": "log",
+      "priority": "P2",
+      "bytes": 20,
+      "createdAt": 0,
+      "incidentId": "inc-1"
+    },
+    {
+      "id": "diag:inc",
+      "signal": "diagnostic",
+      "priority": "P1",
+      "bytes": 30,
+      "createdAt": 0,
+      "incidentId": "inc-1"
+    }
+  ],
+  "pressureRecords": [
+    {
+      "id": "p4:debug",
+      "signal": "log",
+      "priority": "P4",
+      "bytes": 400,
+      "createdAt": 0
+    },
+    {
+      "id": "p3:trace",
+      "signal": "trace",
+      "priority": "P3",
+      "bytes": 400,
+      "createdAt": 0
+    },
+    {
+      "id": "p2:exec",
+      "signal": "log",
+      "priority": "P2",
+      "bytes": 400,
+      "createdAt": 0
+    },
+    {
+      "id": "p1:diag",
+      "signal": "diagnostic",
+      "priority": "P1",
+      "bytes": 400,
+      "createdAt": 0
+    },
+    {
+      "id": "p0:audit",
+      "signal": "audit",
+      "priority": "P0",
+      "bytes": 400,
+      "createdAt": 0
+    },
+    {
+      "id": "p0:sec",
+      "signal": "security",
+      "priority": "P0",
+      "bytes": 400,
+      "createdAt": 0
+    }
+  ],
+  "pressureBudget": {
+    "byteBudget": 900,
+    "expectShedOrder": [
+      "p4:debug",
+      "p3:trace",
+      "p2:exec"
+    ],
+    "kept": [
+      "p1:diag",
+      "p0:audit",
+      "p0:sec"
+    ]
+  },
+  "deletionIsolation": {
+    "telemetryId": "log:doomed",
+    "authoritativeProbes": [
+      "workflow:wf-1",
+      "execution:ex-1",
+      "checkpoint:ckpt-1",
+      "credential:cred-1"
+    ],
+    "expect": "refused_or_absent_never_workflow_mutation"
+  }
+}

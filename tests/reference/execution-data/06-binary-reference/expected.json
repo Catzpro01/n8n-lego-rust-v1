@@ -1,0 +1,193 @@
+{
+  "status": "success",
+  "finished": true,
+  "lastNodeExecuted": "Echo",
+  "runData": {
+    "Trigger": [
+      {
+        "executionStatus": "success",
+        "source": [],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 1
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "BinaryCreate": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "i": 0
+              },
+              "binary": {
+                "data": {
+                  "mimeType": "text/plain",
+                  "fileType": "text",
+                  "fileExtension": "txt",
+                  "data": "aGVsbG8gMA==",
+                  "fileName": "f0.txt",
+                  "fileSize": "7 B",
+                  "bytes": 7
+                }
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "i": 1
+              },
+              "binary": {
+                "data": {
+                  "mimeType": "text/plain",
+                  "fileType": "text",
+                  "fileExtension": "txt",
+                  "data": "aGVsbG8gMQ==",
+                  "fileName": "f1.txt",
+                  "fileSize": "7 B",
+                  "bytes": 7
+                }
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "BinaryRead": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "BinaryCreate",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "meta": {
+                  "mimeType": "text/plain",
+                  "fileType": "text",
+                  "fileExtension": "txt",
+                  "fileName": "f0.txt",
+                  "fileSize": "7 B",
+                  "bytes": 7
+                },
+                "text": "hello 0"
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "meta": {
+                  "mimeType": "text/plain",
+                  "fileType": "text",
+                  "fileExtension": "txt",
+                  "fileName": "f1.txt",
+                  "fileSize": "7 B",
+                  "bytes": 7
+                },
+                "text": "hello 1"
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "Echo": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "BinaryRead",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "value": "f0.txt",
+                "obj": {
+                  "cur": {},
+                  "node": {
+                    "data": {
+                      "mimeType": "text/plain",
+                      "fileType": "text",
+                      "fileExtension": "txt",
+                      "fileName": "f0.txt",
+                      "fileSize": "7 B",
+                      "bytes": 7
+                    }
+                  }
+                }
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "value": "f1.txt",
+                "obj": {
+                  "cur": {},
+                  "node": {
+                    "data": {
+                      "mimeType": "text/plain",
+                      "fileType": "text",
+                      "fileExtension": "txt",
+                      "fileName": "f1.txt",
+                      "fileSize": "7 B",
+                      "bytes": 7
+                    }
+                  }
+                }
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            }
+          ]
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "status": "COMPLETED",
+  "finished": true,
+  "executionLog": [
+    {
+      "node": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Manual Trigger",
+      "statusText": "Success"
+    },
+    {
+      "node": "Code",
+      "type": "n8n-nodes-base.code",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Code",
+      "statusText": "Success"
+    }
+  ],
+  "data": {
+    "Start": [
+      {
+        "json": {
+          "untouched": true
+        }
+      }
+    ],
+    "Code": [
+      {
+        "json": {
+          "untouched": true
+        }
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "code": "CODE_EVAL_DISABLED",
+      "message": "jsCode was not executed: set N8N_TS_ALLOW_CODE_EVAL=true to enable the restricted in-process sandbox (not production safe)",
+      "node": "Code"
+    }
+  ]
+}

@@ -1,0 +1,311 @@
+{
+  "workflow": {
+    "nodes": [
+      {
+        "id": "Start",
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Set",
+        "name": "Set",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "End",
+        "name": "End",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Set",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set": {
+        "main": [
+          [
+            {
+              "node": "End",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "runData": {
+    "Start": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 0,
+        "source": [],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "id": 0,
+                  "name": "x"
+                }
+              },
+              {
+                "json": {
+                  "id": 1,
+                  "name": "y"
+                }
+              },
+              {
+                "json": {
+                  "id": 2,
+                  "name": "z"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "Set": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 1,
+        "source": [
+          {
+            "previousNode": "Start"
+          }
+        ],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "a": 10
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "a": 20
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              },
+              {
+                "json": {
+                  "a": 30
+                },
+                "pairedItem": {
+                  "item": 2
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "activeNodeName": "End",
+  "connectionInputData": [
+    {
+      "json": {
+        "a": 10
+      },
+      "pairedItem": {
+        "item": 0
+      }
+    },
+    {
+      "json": {
+        "a": 20
+      },
+      "pairedItem": {
+        "item": 1
+      }
+    },
+    {
+      "json": {
+        "a": 30
+      },
+      "pairedItem": {
+        "item": 2
+      }
+    }
+  ],
+  "executeData": {
+    "data": {
+      "main": [
+        [
+          {
+            "json": {
+              "a": 10
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          },
+          {
+            "json": {
+              "a": 20
+            },
+            "pairedItem": {
+              "item": 1
+            }
+          },
+          {
+            "json": {
+              "a": 30
+            },
+            "pairedItem": {
+              "item": 2
+            }
+          }
+        ]
+      ]
+    },
+    "source": {
+      "main": [
+        {
+          "previousNode": "Set",
+          "previousNodeOutput": 0,
+          "previousNodeRun": 0
+        }
+      ]
+    }
+  },
+  "description": "$('Node') and $node['Node'] read runExecutionData.resultData.runData. .item/.pairedItem() walk the pairedItem chain; .first()/.last()/.all() read the output branch; $node[...] uses the current itemIndex.",
+  "probes": [
+    {
+      "name": "$('Start').item.json.name item 1 (1 hop pairing)",
+      "value": "={{ $('Start').item.json.name }}",
+      "itemIndex": 1
+    },
+    {
+      "name": "$('Start').pairedItem().json.name item 2",
+      "value": "={{ $('Start').pairedItem().json.name }}",
+      "itemIndex": 2
+    },
+    {
+      "name": "$('Start').itemMatching(0).json.name",
+      "value": "={{ $('Start').itemMatching(0).json.name }}"
+    },
+    {
+      "name": "$('Start').first().json.name",
+      "value": "={{ $('Start').first().json.name }}"
+    },
+    {
+      "name": "$('Start').last().json.name",
+      "value": "={{ $('Start').last().json.name }}"
+    },
+    {
+      "name": "$('Start').all().length",
+      "value": "={{ $('Start').all().length }}"
+    },
+    {
+      "name": "$('Start').isExecuted",
+      "value": "={{ $('Start').isExecuted }}"
+    },
+    {
+      "name": "$('End').isExecuted (self, not run)",
+      "value": "={{ $('End').isExecuted }}"
+    },
+    {
+      "name": "$('Start').params",
+      "value": "={{ $('Start').params }}"
+    },
+    {
+      "name": "$node['Start'].json.name uses itemIndex",
+      "value": "={{ $node['Start'].json.name }}",
+      "itemIndex": 2
+    },
+    {
+      "name": "$node['Set'].json.a",
+      "value": "={{ $node['Set'].json.a }}",
+      "itemIndex": 1
+    },
+    {
+      "name": "$items('Start').length (legacy)",
+      "value": "={{ $items('Start').length }}"
+    },
+    {
+      "name": "$item(1).$node['Start'].json.name (legacy)",
+      "value": "={{ $item(1).$node['Start'].json.name }}"
+    },
+    {
+      "name": "$('Nope') unknown node",
+      "value": "={{ $('Nope').first() }}"
+    },
+    {
+      "name": "$node['Nope'] unknown node",
+      "value": "={{ $node['Nope'].json }}"
+    },
+    {
+      "name": "$('End').first() node not executed",
+      "value": "={{ $('End').first() }}"
+    },
+    {
+      "name": "$node['End'].json node not executed",
+      "value": "={{ $node['End'].json }}"
+    },
+    {
+      "name": "$('Start').item without pairedItem on input",
+      "value": "={{ $('Start').item.json.name }}",
+      "connectionInputData": [
+        {
+          "json": {
+            "a": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "$('Start').item without executeData.source",
+      "value": "={{ $('Start').item.json.name }}",
+      "executeData": null
+    },
+    {
+      "name": "$('Start').first() with runExecutionData=null",
+      "value": "={{ $('Start').first() }}",
+      "_note": "runData null case is in 05"
+    },
+    {
+      "name": "$('Set').first(1) branch out of range",
+      "value": "={{ $('Set').first(1) }}"
+    },
+    {
+      "name": "$('Start').first(0, 5) run out of range",
+      "value": "={{ $('Start').first(0, 5) }}"
+    }
+  ]
+}

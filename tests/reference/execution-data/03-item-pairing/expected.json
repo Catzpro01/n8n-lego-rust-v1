@@ -1,0 +1,346 @@
+{
+  "status": "success",
+  "finished": true,
+  "lastNodeExecuted": "ExplodeNoPair1",
+  "runData": {
+    "Trigger": [
+      {
+        "executionStatus": "success",
+        "source": [],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 1
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "id": 2
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "ExplodePaired": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "from": 0,
+                "part": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "from": 0,
+                "part": 1
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "from": 1,
+                "part": 0
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "from": 1,
+                "part": 1
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "from": 2,
+                "part": 0
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            },
+            {
+              "json": {
+                "from": 2,
+                "part": 1
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "Echo": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "ExplodePaired",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "value": {
+                  "item": 0
+                },
+                "obj": {}
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "value": {
+                  "item": 1
+                },
+                "obj": {}
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "value": {
+                  "item": 2
+                },
+                "obj": {}
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            },
+            {
+              "json": {
+                "value": {
+                  "item": 3
+                },
+                "obj": {}
+              },
+              "pairedItem": {
+                "item": 3
+              }
+            },
+            {
+              "json": {
+                "value": {
+                  "item": 4
+                },
+                "obj": {}
+              },
+              "pairedItem": {
+                "item": 4
+              }
+            },
+            {
+              "json": {
+                "value": {
+                  "item": 5
+                },
+                "obj": {}
+              },
+              "pairedItem": {
+                "item": 5
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "ExplodeNoPairN": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "from": 0,
+                "part": 0
+              }
+            },
+            {
+              "json": {
+                "from": 0,
+                "part": 1
+              }
+            },
+            {
+              "json": {
+                "from": 1,
+                "part": 0
+              }
+            },
+            {
+              "json": {
+                "from": 1,
+                "part": 1
+              }
+            },
+            {
+              "json": {
+                "from": 2,
+                "part": 0
+              }
+            },
+            {
+              "json": {
+                "from": 2,
+                "part": 1
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "MapNoPair": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Trigger",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "id": 0,
+                "seen": true
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "id": 1,
+                "seen": true
+              },
+              "pairedItem": {
+                "item": 1
+              }
+            },
+            {
+              "json": {
+                "id": 2,
+                "seen": true
+              },
+              "pairedItem": {
+                "item": 2
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "Aggregate": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "MapNoPair",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "count": 3
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            }
+          ]
+        ]
+      }
+    ],
+    "ExplodeNoPair1": [
+      {
+        "executionStatus": "success",
+        "source": [
+          {
+            "previousNode": "Aggregate",
+            "previousNodeOutput": 0,
+            "previousNodeRun": 0
+          }
+        ],
+        "main": [
+          [
+            {
+              "json": {
+                "from": 0,
+                "part": 0
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            },
+            {
+              "json": {
+                "from": 0,
+                "part": 1
+              },
+              "pairedItem": {
+                "item": 0
+              }
+            }
+          ]
+        ]
+      }
+    ]
+  }
+}

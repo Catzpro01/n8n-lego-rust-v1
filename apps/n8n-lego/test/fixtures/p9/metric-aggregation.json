@@ -1,0 +1,66 @@
+{
+  "contractVersion": "1.0.0",
+  "series": [
+    {
+      "name": "execution.started",
+      "kind": "counter",
+      "unit": "1",
+      "labels": {},
+      "count": 2,
+      "value": 5,
+      "reducedCount": 0
+    },
+    {
+      "name": "frontier.depth",
+      "kind": "gauge",
+      "unit": "1",
+      "labels": {},
+      "count": 2,
+      "value": 4,
+      "reducedCount": 0
+    },
+    {
+      "name": "execution.duration",
+      "kind": "histogram",
+      "unit": "ms",
+      "labels": {},
+      "count": 5,
+      "sum": 5017,
+      "bounds": [
+        1,
+        5,
+        10,
+        25,
+        50,
+        100,
+        250,
+        500,
+        1000,
+        5000
+      ],
+      "buckets": [
+        2,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "reducedCount": 0
+    }
+  ],
+  "stats": {
+    "accepted": 9,
+    "invalid": 0,
+    "cardinalityRejected": 0,
+    "aggregated": 0,
+    "allocatedSeries": 38,
+    "maxSeries": 43,
+    "reservedSeries": 38
+  }
+}

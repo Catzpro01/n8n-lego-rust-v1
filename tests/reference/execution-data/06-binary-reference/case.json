@@ -1,0 +1,104 @@
+{
+  "description": "Binary data in default (in-memory) mode: IBinaryData carries base64 `data`, mimeType, fileName, fileExtension, fileType, fileSize, bytes; NO `id`. Reading back via helpers yields the original bytes. Expressions on `$('BinaryCreate').item.binary` return the full IBinaryData (including data) for $() access, while `$binary` on current input is {} because the current input items of Echo (from BinaryRead) carry no binary.",
+  "workflow": {
+    "nodes": [
+      {
+        "id": "trigger",
+        "name": "Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "BinaryCreate",
+        "name": "BinaryCreate",
+        "type": "ref.binaryCreate",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "BinaryRead",
+        "name": "BinaryRead",
+        "type": "ref.binaryRead",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Echo",
+        "name": "Echo",
+        "type": "ref.exprEcho",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "value": "={{ $('BinaryCreate').item.binary.data.fileName }}",
+          "obj": {
+            "cur": "={{ $binary }}",
+            "node": "={{ $node['BinaryCreate'].binary }}"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Trigger": {
+        "main": [
+          [
+            {
+              "node": "BinaryCreate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "BinaryCreate": {
+        "main": [
+          [
+            {
+              "node": "BinaryRead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "BinaryRead": {
+        "main": [
+          [
+            {
+              "node": "Echo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "startItems": [
+    {
+      "json": {
+        "id": 0
+      }
+    },
+    {
+      "json": {
+        "id": 1
+      }
+    }
+  ]
+}

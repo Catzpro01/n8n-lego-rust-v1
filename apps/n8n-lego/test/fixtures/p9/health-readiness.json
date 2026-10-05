@@ -1,0 +1,83 @@
+{
+  "livenessStates": ["ALIVE", "DEAD"],
+  "readinessStates": ["READY", "NOT_READY"],
+  "conditionStates": ["HEALTHY", "DEGRADED", "UNAVAILABLE"],
+  "phases": ["STARTING", "RUNNING", "RECOVERING"],
+  "startupTransitions": [
+    { "action": "initial", "expectPhase": "STARTING", "expectReadiness": "NOT_READY", "expectCondition": "UNAVAILABLE", "expectReason": "startup.in_progress" },
+    { "action": "markRunning", "expectPhase": "RUNNING", "expectReadiness": "READY", "expectCondition": "HEALTHY", "expectReason": "startup.complete" }
+  ],
+  "recoveryTransitions": [
+    { "action": "beginRecovery", "expectPhase": "RECOVERING", "expectReadiness": "NOT_READY" },
+    { "action": "completeRecovery", "expectPhase": "RUNNING" }
+  ],
+  "reasonCodes": [
+    "startup.in_progress",
+    "startup.complete",
+    "liveness.probe_failed",
+    "liveness.probe_recovered",
+    "readiness.critical_dependency_down",
+    "readiness.dependencies_not_ready",
+    "readiness.ready",
+    "condition.degraded_dependency",
+    "condition.critical_unavailable",
+    "condition.healthy",
+    "recovery.in_progress",
+    "recovery.complete",
+    "false_healthy.rejected",
+    "dependency.unknown"
+  ],
+  "reasonFixture": {
+    "criticalDown": {
+      "dependencies": [
+        { "id": "storage", "critical": true, "initial": { "available": false, "reason": "storage.unavailable" } },
+        { "id": "registry", "critical": false, "initial": { "available": true, "reason": "ok" } }
+      ],
+      "expectCondition": "UNAVAILABLE",
+      "expectReadiness": "NOT_READY",
+      "expectReasonsInclude": ["false_healthy.rejected", "condition.critical_unavailable", "readiness.critical_dependency_down"]
+    },
+    "degradedOptional": {
+      "dependencies": [
+        { "id": "storage", "critical": true, "initial": { "available": true, "reason": "ok" } },
+        { "id": "metrics-backend", "critical": false, "initial": { "available": true, "degraded": true, "reason": "metrics.slow" } }
+      ],
+      "expectCondition": "DEGRADED",
+      "expectReadiness": "NOT_READY",
+      "expectReasonsInclude": ["condition.degraded_dependency", "readiness.dependencies_not_ready"]
+    },
+    "allHealthy": {
+      "dependencies": [
+        { "id": "storage", "critical": true, "initial": { "available": true, "reason": "ok" } },
+        { "id": "registry", "critical": false, "initial": { "available": true, "reason": "ok" } }
+      ],
+      "expectCondition": "HEALTHY",
+      "expectReadiness": "READY",
+      "expectReasonsInclude": ["condition.healthy", "readiness.ready"]
+    }
+  },
+  "degradedDependencyFixture": {
+    "note": "critical dep flips UNAVAILABLE; optional degraded → DEGRADED; DEGRADED and UNAVAILABLE must not collapse",
+    "sequence": [
+      { "set": { "id": "storage", "available": true, "reason": "ok" }, "after": "markRunning", "expectCondition": "HEALTHY" },
+      { "set": { "id": "cache", "degraded": true, "reason": "cache.slow" }, "expectCondition": "DEGRADED" },
+      { "set": { "id": "storage", "available": false, "reason": "storage.down" }, "expectCondition": "UNAVAILABLE" },
+      { "set": { "id": "storage", "available": true, "reason": "ok" }, "expectCondition": "DEGRADED" },
+      { "set": { "id": "cache", "degraded": false, "reason": "ok" }, "expectCondition": "HEALTHY" }
+    ]
+  },
+  "recoveryFixture": {
+    "dependencies": [
+      { "id": "storage", "critical": true, "initial": { "available": false, "reason": "storage.down" } }
+    ],
+    "note": "down critical → beginRecovery → restore dep → completeRecovery → HEALTHY/READY"
+  },
+  "falseHealthy": {
+    "note": "markRunning with critical dep down must NOT yield READY/HEALTHY"
+  },
+  "boundedQuery": {
+    "maxDependencies": 64,
+    "queries": 1000,
+    "expectReasonCap": 32
+  }
+}

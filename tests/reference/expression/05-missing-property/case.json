@@ -1,0 +1,259 @@
+{
+  "workflow": {
+    "nodes": [
+      {
+        "id": "Start",
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Set",
+        "name": "Set",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "End",
+        "name": "End",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Set",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set": {
+        "main": [
+          [
+            {
+              "node": "End",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "runData": {
+    "Start": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 0,
+        "source": [],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "id": 0,
+                  "name": "x"
+                }
+              },
+              {
+                "json": {
+                  "id": 1,
+                  "name": "y"
+                }
+              },
+              {
+                "json": {
+                  "id": 2,
+                  "name": "z"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "Set": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 1,
+        "source": [
+          {
+            "previousNode": "Start"
+          }
+        ],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "a": 10
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "a": 20
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              },
+              {
+                "json": {
+                  "a": 30
+                },
+                "pairedItem": {
+                  "item": 2
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "activeNodeName": "End",
+  "connectionInputData": [
+    {
+      "json": {
+        "a": 10
+      },
+      "pairedItem": {
+        "item": 0
+      }
+    },
+    {
+      "json": {
+        "a": 20
+      },
+      "pairedItem": {
+        "item": 1
+      }
+    },
+    {
+      "json": {
+        "a": 30
+      },
+      "pairedItem": {
+        "item": 2
+      }
+    }
+  ],
+  "executeData": {
+    "data": {
+      "main": [
+        [
+          {
+            "json": {
+              "a": 10
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          },
+          {
+            "json": {
+              "a": 20
+            },
+            "pairedItem": {
+              "item": 1
+            }
+          },
+          {
+            "json": {
+              "a": 30
+            },
+            "pairedItem": {
+              "item": 2
+            }
+          }
+        ]
+      ]
+    },
+    "source": {
+      "main": [
+        {
+          "previousNode": "Set",
+          "previousNodeOutput": 0,
+          "previousNodeRun": 0
+        }
+      ]
+    }
+  },
+  "description": "Missing properties resolve to undefined (or empty string inside text); unknown nodes / unexecuted nodes / null runExecutionData throw ExpressionError; syntax errors throw ApplicationError('invalid syntax'); calling a non-function returns undefined (evaluator swallows TypeError on backend).",
+  "probes": [
+    {
+      "name": "$json.missing",
+      "value": "={{ $json.missing }}"
+    },
+    {
+      "name": "$json.missing.deep (optional chaining by proxy)",
+      "value": "={{ $json.missing.deep }}"
+    },
+    {
+      "name": "missing inside text -> empty",
+      "value": "=v={{ $json.missing }}"
+    },
+    {
+      "name": "$json.a.notAFunction()",
+      "value": "={{ $json.a.notAFunction() }}"
+    },
+    {
+      "name": "syntax error",
+      "value": "={{ $json. }}"
+    },
+    {
+      "name": "undefined variable",
+      "value": "={{ notDefined }}"
+    },
+    {
+      "name": "$('Start').first().json.missing",
+      "value": "={{ $('Start').first().json.missing }}"
+    },
+    {
+      "name": "$vars without provider",
+      "value": "={{ $vars.x }}"
+    },
+    {
+      "name": "$env access denied (no provider)",
+      "value": "={{ $env.HOME }}"
+    },
+    {
+      "name": "constructor access blocked",
+      "value": "={{ ''.constructor }}"
+    },
+    {
+      "name": "$binary when item has none",
+      "value": "={{ $binary }}"
+    },
+    {
+      "name": "runExecutionData null: $json still works from input",
+      "value": "={{ $json.a }}",
+      "_runDataNull": true
+    }
+  ]
+}

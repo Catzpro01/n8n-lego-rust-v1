@@ -1,0 +1,317 @@
+{
+  "reference": "n8n 2.9.4",
+  "baseUrl": "http://127.0.0.1:5678",
+  "recordedAt": "2026-09-16T21:41:34.953Z",
+  "steps": {
+    "healthz": {
+      "status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "readiness": {
+      "status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "settings": {
+      "status": 200,
+      "keys": [
+        "authCookie",
+        "communityNodesEnabled",
+        "defaultLocale",
+        "enterprise",
+        "previewMode",
+        "settingsMode",
+        "sso",
+        "userManagement"
+      ]
+    },
+    "ownerSetup": {
+      "status": 400,
+      "body": {
+        "code": 400,
+        "message": "Instance owner already setup",
+        "stacktrace": "ResponseError: Instance owner already setup\n    at OwnershipService.setupOwner (/home/user/n8n-runtime/node_modules/n8n/src/services/ownership.service.ts:221:10)\n    at OwnerController.setupOwner (/home/user/n8n-runtime/node_modules/n8n/src/controllers/owner.controller.ts:27:17)\n    at handler (/home/user/n8n-runtime/node_modules/n8n/src/controller.registry.ts:110:12)\n    at /home/user/n8n-runtime/node_modules/n8n/src/response-helper.ts:161:17"
+      }
+    },
+    "login": {
+      "status": 200,
+      "role": "global:owner"
+    },
+    "me": {
+      "status": 200,
+      "role": "global:owner"
+    },
+    "settingsAuthenticated": {
+      "status": 200,
+      "settingsMode": "authenticated",
+      "versionCli": "2.9.4",
+      "endpointWebhook": "webhook",
+      "endpointWebhookTest": "webhook-test"
+    },
+    "workflowCreateDuplicateId": {
+      "status": 400,
+      "code": 400,
+      "message": "Workflow with id wf-linear exists already."
+    },
+    "workflowSave": {
+      "settingsOnly": {
+        "status": 200,
+        "versionChanged": false
+      },
+      "nodesChanged": {
+        "status": 200,
+        "versionChanged": true
+      },
+      "historyCount": 3
+    },
+    "workflowLoad": {
+      "status": 200,
+      "nodes": 1
+    },
+    "workflowNotFound": {
+      "status": 404,
+      "body": {
+        "code": 404,
+        "message": "Could not load the workflow - you can only access workflows owned by you",
+        "stacktrace": "ResponseError: Could not load the workflow - you can only access workflows owned by you\n    at WorkflowsController.getWorkflow (/home/user/n8n-runtime/node_modules/n8n/src/workflows/workflows.controller.ts:412:10)\n    at handler (/home/user/n8n-runtime/node_modules/n8n/src/controller.registry.ts:110:12)\n    at /home/user/n8n-runtime/node_modules/n8n/src/response-helper.ts:161:17"
+      }
+    },
+    "manualRun": {
+      "status": 200,
+      "bodyKeys": [
+        "executionId"
+      ],
+      "executionStatus": "success",
+      "mode": "manual"
+    },
+    "oneNode": {
+      "dataIsFlattedString": true,
+      "runDataNodes": [
+        "When clicking ‘Test step’"
+      ],
+      "output": [
+        {
+          "json": {},
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ],
+      "lastNodeExecuted": "When clicking ‘Test step’"
+    },
+    "linear": {
+      "executionStatus": "success",
+      "runDataNodes": [
+        "Manual Trigger",
+        "Code"
+      ],
+      "codeOutput": [
+        {
+          "json": {
+            "status": "ok",
+            "count": 42
+          },
+          "pairedItem": {
+            "item": 0
+          }
+        }
+      ],
+      "lastNodeExecuted": "Code",
+      "source": [
+        {
+          "previousNode": "Manual Trigger",
+          "previousNodeOutput": 0,
+          "previousNodeRun": 0
+        }
+      ]
+    },
+    "webhook": {
+      "post": {
+        "status": 200,
+        "body": {
+          "smoke_test": "PASS",
+          "received": {
+            "headers": {
+              "host": "127.0.0.1:5678",
+              "connection": "keep-alive",
+              "x-agent": "4",
+              "content-type": "application/json",
+              "accept": "*/*",
+              "accept-language": "*",
+              "sec-fetch-mode": "cors",
+              "user-agent": "node",
+              "accept-encoding": "gzip, deflate",
+              "content-length": "23"
+            },
+            "params": {},
+            "query": {},
+            "body": {
+              "test": "agent4",
+              "n": 1
+            },
+            "webhookUrl": "http://0.0.0.0:5678/webhook/smoke-test",
+            "executionMode": "production"
+          },
+          "verified": true
+        },
+        "contentType": "application/json; charset=utf-8"
+      },
+      "getWrongMethod": {
+        "status": 404,
+        "body": {
+          "code": 404,
+          "message": "This webhook is not registered for GET requests. Did you mean to make a POST request?",
+          "stacktrace": "ResponseError: This webhook is not registered for GET requests. Did you mean to make a POST request?\n    at LiveWebhooks.findWebhook (/home/user/n8n-runtime/node_modules/n8n/src/webhooks/live-webhooks.ts:193:10)\n    at LiveWebhooks.executeWebhook (/home/user/n8n-runtime/node_modules/n8n/src/webhooks/live-webhooks.ts:83:19)\n    at WebhookRequestHandler.handleRequest (/home/user/n8n-runtime/node_modules/n8n/src/webhooks/webhook-request-handler.ts:61:21)\n    at /home/user/n8n-runtime/node_modules/n8n/src/webhooks/webhook-request-handler.ts:242:3"
+        }
+      },
+      "notFound": {
+        "status": 404,
+        "body": {
+          "code": 404,
+          "message": "The requested webhook \"POST no-such-path\" is not registered.",
+          "hint": "The workflow must be active for a production URL to run successfully. You can activate the workflow using the toggle in the top-right of the editor. Note that unlike test URL calls, production URL calls aren't shown on the canvas (only in the executions list)",
+          "stacktrace": "ResponseError: The requested webhook \"POST no-such-path\" is not registered.\n    at LiveWebhooks.findWebhook (/home/user/n8n-runtime/node_modules/n8n/src/webhooks/live-webhooks.ts:193:10)\n    at LiveWebhooks.executeWebhook (/home/user/n8n-runtime/node_modules/n8n/src/webhooks/live-webhooks.ts:83:19)\n    at WebhookRequestHandler.handleRequest (/home/user/n8n-runtime/node_modules/n8n/src/webhooks/webhook-request-handler.ts:61:21)\n    at /home/user/n8n-runtime/node_modules/n8n/src/webhooks/webhook-request-handler.ts:242:3"
+        }
+      },
+      "unsupportedMethod": {
+        "status": 500,
+        "body": {
+          "code": 0,
+          "message": "The method PROPFIND is not supported.",
+          "stacktrace": "Error: The method PROPFIND is not supported.\n    at WebhookRequestHandler.handleRequest (/home/user/n8n-runtime/node_modules/n8n/src/webhooks/webhook-request-handler.ts:44:5)\n    at /home/user/n8n-runtime/node_modules/n8n/src/webhooks/webhook-request-handler.ts:242:17\n    at Layer.handleRequest (/home/user/n8n-runtime/node_modules/router/lib/layer.js:152:17)\n    at next (/home/user/n8n-runtime/node_modules/router/lib/route.js:157:13)\n    at Route.dispatch (/home/user/n8n-runtime/node_modules/router/lib/route.js:117:3)\n    at handle (/home/user/n8n-runtime/node_modules/router/index.js:435:11)\n    at Layer.handleRequest (/home/user/n8n-runtime/node_modules/router/lib/layer.js:152:17)\n    at /home/user/n8n-runtime/node_modules/router/index.js:295:15\n    at param (/home/user/n8n-runtime/node_modules/router/index.js:600:14)\n    at param (/home/user/n8n-runtime/node_modules/router/index.js:610:14)"
+        }
+      }
+    },
+    "executionRecorded": {
+      "status": 200,
+      "responseKeys": [
+        "createdAt",
+        "customData",
+        "data",
+        "deletedAt",
+        "finished",
+        "id",
+        "mode",
+        "retryOf",
+        "retrySuccessId",
+        "startedAt",
+        "status",
+        "stoppedAt",
+        "storedAt",
+        "waitTill",
+        "workflowData",
+        "workflowId"
+      ],
+      "executionStatus": "success",
+      "mode": "webhook",
+      "finished": true,
+      "hasStartedAt": true,
+      "hasStoppedAt": true,
+      "workflowId": "S5g0DwfezB0xRO0Q",
+      "lastNodeExecuted": "Code",
+      "workflowDataKeys": [
+        "active",
+        "activeVersionId",
+        "connections",
+        "createdAt",
+        "id",
+        "isArchived",
+        "name",
+        "nodes",
+        "pinData",
+        "settings",
+        "staticData",
+        "updatedAt"
+      ],
+      "db": {
+        "row": {
+          "id": 16,
+          "status": "success",
+          "mode": "webhook",
+          "finished": 1,
+          "workflowId": "S5g0DwfezB0xRO0Q"
+        },
+        "data": {
+          "executionId": 16,
+          "len": 1782,
+          "workflowVersionId": "0388d60a-594e-466c-a7ae-6b20c0b8e1de"
+        }
+      }
+    }
+  },
+  "summary": {
+    "passed": 11,
+    "total": 11,
+    "results": [
+      {
+        "no": 1,
+        "name": "n8n starts",
+        "pass": true,
+        "evidence": "GET /healthz 200 {\"status\":\"ok\"} ; readiness 200"
+      },
+      {
+        "no": 2,
+        "name": "editor opens",
+        "pass": true,
+        "evidence": "GET / 200 html=14800B ; GET /rest/settings (unauthenticated) 200 settingsMode=public"
+      },
+      {
+        "no": 3,
+        "name": "login/owner works",
+        "pass": true,
+        "evidence": "owner/setup 400 ; GET /rest/login 200 role=global:owner"
+      },
+      {
+        "no": 4,
+        "name": "workflow create",
+        "pass": true,
+        "evidence": "id=wf-one-node created=false active=false"
+      },
+      {
+        "no": 5,
+        "name": "workflow save",
+        "pass": true,
+        "evidence": "PATCH(settings) 200 versionId kept ; PATCH(nodes) 200 versionId 8008bcc9-f1fc-4721-b2ba-df0a1fcff3c4 → ace4df73-d526-4158-9755-6eab408b14f0 ; history rows=3"
+      },
+      {
+        "no": 6,
+        "name": "workflow load",
+        "pass": true,
+        "evidence": "GET 200 nodes=1 ; unknown id → 404 \"Could not load the workflow - you can only access workflows owned by you\""
+      },
+      {
+        "no": 7,
+        "name": "manual execution",
+        "pass": true,
+        "evidence": "POST /run 200 executionId=14 status=success mode=manual"
+      },
+      {
+        "no": 8,
+        "name": "one-node execution",
+        "pass": true,
+        "evidence": "runData nodes=[\"When clicking ‘Test step’\"] output=[{\"json\":{},\"pairedItem\":{\"item\":0}}]"
+      },
+      {
+        "no": 9,
+        "name": "linear execution",
+        "pass": true,
+        "evidence": "status=success Code output=[{\"status\":\"ok\",\"count\":42}]"
+      },
+      {
+        "no": 10,
+        "name": "webhook execution",
+        "pass": true,
+        "evidence": "POST /webhook/smoke-test 200 {\"smoke_test\":\"PASS\",\"verified\":true} ; GET → 404 ; unknown → 404 ; PROPFIND → 500"
+      },
+      {
+        "no": 11,
+        "name": "execution recorded",
+        "pass": true,
+        "evidence": "GET /rest/executions/16 status=success mode=webhook finished=true ; sqlite execution_entity id=16 status=success mode=webhook ; execution_data len=1782"
+      }
+    ]
+  }
+}

@@ -1,0 +1,350 @@
+{
+  "workflow": {
+    "nodes": [
+      {
+        "id": "Start",
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "IF",
+        "name": "IF",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "TrueBranch",
+        "name": "TrueBranch",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "FalseBranch",
+        "name": "FalseBranch",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Code",
+        "name": "Code",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "IF",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF": {
+        "main": [
+          [
+            {
+              "node": "TrueBranch",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "FalseBranch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "TrueBranch": {
+        "main": [
+          [
+            {
+              "node": "Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "runData": {
+    "Start": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 0,
+        "source": [],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "n": 1
+                }
+              },
+              {
+                "json": {
+                  "n": 2
+                }
+              },
+              {
+                "json": {
+                  "n": 3
+                }
+              },
+              {
+                "json": {
+                  "n": 4
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "IF": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 1,
+        "source": [
+          {
+            "previousNode": "Start"
+          }
+        ],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "n": 2
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              },
+              {
+                "json": {
+                  "n": 4
+                },
+                "pairedItem": {
+                  "item": 3
+                }
+              }
+            ],
+            [
+              {
+                "json": {
+                  "n": 1
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "n": 3
+                },
+                "pairedItem": {
+                  "item": 2
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "TrueBranch": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 2,
+        "source": [
+          {
+            "previousNode": "IF",
+            "previousNodeOutput": 0
+          }
+        ],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "n": 2,
+                  "tb": true
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "n": 4,
+                  "tb": true
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "activeNodeName": "Code",
+  "connectionInputData": [
+    {
+      "json": {
+        "n": 2,
+        "tb": true
+      },
+      "pairedItem": {
+        "item": 0
+      }
+    },
+    {
+      "json": {
+        "n": 4,
+        "tb": true
+      },
+      "pairedItem": {
+        "item": 1
+      }
+    }
+  ],
+  "executeData": {
+    "data": {
+      "main": [
+        [
+          {
+            "json": {
+              "n": 2,
+              "tb": true
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          },
+          {
+            "json": {
+              "n": 4,
+              "tb": true
+            },
+            "pairedItem": {
+              "item": 1
+            }
+          }
+        ]
+      ]
+    },
+    "source": {
+      "main": [
+        {
+          "previousNode": "TrueBranch",
+          "previousNodeOutput": 0,
+          "previousNodeRun": 0
+        }
+      ]
+    }
+  },
+  "description": "Multiple items across a 2-output IF node: per-item resolution, 2-hop pairedItem chain through a branch, default branch selection, explicit branch index, whole-array access.",
+  "probes": [
+    {
+      "name": "$json.n per item 0",
+      "value": "={{ $json.n }}"
+    },
+    {
+      "name": "$json.n per item 1",
+      "value": "={{ $json.n }}",
+      "itemIndex": 1
+    },
+    {
+      "name": "$('Start').item.json.n item 0 (2 hops via IF output 0)",
+      "value": "={{ $('Start').item.json.n }}"
+    },
+    {
+      "name": "$('Start').item.json.n item 1 (2 hops)",
+      "value": "={{ $('Start').item.json.n }}",
+      "itemIndex": 1
+    },
+    {
+      "name": "$('IF').item.json.n item 1",
+      "value": "={{ $('IF').item.json.n }}",
+      "itemIndex": 1
+    },
+    {
+      "name": "$('IF').all() default branch = connected output 0",
+      "value": "={{ $('IF').all().map(i => i.json.n) }}"
+    },
+    {
+      "name": "$('IF').all(1) explicit other branch",
+      "value": "={{ $('IF').all(1).map(i => i.json.n) }}"
+    },
+    {
+      "name": "$('IF').first(1).json.n",
+      "value": "={{ $('IF').first(1).json.n }}"
+    },
+    {
+      "name": "$('IF').all(2) branch missing",
+      "value": "={{ $('IF').all(2) }}"
+    },
+    {
+      "name": "$node['IF'].json.n item 0 via graph output index",
+      "value": "={{ $node['IF'].json.n }}"
+    },
+    {
+      "name": "$('Start').all().length",
+      "value": "={{ $('Start').all().length }}"
+    },
+    {
+      "name": "$input.all().length",
+      "value": "={{ $input.all().length }}"
+    },
+    {
+      "name": "$('FalseBranch').first() unexecuted",
+      "value": "={{ $('FalseBranch').first() }}"
+    },
+    {
+      "name": "$('FalseBranch').item not connected upstream",
+      "value": "={{ $('FalseBranch').item }}"
+    },
+    {
+      "name": "$jmespath over $input.all()",
+      "value": "={{ $jmespath($input.all(), '[].json.n') }}"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "byDestination": {
+    "A": {
+      "main": [
+        [
+          {
+            "node": "Trigger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "B": {
+      "main": [
+        [
+          {
+            "node": "A",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "children of Trigger (order: farthest first)": [
+    "B",
+    "A"
+  ],
+  "parents of B": [
+    "Trigger",
+    "A"
+  ],
+  "parents of Trigger (none)": [],
+  "children of B (none)": [],
+  "unknown node": [],
+  "connection indexes B<-A": {
+    "sourceIndex": 0,
+    "destinationIndex": 0
+  },
+  "connection indexes B<-Trigger (transitive)": {
+    "sourceIndex": 0,
+    "destinationIndex": 0
+  },
+  "highest node of B": [
+    "Trigger"
+  ],
+  "start node for B": "Trigger",
+  "hasPath Trigger->B": true,
+  "hasPath B->Trigger": false
+}

@@ -1,0 +1,272 @@
+{
+  "workflow": {
+    "nodes": [
+      {
+        "id": "Start",
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Set",
+        "name": "Set",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "End",
+        "name": "End",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Set",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set": {
+        "main": [
+          [
+            {
+              "node": "End",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "runData": {
+    "Start": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 0,
+        "source": [],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "id": 0,
+                  "name": "x"
+                }
+              },
+              {
+                "json": {
+                  "id": 1,
+                  "name": "y"
+                }
+              },
+              {
+                "json": {
+                  "id": 2,
+                  "name": "z"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "Set": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 1,
+        "source": [
+          {
+            "previousNode": "Start"
+          }
+        ],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "a": 10
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "a": 20
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              },
+              {
+                "json": {
+                  "a": 30
+                },
+                "pairedItem": {
+                  "item": 2
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "activeNodeName": "End",
+  "connectionInputData": [
+    {
+      "json": {
+        "a": 10
+      },
+      "pairedItem": {
+        "item": 0
+      }
+    },
+    {
+      "json": {
+        "a": 20
+      },
+      "pairedItem": {
+        "item": 1
+      }
+    },
+    {
+      "json": {
+        "a": 30
+      },
+      "pairedItem": {
+        "item": 2
+      }
+    }
+  ],
+  "executeData": {
+    "data": {
+      "main": [
+        [
+          {
+            "json": {
+              "a": 10
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          },
+          {
+            "json": {
+              "a": 20
+            },
+            "pairedItem": {
+              "item": 1
+            }
+          },
+          {
+            "json": {
+              "a": 30
+            },
+            "pairedItem": {
+              "item": 2
+            }
+          }
+        ]
+      ]
+    },
+    "source": {
+      "main": [
+        {
+          "previousNode": "Set",
+          "previousNodeOutput": 0,
+          "previousNodeRun": 0
+        }
+      ]
+    }
+  },
+  "description": "$input proxy: item/first()/last()/all()/params/context operate on connectionInputData; params/context need executeData.source.",
+  "probes": [
+    {
+      "name": "$input.item.json.a",
+      "value": "={{ $input.item.json.a }}"
+    },
+    {
+      "name": "$input.item.json.a item 2",
+      "value": "={{ $input.item.json.a }}",
+      "itemIndex": 2
+    },
+    {
+      "name": "$input.first().json.a",
+      "value": "={{ $input.first().json.a }}"
+    },
+    {
+      "name": "$input.last().json.a",
+      "value": "={{ $input.last().json.a }}"
+    },
+    {
+      "name": "$input.all().length",
+      "value": "={{ $input.all().length }}"
+    },
+    {
+      "name": "$input.all() map",
+      "value": "={{ $input.all().map(i => i.json.a) }}"
+    },
+    {
+      "name": "$input.first(1) rejects arguments",
+      "value": "={{ $input.first(1) }}"
+    },
+    {
+      "name": "$input.params (params of previous node)",
+      "value": "={{ $input.params }}"
+    },
+    {
+      "name": "$input.item with empty input",
+      "value": "={{ $input.item }}",
+      "connectionInputData": []
+    },
+    {
+      "name": "$input.params without executeData",
+      "value": "={{ $input.params }}",
+      "executeData": null
+    },
+    {
+      "name": "$input.item.pairedItem visible",
+      "value": "={{ $input.item.pairedItem }}",
+      "itemIndex": 1
+    },
+    {
+      "name": "$thisItem alias",
+      "value": "={{ $thisItem.json.a }}",
+      "itemIndex": 1
+    },
+    {
+      "name": "$itemIndex / $position",
+      "value": "={{ [$itemIndex, $position] }}",
+      "itemIndex": 2
+    },
+    {
+      "name": "$prevNode",
+      "value": "={{ $prevNode }}"
+    }
+  ]
+}

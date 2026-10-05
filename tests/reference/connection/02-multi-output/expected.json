@@ -1,0 +1,109 @@
+{
+  "byDest Merge (input 0 <- A, Loop ; input 1 <- IF out 1)": {
+    "main": [
+      [
+        {
+          "node": "A",
+          "type": "main",
+          "index": 0
+        },
+        {
+          "node": "Loop",
+          "type": "main",
+          "index": 0
+        }
+      ],
+      [
+        {
+          "node": "IF",
+          "type": "main",
+          "index": 1
+        }
+      ]
+    ]
+  },
+  "byDest B (from IF output 1)": {
+    "main": [
+      [
+        {
+          "node": "IF",
+          "type": "main",
+          "index": 1
+        }
+      ]
+    ]
+  },
+  "byDest End (dest index 2 padded with [])": {
+    "main": [
+      [
+        {
+          "node": "Loop",
+          "type": "main",
+          "index": 1
+        }
+      ],
+      [],
+      [
+        {
+          "node": "Sparse",
+          "type": "main",
+          "index": 2
+        }
+      ]
+    ]
+  },
+  "IF -> B output index": {
+    "sourceIndex": 1,
+    "destinationIndex": 0
+  },
+  "Merge <- IF (BFS finds first reachable path)": {
+    "sourceIndex": 1,
+    "destinationIndex": 0
+  },
+  "Merge <- Sparse (not connected)": {
+    "undefined": true
+  },
+  "children of IF depth 1": [
+    "Merge",
+    "B",
+    "A"
+  ],
+  "parents by depth of Merge (indicies)": [
+    {
+      "name": "A",
+      "indicies": [
+        0
+      ],
+      "depth": 1
+    },
+    {
+      "name": "Loop",
+      "indicies": [
+        0
+      ],
+      "depth": 1
+    },
+    {
+      "name": "IF",
+      "indicies": [
+        1,
+        0
+      ],
+      "depth": 1
+    },
+    {
+      "name": "Trigger",
+      "indicies": [
+        0
+      ],
+      "depth": 2
+    }
+  ],
+  "root nodes of {IF,A,B,Merge}": [
+    "IF"
+  ],
+  "leaf nodes of {IF,A,B,Merge}": [
+    "B",
+    "Merge"
+  ]
+}

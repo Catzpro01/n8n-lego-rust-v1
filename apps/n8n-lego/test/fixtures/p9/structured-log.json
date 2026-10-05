@@ -1,0 +1,23 @@
+{
+  "contractVersion": "1.0.0",
+  "envelope": {
+    "contractVersion": "1.0.0",
+    "timestamp": 1720000000000,
+    "signalType": "LOG",
+    "severity": "INFO",
+    "component": "execution",
+    "operation": "execute",
+    "outcome": "completed",
+    "diagnosticRef": "diag-1",
+    "context": {
+      "workflowId": "wf-1",
+      "executionId": "exec-1",
+      "correlationId": "request-1"
+    }
+  },
+  "attributes": {
+    "durationMs": 10,
+    "itemCount": 3
+  },
+  "redactionCount": 0
+}

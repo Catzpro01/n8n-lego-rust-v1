@@ -1,0 +1,29 @@
+{
+  "plain string (no '=' prefix) is returned as-is": "hello",
+  "$json.a item 0": 10,
+  "$json.a item 1": 20,
+  "string interpolation": "Value: 10!",
+  "two expressions concatenate to string": "10-10",
+  "single expression keeps number type": 11,
+  "single expression returns object": {
+    "a": 10
+  },
+  "object inside text becomes [object Object]": "x [object Object]",
+  "boolean": false,
+  "null": null,
+  "$data alias of $json": 10,
+  "$json out of range item index": {
+    "error": "ExpressionError",
+    "message": "\"End\" node has 3 item(s) but you're trying to access item 5",
+    "type": "no_execution_data",
+    "descriptionKey": "pairedItemInvalidIndex",
+    "nodeCause": "End"
+  },
+  "$json with empty input": {
+    "error": "ExpressionError",
+    "message": "Node 'End' hasn't been executed",
+    "type": "no_execution_data",
+    "descriptionKey": "pairedItemNoConnection",
+    "nodeCause": "End"
+  }
+}

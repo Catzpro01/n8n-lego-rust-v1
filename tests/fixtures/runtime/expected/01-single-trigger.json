@@ -1,0 +1,25 @@
+{
+  "status": "COMPLETED",
+  "finished": true,
+  "executionLog": [
+    {
+      "node": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Manual Trigger",
+      "statusText": "Success"
+    }
+  ],
+  "data": {
+    "Manual Trigger": [
+      {
+        "json": {
+          "seed": 1
+        }
+      }
+    ]
+  },
+  "warnings": []
+}

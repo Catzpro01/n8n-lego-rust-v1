@@ -1,0 +1,247 @@
+{
+  "contract": {
+    "id": "observability.metrics",
+    "version": "1.0.0",
+    "owner": "agent-6"
+  },
+  "metrics": [
+    {
+      "name": "execution.started",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "execution.completed",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "execution.failed",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "execution.cancelled",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "node.started",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "node.completed",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "node.failed",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "node.cold_start",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "checkpoint.operations",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "ingress.accepted",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "ingress.rejected",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "ingress.deferred",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "ingress.duplicate",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "ingress.rate_limited",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "node.admission",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "node.quarantine",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "runtime.lease",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "runtime.startup",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "runtime.rollback",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "telemetry.generated",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "telemetry.dropped",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "telemetry.sampled",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "telemetry.export_failed",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "telemetry.redacted",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "telemetry.cardinality_rejected",
+      "kind": "counter",
+      "unit": "1"
+    },
+    {
+      "name": "node.runtime_load",
+      "kind": "gauge",
+      "unit": "1"
+    },
+    {
+      "name": "frontier.depth",
+      "kind": "gauge",
+      "unit": "1"
+    },
+    {
+      "name": "node.health",
+      "kind": "gauge",
+      "unit": "1"
+    },
+    {
+      "name": "registry.epoch",
+      "kind": "gauge",
+      "unit": "1"
+    },
+    {
+      "name": "telemetry.buffered",
+      "kind": "gauge",
+      "unit": "1"
+    },
+    {
+      "name": "execution.memory_pressure",
+      "kind": "gauge",
+      "unit": "ratio"
+    },
+    {
+      "name": "execution.cpu_pressure",
+      "kind": "gauge",
+      "unit": "ratio"
+    },
+    {
+      "name": "execution.duration",
+      "kind": "histogram",
+      "unit": "ms"
+    },
+    {
+      "name": "node.duration",
+      "kind": "histogram",
+      "unit": "ms"
+    },
+    {
+      "name": "frontier.wait_time",
+      "kind": "histogram",
+      "unit": "ms"
+    },
+    {
+      "name": "webhook.latency",
+      "kind": "histogram",
+      "unit": "ms"
+    },
+    {
+      "name": "schedule.delay",
+      "kind": "histogram",
+      "unit": "ms"
+    },
+    {
+      "name": "runtime.startup_duration",
+      "kind": "histogram",
+      "unit": "ms"
+    }
+  ],
+  "labels": {
+    "component": [
+      "execution",
+      "node",
+      "trigger",
+      "webhook",
+      "scheduler",
+      "ingress",
+      "registry",
+      "runtime",
+      "checkpoint",
+      "telemetry",
+      "other"
+    ],
+    "severity": [
+      "TRACE",
+      "DEBUG",
+      "INFO",
+      "WARN",
+      "ERROR",
+      "FATAL",
+      "other"
+    ],
+    "outcome": [
+      "started",
+      "completed",
+      "failed",
+      "cancelled",
+      "accepted",
+      "rejected",
+      "deferred",
+      "duplicate",
+      "rate_limited",
+      "other"
+    ]
+  },
+  "latencyBoundsMs": [
+    1,
+    5,
+    10,
+    25,
+    50,
+    100,
+    250,
+    500,
+    1000,
+    5000
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "description": "P9.18 telemetry self-observability fixtures \u2014 required counters, zero-errors vs zero-telemetry, drop counter, simulated exporter outage, recursion guard, self-suppression priority rule.",
+  "controller": {
+    "capacity": 4,
+    "degradeAfterFailures": 3
+  },
+  "requiredCounters": [
+    "generated",
+    "dropped",
+    "sampled",
+    "buffered",
+    "export_failed",
+    "redacted",
+    "cardinality_rejected",
+    "query_slow",
+    "diagnostic_bundle_failed",
+    "degraded"
+  ],
+  "errorCounters": [
+    "export_failed",
+    "cardinality_rejected",
+    "query_slow",
+    "diagnostic_bundle_failed"
+  ],
+  "outage": {
+    "failures": 5,
+    "expectExportFailed": 5,
+    "degradeAfter": 3,
+    "expectDegraded": true
+  },
+  "drop": {
+    "capacity": 4,
+    "offers": 7,
+    "expectBuffered": 4,
+    "expectDropped": 3
+  },
+  "suppression": {
+    "outagePriority": "P3",
+    "protectedPriority": "P1",
+    "defaultPriority": "P2"
+  },
+  "pipelineSequence": [
+    "generated",
+    "sampled",
+    "buffered",
+    "redacted",
+    "cardinality_rejected",
+    "query_slow",
+    "diagnostic_bundle_failed",
+    "dropped",
+    "degraded"
+  ]
+}

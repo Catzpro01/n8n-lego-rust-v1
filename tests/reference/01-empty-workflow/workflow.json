@@ -1,0 +1,6 @@
+{
+  "id": "wf-empty",
+  "name": "Empty Workflow",
+  "nodes": [],
+  "connections": {}
+}

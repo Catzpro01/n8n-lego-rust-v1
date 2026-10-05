@@ -1,0 +1,41 @@
+{
+  "reference": "n8n 2.9.4",
+  "source": [
+    "packages/cli/src/executions/execution-persistence.ts (create)",
+    "packages/@n8n/db/src/repositories/execution.repository.ts (setRunning, updateExistingExecution, markAsCrashed, stopBeforeRun, stopDuringRun, softDelete)",
+    "packages/cli/src/execution-lifecycle/execution-lifecycle-hooks.ts (hookFunctionsSave.workflowExecuteAfter)",
+    "packages/cli/src/execution-lifecycle/shared/shared-hook-functions.ts (determineFinalExecutionStatus)",
+    "packages/cli/src/execution-lifecycle/to-save-settings.ts"
+  ],
+  "statusVocabulary": ["new", "running", "success", "error", "crashed", "canceled", "waiting", "unknown"],
+  "transitions": [
+    { "input": "ActiveExecutions.add → ExecutionPersistence.create", "expected": { "status": "new", "finished": false, "startedAt": null, "rows": ["execution_entity", "execution_data"] }, "sideEffect": "transaction; execution_data.data = flatted.stringify(runExecutionData); workflowData = {id,name,nodes,connections,settings}" },
+    { "input": "regular mode: setRunning(id)", "expected": { "status": "running", "startedAt": "now" } },
+    { "input": "workflowExecuteAfter, no error, no waitTill", "expected": { "status": "success", "finished": true, "stoppedAt": "now" }, "sideEffect": "execution_data.data replaced with final run data; execution_metadata upserted" },
+    { "input": "workflowExecuteAfter, resultData.error set", "expected": { "status": "error", "finished": false, "stoppedAt": "now" }, "sideEffect": "error workflow triggered (non-manual)" },
+    { "input": "workflowExecuteAfter, waitTill set", "expected": { "status": "waiting", "finished": false, "waitTill": "date" }, "sideEffect": "WaitTracker picks it up; /webhook-waiting/:id resumes" },
+    { "input": "stopBeforeRun / stopDuringRun / cancelMany", "expected": { "status": "canceled", "stoppedAt": "now" } },
+    { "input": "boot recovery (ExecutionRecoveryService) for rows still 'running'/'new'", "expected": { "status": "crashed", "stoppedAt": "now" } },
+    { "input": "manual execution and saveManualExecutions=false and no waitTill", "expected": { "row": "soft-deleted (deletedAt set)" }, "error": null },
+    { "input": "success with saveDataSuccessExecution='none' (non-manual)", "expected": { "row": "hard-deleted" } },
+    { "input": "updateExistingExecution with requireNotFinished when already finished", "expected": { "return": false }, "error": null, "sideEffect": "no row change" },
+    { "input": "flatted.parse of corrupt execution_data.data", "expected": null, "error": "CorruptedExecutionDataError" }
+  ],
+  "liveObserved": {
+    "manualRun": { "endpoint": "POST /rest/workflows/:id/run", "response": { "data": { "executionId": "<string int>" } }, "final": { "status": "success", "mode": "manual" } },
+    "webhookRun": { "final": { "status": "success", "mode": "webhook", "finished": true, "lastNodeExecuted": "Code" }, "sqlite": { "execution_entity": { "status": "success", "mode": "webhook", "finished": 1 }, "execution_data": { "dataLength": 1782, "workflowVersionId": "= workflow.versionId" } } },
+    "scheduleRun": { "final": { "status": "success", "mode": "trigger" } },
+    "getExecutionResponseKeys": ["createdAt", "customData", "data", "deletedAt", "finished", "id", "mode", "retryOf", "retrySuccessId", "startedAt", "status", "stoppedAt", "storedAt", "waitTill", "workflowData", "workflowId"],
+    "dataIsFlattedString": true,
+    "workflowDataSnapshotKeys": ["active", "activeVersionId", "connections", "createdAt", "id", "isArchived", "name", "nodes", "pinData", "settings", "staticData", "updatedAt"],
+    "notANumber": { "status": 400, "body": { "code": 400, "message": "Execution ID is not a number" } },
+    "unknownId": { "status": 200, "body": {} }
+  },
+  "workflowPersistence": {
+    "create": { "envelope": ["data"], "idLength": 16, "clientSuppliedIdKept": true, "duplicateId": { "status": 400, "message": "Workflow with id wf-linear exists already." }, "duplicateName": { "status": 200, "note": "no unique constraint in 2.9.4" } },
+    "update": { "settingsOnly": { "versionChanged": false }, "nodesChanged": { "versionChanged": true, "workflowHistoryRows": 2 } },
+    "load": { "status": 200 },
+    "notFound": { "status": 404, "message": "Could not load the workflow - you can only access workflows owned by you" },
+    "deleteRequiresArchive": { "status": 400, "message": "Workflow must be archived before it can be deleted." }
+  }
+}

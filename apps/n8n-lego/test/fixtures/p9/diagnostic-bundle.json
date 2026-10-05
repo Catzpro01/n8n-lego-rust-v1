@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "1.0.0",
+  "correlationFields": [
+    "executionId", "workflowId", "workflowVersion", "triggerId",
+    "nodeId", "nodeType", "nodeVersion", "runtimeId",
+    "requestId", "correlationId", "traceId", "checkpointId", "registryEpoch"
+  ],
+  "signalKinds": ["log", "event", "span"],
+  "budgetReasons": ["budget", "relevance", "window", "count", "invalid"],
+  "smallBundle": {
+    "correlation": {
+      "executionId": "exec-b-1",
+      "workflowId": "wf-7",
+      "workflowVersion": "2",
+      "triggerId": "trg-1",
+      "nodeId": "n1",
+      "runtimeId": "rt-1"
+    },
+    "anchorTimestamp": 1760000000000,
+    "resource": { "memoryUsedBytes": 2097152 },
+    "refs": { "checkpoint": "ckpt-9" },
+    "configFingerprints": [{ "key": "executor.mode", "value": "bounded" }],
+    "candidates": {
+      "logs": [
+        {
+          "timestamp": 1760000000100,
+          "severity": "ERROR",
+          "operation": "node.execute",
+          "outcome": "failed",
+          "errorCode": "http.5xx",
+          "message": "upstream 503",
+          "executionId": "exec-b-1",
+          "workflowId": "wf-7"
+        },
+        {
+          "timestamp": 1759990000000,
+          "severity": "INFO",
+          "operation": "workflow.start",
+          "outcome": "success",
+          "executionId": "other-exec",
+          "workflowId": "other-wf"
+        }
+      ],
+      "events": [
+        {
+          "timestamp": 1760000000050,
+          "eventName": "execution.failed",
+          "severity": "ERROR",
+          "sequence": 3,
+          "executionId": "exec-b-1"
+        }
+      ],
+      "spans": [
+        {
+          "timestamp": 1760000000080,
+          "name": "node.execute",
+          "spanId": "span000000000001",
+          "traceId": "trace00000000000000000000000001",
+          "durationMs": 120.5,
+          "outcome": "failed",
+          "executionId": "exec-b-1"
+        }
+      ]
+    },
+    "expect": {
+      "logCount": 1,
+      "eventCount": 1,
+      "spanCount": 1,
+      "droppedLogsAtLeast": 1
+    }
+  },
+  "largeBundle": {
+    "correlation": {
+      "executionId": "exec-bulk",
+      "workflowId": "wf-bulk"
+    },
+    "anchorTimestamp": 1760000000000,
+    "policy": { "maxLogs": 32, "maxEvents": 16, "maxSpans": 8, "minSeverity": "TRACE" },
+    "candidates": {
+      "logs": "generate:200",
+      "events": "generate:40",
+      "spans": "generate:20"
+    },
+    "expect": {
+      "logCountMax": 32,
+      "eventCountMax": 16,
+      "spanCountMax": 8,
+      "withinBudget": true
+    }
+  },
+  "budgetExceeded": {
+    "correlation": {
+      "executionId": "exec-tiny",
+      "workflowId": "wf-tiny"
+    },
+    "anchorTimestamp": 1760000000000,
+    "policy": { "maxBundleBytes": 768, "maxLogs": 64, "minSeverity": "TRACE" },
+    "candidates": {
+      "logs": "generate:120-long"
+    },
+    "expect": {
+      "budgetFlagOrDrops": true
+    }
+  },
+  "missingEvidence": {
+    "correlation": {
+      "executionId": "exec-empty",
+      "workflowId": "wf-empty"
+    },
+    "candidates": {},
+    "expect": {
+      "evidenceMissingIncludes": ["diagnostic", "resource", "refs", "configFingerprints", "logs", "events", "spans"],
+      "stillCompileable": true
+    }
+  },
+  "secretShapes": [
+    "Bearer shortTok",
+    "password=hunter2hunter2",
+    "ghp_ABCDEFGHIJKLMNOPQRSTUV"
+  ]
+}

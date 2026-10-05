@@ -1,0 +1,91 @@
+{
+  "classes": ["PUBLIC_DIAGNOSTIC", "INTERNAL_DIAGNOSTIC", "SENSITIVE", "SECRET", "FORBIDDEN"],
+  "credentials": {
+    "note": "real secret-shaped strings under innocent and guilty keys",
+    "input": {
+      "apiKey": "sk-live-Abc12345XyZ",
+      "githubToken": "ghp_AbCdEfGhIjKlMnOpQrStUvWxYz0123456789",
+      "awsAccessKeyId": "AKIAIOSFODNN7EXAMPLE",
+      "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U",
+      "bearer": "Authorization: Bearer dGhpc0lzQVRva2VuIQ",
+      "value": "client_secret: super-secret-value-9",
+      "noteField": "password=hunter2-plain"
+    },
+    "expectAllRedacted": true
+  },
+  "authorizationHeader": {
+    "note": "header bags: authorization/cookie are FORBIDDEN fields; api-key names are SECRET; safe headers allow",
+    "input": {
+      "headers": {
+        "authorization": "Bearer Zm9vYmFyYmF6cXV4",
+        "cookie": "session=abcdef123456",
+        "x-api-key": "secret-header-value-99",
+        "content-type": "application/json"
+      }
+    },
+    "expect": {
+      "authorization": "[REDACTED:FORBIDDEN]",
+      "cookie": "[REDACTED:FORBIDDEN]",
+      "x-api-key": "[REDACTED:SECRET]",
+      "content-type": "application/json"
+    }
+  },
+  "nestedJsonSecret": {
+    "note": "nested credential bags and deep secret values",
+    "input": {
+      "component": "ingress",
+      "operation": "admit",
+      "outcome": "rejected",
+      "context": {
+        "executionId": "exec-1",
+        "nodeConfig": {
+          "credentials": {
+            "httpBasicAuth": { "user": "alice", "password": "nested-s3cret-pw" }
+          },
+          "headers": { "Authorization": "Basic dXNlcjpwYXNz" }
+        },
+        "items": [
+          { "label": "ok", "value": 1 },
+          { "label": "tok", "value": "sk-proj-XYZabcdefgh1234" }
+        ]
+      }
+    },
+    "expectNoSecrets": true
+  },
+  "rawBodyDisabled": {
+    "note": "raw request/response bodies are FORBIDDEN by default — values are not read",
+    "input": {
+      "body": "{\"password\":\"in-body\",\"total\":42}",
+      "responseBody": { "secret": "in-response" },
+      "component": "webhook"
+    }
+  },
+  "binaryBecomesReference": {
+    "input": {
+      "attachment": { "bytes": "BINARY_PLACEHOLDER" },
+      "label": "file"
+    }
+  },
+  "logRedaction": {
+    "note": "error text sanitized before any log/error path",
+    "input": "upstream failed: token=abc123secrettoken Authorization: Bearer dG9rZWWwn",
+    "expectMarker": "[REDACTED:SECRET]"
+  },
+  "traceRedaction": {
+    "note": "span attribute bag through the same export boundary",
+    "input": {
+      "span": "http.request",
+      "peer": { "auth": "Bearer trace-secret-token", "port": 443 }
+    },
+    "expectNoSecrets": true
+  },
+  "eventRedaction": {
+    "note": "lifecycle event diagnostic bag through the same export boundary",
+    "input": {
+      "eventName": "ingress.rejected",
+      "reason": "credential check failed",
+      "credentials": { "password": "event-secret-pw" }
+    },
+    "expectNoSecrets": true
+  }
+}

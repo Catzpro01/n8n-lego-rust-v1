@@ -1,0 +1,137 @@
+{
+  "version": "1.0.0",
+  "phase": "P2.11",
+  "owner": "manager",
+  "status": "contract-only",
+  "description": "Canonical end-to-end scenarios. Each one is a CONTRACT WALKTHROUGH: it names the LEGO, capabilities and permissions a flow would traverse, and exists to prove the declared architecture is sufficient to express the flow. None of these scenarios executes today.",
+  "purpose": "A scenario is the cheapest test of an architecture. If a plausible user request cannot be expressed as a path through the declared LEGO without inventing a new concept, the decomposition is wrong and it is far cheaper to discover that here than after implementation.",
+  "rule": "Every scenario must be expressible using only LEGO declared in manifest/ai-lego-set.json and capabilities declared in manifest/domains.json. A scenario that needs an undeclared concept is a finding, not a licence to add one.",
+  "scenarios": [
+    {
+      "id": "website-creation",
+      "title": "Create a company website",
+      "request": "Create a company website.",
+      "steps": [
+        "Understand", "Plan", "Select skills", "Create workspace", "Create project",
+        "Delegate UX", "Delegate frontend", "Delegate content", "Delegate testing",
+        "Build", "Browser inspect", "Fix", "Test", "Review", "Open pull request",
+        "Optional deployment", "Create artifacts", "Update memory", "Project to Obsidian", "Complete work trace"
+      ],
+      "lego": ["agent-machine", "skill", "workspace", "capability", "approval", "artifact", "agent-event", "memory", "token-usage"],
+      "capabilities": ["filesystem.write", "terminal.execute", "browser.open", "project.build", "project.test", "git.commit", "github.create_pr"],
+      "skills": ["web-development", "accessibility", "SEO", "github"],
+      "subAgents": ["research", "ux", "frontend", "backend", "qa", "review"],
+      "approvalPoints": ["terminal.execute for high-risk activity", "github.create_pr"],
+      "invariantsExercised": [
+        "delegation never widens the parent's capability set",
+        "every filesystem and terminal action is workspace-scoped",
+        "artifacts are referenced, never inlined into events"
+      ],
+      "status": "contract-only"
+    },
+    {
+      "id": "workflow-debugging",
+      "title": "Why did this workflow fail?",
+      "request": "Why did this workflow fail?",
+      "steps": [
+        "Load workflow context", "Identify the failed execution", "Inspect the failed node",
+        "Inspect the event/error", "Retrieve relevant memory", "Analyse", "Write a decision summary",
+        "Propose a fix", "Approval if required", "Modify", "Test", "Produce an artifact", "Report"
+      ],
+      "lego": ["context-session", "memory", "approval", "artifact", "agent-event"],
+      "experience": "ai-copilot",
+      "modeNote": "Execution AI is the Copilot's EXECUTION-scoped mode. It is not a fourth engine — the same contracts with the context scope narrowed.",
+      "contextProgression": ["GLOBAL", "WORKFLOW", "NODE", "EXECUTION", "EVENT"],
+      "invariantsExercised": [
+        "a decision summary is stored; the reasoning that produced it is not",
+        "memory is retrieved by relevance, never dumped"
+      ],
+      "status": "contract-only"
+    },
+    {
+      "id": "multi-agent-coding",
+      "title": "Multi-agent coding task",
+      "graph": {
+        "root": "main",
+        "children": ["research", "builder", "tester", "reviewer"],
+        "builderChildren": ["frontend", "backend"]
+      },
+      "shared": ["task state", "capability boundaries", "workspace", "artifacts", "memory", "work trace", "budget"],
+      "lego": ["agent-machine", "workspace", "artifact", "agent-event", "token-usage", "approval"],
+      "joinRule": "Parallel branches stay independently observable and join only once their required conditions are satisfied. A join that proceeds on partial results is a different operation and must be declared as one.",
+      "invariantsExercised": [
+        "a child agent's grants are a subset of its parent's",
+        "a child deadline is clamped by its parent's",
+        "budget exhaustion stops a branch rather than silently degrading it"
+      ],
+      "status": "contract-only"
+    },
+    {
+      "id": "node-creation",
+      "title": "Create a node from a description",
+      "steps": ["Understand", "Select creation strategy", "Generate", "Validate", "Test", "Conformance", "Package", "Preview", "Approval if needed", "Install"],
+      "lego": ["node-creator", "capability", "approval", "artifact"],
+      "artifacts": ["generated source", "test result", "manifest", "documentation"],
+      "strategySelection": "simple -> declarative/template; external API -> connector/OpenAPI; complex reusable logic -> code; heavy deterministic computation -> Rust/WASM.",
+      "strategyRule": "Rust/WASM is selected by measured workload characteristics, never because it is available.",
+      "invariantsExercised": ["a generated node passes the same Node Contract conformance as a hand-written one"],
+      "status": "contract-only"
+    },
+    {
+      "id": "external-runtime",
+      "title": "Delegate to an external agent runtime",
+      "chain": ["agent-machine", "runtime-adapter", "external runtime"],
+      "externalExamples": ["Hermes", "Claude Code", "Gemini CLI", "OpenClaw"],
+      "n8nRetains": ["the task", "policy", "workspace boundary", "approval", "artifact references", "agent event normalization", "the context contract", "resource accounting"],
+      "adapterOperations": ["connect", "start", "send", "stream", "pause", "resume", "cancel", "status", "artifacts", "disconnect"],
+      "lockInRule": "The external runtime stays external and is never reimplemented. Replaceability comes from the adapter contract being stable, not from owning the runtime.",
+      "invariantsExercised": [
+        "an external runtime is not automatically trusted",
+        "external events are normalized into the declared 26-type vocabulary before storage"
+      ],
+      "status": "contract-only"
+    },
+    {
+      "id": "memory-obsidian",
+      "title": "Record a project decision",
+      "steps": ["Store the decision", "Store evidence", "Link the artifact", "Link the task", "Relate to existing nodes", "Project to Obsidian"],
+      "lego": ["memory", "artifact", "agent-event"],
+      "sourceOfTruth": "memory graph",
+      "projection": "Obsidian markdown",
+      "retrievalRule": "A later Copilot retrieves the decision by graph traversal plus relevance. Loading the entire vault is the failure mode this design exists to prevent.",
+      "invariantsExercised": ["the memory graph remains valid with no provider connected"],
+      "status": "contract-only"
+    },
+    {
+      "id": "context-rollover",
+      "title": "Token accounting and context rollover",
+      "steps": [
+        "Account for message, model input, output and total tokens",
+        "Context manager observes NORMAL",
+        "Threshold reached -> PREPARE",
+        "Create the continuation package",
+        "Compact context",
+        "Open the next session/window",
+        "Link session.continuation.linked",
+        "Rehydrate",
+        "Verify objective, constraints, pending actions, decisions, artifact references and permissions",
+        "Continue"
+      ],
+      "lego": ["context-session", "token-usage", "memory", "agent-event"],
+      "tokenKinds": {
+        "message": "tokens in the visible message only",
+        "modelInput": "everything actually sent: system instructions, conversation, memory, tools, context, current message",
+        "output": "generated response tokens"
+      },
+      "tokenExample": {"message": 1, "modelInput": 1847, "output": 8, "note": "The UI may show `· 1 token` for the message while the detail view shows the full accounting. Presenting the message count as the model input count is the specific confusion this separation prevents."},
+      "rolloverRule": "Rollover triggers at a declared threshold, never at the exact limit: a rollover attempted at 100% has no room left to write the continuation package.",
+      "failureRule": "If rehydration fails, surface the failure. A silently degraded session is worse than a visible one.",
+      "userExperience": "One continuous conversation.",
+      "invariantsExercised": [
+        "a token count the provider did not report is labelled `estimated`",
+        "session state never stores the transcript"
+      ],
+      "status": "contract-only"
+    }
+  ]
+}

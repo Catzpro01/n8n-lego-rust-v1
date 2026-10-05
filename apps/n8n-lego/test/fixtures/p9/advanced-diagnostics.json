@@ -1,0 +1,152 @@
+{
+  "description": "P9.21 advanced diagnostics fixtures \u2014 selected feature matrix (budget/kill/fallback/negative/pressure/AB) and trade-off matrix; security/audit never deduped; profiling/eBPF optional not selected; tail sampling bounded.",
+  "selectedFeatures": [
+    "fast_path",
+    "delta_telemetry",
+    "bounded_interning",
+    "burst_dedup",
+    "tail_sampling",
+    "incident_burst_mode"
+  ],
+  "notSelected": [
+    "profiling_optional",
+    "ebpf_host_adapter_optional",
+    "automatic_payload_offload",
+    "materialized_operational_views",
+    "exemplar_linking",
+    "compact_histogram_adapter",
+    "adaptive_export_batching",
+    "cost_attribution",
+    "telemetry_policy_replay",
+    "cross_signal_correlation_matrix"
+  ],
+  "featureMatrix": [
+    {
+      "feature": "fast_path",
+      "budget": "fastPathByteBudget",
+      "killSwitch": true,
+      "fallback": "slow_path_admit",
+      "pressure": "over-budget\u2192fallback",
+      "abSafe": true
+    },
+    {
+      "feature": "delta_telemetry",
+      "budget": "deltaBaselineMax",
+      "killSwitch": true,
+      "fallback": "absolute_snapshot",
+      "pressure": "baseline overflow\u2192err",
+      "abSafe": true
+    },
+    {
+      "feature": "bounded_interning",
+      "budget": "internMaxEntries",
+      "killSwitch": true,
+      "fallback": "passthrough_string",
+      "pressure": "evict oldest",
+      "abSafe": true
+    },
+    {
+      "feature": "burst_dedup",
+      "budget": "dedupMaxEntries+dedupWindowMs",
+      "killSwitch": true,
+      "fallback": "admit_undeduped",
+      "pressure": "map cap evict",
+      "abSafe": true
+    },
+    {
+      "feature": "tail_sampling",
+      "budget": "maxInFlight",
+      "killSwitch": true,
+      "fallback": "keep_on_overflow",
+      "pressure": "in-flight cap\u2192keep",
+      "abSafe": true
+    },
+    {
+      "feature": "incident_burst_mode",
+      "budget": "burstThreshold+cooldown",
+      "killSwitch": true,
+      "fallback": "steady_mode",
+      "pressure": "window hard cap",
+      "abSafe": true
+    }
+  ],
+  "tradeOffMatrix": [
+    {
+      "feature": "fast_path",
+      "gain": "hot-path latency",
+      "cost": "may fallback under budget",
+      "risk": "lower capture in tight budgets",
+      "mitigation": "explicit fallback counter"
+    },
+    {
+      "feature": "delta_telemetry",
+      "gain": "wire/CPU reduction",
+      "cost": "baseline state",
+      "risk": "restart resets delta",
+      "mitigation": "absolute_snapshot fallback"
+    },
+    {
+      "feature": "bounded_interning",
+      "gain": "pointer-equal compares",
+      "cost": "bounded map memory",
+      "risk": "eviction thrash",
+      "mitigation": "LRU refresh + cap"
+    },
+    {
+      "feature": "burst_dedup",
+      "gain": "burst volume cut",
+      "cost": "window map",
+      "risk": "losing distinct events",
+      "mitigation": "short window; security/audit exempt"
+    },
+    {
+      "feature": "tail_sampling",
+      "gain": "rare-signal retention",
+      "cost": "in-flight state",
+      "risk": "unbounded memory",
+      "mitigation": "maxInFlight + keep-on-overflow"
+    },
+    {
+      "feature": "incident_burst_mode",
+      "gain": "elevated capture in incidents",
+      "cost": "mode flag",
+      "risk": "thrash",
+      "mitigation": "cooldown hysteresis"
+    }
+  ],
+  "dedupExempt": [
+    "audit",
+    "security",
+    "audit_security"
+  ],
+  "controller": {
+    "fastPathByteBudget": 4096,
+    "internMaxEntries": 4,
+    "dedupWindowMs": 1000,
+    "dedupMaxEntries": 8,
+    "maxInFlight": 3,
+    "burstThreshold": 5,
+    "burstCooldownMs": 5000,
+    "deltaBaselineMax": 4
+  },
+  "workflowAb": {
+    "inputs": [
+      {
+        "n": 1
+      },
+      {
+        "n": 2
+      },
+      {
+        "n": 3
+      }
+    ],
+    "transform": "n+100"
+  },
+  "expect": {
+    "fallbackPath": "slow_path_admit",
+    "keepOnOverflow": "keep_on_overflow",
+    "exemptPath": "exempt",
+    "dedupPath": "burst_dedup"
+  }
+}

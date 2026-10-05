@@ -1,0 +1,41 @@
+{
+  "status": "COMPLETED",
+  "finished": true,
+  "executionLog": [
+    {
+      "node": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Manual Trigger",
+      "statusText": "Success"
+    },
+    {
+      "node": "Edit",
+      "type": "n8n-nodes-base.set",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Edit Fields (Set)",
+      "statusText": "Success"
+    }
+  ],
+  "data": {
+    "Start": [
+      {
+        "json": {
+          "dropped": true
+        }
+      }
+    ],
+    "Edit": [
+      {
+        "json": {
+          "only": "this"
+        }
+      }
+    ]
+  },
+  "warnings": []
+}

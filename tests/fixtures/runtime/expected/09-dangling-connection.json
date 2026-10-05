@@ -1,0 +1,31 @@
+{
+  "status": "COMPLETED",
+  "finished": true,
+  "executionLog": [
+    {
+      "node": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "inputCount": 1,
+      "outputCount": 1,
+      "status": "success",
+      "nodeLabel": "Manual Trigger",
+      "statusText": "Success"
+    }
+  ],
+  "data": {
+    "Start": [
+      {
+        "json": {
+          "x": 1
+        }
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "code": "UNKNOWN_CONNECTION_TARGET",
+      "message": "connection target \"Ghost\" is not a node in this workflow",
+      "node": "Ghost"
+    }
+  ]
+}

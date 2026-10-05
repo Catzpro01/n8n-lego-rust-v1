@@ -1,0 +1,66 @@
+{
+  "$('Start').item.json.name item 1 (1 hop pairing)": "y",
+  "$('Start').pairedItem().json.name item 2": "z",
+  "$('Start').itemMatching(0).json.name": "x",
+  "$('Start').first().json.name": "x",
+  "$('Start').last().json.name": "z",
+  "$('Start').all().length": 3,
+  "$('Start').isExecuted": true,
+  "$('End').isExecuted (self, not run)": false,
+  "$('Start').params": {},
+  "$node['Start'].json.name uses itemIndex": "z",
+  "$node['Set'].json.a": 20,
+  "$items('Start').length (legacy)": 3,
+  "$item(1).$node['Start'].json.name (legacy)": "y",
+  "$('Nope') unknown node": {
+    "error": "ExpressionError",
+    "message": "Referenced node doesn't exist",
+    "descriptionKey": "nodeNotFound",
+    "nodeCause": "Nope"
+  },
+  "$node['Nope'] unknown node": {
+    "error": "ExpressionError",
+    "message": "Referenced node doesn't exist",
+    "descriptionKey": "nodeNotFound",
+    "nodeCause": "Nope"
+  },
+  "$('End').first() node not executed": {
+    "error": "ExpressionError",
+    "message": "Node 'End' hasn't been executed",
+    "type": "no_execution_data",
+    "descriptionKey": "pairedItemNoConnection",
+    "nodeCause": "End"
+  },
+  "$node['End'].json node not executed": {
+    "error": "ExpressionError",
+    "message": "Node 'End' hasn't been executed",
+    "type": "no_execution_data",
+    "descriptionKey": "pairedItemNoConnection",
+    "nodeCause": "End"
+  },
+  "$('Start').item without pairedItem on input": {
+    "error": "ExpressionError",
+    "message": "Paired item data for item from node 'End' is unavailable. Ensure 'End' is providing the required output.",
+    "type": "paired_item_no_info",
+    "descriptionKey": "pairedItemNoInfo",
+    "nodeCause": "End"
+  },
+  "$('Start').item without executeData.source": {
+    "error": "ExpressionError",
+    "message": "Can’t get data for expression"
+  },
+  "$('Start').first() with runExecutionData=null": {
+    "json": {
+      "id": 0,
+      "name": "x"
+    }
+  },
+  "$('Set').first(1) branch out of range": {
+    "error": "ExpressionError",
+    "message": "Node \"Set\" has no branch with index 1."
+  },
+  "$('Start').first(0, 5) run out of range": {
+    "error": "ExpressionError",
+    "message": "Run 5 of node \"Start\" not found"
+  }
+}

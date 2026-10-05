@@ -1,0 +1,43 @@
+{
+  "id": "06-code-eval-disabled",
+  "description": "Code node with jsCode: not executed by default, items pass through, CODE_EVAL_DISABLED warning.",
+  "input": [
+    {
+      "json": {
+        "untouched": true
+      }
+    }
+  ],
+  "workflow": {
+    "name": "code eval disabled",
+    "nodes": [
+      {
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {}
+      },
+      {
+        "name": "Code",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "parameters": {
+          "jsCode": "return [{ json: { computed: 1 } }];"
+        }
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

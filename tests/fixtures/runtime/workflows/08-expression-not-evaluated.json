@@ -1,0 +1,50 @@
+{
+  "id": "08-expression-not-evaluated",
+  "description": "Expression-style value is used verbatim and reported as not evaluated.",
+  "input": [
+    {
+      "json": {
+        "name": "ada"
+      }
+    }
+  ],
+  "workflow": {
+    "name": "expression not evaluated",
+    "nodes": [
+      {
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "parameters": {}
+      },
+      {
+        "name": "Edit",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "parameters": {
+          "values": {
+            "string": [
+              {
+                "name": "greeting",
+                "value": "={{ $json.name }}"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Edit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

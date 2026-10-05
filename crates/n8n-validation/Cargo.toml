@@ -1,0 +1,13 @@
+[package]
+name = "n8n-validation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+n8n-common = { path = "../n8n-common" }
+n8n-connection = { path = "../n8n-connection" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+indexmap.workspace = true

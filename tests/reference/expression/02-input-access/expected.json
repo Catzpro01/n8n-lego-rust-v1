@@ -1,0 +1,39 @@
+{
+  "$input.item.json.a": 10,
+  "$input.item.json.a item 2": 30,
+  "$input.first().json.a": 10,
+  "$input.last().json.a": 30,
+  "$input.all().length": 3,
+  "$input.all() map": [
+    10,
+    20,
+    30
+  ],
+  "$input.first(1) rejects arguments": {
+    "error": "ExpressionError",
+    "message": "$input.first() should have no arguments"
+  },
+  "$input.params (params of previous node)": {},
+  "$input.item with empty input": {
+    "error": "ExpressionError",
+    "message": "No execution data available",
+    "type": "no_execution_data"
+  },
+  "$input.params without executeData": {
+    "error": "ExpressionError",
+    "message": "Can’t get data for expression"
+  },
+  "$input.item.pairedItem visible": {
+    "item": 1
+  },
+  "$thisItem alias": 20,
+  "$itemIndex / $position": [
+    2,
+    2
+  ],
+  "$prevNode": {
+    "name": "Set",
+    "outputIndex": 0,
+    "runIndex": 0
+  }
+}

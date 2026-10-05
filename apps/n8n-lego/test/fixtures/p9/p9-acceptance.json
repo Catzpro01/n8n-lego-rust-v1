@@ -1,0 +1,149 @@
+{
+  "description": "P9.22 full P9 acceptance fixtures \u2014 twelve non-interference gates, OFF vs NORMAL equivalence samples, P9.1\u2013P9.21 milestone inventory (lane status; merge is Manager-owned).",
+  "gates": [
+    "exporter_unavailable_workflow_continues",
+    "exporter_slow_nonblocking",
+    "queue_full_sheds_low_priority",
+    "tail_sampler_overload_bounded_fallback",
+    "extreme_cardinality_reduced",
+    "profiling_failure_isolated",
+    "ebpf_unavailable_isolated",
+    "security_audit_preserved",
+    "disk_spill_quota_sheds_low_priority",
+    "operator_query_storm_bounded",
+    "resource_firewall_degrades_first",
+    "policy_change_ab_equivalent"
+  ],
+  "milestones": [
+    {
+      "id": "P9.1",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.2",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.3",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.4",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.5",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.6",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.7",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.8",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.9",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.10",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.11",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.12",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.13",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.14",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.15",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.16",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.17",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.18",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.19",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.20",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.21",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "P9.22",
+      "status": "IMPLEMENTED"
+    }
+  ],
+  "workflowInputs": [
+    {
+      "n": 1
+    },
+    {
+      "n": 2
+    },
+    {
+      "n": 3
+    },
+    {
+      "n": 10
+    },
+    {
+      "n": 99
+    }
+  ],
+  "transform": "n+100",
+  "expect": {
+    "gateCount": 12,
+    "milestoneCount": 22,
+    "mainHeadAtDraft": "827216e07537c53e4f74866a93cfec9fbca0b222",
+    "stackPrs": [
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      184,
+      191,
+      194,
+      196,
+      198,
+      200,
+      201,
+      203,
+      204,
+      205
+    ]
+  }
+}

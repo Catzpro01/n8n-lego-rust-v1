@@ -1,0 +1,292 @@
+{
+  "workflow": {
+    "nodes": [
+      {
+        "id": "Start",
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "Set",
+        "name": "Set",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "End",
+        "name": "End",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Set",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set": {
+        "main": [
+          [
+            {
+              "node": "End",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "runData": {
+    "Start": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 0,
+        "source": [],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "id": 0,
+                  "name": "x"
+                }
+              },
+              {
+                "json": {
+                  "id": 1,
+                  "name": "y"
+                }
+              },
+              {
+                "json": {
+                  "id": 2,
+                  "name": "z"
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "Set": [
+      {
+        "startTime": 0,
+        "executionTime": 0,
+        "executionIndex": 1,
+        "source": [
+          {
+            "previousNode": "Start"
+          }
+        ],
+        "data": {
+          "main": [
+            [
+              {
+                "json": {
+                  "a": 10
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "a": 20
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              },
+              {
+                "json": {
+                  "a": 30
+                },
+                "pairedItem": {
+                  "item": 2
+                }
+              }
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "activeNodeName": "End",
+  "connectionInputData": [
+    {
+      "json": {
+        "a": 10
+      },
+      "pairedItem": {
+        "item": 0
+      }
+    },
+    {
+      "json": {
+        "a": 20
+      },
+      "pairedItem": {
+        "item": 1
+      }
+    },
+    {
+      "json": {
+        "a": 30
+      },
+      "pairedItem": {
+        "item": 2
+      }
+    }
+  ],
+  "executeData": {
+    "data": {
+      "main": [
+        [
+          {
+            "json": {
+              "a": 10
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          },
+          {
+            "json": {
+              "a": 20
+            },
+            "pairedItem": {
+              "item": 1
+            }
+          },
+          {
+            "json": {
+              "a": 30
+            },
+            "pairedItem": {
+              "item": 2
+            }
+          }
+        ]
+      ]
+    },
+    "source": {
+      "main": [
+        {
+          "previousNode": "Set",
+          "previousNodeOutput": 0,
+          "previousNodeRun": 0
+        }
+      ]
+    }
+  },
+  "description": "Expression.getParameterValue walks nested objects/arrays; only string leaves starting with '=' are evaluated; siblings/static values pass through untouched; returnObjectAsString formats objects; $parameter reads sibling parameters.",
+  "probes": [
+    {
+      "name": "nested parameter object",
+      "value": {
+        "value": "={{ $json.a }}",
+        "nested": {
+          "deep": "={{ $json.a * 2 }}",
+          "static": "text"
+        },
+        "list": [
+          "={{ $json.a }}",
+          "plain",
+          7
+        ],
+        "num": 5,
+        "bool": true,
+        "nul": null
+      }
+    },
+    {
+      "name": "array of objects",
+      "value": [
+        {
+          "k": "={{ $itemIndex }}"
+        },
+        {
+          "k": "={{ $json.a }}"
+        }
+      ],
+      "itemIndex": 1
+    },
+    {
+      "name": "resource locator object",
+      "value": {
+        "__rl": true,
+        "mode": "id",
+        "value": "={{ $json.a }}"
+      }
+    },
+    {
+      "name": "leading '=' with no braces -> empty string",
+      "value": "="
+    },
+    {
+      "name": "'=' followed by literal text",
+      "value": "=just text"
+    },
+    {
+      "name": "escaped-looking braces are literal",
+      "value": "=a {{ '{{' }} b"
+    },
+    {
+      "name": "$parameter of active node (End has none)",
+      "value": "={{ $parameter }}"
+    },
+    {
+      "name": "$('Set').params",
+      "value": "={{ $('Set').params }}"
+    },
+    {
+      "name": "$now is DateTime",
+      "value": "={{ $now.constructor.name }}"
+    },
+    {
+      "name": "$now.toFormat",
+      "value": "={{ typeof $now.toFormat('yyyy') }}"
+    },
+    {
+      "name": "extension method .toUpperCase() on node data",
+      "value": "={{ $('Start').item.json.name.toUpperCase() }}"
+    },
+    {
+      "name": "n8n extension .isEmpty()",
+      "value": "={{ $json.a.isEmpty() }}"
+    },
+    {
+      "name": "$workflow",
+      "value": "={{ $workflow }}"
+    },
+    {
+      "name": "$runIndex / $mode / $nodeVersion / $nodeId",
+      "value": "={{ [$runIndex, $mode, $nodeVersion, $nodeId] }}"
+    }
+  ]
+}

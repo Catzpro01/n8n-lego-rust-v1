@@ -1,0 +1,63 @@
+{
+  "modes": ["OFF", "HEAD", "TAIL", "ERROR_PRIORITY", "LATENCY_PRIORITY", "ADAPTIVE"],
+  "modeMatrix": [
+    { "mode": "OFF", "success": "keep", "error": "keep", "slow": "keep", "reason": "mode_off" },
+    { "mode": "HEAD", "success": "keep|drop", "error": "keep|drop", "slow": "keep|drop", "reason": "head_hash" },
+    { "mode": "TAIL", "success": "keep|drop", "error": "keep", "slow": "keep", "reason": "tail_summary|tail_error|tail_latency" },
+    { "mode": "ERROR_PRIORITY", "success": "keep|drop", "error": "keep", "slow": "keep|drop", "reason": "error_priority" },
+    { "mode": "LATENCY_PRIORITY", "success": "keep|drop", "error": "keep|drop", "slow": "keep", "reason": "latency_priority" },
+    { "mode": "ADAPTIVE", "success": "keep|drop", "error": "keep", "slow": "keep|drop", "reason": "adaptive_rate|error_priority" }
+  ],
+  "determinism": {
+    "seed": 42,
+    "keys": ["exec-1", "exec-2", "exec-3", "exec-4", "exec-5"],
+    "note": "same seed+policy → identical keep/drop sequence across two samplers"
+  },
+  "adaptiveTransition": {
+    "config": {
+      "mode": "ADAPTIVE",
+      "seed": 7,
+      "baselineRate": 0.1,
+      "minRate": 0.05,
+      "maxRate": 1,
+      "upStep": 0.3,
+      "downStep": 0.1,
+      "cooldownDecisions": 4
+    },
+    "expect": {
+      "afterErrorRaise": true,
+      "afterCooldownDecay": true,
+      "staysWithinBounds": true
+    }
+  },
+  "hysteresis": {
+    "config": {
+      "mode": "ADAPTIVE",
+      "seed": 7,
+      "baselineRate": 0.2,
+      "minRate": 0.1,
+      "maxRate": 0.8,
+      "upStep": 0.2,
+      "downStep": 0.1,
+      "cooldownDecisions": 5
+    },
+    "healthyBurstBeforeDecay": 4,
+    "note": "rate must NOT drop until cooldownDecisions healthy decisions after a raise"
+  },
+  "overloadFallback": {
+    "config": { "mode": "TAIL", "seed": 9, "rate": 0.5, "slowMs": 100, "maxInFlight": 4 },
+    "beginCount": 10,
+    "expectPeakInFlight": 4,
+    "expectFallbacks": 6
+  },
+  "tailMemoryBound": {
+    "config": { "mode": "TAIL", "seed": 3, "rate": 1, "slowMs": 50, "maxInFlight": 8 },
+    "openWithoutEnd": 32,
+    "expectInFlight": 8
+  },
+  "representative": {
+    "success": { "key": "ok-1", "outcome": "success", "durationMs": 12 },
+    "error": { "key": "err-1", "outcome": "error", "durationMs": 5 },
+    "slow": { "key": "slow-1", "outcome": "success", "durationMs": 2500 }
+  }
+}

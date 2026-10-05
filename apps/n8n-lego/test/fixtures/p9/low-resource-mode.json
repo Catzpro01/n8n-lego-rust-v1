@@ -1,0 +1,123 @@
+{
+  "description": "P9.17 low-resource mode fixtures \u2014 auto enter/exit, cooldown, degrade order, budgets, A/B workflow correctness.",
+  "controller": {
+    "byteBudget": 4096,
+    "cpuBudgetPct": 50,
+    "enterThresholdPct": 80,
+    "exitThresholdPct": 50,
+    "cooldownMs": 5000,
+    "mode": "NORMAL"
+  },
+  "hysteresis": {
+    "enterAt": 80,
+    "belowEnterStillNormal": 79,
+    "exitAt": 50,
+    "aboveExitStillLow": 51,
+    "samples": [
+      {
+        "now": 0,
+        "memoryUsedBytes": 100,
+        "cpuUsedPct": 10
+      },
+      {
+        "now": 100,
+        "memoryUsedBytes": 3277,
+        "cpuUsedPct": 10
+      },
+      {
+        "now": 200,
+        "memoryUsedBytes": 3200,
+        "cpuUsedPct": 10
+      },
+      {
+        "now": 8000,
+        "memoryUsedBytes": 100,
+        "cpuUsedPct": 5
+      }
+    ]
+  },
+  "degradeOrderExpect": [
+    "debug",
+    "verbose",
+    "sampled_metrics",
+    "traces",
+    "logs",
+    "diagnostics",
+    "audit_security"
+  ],
+  "memoryPressure": [
+    {
+      "label": "low",
+      "memoryUsedBytes": 1024,
+      "expectMode": "NORMAL"
+    },
+    {
+      "label": "critical",
+      "memoryUsedBytes": 4000,
+      "expectMode": "LOW_RESOURCE"
+    }
+  ],
+  "cpuPressure": [
+    {
+      "label": "ok",
+      "cpuUsedPct": 10,
+      "expectMode": "NORMAL"
+    },
+    {
+      "label": "spike",
+      "cpuUsedPct": 95,
+      "expectMode": "LOW_RESOURCE"
+    }
+  ],
+  "records": {
+    "debug": {
+      "id": "d1",
+      "channel": "debug",
+      "bytes": 10
+    },
+    "log": {
+      "id": "l1",
+      "channel": "logs",
+      "bytes": 20
+    },
+    "diag": {
+      "id": "g1",
+      "channel": "diagnostics",
+      "bytes": 30
+    },
+    "audit": {
+      "id": "a1",
+      "channel": "audit_security",
+      "bytes": 100,
+      "priority": "P0"
+    },
+    "sec": {
+      "id": "s1",
+      "channel": "audit_security",
+      "bytes": 100,
+      "priority": "P0"
+    }
+  },
+  "workflowAb": {
+    "inputs": [
+      {
+        "n": 1
+      },
+      {
+        "n": 2
+      },
+      {
+        "n": 3
+      }
+    ],
+    "transform": "sum-n"
+  },
+  "expect": {
+    "enterReason": "pressure-enter",
+    "recoverReason": "pressure-recover",
+    "cooldownReason": "cooldown",
+    "shedOutcome": "shed",
+    "protectedOutcome": "protected",
+    "budgetShed": "budget_shed"
+  }
+}
