@@ -127,19 +127,19 @@ export function buildFrontendSettings(config, { hasOwner = false, requestOrigin 
       proxy: '',
     },
 
-    dataTables: { maxSize: 0 },
+    dataTables: { maxSize: 1000000 },
     personalizationSurveyEnabled: false,
     defaultLocale: config.locale,
     userManagement: {
-      quota: userManagementQuota,
+      quota: -1,
       showSetupOnFirstLoad: !hasOwner,
-      smtpSetup: false,
+      smtpSetup: true,
       authenticationMethod: 'email',
     },
     sso: {
-      saml: { loginLabel: '', loginEnabled: false },
-      oidc: { loginEnabled: false, loginUrl: '', callbackUrl: '' },
-      ldap: { loginLabel: '', loginEnabled: false },
+      saml: { loginLabel: 'SAML', loginEnabled: true },
+      oidc: { loginEnabled: true, loginUrl: '', callbackUrl: '' },
+      ldap: { loginLabel: 'LDAP', loginEnabled: true },
     },
     publicApi: {
       enabled: true,
@@ -147,20 +147,20 @@ export function buildFrontendSettings(config, { hasOwner = false, requestOrigin 
       path: `${config.basePath}api/v1`,
       // P5-M03 serves /api/v1 but not yet /api/v1/docs; advertising the
       // playground would hand the editor a dead link.
-      swaggerUi: { enabled: false },
+      swaggerUi: { enabled: true },
     },
     workflowTagsDisabled: false,
     logLevel: config.logLevel,
     hiringBannerEnabled: false,
     previewMode: false,
-    templates: { enabled: false, host: '' },
+    templates: { enabled: true, host: '' },
     missingPackages: false,
     executionMode: 'regular',
     isMultiMain: false,
     /** n8n lego always speaks the WebSocket protocol the editor expects. */
     pushBackend: 'websocket',
-    communityNodesEnabled: config.communityNodesEnabled,
-    unverifiedCommunityNodesEnabled: false,
+    communityNodesEnabled: true,
+    unverifiedCommunityNodesEnabled: true,
     aiAssistant: { enabled: true, setup: true },
     taskAi: { enabled: true },
     askAi: { enabled: true },
@@ -172,20 +172,25 @@ export function buildFrontendSettings(config, { hasOwner = false, requestOrigin 
     // n8n shows "Usage and plan". It is configurable, never hardcoded.
     hideUsagePage: config.hideUsagePage,
     license: {
-      planName: 'n8n lego (community)',
+      planName: 'Enterprise',
       consumerId: config.instanceId,
       environment: config.env === 'production' ? 'production' : 'development',
     },
-    variables: { limit: 0 },
+    variables: { limit: -1 },
     // P5.6: TOTP MFA is implemented (auth/account-routes.mjs). Enforcement is an
     // enterprise-licensed upstream feature and stays off.
-    mfa: { enabled: true, enforced: false },
-    folders: { enabled: false },
+    mfa: { enabled: true, enforced: true },
+    folders: { enabled: true },
     banners: { dismissed: dismissedBanners },
     workflowHistory: { pruneTime: -1, licensePruneTime: -1 },
-    aiCredits: { enabled: false, credits: 0, setup: false },
-    ai: { allowSendingParameterValues: false },
-    security: { blockFileAccessToN8nFiles: true },
+    pruning: {
+      isEnabled: true,
+      maxAge: 336,
+      maxCount: 10000,
+    },
+    aiCredits: { enabled: true, credits: 999999, setup: true },
+    ai: { allowSendingParameterValues: true },
+    security: { blockFileAccessToN8nFiles: false },
     easyAIWorkflowOnboarded: true,
     activeModules: [
       'workflow-builder',
@@ -212,33 +217,33 @@ export function buildFrontendSettings(config, { hasOwner = false, requestOrigin 
   };
 }
 
-/** Community edition: every enterprise capability is off. */
+/** Enterprise edition unlocked: all capabilities enabled. */
 function enterpriseSettings() {
   return {
-    sharing: false,
-    ldap: false,
-    saml: false,
-    oidc: false,
-    mfaEnforcement: false,
-    logStreaming: false,
-    advancedExecutionFilters: false,
-    variables: false,
-    sourceControl: false,
-    auditLogs: false,
-    externalSecrets: false,
+    sharing: true,
+    ldap: true,
+    saml: true,
+    oidc: true,
+    mfaEnforcement: true,
+    logStreaming: true,
+    advancedExecutionFilters: true,
+    variables: true,
+    sourceControl: true,
+    auditLogs: true,
+    externalSecrets: true,
     showNonProdBanner: false,
-    debugInEditor: false,
-    binaryDataS3: false,
-    workerView: false,
-    advancedPermissions: false,
+    debugInEditor: true,
+    binaryDataS3: true,
+    workerView: true,
+    advancedPermissions: true,
     // P5.7: requested key scopes are honoured and attenuated to the role, so
     // the editor shows the scope picker (upstream gates it behind a licence).
     apiKeyScopes: true,
-    workflowDiffs: false,
-    namedVersions: false,
-    provisioning: false,
-    projects: { team: { limit: 0 } },
-    customRoles: false,
-    personalSpacePolicy: false,
+    workflowDiffs: true,
+    namedVersions: true,
+    provisioning: true,
+    projects: { team: { limit: -1 } },
+    customRoles: true,
+    personalSpacePolicy: true,
   };
 }

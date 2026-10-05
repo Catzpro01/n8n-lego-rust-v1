@@ -22,6 +22,7 @@ import { createUi } from './ui.mjs';
 import { loadFrontend } from './frontend.mjs';
 import { frontendRoutes } from './frontend/routes.mjs';
 import { createPushServer } from './push.mjs';
+import { createRustPushBridge } from './push/rust-bridge.mjs';
 import { createRouter } from './compat/route.mjs';
 import { HttpError } from './compat/error.mjs';
 import { readBody, sendError, sendJson } from './compat/response.mjs';
@@ -125,7 +126,8 @@ export async function startServer({ env = process.env, mailTransport = null } = 
   const frontend = await loadFrontend({ config, logger });
   logger.info('frontend contract', frontend.describe());
   const ui = createUi({ config, logger, frontend });
-  const push = createPushServer({ config, logger });
+  const fallbackPush = createPushServer({ config, logger });
+  const push = createRustPushBridge({ config, logger, fallbackPush });
 
   /* P5-M06 (DEC-0028 rev 2, option A): password-recovery mail goes through an
    * injected MailTransport — pure values in, frozen values out, the host does

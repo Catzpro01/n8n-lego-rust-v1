@@ -1,0 +1,19 @@
+[package]
+name = "n8n-subworkflow"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "n8n subworkflow LEGO — Subworkflow context, parent-child propagation, execution, and recursion guard"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tokio = { version = "1.0", features = ["sync", "time", "macros", "rt"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full"] }

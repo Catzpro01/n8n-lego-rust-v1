@@ -10,6 +10,12 @@ members = [
     "crates/n8n-expression",
     "crates/n8n-nodes-rust",
     "crates/n8n-realtime",
+    "crates/n8n-events",
+    "crates/n8n-queue",
+    "crates/n8n-binary-data",
+    "crates/n8n-subworkflow",
+    "crates/n8n-error-recovery",
+    "crates/n8n-credentials",
 ]
 exclude = [
     "apps/n8n-rust",
