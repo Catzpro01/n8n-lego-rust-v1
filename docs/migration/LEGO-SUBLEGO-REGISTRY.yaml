@@ -425,7 +425,7 @@ legos:
         state_ownership: cron-timer-slots
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: IMPLEMENTED
+        status: TESTED
         contract_path: lego/L03-ingress/S03-schedule-event-triggers/CONTRACT.md
         ports:
           provided:
