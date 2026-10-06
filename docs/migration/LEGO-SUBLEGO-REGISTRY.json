@@ -206,7 +206,7 @@
           "state_ownership": "subworkflow-call-hierarchy",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L01-execution/S03-subworkflows/CONTRACT.md",
           "ports": {
             "provided": [

@@ -1671,4 +1671,52 @@ Report: ./report.md
 5. `python -m unittest tests/governance/test_ci_architecture_check.py`: **5/5 PASS** (Exit Code 0).
 6. `cargo test --workspace`: **All workspace tests PASS** (Exit Code 0).
 
+
+---
+
+## EXECUTION MILESTONE: L01.S03 SUB-WORKFLOWS
+
+**Timestamp**: 2026-10-07T01:57:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `aa28344a5f47fb7eb6e043a725fd91628eea8d41`  
+**Status**: **L01.S03 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L01.S03
+- **Sub-LEGO**: `L01.S03` — `Sub-workflows`
+- **Canonical Root**: `lego/L01-execution/S03-subworkflows/`
+- **Runtime Host**: `H03` (Execution Host)
+- **State Ownership Domain**: `subworkflow-call-hierarchy`
+- **Provided Ports**:
+  - `port.execution.subworkflow.invoke.v1`: Invocasi child workflow tersinkronisasi/asinkron, penegakan batas kedalaman rekursi (`max_depth`), pencegahan cyclic invocation (`call_chain` loop detection), pencatatan pohon pemanggilan dalam domain state `subworkflow-call-hierarchy`, mitigasi pembatalan induk (fail-closed parent cancellation), dan pemetaan data input (`PassThrough`, `InjectParameters`, `WrapKey`).
+- **Required Ports**:
+  - `port.execution.run.workflow.v1` (Provider: `L01.S01`)
+  - `port.runtime.budget.allocate.v1` (Provider: `L00.S03`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi port dan invarian L01.S03.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: Engine orkestrasi sub-workflow, guard rekursi kedalaman/siklus, pelacak hierarki pemanggilan autoritatif, dan dispatcher port contract.
+  - `tests/subworkflows_test.rs`: 10 unit tests (eksekusi normal, pelacakan hierarki state, mode pemetaan input, penolakan depth limit, pencegahan cyclic loop, pembatalan induk, custom transformer, error handling, dan dispatching port).
+  - `evidence/S03-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur L01.S03.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/subworkflow_port_test.rs`.
+- Menguji `InProcessAdapter` roundtrip dengan `SecurityContext` valid, batas wewenang scope keamanan (`SecurityDenied`), deteksi cyclic invocation loop (`PortErrorCode::Conflict`), serta penolakan batas kedalaman rekursi (`PortErrorCode::BadRequest`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L01.S03` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **13** (15.7%) — Bertambah 1 (`L01.S03`).
+  - **IMPLEMENTED (Debt)**: **19** (22.9%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `rustc --test lego/L01-execution/S03-subworkflows/implementation/mod.rs`: **10/10 unit tests PASS** (Exit Code 0).
+2. `cargo test -p n8n-port-contract`: **22 passed; 0 failed** (Exit Code 0).
+3. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+4. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
+5. Isolasi Fisik: **26 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
+
 Report: ./report.md
