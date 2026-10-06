@@ -888,7 +888,7 @@
           "state_ownership": "blob-filesystem-chunks",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L05-data-storage/S04-binary-data-streaming/CONTRACT.md",
           "ports": {
             "provided": [
