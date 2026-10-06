@@ -2606,7 +2606,8 @@ Report: ./report.md
 
 ### 1. Provenance Commit Pemisahan Ledger
 - **Implementation Commit SHA**: `1fec0f30b` (`feat(sublego-batch): implement and promote 8 contracted sublegos across ingress, nodes, scale, and observability with hardened CI checks 10 and 11`)
-- **Report / Evidence Commit**: Commit penyimpan laporan pemutakhiran ledger ini.
+- **Report / Evidence Commit SHA**: `c062a7ceb` (`docs(report): update ledger with 8 newly tested sublegos, hardened CI checks 10 and 11, and scoped local UI status`)
+- **REMOTE MAIN**: `c062a7ceb3fd2a6fcd1d3fe8f66fedf8e4406ab8`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi melalui `git rev-parse origin/main`.
 
 ### 2. Penguatan Mekanis CI Architecture Enforcer (Check 10 & Check 11)
@@ -2678,6 +2679,59 @@ Delapan Sub-LEGO dari 43 Sub-LEGO berstatus `CONTRACTED` telah diimplementasikan
    - Port 5677 (`apps/n8n-lego`): Status HTTP 200 OK (Menyajikan bundle Vue 3 Editor UI `n8n-editor-ui@2.9.4`).
    - Port 5678 (`apps/n8n-rust`): Status HTTP 200 OK (`{"engine":"n8n-rust","status":"ok"}`).
    - **Status UI Terverifikasi**: `LOCAL RUNTIME VERIFIED — SCOPED` (bukan full n8n compatibility certification).
+
+---
+
+## Sesi Eksekusi: Independent Adversarial Review & Sub-LEGO Defect Remediation
+
+### 1. Provenance Commit Pemisahan Ledger
+- **Implementation Commit SHA**: `546c3c890` (`fix(sublego-hardening): remediate token bucket capacity bypass, causal graph infinite loops, manifest validation, priority normalization, and harden CI checks 10 and 11`)
+- **Prior Implementation Commit SHA**: `1fec0f30b` (`feat(sublego-batch): implement and promote 8 contracted sublegos across ingress, nodes, scale, and observability with hardened CI checks 10 and 11`)
+- **Prior Evidence Commit SHA**: `c062a7ceb` (`docs(report): update ledger with 8 newly tested sublegos, hardened CI checks 10 and 11, and scoped local UI status`)
+- **Report / Evidence Commit SHA**: Pending atomic push commit
+- **REMOTE MAIN**: Diverifikasi dan disinkronisasi melalui `git rev-parse origin/main`
+
+### 2. Temuan Audit Adversarial & Remediasi Defek Nyata
+1. **Defek L03.S04 (Admission & Backpressure)**:
+   - *Input*: `cost > max_capacity` (misal `cost=500` saat `capacity=100`).
+   - *Expected*: Penolakan langsung fail-closed dengan error `InvalidPayload`.
+   - *Actual*: Menghitung `retry_after_sec` dan mengembalikan `RateLimited`, menyebabkan pemanggil terjebak dalam perulangan tak berujung karena kapasitas bucket tidak akan pernah mencukupi permintaan tersebut.
+   - *Fix*: Menambahkan validasi `if cost > cfg.max_capacity` dan unit test `test_cost_exceeding_capacity_rejected`.
+2. **Defek L06.S05 (Replay & Causal Diagnostics)**:
+   - *Input*: Trace dengan relasi siklus kausalitas parent-child (`span-a` -> `span-b` -> `span-a`).
+   - *Expected*: Deteksi siklus dan terminasi aman traversal jalur akar penyebab (*root cause path*).
+   - *Actual*: `while let Some(sid) = current_id` mengalami infinite loop / thread freeze.
+   - *Fix*: Menambahkan `HashSet` pelacak `visited` untuk memutus perulangan tak terhingga dan unit test `test_causal_root_cause_path_breaks_cycles`.
+3. **Defek L04.S05 (Community Custom Nodes)**:
+   - *Input*: `package_name` dengan path traversal (`../../evil`) atau `manifest_json` malformed.
+   - *Expected*: Penolakan paket tidak valid dengan `CustomNodeError::InvalidPayload`.
+   - *Actual*: Diterima mentah-mentah ke dalam ledger tarball tanpa sanitasi atau parsing JSON.
+   - *Fix*: Menambahkan pemeriksaan path traversal dan validasi sintaks JSON manifest melalui `serde_json::from_str`, beserta unit test pembuktian.
+4. **Defek L06.S03 (Node/Worker Diagnostics)**:
+   - *Input*: Port payload action `"query"` dengan opsi `min_level`.
+   - *Expected*: Mengembalikan event diagnostik terfilter berdasarkan `min_level`.
+   - *Actual*: Parameter `min_level` diabaikan (`self.query(source, None, limit)`).
+   - *Fix*: Membaca dan memetakan parameter `min_level`/`level` pada handler port query beserta unit test `test_port_handler_diagnostics_query_with_min_level`.
+5. **Defek L07.S02 (Burst Admission & Degradation)**:
+   - *Input*: `task_priority` dengan spasi atau huruf kapital (misal `" BACKGROUND "`, `"Telemetry"`).
+   - *Expected*: Dikenali sebagai background task dan di-throttle pada tier `ShedBackground`.
+   - *Actual*: Gagal matching karena perbandingan string raw sensitif terhadap case, lolos sebagai `Admitted`.
+   - *Fix*: Menambahkan normalisasi string `.trim().to_lowercase()` dan unit test `test_casing_and_whitespace_priority_normalized`.
+6. **Defek L07.S01 (Scheduler Intelligence)**:
+   - *Input*: `select_and_dispatch` dengan `required_slots = 0`.
+   - *Expected*: Penolakan permintaan tidak valid.
+   - *Actual*: Mengabaikan batas validasi slot.
+   - *Fix*: Menambahkan validasi `required_slots > 0` dan unit test `test_dispatch_zero_slots_rejected`.
+7. **Penguatan Mekanis Check 10 & Check 11**:
+   - Check 10: Ditambahkan penegakan mekanis keberadaan direktori `tests/` dengan file test non-kosong (> 0 bytes) untuk seluruh Sub-LEGO `TESTED`, serta penegakan tahap `IMPLEMENTED`.
+   - Check 11: Penegakan fail-closed keberadaan sitasi `REMOTE MAIN` yang valid, penolakan jika sitasi hilang atau divergen, serta penambahan unit test negatif di `tests/governance/test_ci_architecture_check.py` (total 23 unit test governance lulus 100%).
+
+### 3. Rekapitulasi Verifikasi Akhir
+- `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
+- `python -m unittest discover tests/governance`: 23/23 tests PASS (Exit code 0).
+- `cargo test -p n8n-port-contract`: 70/70 tests PASS (Exit code 0).
+- `cargo test --workspace`: Seluruh workspace tests PASS (Exit code 0).
+- UI Web Inspection: Port 5677 (Lego UI Vue 3) HTTP 200 OK, Port 5678 (Axum DAG Engine) HTTP 200 OK (`LOCAL RUNTIME VERIFIED — SCOPED`).
 
 Report: ./report.md
 
