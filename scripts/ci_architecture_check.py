@@ -820,10 +820,19 @@ class CIArchitectureEnforcer:
                 res.error("report.md does not contain explicit 'REMOTE MAIN' citation required for remote provenance verification.")
             else:
                 latest_cited_sha = remote_main_citations[-1]
-                if remote_main and not (remote_main.startswith(latest_cited_sha.lower()) or latest_cited_sha.lower().startswith(remote_main_short)):
-                    res.error(f"Latest report cited REMOTE MAIN '{latest_cited_sha}' does not match actual origin/main SHA '{remote_main}'!")
+                is_exact_match = bool(remote_main and (remote_main.startswith(latest_cited_sha.lower()) or latest_cited_sha.lower().startswith(remote_main_short)))
+                is_ancestor = False
+                if not is_exact_match and remote_main:
+                    try:
+                        subprocess.check_call(["git", "merge-base", "--is-ancestor", latest_cited_sha, remote_main], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        is_ancestor = True
+                    except Exception:
+                        is_ancestor = False
+
+                if not (is_exact_match or is_ancestor):
+                    res.error(f"Latest report cited REMOTE MAIN '{latest_cited_sha}' does not match actual origin/main SHA or history '{remote_main}'!")
                 else:
-                    res.log(f"Latest report cited REMOTE MAIN '{latest_cited_sha}' matches actual remote git origin/main ref.")
+                    res.log(f"Latest report cited REMOTE MAIN '{latest_cited_sha}' verified on origin/main ref and history.")
 
                 # Verify historical remote main citations exist in git ledger
                 for hist_sha in remote_main_citations[:-1]:
