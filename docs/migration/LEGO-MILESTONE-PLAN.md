@@ -576,7 +576,76 @@ This is the mechanism that keeps upgrade and scaling independent from the milest
 
 ---
 
-## 4. Milestone rules
+## 4. Non-Negotiable Quality Floor
+
+The delivery program has a permanent quality floor. Antigravity, sub-agents, contributors, and automation must not lower, bypass, reinterpret, or silently weaken this floor to obtain a green stage or milestone.
+
+### Absolute rules
+
+1. **No silent downgrade**
+   - No fallback from strict durability to in-memory durability.
+   - No fallback from Rust execution to reconstructed JavaScript when Rust is required.
+   - No fallback from a stronger security policy to a weaker policy.
+   - No reduction of compatibility semantics merely to pass tests.
+
+2. **No false certification**
+   - DESIGNED, CONTRACTED, IMPLEMENTED, TESTED, and CERTIFIED are different states.
+   - A stage or Sub-LEGO may only use the highest state for which executable evidence exists.
+   - Test-green alone never implies CERTIFIED.
+   - Architecture documentation alone never implies IMPLEMENTED.
+
+3. **No scope substitution**
+   - A placeholder contract does not satisfy a concrete dependency.
+   - A registry entry does not satisfy physical implementation.
+   - A mock adapter does not satisfy a production adapter unless the acceptance criteria explicitly require a mock.
+   - A compatibility harness does not equal full upstream node compatibility.
+
+4. **No architecture weakening**
+   - Do not convert Sub-LEGOs into mandatory microservices.
+   - Do not make HTTP the default internal transport.
+   - Do not bypass Port Contracts through direct private imports.
+   - Do not introduce global/god modules to avoid physical ownership migration.
+
+5. **No security negotiation**
+   - Default-deny remains default-deny.
+   - Tenant binding, principal identity, authorization, SecretRef, audience, expiry, and audit requirements cannot be disabled to unblock delivery.
+   - Security negative tests are mandatory where the boundary applies.
+
+6. **No durability negotiation**
+   - Production IPC execution must fail closed when durable WAL is unavailable.
+   - WAL initialization or directory failure must terminate that execution path with an explicit error.
+   - A green test suite cannot justify a downgrade to in-memory journaling.
+
+7. **No performance shortcut that changes semantics**
+   - Optimization may not change execution ordering, branching, retries, error behavior, data lineage, pairedItem semantics, or side-effect guarantees.
+   - Large data must use bounded/streaming mechanisms where required.
+
+8. **No unverified claim**
+   Every completion report must separate:
+   - DESIGNED
+   - CONTRACTED
+   - IMPLEMENTED
+   - TESTED
+   - CERTIFIED
+
+### Certification consistency rule
+
+If a report says a LEGO architecture milestone is CERTIFIED while any required acceptance criterion remains unimplemented, contracted-only, designed-only, physically unmigrated, or untested, the certification is invalid and must be downgraded to the highest defensible state.
+
+Example:
+
+83 Sub-LEGOs:
+- 31 IMPLEMENTED & TESTED
+- 44 CONTRACTED
+- 8 DESIGNED
+
+cannot be reported as "83 Sub-LEGOs fully CERTIFIED". The correct statement is that the architecture definition/registry may be certified while implementation coverage remains partial.
+
+### Quality floor override
+
+When schedule, token budget, agent capacity, or implementation difficulty conflicts with the quality floor, preserve the quality floor and report the remaining debt. Do not weaken acceptance criteria.
+
+## 5. Milestone rules
 
 ### LEGO completion
 
@@ -633,7 +702,7 @@ Do not create planning items named as "slice".
 
 ---
 
-## 4. Recommended GitHub representation
+## 6. Recommended GitHub representation
 
 GitHub Milestone is the **LEGO** level:
 
