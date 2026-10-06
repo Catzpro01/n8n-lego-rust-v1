@@ -2600,6 +2600,88 @@ Sesi adversarial review independen menguji dan membedah kelima Sub-LEGO yang bar
 
 Report: ./report.md
 
+---
+
+## Sesi Eksekusi: Remediasi CI Check 10 & 11 dan Maraton Implementasi 8 Sub-LEGO CONTRACTED
+
+### 1. Provenance Commit Pemisahan Ledger
+- **Implementation Commit SHA**: `1fec0f30b` (`feat(sublego-batch): implement and promote 8 contracted sublegos across ingress, nodes, scale, and observability with hardened CI checks 10 and 11`)
+- **Report / Evidence Commit**: Commit penyimpan laporan pemutakhiran ledger ini.
+- **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi melalui `git rev-parse origin/main`.
+
+### 2. Penguatan Mekanis CI Architecture Enforcer (Check 10 & Check 11)
+1. **Check 10 (Status Transition Lifecycle & Evidence-to-Claim Verification)**:
+   - Diperketat secara mekanis: Setiap Sub-LEGO bertatus `TESTED` wajib memiliki:
+     * `implementation/` dengan file sumber Rust `mod.rs` non-kosong (> 0 bytes).
+     * `evidence/` dengan file `*-EVIDENCE.md` yang bukan stub (> 200 bytes).
+     * `CONTRACT.md` non-stub (>= 100 bytes) dan `ports/` non-kosong.
+   - Menambahkan unit testing negatif di `tests/governance/test_ci_architecture_check.py` yang membuktikan kegagalan otomatis jika file implementasi hilang atau evidence berupa stub.
+2. **Check 11 (Remote Provenance & Git Ledger Integrity Check)**:
+   - Memvalidasi remote provenance sejati dengan membandingkan `git rev-parse origin/main` terhadap `git rev-parse HEAD`.
+   - Mengkategorisasikan komit lokal secara mekanis menjadi *Implementation Commits* vs *Report/Evidence Commits*.
+   - Memverifikasi klaim `REMOTE MAIN` secara fail-closed terhadap commit remote sesungguhnya.
+
+### 3. Implementasi 8 Sub-LEGO Batch Maraton (CONTRACTED -> TESTED)
+Delapan Sub-LEGO dari 43 Sub-LEGO berstatus `CONTRACTED` telah diimplementasikan secara menyeluruh dengan struktur isolasi fisik, typed ports, unit tests, integration tests, dan evidence ledgers:
+1. **L03.S04 — Admission and backpressure** (`lego/L03-ingress/S04-admission-backpressure`):
+   - State ownership: `rate-limit-buckets`.
+   - Logika: Token bucket rate limiting, per-tenant/IP bucket configuration, concurrency ceiling, dan load-shedding backpressure saat inflight saturasi.
+   - Port: `port.ingress.admission.filter.v1`.
+2. **L04.S02 — Trust/quarantine/runtime locality** (`lego/L04-node-ecosystem/S02-trust-quarantine-locality`):
+   - State ownership: `node-trust-tiers`.
+   - Logika: Evaluasi tingkat kepercayaan node (`CoreVerified`, `VerifiedCommunity`, `UnverifiedCommunity`, `Quarantined`) dan penegakan lokalitas runtime (`InProcess`, `WorkerPool`, `SandboxedWorker`, `Blocked`).
+   - Port: `port.node.trust.evaluate.v1`.
+3. **L04.S05 — Community/private/custom node compatibility** (`lego/L04-node-ecosystem/S05-community-custom-nodes`):
+   - State ownership: `custom-node-tarballs`.
+   - Logika: Manajemen paket node kustom, ekstraksi manifest, verifikasi integritas checksum SHA-256 tarball fail-closed, dan kontrol aktivasi/disable administratif.
+   - Port: `port.node.custom.load.v1`.
+4. **L04.S06 — Code/polyglot runtime contracts** (`lego/L04-node-ecosystem/S06-code-polyglot-runtime`):
+   - State ownership: `polyglot-isolated-sandbox`.
+   - Logika: Eksekusi multi-bahasa terisolasi (JavaScript V8 isolate, Python sub-interpreter), alokasi budget memori & timeout, dan pencegahan instruksi host escape.
+   - Port: `port.node.polyglot.execute.v1`.
+5. **L07.S01 — Scheduler/resource intelligence** (`lego/L07-scale-worker-fabric/S01-scheduler-resource-intelligence`):
+   - State ownership: `worker-capacity-table`.
+   - Logika: Pelacakan kapasitas slot pekerja, pelaporan heartbeat CPU/RAM berkala, algoritma load balancing cerdas berdasar sisa kapasitas, dan deteksi kehabisan kapasitas pool pekerja.
+   - Port: `port.scale.scheduler.dispatch.v1`.
+6. **L07.S02 — Burst admission and graceful degradation** (`lego/L07-scale-worker-fabric/S02-burst-admission-degradation`):
+   - State ownership: `degradation-thresholds`.
+   - Logika: Metrik tekanan sistem hierarkis (CPU, memori, queue depth) dengan degradasi bertingkat (`Nominal` -> `ShedBackground` -> `CriticalShedding` -> `EmergencyLockdown`) dan prioritas proteksi alur kerja kritikal.
+   - Port: `port.scale.admission.throttle.v1`.
+7. **L06.S03 — Node/plugin/worker diagnostics** (`lego/L06-realtime-observability/S03-node-worker-diagnostics`):
+   - State ownership: `diagnostics-ring-buffer`.
+   - Logika: Ring buffer circular bounded untuk log diagnostik terstruktur dan trace kesalahan pekerja tanpa risiko kebocoran memori / OOM.
+   - Port: `port.observability.diagnostics.capture.v1`.
+8. **L06.S05 — Replay and causal diagnostics** (`lego/L06-realtime-observability/S05-replay-causal-diagnostics`):
+   - State ownership: `causal-trace-index`.
+   - Logika: Pengindeksan grafik rentang jejak (trace spans), rekonstruksi pohon relasi kausal parent-child, dan analisis jalur akar penyebab kegagalan (*root-cause path*).
+   - Port: `port.observability.replay.trace.v1`.
+
+### 4. Status Registry Sub-LEGO Monorepo Terkini
+- **TOTAL**: **83 Sub-LEGO** (100.0%)
+- **CERTIFIED**: **0** (0.0%) — Sesuai Section 2 Master Contract, nol sertifikasi mandiri dipertahankan.
+- **TESTED**: **40** (48.2%) — Bertambah 8 Sub-LEGO terverifikasi implementasi & bukti fisiknya.
+- **IMPLEMENTED (Debt)**: **0** (0.0%) — Utang implementasi nol.
+- **CONTRACTED**: **35** (42.2%) — Berkurang dari 43.
+- **DESIGNED**: **8** (9.6%) — L11 Future Platform.
+
+### 5. Rekapitulasi Verifikasi Pengujian
+1. **Port Contract Integration Suite** (`cargo test -p n8n-port-contract`):
+   - **70/70 tests PASS** (Exit Code 0), bertambah 12 test baru untuk ke-8 Sub-LEGO baru.
+2. **Monorepo Workspace Cargo Tests** (`cargo test --workspace`):
+   - Seluruh test suite rust lulus tanpa error (Exit Code 0).
+3. **CI Architecture Enforcer** (`python scripts/ci_architecture_check.py`):
+   - **11/11 checks PASS** (Exit Code 0).
+   - Isolasi Fisik: 80 file sumber di `lego/` dipindai, 0 private cross-Sub-LEGO imports (100% isolated).
+4. **Governance Unit Tests** (`python -m unittest discover tests/governance`):
+   - **20/20 tests PASS** (Exit Code 0), bertambah 2 test negatif untuk verifikasi mekanis Check 10 & 11.
+5. **Verifikasi UI Runtime (WebClaw Inspection)**:
+   - Port 5677 (`apps/n8n-lego`): Status HTTP 200 OK (Menyajikan bundle Vue 3 Editor UI `n8n-editor-ui@2.9.4`).
+   - Port 5678 (`apps/n8n-rust`): Status HTTP 200 OK (`{"engine":"n8n-rust","status":"ok"}`).
+   - **Status UI Terverifikasi**: `LOCAL RUNTIME VERIFIED — SCOPED` (bukan full n8n compatibility certification).
+
+Report: ./report.md
+
+
 
 
 
