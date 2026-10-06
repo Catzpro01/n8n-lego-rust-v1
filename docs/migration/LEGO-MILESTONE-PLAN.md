@@ -13,11 +13,12 @@ LEGO
 Definitions:
 
 - **LEGO** = a product/platform capability that can be independently declared as a milestone.
-- **Sub-LEGO** = a coherent capability inside one LEGO. It has its own acceptance criteria and can be implemented/tested independently.
-- **Work Item** = the concrete implementation, test, migration, documentation, or evidence unit.
+- **Sub-LEGO** = a coherent capability inside one LEGO. It is both a functional boundary **and a physical file boundary** with one canonical implementation root.
+- **Work Item** = the concrete implementation, test, migration, documentation, or evidence unit owned by exactly one primary Sub-LEGO.
 - **Slice is not a planning primitive** for this repository. Do not create roadmap structure around "slice", "vertical slice", or equivalent terminology.
 
-GitHub milestone names should use the LEGO level. Sub-LEGO identity is carried by a stable identifier in issue titles/labels/documentation.
+GitHub milestone names should use the LEGO level. Sub-LEGO identity is carried by a stable identifier in issue titles/labels/documentation and by a canonical filesystem path.
+
 
 Recommended identifiers:
 
@@ -37,6 +38,32 @@ L11  LEGO Future Platform
 ```
 
 Sub-LEGO identifiers use `Lxx.Syy`.
+
+Each Sub-LEGO must have exactly one canonical physical root:
+
+```
+lego/<LEGO-ID>-<lego-slug>/S<YY>-<sublego-slug>/
+```
+
+Example:
+
+```
+lego/L01-execution/S04-checkpoint-recovery/
+├── README.md
+├── CONTRACT.md
+├── src/
+├── tests/
+└── evidence/
+```
+
+Rules:
+- implementation files belong to one Sub-LEGO only;
+- tests for the capability live with that Sub-LEGO;
+- public contracts may be consumed by other Sub-LEGOs only through an explicit exported contract;
+- another Sub-LEGO may not import or mutate an `internal/` implementation path;
+- no shared "god module" may contain behavior owned by multiple Sub-LEGOs;
+- cross-Sub-LEGO dependencies must point to contracts, never to internal implementation files;
+- a Sub-LEGO cannot be marked DONE while its capability is still physically mixed into another Sub-LEGO's implementation files.
 
 ---
 
@@ -347,6 +374,21 @@ A Sub-LEGO is **DONE** only when its acceptance criteria are executable and inde
 
 A Sub-LEGO may span multiple pull requests, but the milestone hierarchy must remain stable.
 
+### Physical isolation rule
+
+The canonical ownership unit is the **Sub-LEGO directory**, not an issue, branch, or slice.
+
+A source file must have one owner only. When a file starts serving two Sub-LEGOs, split the file and move the shared behavior behind an explicit contract.
+
+The current repository may temporarily contain legacy mixed files during migration. Those files are treated as **legacy debt**, not compliant Sub-LEGO implementation.
+
+CI should eventually enforce:
+- path ownership;
+- no direct imports from another Sub-LEGO `internal/`;
+- no cyclic Sub-LEGO dependency graph;
+- test/evidence presence per Sub-LEGO;
+- exactly one primary `sublego:Lxx.Syy` label on every migration issue/PR.
+
 ### Work-item rule
 
 Issues and PRs should reference exactly one primary Sub-LEGO:
@@ -417,7 +459,24 @@ L11 Future Platform
 
 The arrows describe dependency/readiness, not implementation exclusivity. Work may proceed in parallel when its Sub-LEGO dependencies are already satisfied.
 
-## 6. What changes from the previous plan
+## 6. Physical migration rule
+
+Reorganization must proceed without creating another cross-cutting shared layer.
+
+For each Sub-LEGO:
+1. create its canonical root;
+2. define `CONTRACT.md`;
+3. move or create implementation under that root;
+4. move tests beside the implementation;
+5. expose only the minimum public contract;
+6. replace direct internal imports with contract calls;
+7. add boundary/dependency tests;
+8. record any temporary legacy files in the migration evidence;
+9. remove the legacy mixed implementation once consumers are migrated.
+
+The target end state is a repository where capability ownership can be answered from the file path alone.
+
+## 7. What changes from the previous plan
 
 The previous "track/slice" language is retired.
 
