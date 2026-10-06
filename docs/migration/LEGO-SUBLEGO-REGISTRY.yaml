@@ -1,7 +1,3 @@
-# Machine-readable Sub-LEGO ownership, execution model and runtime placement registry
-# Port contracts are authoritative in each Sub-LEGO CONTRACT.md.
-# runtime_host is a hosting recommendation, not a process-per-sublego requirement.
-
 version: 1
 planning_model: lego-sublego-work-item
 path_root: lego
@@ -25,7 +21,7 @@ legos:
         contract_path: lego/L00-foundation/S01-runtime-contracts/CONTRACT.md
         ports:
           provided: [L00.S01.provided.v1]
-          required: []
+          required: [L00.S01.required.v1]
           transport: contract-defined
       S02: { name: Runtime registry, path: lego/L00-foundation/S02-runtime-registry }
         execution_model: in-process
@@ -33,7 +29,7 @@ legos:
         contract_path: lego/L00-foundation/S02-runtime-registry/CONTRACT.md
         ports:
           provided: [L00.S02.provided.v1]
-          required: []
+          required: [L00.S02.required.v1]
           transport: contract-defined
       S03: { name: Policy and resource budgets, path: lego/L00-foundation/S03-policy-resource-budgets }
         execution_model: in-process
@@ -41,7 +37,7 @@ legos:
         contract_path: lego/L00-foundation/S03-policy-resource-budgets/CONTRACT.md
         ports:
           provided: [L00.S03.provided.v1]
-          required: []
+          required: [L00.S03.required.v1]
           transport: contract-defined
       S04: { name: Health and lifecycle, path: lego/L00-foundation/S04-health-lifecycle }
         execution_model: in-process
@@ -49,7 +45,7 @@ legos:
         contract_path: lego/L00-foundation/S04-health-lifecycle/CONTRACT.md
         ports:
           provided: [L00.S04.provided.v1]
-          required: []
+          required: [L00.S04.required.v1]
           transport: contract-defined
 
   L01:
@@ -62,7 +58,7 @@ legos:
         contract_path: lego/L01-execution/S01-execution-semantics/CONTRACT.md
         ports:
           provided: [L01.S01.provided.v1]
-          required: []
+          required: [L01.S01.required.v1]
           transport: contract-defined
       S02: { name: Wait and resume, path: lego/L01-execution/S02-wait-resume }
         execution_model: stateful-component
@@ -70,7 +66,7 @@ legos:
         contract_path: lego/L01-execution/S02-wait-resume/CONTRACT.md
         ports:
           provided: [L01.S02.provided.v1]
-          required: []
+          required: [L01.S02.required.v1]
           transport: contract-defined
       S03: { name: Sub-workflows, path: lego/L01-execution/S03-subworkflows }
         execution_model: in-process
@@ -78,7 +74,7 @@ legos:
         contract_path: lego/L01-execution/S03-subworkflows/CONTRACT.md
         ports:
           provided: [L01.S03.provided.v1]
-          required: []
+          required: [L01.S03.required.v1]
           transport: contract-defined
       S04: { name: Checkpoint and crash recovery, path: lego/L01-execution/S04-checkpoint-recovery }
         execution_model: stateful-component
@@ -86,7 +82,7 @@ legos:
         contract_path: lego/L01-execution/S04-checkpoint-recovery/CONTRACT.md
         ports:
           provided: [L01.S04.provided.v1]
-          required: []
+          required: [L01.S04.required.v1]
           transport: contract-defined
       S05: { name: Unlimited/lazy workflow graph, path: lego/L01-execution/S05-unlimited-lazy-graph }
         execution_model: in-process
@@ -94,7 +90,7 @@ legos:
         contract_path: lego/L01-execution/S05-unlimited-lazy-graph/CONTRACT.md
         ports:
           provided: [L01.S05.provided.v1]
-          required: []
+          required: [L01.S05.required.v1]
           transport: contract-defined
       S06: { name: Compatibility oracle, path: lego/L01-execution/S06-compatibility-oracle }
         execution_model: tooling
@@ -102,7 +98,7 @@ legos:
         contract_path: lego/L01-execution/S06-compatibility-oracle/CONTRACT.md
         ports:
           provided: [L01.S06.provided.v1]
-          required: []
+          required: [L01.S06.required.v1]
           transport: contract-defined
 
   L02:
@@ -115,7 +111,7 @@ legos:
         contract_path: lego/L02-security/S01-principal-security-context/CONTRACT.md
         ports:
           provided: [L02.S01.provided.v1]
-          required: []
+          required: [L02.S01.required.v1]
           transport: contract-defined
       S02: { name: Session lifecycle, path: lego/L02-security/S02-session-lifecycle }
         execution_model: stateful-component
@@ -123,7 +119,7 @@ legos:
         contract_path: lego/L02-security/S02-session-lifecycle/CONTRACT.md
         ports:
           provided: [L02.S02.provided.v1]
-          required: []
+          required: [L02.S02.required.v1]
           transport: contract-defined
       S03: { name: Authorization, path: lego/L02-security/S03-authorization }
         execution_model: in-process
@@ -131,7 +127,7 @@ legos:
         contract_path: lego/L02-security/S03-authorization/CONTRACT.md
         ports:
           provided: [L02.S03.provided.v1]
-          required: []
+          required: [L02.S03.required.v1]
           transport: contract-defined
       S04: { name: Credential broker, path: lego/L02-security/S04-credential-broker }
         execution_model: stateful-component
@@ -139,7 +135,7 @@ legos:
         contract_path: lego/L02-security/S04-credential-broker/CONTRACT.md
         ports:
           provided: [L02.S04.provided.v1]
-          required: []
+          required: [L02.S04.required.v1]
           transport: contract-defined
       S05: { name: Cryptography and key lifecycle, path: lego/L02-security/S05-crypto-key-lifecycle }
         execution_model: in-process
@@ -147,7 +143,7 @@ legos:
         contract_path: lego/L02-security/S05-crypto-key-lifecycle/CONTRACT.md
         ports:
           provided: [L02.S05.provided.v1]
-          required: []
+          required: [L02.S05.required.v1]
           transport: contract-defined
       S06: { name: Machine identity, path: lego/L02-security/S06-machine-identity }
         execution_model: in-process
@@ -155,7 +151,7 @@ legos:
         contract_path: lego/L02-security/S06-machine-identity/CONTRACT.md
         ports:
           provided: [L02.S06.provided.v1]
-          required: []
+          required: [L02.S06.required.v1]
           transport: contract-defined
       S07: { name: Password and MFA recovery, path: lego/L02-security/S07-password-mfa-recovery }
         execution_model: in-process
@@ -163,7 +159,7 @@ legos:
         contract_path: lego/L02-security/S07-password-mfa-recovery/CONTRACT.md
         ports:
           provided: [L02.S07.provided.v1]
-          required: []
+          required: [L02.S07.required.v1]
           transport: contract-defined
 
   L03:
@@ -176,7 +172,7 @@ legos:
         contract_path: lego/L03-ingress/S01-webhook-routing/CONTRACT.md
         ports:
           provided: [L03.S01.provided.v1]
-          required: []
+          required: [L03.S01.required.v1]
           transport: contract-defined
       S02: { name: Activation state machine, path: lego/L03-ingress/S02-activation-state-machine }
         execution_model: in-process
@@ -184,7 +180,7 @@ legos:
         contract_path: lego/L03-ingress/S02-activation-state-machine/CONTRACT.md
         ports:
           provided: [L03.S02.provided.v1]
-          required: []
+          required: [L03.S02.required.v1]
           transport: contract-defined
       S03: { name: Schedule event manual form triggers, path: lego/L03-ingress/S03-trigger-sources }
         execution_model: in-process
@@ -192,7 +188,7 @@ legos:
         contract_path: lego/L03-ingress/S03-trigger-sources/CONTRACT.md
         ports:
           provided: [L03.S03.provided.v1]
-          required: []
+          required: [L03.S03.required.v1]
           transport: contract-defined
       S04: { name: Admission and backpressure, path: lego/L03-ingress/S04-admission-backpressure }
         execution_model: in-process
@@ -200,7 +196,7 @@ legos:
         contract_path: lego/L03-ingress/S04-admission-backpressure/CONTRACT.md
         ports:
           provided: [L03.S04.provided.v1]
-          required: []
+          required: [L03.S04.required.v1]
           transport: contract-defined
       S05: { name: Idempotency and deduplication, path: lego/L03-ingress/S05-idempotency-deduplication }
         execution_model: stateful-component
@@ -208,7 +204,7 @@ legos:
         contract_path: lego/L03-ingress/S05-idempotency-deduplication/CONTRACT.md
         ports:
           provided: [L03.S05.provided.v1]
-          required: []
+          required: [L03.S05.required.v1]
           transport: contract-defined
       S06: { name: Response plans and streaming payloads, path: lego/L03-ingress/S06-response-streaming }
         execution_model: worker-capability
@@ -216,7 +212,7 @@ legos:
         contract_path: lego/L03-ingress/S06-response-streaming/CONTRACT.md
         ports:
           provided: [L03.S06.provided.v1]
-          required: []
+          required: [L03.S06.required.v1]
           transport: contract-defined
       S07: { name: Startup reconciliation and recovery, path: lego/L03-ingress/S07-startup-reconciliation }
         execution_model: in-process
@@ -224,7 +220,7 @@ legos:
         contract_path: lego/L03-ingress/S07-startup-reconciliation/CONTRACT.md
         ports:
           provided: [L03.S07.provided.v1]
-          required: []
+          required: [L03.S07.required.v1]
           transport: contract-defined
 
   L04:
@@ -237,7 +233,7 @@ legos:
         contract_path: lego/L04-node-ecosystem/S01-node-registry-admission/CONTRACT.md
         ports:
           provided: [L04.S01.provided.v1]
-          required: []
+          required: [L04.S01.required.v1]
           transport: contract-defined
       S02: { name: Trust quarantine runtime locality, path: lego/L04-node-ecosystem/S02-trust-quarantine-locality }
         execution_model: in-process
@@ -245,7 +241,7 @@ legos:
         contract_path: lego/L04-node-ecosystem/S02-trust-quarantine-locality/CONTRACT.md
         ports:
           provided: [L04.S02.provided.v1]
-          required: []
+          required: [L04.S02.required.v1]
           transport: contract-defined
       S03: { name: Native Rust node catalog, path: lego/L04-node-ecosystem/S03-native-node-catalog }
         execution_model: library
@@ -253,7 +249,7 @@ legos:
         contract_path: lego/L04-node-ecosystem/S03-native-node-catalog/CONTRACT.md
         ports:
           provided: [L04.S03.provided.v1]
-          required: []
+          required: [L04.S03.required.v1]
           transport: contract-defined
       S04: { name: Compatibility worker, path: lego/L04-node-ecosystem/S04-compatibility-worker }
         execution_model: worker-capability
@@ -261,7 +257,7 @@ legos:
         contract_path: lego/L04-node-ecosystem/S04-compatibility-worker/CONTRACT.md
         ports:
           provided: [L04.S04.provided.v1]
-          required: []
+          required: [L04.S04.required.v1]
           transport: contract-defined
       S05: { name: Community private custom node compatibility, path: lego/L04-node-ecosystem/S05-community-private-custom }
         execution_model: worker-capability
@@ -269,7 +265,7 @@ legos:
         contract_path: lego/L04-node-ecosystem/S05-community-private-custom/CONTRACT.md
         ports:
           provided: [L04.S05.provided.v1]
-          required: []
+          required: [L04.S05.required.v1]
           transport: contract-defined
       S06: { name: Code polyglot runtime contracts, path: lego/L04-node-ecosystem/S06-code-polyglot-runtime }
         execution_model: worker-capability
@@ -277,7 +273,7 @@ legos:
         contract_path: lego/L04-node-ecosystem/S06-code-polyglot-runtime/CONTRACT.md
         ports:
           provided: [L04.S06.provided.v1]
-          required: []
+          required: [L04.S06.required.v1]
           transport: contract-defined
       S07: { name: Browser scraper hybrid capability, path: lego/L04-node-ecosystem/S07-browser-scraper-hybrid }
         execution_model: worker-capability
@@ -285,7 +281,7 @@ legos:
         contract_path: lego/L04-node-ecosystem/S07-browser-scraper-hybrid/CONTRACT.md
         ports:
           provided: [L04.S07.provided.v1]
-          required: []
+          required: [L04.S07.required.v1]
           transport: contract-defined
       S08: { name: Dynamic parameter schema runtime, path: lego/L04-node-ecosystem/S08-dynamic-parameters-schema }
         execution_model: in-process
@@ -293,7 +289,7 @@ legos:
         contract_path: lego/L04-node-ecosystem/S08-dynamic-parameters-schema/CONTRACT.md
         ports:
           provided: [L04.S08.provided.v1]
-          required: []
+          required: [L04.S08.required.v1]
           transport: contract-defined
 
   L05:
@@ -306,7 +302,7 @@ legos:
         contract_path: lego/L05-data-storage/S01-workflow-execution-persistence/CONTRACT.md
         ports:
           provided: [L05.S01.provided.v1]
-          required: []
+          required: [L05.S01.required.v1]
           transport: contract-defined
       S02: { name: Durable WAL and transactions, path: lego/L05-data-storage/S02-durable-wal-transactions }
         execution_model: stateful-component
@@ -314,7 +310,7 @@ legos:
         contract_path: lego/L05-data-storage/S02-durable-wal-transactions/CONTRACT.md
         ports:
           provided: [L05.S02.provided.v1]
-          required: []
+          required: [L05.S02.required.v1]
           transport: contract-defined
       S03: { name: Execution data plane, path: lego/L05-data-storage/S03-execution-data-plane }
         execution_model: in-process
@@ -322,7 +318,7 @@ legos:
         contract_path: lego/L05-data-storage/S03-execution-data-plane/CONTRACT.md
         ports:
           provided: [L05.S03.provided.v1]
-          required: []
+          required: [L05.S03.required.v1]
           transport: contract-defined
       S04: { name: Binary data and streaming, path: lego/L05-data-storage/S04-binary-streaming }
         execution_model: worker-capability
@@ -330,7 +326,7 @@ legos:
         contract_path: lego/L05-data-storage/S04-binary-streaming/CONTRACT.md
         ports:
           provided: [L05.S04.provided.v1]
-          required: []
+          required: [L05.S04.required.v1]
           transport: contract-defined
       S05: { name: Retention and compaction, path: lego/L05-data-storage/S05-retention-compaction }
         execution_model: stateful-component
@@ -338,7 +334,7 @@ legos:
         contract_path: lego/L05-data-storage/S05-retention-compaction/CONTRACT.md
         ports:
           provided: [L05.S05.provided.v1]
-          required: []
+          required: [L05.S05.required.v1]
           transport: contract-defined
       S06: { name: Snapshot backup restore, path: lego/L05-data-storage/S06-snapshot-backup-restore }
         execution_model: stateful-component
@@ -346,7 +342,7 @@ legos:
         contract_path: lego/L05-data-storage/S06-snapshot-backup-restore/CONTRACT.md
         ports:
           provided: [L05.S06.provided.v1]
-          required: []
+          required: [L05.S06.required.v1]
           transport: contract-defined
       S07: { name: Disaster recovery, path: lego/L05-data-storage/S07-disaster-recovery }
         execution_model: stateful-component
@@ -354,7 +350,7 @@ legos:
         contract_path: lego/L05-data-storage/S07-disaster-recovery/CONTRACT.md
         ports:
           provided: [L05.S07.provided.v1]
-          required: []
+          required: [L05.S07.required.v1]
           transport: contract-defined
       S08: { name: Environment promotion, path: lego/L05-data-storage/S08-environment-promotion }
         execution_model: control-component
@@ -362,7 +358,7 @@ legos:
         contract_path: lego/L05-data-storage/S08-environment-promotion/CONTRACT.md
         ports:
           provided: [L05.S08.provided.v1]
-          required: []
+          required: [L05.S08.required.v1]
           transport: contract-defined
 
   L06:
@@ -375,7 +371,7 @@ legos:
         contract_path: lego/L06-realtime-observability/S01-realtime-event-contract/CONTRACT.md
         ports:
           provided: [L06.S01.provided.v1]
-          required: []
+          required: [L06.S01.required.v1]
           transport: contract-defined
       S02: { name: Execution telemetry, path: lego/L06-realtime-observability/S02-execution-telemetry }
         execution_model: in-process
@@ -383,7 +379,7 @@ legos:
         contract_path: lego/L06-realtime-observability/S02-execution-telemetry/CONTRACT.md
         ports:
           provided: [L06.S02.provided.v1]
-          required: []
+          required: [L06.S02.required.v1]
           transport: contract-defined
       S03: { name: Node plugin worker diagnostics, path: lego/L06-realtime-observability/S03-node-plugin-worker-diagnostics }
         execution_model: in-process
@@ -391,7 +387,7 @@ legos:
         contract_path: lego/L06-realtime-observability/S03-node-plugin-worker-diagnostics/CONTRACT.md
         ports:
           provided: [L06.S03.provided.v1]
-          required: []
+          required: [L06.S03.required.v1]
           transport: contract-defined
       S04: { name: Health readiness, path: lego/L06-realtime-observability/S04-health-readiness }
         execution_model: in-process
@@ -399,7 +395,7 @@ legos:
         contract_path: lego/L06-realtime-observability/S04-health-readiness/CONTRACT.md
         ports:
           provided: [L06.S04.provided.v1]
-          required: []
+          required: [L06.S04.required.v1]
           transport: contract-defined
       S05: { name: Replay and causal diagnostics, path: lego/L06-realtime-observability/S05-replay-causal-diagnostics }
         execution_model: tooling
@@ -407,7 +403,7 @@ legos:
         contract_path: lego/L06-realtime-observability/S05-replay-causal-diagnostics/CONTRACT.md
         ports:
           provided: [L06.S05.provided.v1]
-          required: []
+          required: [L06.S05.required.v1]
           transport: contract-defined
       S06: { name: Resource pressure and queue metrics, path: lego/L06-realtime-observability/S06-resource-queue-metrics }
         execution_model: in-process
@@ -415,7 +411,7 @@ legos:
         contract_path: lego/L06-realtime-observability/S06-resource-queue-metrics/CONTRACT.md
         ports:
           provided: [L06.S06.provided.v1]
-          required: []
+          required: [L06.S06.required.v1]
           transport: contract-defined
       S07: { name: Audit and bounded retention, path: lego/L06-realtime-observability/S07-audit-retention }
         execution_model: stateful-component
@@ -423,7 +419,7 @@ legos:
         contract_path: lego/L06-realtime-observability/S07-audit-retention/CONTRACT.md
         ports:
           provided: [L06.S07.provided.v1]
-          required: []
+          required: [L06.S07.required.v1]
           transport: contract-defined
 
   L07:
@@ -436,7 +432,7 @@ legos:
         contract_path: lego/L07-scale-worker-fabric/S01-scheduler-resource-intelligence/CONTRACT.md
         ports:
           provided: [L07.S01.provided.v1]
-          required: []
+          required: [L07.S01.required.v1]
           transport: contract-defined
       S02: { name: Burst admission and graceful degradation, path: lego/L07-scale-worker-fabric/S02-burst-admission-degradation }
         execution_model: in-process
@@ -444,7 +440,7 @@ legos:
         contract_path: lego/L07-scale-worker-fabric/S02-burst-admission-degradation/CONTRACT.md
         ports:
           provided: [L07.S02.provided.v1]
-          required: []
+          required: [L07.S02.required.v1]
           transport: contract-defined
       S03: { name: Queue and lease model, path: lego/L07-scale-worker-fabric/S03-queue-lease }
         execution_model: stateful-component
@@ -452,7 +448,7 @@ legos:
         contract_path: lego/L07-scale-worker-fabric/S03-queue-lease/CONTRACT.md
         ports:
           provided: [L07.S03.provided.v1]
-          required: []
+          required: [L07.S03.required.v1]
           transport: contract-defined
       S04: { name: Worker lifecycle, path: lego/L07-scale-worker-fabric/S04-worker-lifecycle }
         execution_model: worker-capability
@@ -460,7 +456,7 @@ legos:
         contract_path: lego/L07-scale-worker-fabric/S04-worker-lifecycle/CONTRACT.md
         ports:
           provided: [L07.S04.provided.v1]
-          required: []
+          required: [L07.S04.required.v1]
           transport: contract-defined
       S05: { name: Worker recovery and failover, path: lego/L07-scale-worker-fabric/S05-worker-recovery-failover }
         execution_model: control-component
@@ -468,7 +464,7 @@ legos:
         contract_path: lego/L07-scale-worker-fabric/S05-worker-recovery-failover/CONTRACT.md
         ports:
           provided: [L07.S05.provided.v1]
-          required: []
+          required: [L07.S05.required.v1]
           transport: contract-defined
       S06: { name: HA control plane, path: lego/L07-scale-worker-fabric/S06-ha-control-plane }
         execution_model: control-component
@@ -476,7 +472,7 @@ legos:
         contract_path: lego/L07-scale-worker-fabric/S06-ha-control-plane/CONTRACT.md
         ports:
           provided: [L07.S06.provided.v1]
-          required: []
+          required: [L07.S06.required.v1]
           transport: contract-defined
       S07: { name: Ingress runtime efficiency, path: lego/L07-scale-worker-fabric/S07-ingress-runtime-efficiency }
         execution_model: in-process
@@ -484,7 +480,7 @@ legos:
         contract_path: lego/L07-scale-worker-fabric/S07-ingress-runtime-efficiency/CONTRACT.md
         ports:
           provided: [L07.S07.provided.v1]
-          required: []
+          required: [L07.S07.required.v1]
           transport: contract-defined
 
   L08:
@@ -497,7 +493,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S01-agent-state-machine/CONTRACT.md
         ports:
           provided: [L08.S01.provided.v1]
-          required: []
+          required: [L08.S01.required.v1]
           transport: contract-defined
       S02: { name: Tool registry, path: lego/L08-agent-mcp/S02-tool-registry }
         execution_model: in-process
@@ -505,7 +501,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S02-tool-registry/CONTRACT.md
         ports:
           provided: [L08.S02.provided.v1]
-          required: []
+          required: [L08.S02.required.v1]
           transport: contract-defined
       S03: { name: Workflow as tool, path: lego/L08-agent-mcp/S03-workflow-as-tool }
         execution_model: in-process
@@ -513,7 +509,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S03-workflow-as-tool/CONTRACT.md
         ports:
           provided: [L08.S03.provided.v1]
-          required: []
+          required: [L08.S03.required.v1]
           transport: contract-defined
       S04: { name: Human approval and policy boundary, path: lego/L08-agent-mcp/S04-human-approval-policy }
         execution_model: control-component
@@ -521,7 +517,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S04-human-approval-policy/CONTRACT.md
         ports:
           provided: [L08.S04.provided.v1]
-          required: []
+          required: [L08.S04.required.v1]
           transport: contract-defined
       S05: { name: AI provider routing, path: lego/L08-agent-mcp/S05-ai-provider-routing }
         execution_model: remote-adapter
@@ -529,7 +525,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S05-ai-provider-routing/CONTRACT.md
         ports:
           provided: [L08.S05.provided.v1]
-          required: []
+          required: [L08.S05.required.v1]
           transport: contract-defined
       S06: { name: Memory, path: lego/L08-agent-mcp/S06-memory }
         execution_model: stateful-component
@@ -537,7 +533,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S06-memory/CONTRACT.md
         ports:
           provided: [L08.S06.provided.v1]
-          required: []
+          required: [L08.S06.required.v1]
           transport: contract-defined
       S07: { name: Token execution budgets, path: lego/L08-agent-mcp/S07-token-execution-budgets }
         execution_model: in-process
@@ -545,7 +541,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S07-token-execution-budgets/CONTRACT.md
         ports:
           provided: [L08.S07.provided.v1]
-          required: []
+          required: [L08.S07.required.v1]
           transport: contract-defined
       S08: { name: MCP interoperability, path: lego/L08-agent-mcp/S08-mcp-interoperability }
         execution_model: remote-adapter
@@ -553,7 +549,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S08-mcp-interoperability/CONTRACT.md
         ports:
           provided: [L08.S08.provided.v1]
-          required: []
+          required: [L08.S08.required.v1]
           transport: contract-defined
       S09: { name: Usage accounting and audit, path: lego/L08-agent-mcp/S09-usage-accounting-audit }
         execution_model: stateful-component
@@ -561,7 +557,7 @@ legos:
         contract_path: lego/L08-agent-mcp/S09-usage-accounting-audit/CONTRACT.md
         ports:
           provided: [L08.S09.provided.v1]
-          required: []
+          required: [L08.S09.required.v1]
           transport: contract-defined
 
   L09:
@@ -574,7 +570,7 @@ legos:
         contract_path: lego/L09-ui-compatibility/S01-official-vue-surface/CONTRACT.md
         ports:
           provided: [L09.S01.provided.v1]
-          required: []
+          required: [L09.S01.required.v1]
           transport: contract-defined
       S02: { name: REST API compatibility, path: lego/L09-ui-compatibility/S02-rest-api-compatibility }
         execution_model: in-process
@@ -582,7 +578,7 @@ legos:
         contract_path: lego/L09-ui-compatibility/S02-rest-api-compatibility/CONTRACT.md
         ports:
           provided: [L09.S02.provided.v1]
-          required: []
+          required: [L09.S02.required.v1]
           transport: contract-defined
       S03: { name: Realtime browser compatibility, path: lego/L09-ui-compatibility/S03-realtime-browser-compatibility }
         execution_model: in-process
@@ -590,7 +586,7 @@ legos:
         contract_path: lego/L09-ui-compatibility/S03-realtime-browser-compatibility/CONTRACT.md
         ports:
           provided: [L09.S03.provided.v1]
-          required: []
+          required: [L09.S03.required.v1]
           transport: contract-defined
       S04: { name: Notifications accessibility parity, path: lego/L09-ui-compatibility/S04-notifications-accessibility }
         execution_model: in-process
@@ -598,7 +594,7 @@ legos:
         contract_path: lego/L09-ui-compatibility/S04-notifications-accessibility/CONTRACT.md
         ports:
           provided: [L09.S04.provided.v1]
-          required: []
+          required: [L09.S04.required.v1]
           transport: contract-defined
       S05: { name: Enterprise facing compatibility surfaces, path: lego/L09-ui-compatibility/S05-enterprise-compatibility }
         execution_model: in-process
@@ -606,7 +602,7 @@ legos:
         contract_path: lego/L09-ui-compatibility/S05-enterprise-compatibility/CONTRACT.md
         ports:
           provided: [L09.S05.provided.v1]
-          required: []
+          required: [L09.S05.required.v1]
           transport: contract-defined
       S06: { name: Frontend migration decommission plan, path: lego/L09-ui-compatibility/S06-frontend-migration }
         execution_model: tooling
@@ -614,7 +610,7 @@ legos:
         contract_path: lego/L09-ui-compatibility/S06-frontend-migration/CONTRACT.md
         ports:
           provided: [L09.S06.provided.v1]
-          required: []
+          required: [L09.S06.required.v1]
           transport: contract-defined
 
   L10:
@@ -627,7 +623,7 @@ legos:
         contract_path: lego/L10-release-upgrade/S01-installation-packaging/CONTRACT.md
         ports:
           provided: [L10.S01.provided.v1]
-          required: []
+          required: [L10.S01.required.v1]
           transport: contract-defined
       S02: { name: Database schema migrations, path: lego/L10-release-upgrade/S02-db-schema-migrations }
         execution_model: stateful-component
@@ -635,7 +631,7 @@ legos:
         contract_path: lego/L10-release-upgrade/S02-db-schema-migrations/CONTRACT.md
         ports:
           provided: [L10.S02.provided.v1]
-          required: []
+          required: [L10.S02.required.v1]
           transport: contract-defined
       S03: { name: Runtime node compatibility matrix, path: lego/L10-release-upgrade/S03-runtime-node-compatibility }
         execution_model: tooling
@@ -643,7 +639,7 @@ legos:
         contract_path: lego/L10-release-upgrade/S03-runtime-node-compatibility/CONTRACT.md
         ports:
           provided: [L10.S03.provided.v1]
-          required: []
+          required: [L10.S03.required.v1]
           transport: contract-defined
       S04: { name: Upgrade rollback, path: lego/L10-release-upgrade/S04-upgrade-rollback }
         execution_model: control-component
@@ -651,7 +647,7 @@ legos:
         contract_path: lego/L10-release-upgrade/S04-upgrade-rollback/CONTRACT.md
         ports:
           provided: [L10.S04.provided.v1]
-          required: []
+          required: [L10.S04.required.v1]
           transport: contract-defined
       S05: { name: Release certification, path: lego/L10-release-upgrade/S05-release-certification }
         execution_model: tooling
@@ -659,7 +655,7 @@ legos:
         contract_path: lego/L10-release-upgrade/S05-release-certification/CONTRACT.md
         ports:
           provided: [L10.S05.provided.v1]
-          required: []
+          required: [L10.S05.required.v1]
           transport: contract-defined
       S06: { name: Security performance certification, path: lego/L10-release-upgrade/S06-security-performance-cert }
         execution_model: tooling
@@ -667,7 +663,7 @@ legos:
         contract_path: lego/L10-release-upgrade/S06-security-performance-cert/CONTRACT.md
         ports:
           provided: [L10.S06.provided.v1]
-          required: []
+          required: [L10.S06.required.v1]
           transport: contract-defined
 
   L11:
@@ -680,7 +676,7 @@ legos:
         contract_path: lego/L11-future-platform/S01-event-automation-control-plane/CONTRACT.md
         ports:
           provided: [L11.S01.provided.v1]
-          required: []
+          required: [L11.S01.required.v1]
           transport: contract-defined
       S02: { name: Execution side effect reliability, path: lego/L11-future-platform/S02-side-effect-reliability }
         execution_model: in-process
@@ -688,7 +684,7 @@ legos:
         contract_path: lego/L11-future-platform/S02-side-effect-reliability/CONTRACT.md
         ports:
           provided: [L11.S02.provided.v1]
-          required: []
+          required: [L11.S02.required.v1]
           transport: contract-defined
       S03: { name: Advanced scheduler resource intelligence, path: lego/L11-future-platform/S03-advanced-scheduler-resource }
         execution_model: in-process
@@ -696,7 +692,7 @@ legos:
         contract_path: lego/L11-future-platform/S03-advanced-scheduler-resource/CONTRACT.md
         ports:
           provided: [L11.S03.provided.v1]
-          required: []
+          required: [L11.S03.required.v1]
           transport: contract-defined
       S04: { name: Worker distributed execution extensions, path: lego/L11-future-platform/S04-worker-distributed-extensions }
         execution_model: worker-capability
@@ -704,7 +700,7 @@ legos:
         contract_path: lego/L11-future-platform/S04-worker-distributed-extensions/CONTRACT.md
         ports:
           provided: [L11.S04.provided.v1]
-          required: []
+          required: [L11.S04.required.v1]
           transport: contract-defined
       S05: { name: Storage lifecycle DR extensions, path: lego/L11-future-platform/S05-storage-lifecycle-dr }
         execution_model: stateful-component
@@ -712,7 +708,7 @@ legos:
         contract_path: lego/L11-future-platform/S05-storage-lifecycle-dr/CONTRACT.md
         ports:
           provided: [L11.S05.provided.v1]
-          required: []
+          required: [L11.S05.required.v1]
           transport: contract-defined
       S06: { name: Operator edge control plane, path: lego/L11-future-platform/S06-operator-edge-control }
         execution_model: control-component
@@ -720,7 +716,7 @@ legos:
         contract_path: lego/L11-future-platform/S06-operator-edge-control/CONTRACT.md
         ports:
           provided: [L11.S06.provided.v1]
-          required: []
+          required: [L11.S06.required.v1]
           transport: contract-defined
       S07: { name: Ecosystem interoperability, path: lego/L11-future-platform/S07-ecosystem-interoperability }
         execution_model: remote-adapter
@@ -728,7 +724,7 @@ legos:
         contract_path: lego/L11-future-platform/S07-ecosystem-interoperability/CONTRACT.md
         ports:
           provided: [L11.S07.provided.v1]
-          required: []
+          required: [L11.S07.required.v1]
           transport: contract-defined
       S08: { name: Advanced Agent AI optimization, path: lego/L11-future-platform/S08-agent-ai-optimization }
         execution_model: worker-capability
@@ -736,5 +732,5 @@ legos:
         contract_path: lego/L11-future-platform/S08-agent-ai-optimization/CONTRACT.md
         ports:
           provided: [L11.S08.provided.v1]
-          required: []
+          required: [L11.S08.required.v1]
           transport: contract-defined
