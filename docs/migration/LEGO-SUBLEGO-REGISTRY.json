@@ -678,7 +678,7 @@
           "state_ownership": "stateless",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L04-node-ecosystem/S03-native-rust-node-catalog/CONTRACT.md",
           "ports": {
             "provided": [
