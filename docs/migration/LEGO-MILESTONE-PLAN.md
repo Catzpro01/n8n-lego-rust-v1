@@ -13,7 +13,9 @@ LEGO
 Definitions:
 
 - **LEGO** = a product/platform capability that can be independently declared as a milestone.
-- **Sub-LEGO** = a coherent capability inside one LEGO. It is both a functional boundary **and a physical file boundary** with one canonical implementation root.
+- **Sub-LEGO** = a coherent capability inside one LEGO. It is a functional boundary, a physical file boundary, and a **component with explicit connection ports**.
+- **Runtime Host** = a deployment/execution host that can host one or many Sub-LEGOs. A Sub-LEGO does **not** imply a process, service, or standalone runtime.
+- **Port** = a typed connection point exposed or consumed by a Sub-LEGO. Ports are the only architectural connection surface between Sub-LEGOs.
 - **Work Item** = the concrete implementation, test, migration, documentation, or evidence unit owned by exactly one primary Sub-LEGO.
 - **Slice is not a planning primitive** for this repository. Do not create roadmap structure around "slice", "vertical slice", or equivalent terminology.
 
@@ -81,6 +83,8 @@ Sub-LEGO:
   - ownership
   - capability contracts
   - version compatibility
+  - port ABI/API rules
+  - compatibility/version negotiation
 - **L00.S02 — Runtime registry**
   - native Rust
   - compatibility worker
@@ -353,7 +357,117 @@ Primary source scope: #228–#239 and remaining P12–P23 requirements.
 
 ---
 
-## 3. Milestone rules
+## 3. LEGO connection model
+
+The architecture uses four distinct concepts:
+
+```
+LEGO
+└── Sub-LEGO
+    └── Port
+        └── Adapter
+            └── Runtime Host
+```
+
+A Sub-LEGO can be:
+- **hosted** — active implementation executed inside a shared runtime host;
+- **library** — pure logic linked into a host;
+- **data component** — persistence/state owner accessed through ports;
+- **control component** — lifecycle/policy/state coordinator;
+- **contract-only** — schemas/types/events with no independent runtime;
+- **worker capability** — executed by a worker host when needed.
+
+A Sub-LEGO must declare its execution model. It is forbidden to infer "one Sub-LEGO = one process".
+
+### Port types
+
+Each Sub-LEGO declares only the ports it owns or requires:
+
+- **Command Port** — request that asks a capability to perform a state-changing action.
+- **Query Port** — read-only request.
+- **Event Port** — asynchronous publication/subscription.
+- **Stream Port** — bounded streaming data.
+- **Lifecycle Port** — start/stop/health/reconcile operations when applicable.
+- **Data Port** — explicit persistence/storage operations where a data owner exists.
+
+Every port must define:
+- stable port ID;
+- direction: provide/require;
+- schema/version;
+- sync or async semantics;
+- timeout/deadline;
+- error vocabulary;
+- idempotency semantics where relevant;
+- authorization/security context requirements;
+- compatibility policy;
+- observability identity.
+
+### Connection rule
+
+Sub-LEGOs connect only through ports:
+
+```
+Provider Sub-LEGO
+   │
+   ├── provided port
+   ▼
+typed contract / adapter
+   ▲
+   └── required port
+Consumer Sub-LEGO
+```
+
+Direct dependency on another Sub-LEGO's implementation, private state, storage, worker handle, or internal module is prohibited.
+
+### Runtime-host rule
+
+Runtime is a separate architectural axis from milestone decomposition.
+
+Example:
+
+```
+Runtime Host: Execution Kernel
+├── L01.S01 Execution Semantics
+├── L01.S02 Wait/Resume
+├── L01.S03 Sub-workflows
+└── L05.S03 Execution Data Plane
+```
+
+Another:
+
+```
+Runtime Host: Security Control Plane
+├── L02.S01 Principal
+├── L02.S02 Session
+├── L02.S03 Authorization
+└── L02.S04 Credential Broker
+```
+
+The Sub-LEGOs remain physically and functionally isolated even when hosted in the same binary/process.
+
+A Sub-LEGO may later move from:
+- in-process library
+- shared runtime host
+- isolated worker
+- remote service
+
+without changing its public port contract.
+
+### Scalability rule
+
+Scaling is attached to the **runtime host or port traffic class**, not automatically to the Sub-LEGO.
+
+Examples:
+- stateless query ports can scale horizontally;
+- worker ports can scale by queue depth/concurrency;
+- stateful data ports scale according to their storage model;
+- event ports scale through partitioning/consumer groups where supported.
+
+This is the mechanism that keeps upgrade and scaling independent from the milestone hierarchy.
+
+---
+
+## 4. Milestone rules
 
 ### LEGO completion
 
@@ -370,7 +484,14 @@ A LEGO is **DONE** only when:
 
 ### Sub-LEGO completion
 
-A Sub-LEGO is **DONE** only when its acceptance criteria are executable and independently verifiable.
+A Sub-LEGO is **DONE** only when its acceptance criteria are executable and independently verifiable, and:
+
+1. its provided/required ports are declared;
+2. each port has a versioned contract;
+3. all cross-Sub-LEGO dependencies use ports/adapters;
+4. its execution model is explicit;
+5. it can be re-hosted without changing the public contract;
+6. scaling behavior is documented for each externally consumed port.
 
 A Sub-LEGO may span multiple pull requests, but the milestone hierarchy must remain stable.
 
@@ -476,7 +597,36 @@ For each Sub-LEGO:
 
 The target end state is a repository where capability ownership can be answered from the file path alone.
 
-## 7. What changes from the previous plan
+## 7. Target runtime topology
+
+The target system is not a collection of one-process-per-Sub-LEGO services.
+
+Preferred topology:
+
+```
+                         ┌─────────────────────┐
+                         │   LEGO Gateway Host  │
+                         └──────────┬──────────┘
+                                    │ ports
+             ┌──────────────────────┼──────────────────────┐
+             ▼                      ▼                      ▼
+   ┌────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+   │ Control Host   │    │ Execution Host   │    │ Worker Host      │
+   │ L02 + L03 ...  │    │ L01 + L05 ...    │    │ L04/L07/L08 ...  │
+   └────────────────┘    └──────────────────┘    └──────────────────┘
+             │                      │                      │
+             └────────────── versioned ports ─────────────┘
+```
+
+This gives three independent axes:
+
+1. **milestone axis** — LEGO/Sub-LEGO;
+2. **contract axis** — ports and adapters;
+3. **deployment axis** — runtime hosts and scaling units.
+
+Changing one axis must not require redesigning the other two.
+
+## 8. What changes from the previous plan
 
 The previous "track/slice" language is retired.
 
