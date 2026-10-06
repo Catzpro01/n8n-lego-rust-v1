@@ -2283,5 +2283,53 @@ Report: ./report.md
 4. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
 5. Isolasi Fisik: **50 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
 
+---
+
+## EXECUTION MILESTONE: L06.S04 HEALTH/READINESS
+
+**Timestamp**: 2026-10-07T02:56:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `608f2d146ee7695acab3031e8bf3c8aded00bb72`  
+**Status**: **L06.S04 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L06.S04
+- **Sub-LEGO**: `L06.S04` — `Health/readiness`
+- **Canonical Root**: `lego/L06-realtime-observability/S04-health-readiness/`
+- **Runtime Host**: `H02` (Control Host)
+- **State Ownership Domain**: `system-readiness-map`
+- **Provided Ports**:
+  - `port.observability.health.check.v1`: Evaluasi dan agregasi kesiapan subsistem (storage, execution, queue, wal, network) dengan fail-closed evaluation (HTTP 200 vs 503).
+- **Required Ports**:
+  - `port.runtime.lifecycle.probe.v1` (Provider: `L00.S04`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi port, fail-closed rule, dan invarian L06.S04.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: `SystemReadinessService`, component registry, readiness state transitions (`Ready`, `NotReady`, `Degraded`, `Initializing`), evaluasi agregasi fail-closed, dan dispatcher port contract.
+  - `tests/health_readiness_test.rs`: 7 unit tests (inisialisasi default komponen, agregasi fail-closed pada NotReady, status Degraded, query per-komponen, transisi status, dispatch port handler, dan validasi fail-closed).
+  - `evidence/S04-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur L06.S04.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/health_port_test.rs`.
+- Menguji `InProcessAdapter` roundtrip check dan update readiness via `port.observability.health.check.v1`, transisi dari HTTP 200 (Ready) ke 503 (NotReady) secara fail-closed, serta penolakan caller tanpa scope izin (`PortStatus::SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L06.S04` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **26** (31.3%) — Bertambah 1 (`L06.S04`).
+  - **IMPLEMENTED (Debt)**: **6** (7.2%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `rustc --test --edition=2021 lego/L06-realtime-observability/S04-health-readiness/implementation/mod.rs -L target/debug/deps --extern serde=... --extern serde_json=...`: **7/7 unit tests PASS** (Exit Code 0).
+2. `cargo test -p n8n-port-contract --test health_port_test`: **2/2 passed** (Exit Code 0).
+3. `cargo test -p n8n-port-contract`: **46 passed; 0 failed** (Exit Code 0).
+4. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+5. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
+6. Isolasi Fisik: **52 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
+
 Report: ./report.md
+
 

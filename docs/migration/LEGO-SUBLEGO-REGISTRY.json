@@ -1075,7 +1075,7 @@
           "state_ownership": "system-readiness-map",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L06-realtime-observability/S04-health-readiness/CONTRACT.md",
           "ports": {
             "provided": [

@@ -10,7 +10,7 @@
 - **State Ownership**: `system-readiness-map`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 
@@ -19,6 +19,7 @@
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Returns system readiness report, evaluates subsystem health, and aggregates health status across components fail-closed.
 
 ---
 
@@ -32,3 +33,4 @@
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
 3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`system-readiness-map`).
 4. Model eksekusi mematuhi batasan runtime host `H02` (Control Host).
+5. Fail-closed evaluation: jika ada subsistem vital yang NotReady, status agregat wajib mengembalikan NotReady (503).
