@@ -10,7 +10,7 @@
 - **State Ownership**: `migration-version-ledger`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `rolling-dual-version`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 
@@ -19,6 +19,7 @@
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Manages sequential database schema migrations, version ledger tracking, rollback steps, and status verification.
 
 ---
 

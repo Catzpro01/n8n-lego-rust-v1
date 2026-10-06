@@ -1398,7 +1398,7 @@ legos:
         state_ownership: migration-version-ledger
         contract_version: 1.0.0
         compatibility_policy: rolling-dual-version
-        status: IMPLEMENTED
+        status: TESTED
         contract_path: lego/L10-release-upgrade/S02-database-schema-migrations/CONTRACT.md
         ports:
           provided:

@@ -663,7 +663,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Release and Upgrade", "lego_slug": "L10-release-upgrade", "sub_slug": "S02-database-schema-migrations",
         "ownership": "release-lifecycle", "execution_model": "tooling", "runtime_host": "H05",
         "state_ownership": "migration-version-ledger", "contract_version": "1.0.0", "compatibility_policy": "rolling-dual-version",
-        "status": "IMPLEMENTED",
+        "status": "TESTED",
         "provided_ports": ["port.release.migration.apply.v1"],
         "required_ports": ["port.storage.persistence.save.v1"]
     },
@@ -792,8 +792,8 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 31, f"Expected 31 TESTED, got {status_counts['TESTED']}"
-    assert status_counts["IMPLEMENTED"] == 1, f"Expected 1 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
+    assert status_counts["TESTED"] == 32, f"Expected 32 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["IMPLEMENTED"] == 0, f"Expected 0 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
     assert status_counts["CONTRACTED"] == 43, f"Expected 43 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
@@ -805,7 +805,7 @@ def main():
         'L04.S03', 'L04.S04', 'L04.S08', 'L05.S01',
         'L05.S02', 'L05.S03', 'L05.S04', 'L06.S01',
         'L06.S02', 'L06.S04', 'L07.S03', 'L09.S01',
-        'L09.S02', 'L09.S03', 'L09.S05'
+        'L09.S02', 'L09.S03', 'L09.S05', 'L10.S02'
     }
     actual_tested = {item['id'] for item in SUBLEGOS_DATA if item['status'] == 'TESTED'}
     assert actual_tested == priority_tested, f"TESTED Sub-LEGOs do not match priority list: {actual_tested ^ priority_tested}"
