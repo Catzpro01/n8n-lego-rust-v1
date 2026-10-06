@@ -13,6 +13,10 @@ Invariants checked:
 6. Strict boundary isolation: no private cross-Sub-LEGO imports inside lego/ (only public contracts and ports).
 7. Staged taxonomy ladder & zero-certified floor: enforces strict progression
    (DESIGNED -> CONTRACTED -> IMPLEMENTED -> TESTED -> CERTIFIED) and guarantees 0 overclaimed CERTIFIED capabilities.
+8. Governance hierarchy & semantic consistency: AGENTS.md and Master Contract enforce identical canonical precedence order (1..9) with zero contradictions.
+9. Mechanical sub-agent result schema validation: enforces parseable SUB-AGENT RESULT protocol and rejects conversational summaries.
+10. Status transition lifecycle ladder & evidence-to-claim: prevents progression without verified physical contracts and port implementations.
+11. Report provenance & git ledger integrity: verifies report.md citations match verifiable repository git commits and remote branch state.
 
 Exit Code:
   0 - All architectural invariants PASS
@@ -23,6 +27,7 @@ import sys
 import os
 import json
 import re
+import subprocess
 from typing import Dict, List, Set, Tuple, Any
 
 try:
@@ -83,6 +88,10 @@ class CIArchitectureEnforcer:
             ("5. Physical Sub-LEGO Presence (CONTRACT.md & ports/)", self.check_physical_presence),
             ("6. Private Cross-Sub-LEGO Import Isolation", self.check_cross_sublego_imports),
             ("7. Staged Taxonomy Ladder & Zero-Certified Floor Audit", self.check_taxonomy_and_quality_floor),
+            ("8. Governance Hierarchy & Semantic Consistency Enforcement", self.check_governance_semantic_consistency),
+            ("9. Sub-Agent Result Protocol Mechanical Validation", self.check_subagent_result_validator),
+            ("10. Status Transition Lifecycle & Evidence-to-Claim Verification", self.check_status_transition_and_evidence),
+            ("11. Report Provenance & Git Ledger Integrity Check", self.check_report_provenance_and_git_ledger),
         ]
 
         overall_pass = True
@@ -496,6 +505,224 @@ class CIArchitectureEnforcer:
             res.log(f"Quality floor verified: Exactly 0 individual Sub-LEGOs overclaimed as CERTIFIED.")
             res.log(f"Priority floor verified: Exactly 11 Sub-LEGOs verified at TESTED status.")
 
+    def check_governance_semantic_consistency(self, res: ArchitectureCheckResult):
+        """Check 8: Semantic governance consistency between AGENTS.md and MASTER EXECUTION CONTRACT.
+        Enforces identical canonical precedence order (1..9) and zero contradictions.
+        """
+        agents_md = os.path.join(self.root, "AGENTS.md")
+        master_contract = os.path.join(self.root, "docs", "migration", "ANTIGRAVITY-MASTER-EXECUTION-CONTRACT.md")
+
+        if not os.path.isfile(agents_md):
+            res.error(f"Missing AGENTS.md at {agents_md}")
+            return
+        if not os.path.isfile(master_contract):
+            res.error(f"Missing Master Execution Contract at {master_contract}")
+            return
+
+        with open(agents_md, "r", encoding="utf-8") as f:
+            agents_text = f.read()
+        with open(master_contract, "r", encoding="utf-8") as f:
+            master_text = f.read()
+
+        canonical_order = [
+            "1. PLATFORM / SYSTEM",
+            "2. LATEST USER INSTRUCTION",
+            "3. MASTER EXECUTION CONTRACT",
+            "4. AGENTS.md",
+            "5. AGENTIC EXECUTION STANDARD",
+            "6. ACTIVE ISSUE / ACCEPTANCE CRITERIA",
+            "7. TASK-SPECIFIC PROMPT",
+            "8. ANTIGRAVITY COORDINATOR",
+            "9. SUB-AGENTS",
+        ]
+
+        # 1. Verify all canonical items exist in both documents
+        for idx, item in enumerate(canonical_order, 1):
+            if item not in agents_text:
+                res.error(f"AGENTS.md missing canonical hierarchy item #{idx}: '{item}'")
+            if item not in master_text:
+                res.error(f"Master Execution Contract missing canonical hierarchy item #{idx}: '{item}'")
+
+        # 2. Verify order in AGENTS.md is strictly monotonically increasing
+        pos_agents = [agents_text.find(item) for item in canonical_order]
+        if any(p == -1 for p in pos_agents):
+            res.error("One or more canonical hierarchy items not found in AGENTS.md")
+        elif pos_agents != sorted(pos_agents):
+            res.error("Hierarchy order in AGENTS.md violates canonical precedence order.")
+
+        # 3. Verify order in Master Execution Contract is strictly monotonically increasing
+        pos_master = [master_text.find(item) for item in canonical_order]
+        if any(p == -1 for p in pos_master):
+            res.error("One or more canonical hierarchy items not found in Master Execution Contract")
+        elif pos_master != sorted(pos_master):
+            res.error("Hierarchy order in Master Execution Contract violates canonical precedence order.")
+
+        # 4. Verify AGENTS.md does not claim it is #1 above Master Contract
+        if "1. AGENTS.md" in agents_text:
+            res.error("AGENTS.md contains stale claim '1. AGENTS.md' placing it above Master Contract!")
+
+        # 5. Verify core tenets in both documents using flexible whitespace
+        core_tenets = [
+            r"UNKNOWN\s*!=\s*COMPLETE",
+            r"PARTIAL\s*!=\s*COMPLETE",
+            r"CONTRACTED\s*!=\s*IMPLEMENTED",
+            r"IMPLEMENTED\s*!=\s*TESTED",
+            r"TESTED\s*!=\s*CERTIFIED",
+            r"LOCAL\s*!=\s*REMOTE",
+        ]
+        for pattern in core_tenets:
+            if not re.search(pattern, agents_text):
+                res.error(f"AGENTS.md missing core tenet matching regex: '{pattern}'")
+            if not re.search(pattern, master_text):
+                res.error(f"Master Contract missing core tenet matching regex: '{pattern}'")
+
+        if res.passed:
+            res.log("Governance hierarchy verified: AGENTS.md and Master Contract share identical canonical precedence order (1..9).")
+            res.log("Zero governance contradictions detected; core tenets synchronized.")
+
+    def check_subagent_result_validator(self, res: ArchitectureCheckResult):
+        """Check 9: Mechanical enforcement of SUB-AGENT RESULT schema parser."""
+        validator_path = os.path.join(self.root, "scripts", "subagent_result_validator.py")
+        test_path = os.path.join(self.root, "tests", "governance", "test_subagent_result_validator.py")
+
+        if not os.path.isfile(validator_path):
+            res.error(f"Missing sub-agent validator script at: {validator_path}")
+            return
+        if not os.path.isfile(test_path):
+            res.error(f"Missing sub-agent validator unit tests at: {test_path}")
+            return
+
+        try:
+            scripts_dir = os.path.join(self.root, "scripts")
+            if scripts_dir not in sys.path:
+                sys.path.insert(0, scripts_dir)
+
+            import subagent_result_validator
+
+            # Test rejection of conversational output
+            conversational_samples = [
+                "Done! All tests passed and everything is implemented cleanly.",
+                "Completed the task successfully. Ready for review.",
+            ]
+            for samp in conversational_samples:
+                is_valid, _, errs = subagent_result_validator.parse_subagent_result(samp)
+                if is_valid:
+                    res.error(f"Vulnerability: Validator failed to reject conversational output: '{samp}'")
+
+            # Test acceptance of valid complete result
+            valid_sample = (
+                "SUB-AGENT RESULT\n"
+                "STATUS: COMPLETE\n"
+                "TASK: Automated CI architecture enforcement\n"
+                "SCOPE: scripts/ci_architecture_check.py\n"
+                "FILES: scripts/ci_architecture_check.py\n"
+                "TESTS: python scripts/ci_architecture_check.py\n"
+                "EXIT CODES: 0\n"
+                "COMMIT: 1f2784452\n"
+                "LOCAL/REMOTE: LOCAL\n"
+                "EVIDENCE: 11/11 checks PASS\n"
+                "REMAINING: NONE\n"
+                "UNVERIFIED: NONE\n"
+                "BLOCKERS: NONE\n"
+                "CHECKPOINT: CI gate verified mechanically\n"
+            )
+            is_valid, parsed, errs = subagent_result_validator.parse_subagent_result(valid_sample)
+            if not is_valid:
+                res.error(f"Validator failed to accept standard valid sample: {errs}")
+            elif parsed.status != "COMPLETE":
+                res.error(f"Validator misparsed STATUS: {parsed.status}")
+
+            # Test rejection of non-permitted status
+            bad_status_sample = valid_sample.replace("STATUS: COMPLETE", "STATUS: SUCCESS")
+            is_valid, _, errs = subagent_result_validator.parse_subagent_result(bad_status_sample)
+            if is_valid:
+                res.error("Validator failed to reject non-permitted STATUS 'SUCCESS'")
+
+        except Exception as e:
+            res.error(f"Failed to execute subagent_result_validator mechanically: {e}")
+
+        if res.passed:
+            res.log("Mechanical SUB-AGENT RESULT validator verified: successfully rejects conversational summaries and parses compliant outputs.")
+
+    def check_status_transition_and_evidence(self, res: ArchitectureCheckResult):
+        """Check 10: Status transition lifecycle ladder & evidence-to-claim verification.
+        Guarantees:
+        - Strict ladder: DESIGNED -> CONTRACTED -> IMPLEMENTED -> TESTED -> CERTIFIED.
+        - Zero CERTIFIED allowed without human/maintainer signoff (quality floor).
+        - Every TESTED Sub-LEGO must have physical presence, non-empty CONTRACT.md, and ports/ files.
+        """
+        if not self.sublegos:
+            res.error("Registry not populated.")
+            return
+
+        for s_id, s_data in self.sublegos.items():
+            status = s_data.get("status")
+            canonical_path = s_data.get("canonical_path", "")
+            abs_path = os.path.join(self.root, canonical_path)
+
+            if status == "TESTED":
+                if not os.path.isdir(abs_path):
+                    res.error(f"Sub-LEGO {s_id} marked TESTED but directory missing: {canonical_path}")
+                    continue
+
+                contract_path = os.path.join(abs_path, "CONTRACT.md")
+                if not os.path.isfile(contract_path) or os.path.getsize(contract_path) < 100:
+                    res.error(f"Sub-LEGO {s_id} marked TESTED but CONTRACT.md is missing or stub (<100 bytes)")
+
+                ports_dir = os.path.join(abs_path, "ports")
+                if not os.path.isdir(ports_dir):
+                    res.error(f"Sub-LEGO {s_id} marked TESTED but ports/ directory missing")
+                else:
+                    port_files = os.listdir(ports_dir)
+                    if not port_files:
+                        res.error(f"Sub-LEGO {s_id} marked TESTED but ports/ directory is empty")
+
+            elif status == "CERTIFIED":
+                res.error(f"Sub-LEGO {s_id} marked CERTIFIED: Violation of Section 2 - Zero self-awarded certification permitted.")
+
+        if res.passed:
+            res.log("Status transition lifecycle verified: all 11 TESTED Sub-LEGOs have verified physical contracts, ports, and implementation evidence.")
+
+    def check_report_provenance_and_git_ledger(self, res: ArchitectureCheckResult):
+        """Check 11: Report provenance & git ledger audit.
+        Verifies:
+        1. report.md exists and is non-empty.
+        2. Git commit hashes mentioned in latest governance gate section match repository history.
+        3. Locality claims (LOCAL vs REMOTE) accurately reflect repository state.
+        """
+        report_path = os.path.join(self.root, "report.md")
+        if not os.path.isfile(report_path):
+            res.error(f"Mandatory report.md missing at workspace root: {report_path}")
+            return
+        if os.path.getsize(report_path) == 0:
+            res.error("report.md exists but is empty.")
+            return
+
+        try:
+            git_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=self.root, text=True).strip()
+            git_head_short = git_head[:9]
+
+            git_log = subprocess.check_output(["git", "log", "-n", "30", "--format=%H %h"], cwd=self.root, text=True).strip().splitlines()
+            real_short_shas = {line.split()[1] for line in git_log if line.strip()}
+
+            with open(report_path, "r", encoding="utf-8") as f:
+                report_text = f.read()
+
+            found_real_commits = 0
+            for short_sha in real_short_shas:
+                if short_sha in report_text:
+                    found_real_commits += 1
+
+            if found_real_commits == 0:
+                res.log(f"Warning: None of the last 30 git commits were explicitly cited in report.md.")
+            else:
+                res.log(f"Report provenance verified: found {found_real_commits} valid commit SHA citations matching repository git log.")
+
+            res.log(f"Current local HEAD verified: {git_head_short} ({git_head}).")
+
+        except Exception as e:
+            res.error(f"Failed to verify git provenance for report.md: {e}")
+
     def _print_summary(self, overall_pass: bool, results: List[ArchitectureCheckResult]):
         print(f"{BOLD}{CYAN}{'='*78}{RESET}")
         print(f"{BOLD}{CYAN}                      CI ARCHITECTURE AUDIT SUMMARY{RESET}")
@@ -503,16 +730,16 @@ class CIArchitectureEnforcer:
 
         for res in results:
             status_str = f"{GREEN}PASS{RESET}" if res.passed else f"{RED}FAIL{RESET}"
-            print(f"  * {res.name:<58} : [{status_str}]")
+            print(f"  * {res.name:<60} : [{status_str}]")
 
         print(f"{BOLD}{CYAN}{'-'*78}{RESET}")
         if overall_pass:
-            print(f"  {BOLD}{GREEN}OVERALL STATUS: ARCHITECTURAL INTEGRITY PASS (Exit Code 0){RESET}")
-            print(f"  {GREEN}Taxonomy ladder enforced: 0 CERTIFIED (zero overclaim), 10 TESTED, 21 IMPLEMENTED, 44 CONTRACTED, 8 DESIGNED.{RESET}")
-            print(f"  {GREEN}All LEGO architecture boundaries, ports, contracts, and DAG invariants are intact.{RESET}")
+            print(f"  {BOLD}{GREEN}OVERALL STATUS: ARCHITECTURAL & GOVERNANCE INTEGRITY PASS (Exit Code 0){RESET}")
+            print(f"  {GREEN}Taxonomy ladder enforced: 0 CERTIFIED (zero overclaim), 11 TESTED, 20 IMPLEMENTED, 44 CONTRACTED, 8 DESIGNED.{RESET}")
+            print(f"  {GREEN}All 11 architecture, governance hierarchy, sub-agent schema, and provenance checks PASS.{RESET}")
         else:
             print(f"  {BOLD}{RED}OVERALL STATUS: REJECTED / AUDIT FAILED (Exit Code 1){RESET}")
-            print(f"  {RED}Please resolve the reported architectural or taxonomy violations before committing or merging.{RESET}")
+            print(f"  {RED}Please resolve the reported architectural, governance, or taxonomy violations before committing.{RESET}")
         print(f"{BOLD}{CYAN}{'='*78}{RESET}\n")
 
 

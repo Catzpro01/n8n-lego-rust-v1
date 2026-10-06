@@ -57,19 +57,35 @@ Never fill an evidence gap with inference.
 
 # 1. AUTHORITY ORDER
 
-When interpreting requirements, use this precedence:
+When interpreting requirements, resolve instructions strictly through this single descending canonical hierarchy of authority:
 
-1. System/developer safety and platform constraints.
-2. Latest explicit user instruction.
-3. This Master Execution Contract (`docs/migration/ANTIGRAVITY-MASTER-EXECUTION-CONTRACT.md`).
-4. Root agent governance contract (`AGENTS.md`).
-5. Repository agentic execution standard (`docs/migration/ANTIGRAVITY-AGENTIC-EXECUTION-STANDARD.md`).
-6. The active GitHub Issue / acceptance criteria.
-7. Architecture and migration specifications.
-8. Existing implementation.
-9. Reports, summaries, previous agent claims.
+```text
+1. PLATFORM / SYSTEM (Developer safety & platform constraints)
+   ↓
+2. LATEST USER INSTRUCTION (Direct user prompt / override)
+   ↓
+3. MASTER EXECUTION CONTRACT (docs/migration/ANTIGRAVITY-MASTER-EXECUTION-CONTRACT.md)
+   ↓
+4. AGENTS.md (Root Agent Governance Policy & Bootstrap Pointer)
+   ↓
+5. AGENTIC EXECUTION STANDARD (docs/migration/ANTIGRAVITY-AGENTIC-EXECUTION-STANDARD.md)
+   ↓
+6. ACTIVE ISSUE / ACCEPTANCE CRITERIA (e.g. Issue #4)
+   ↓
+7. TASK-SPECIFIC PROMPT & SCOPED INSTRUCTIONS
+   ↓
+8. ANTIGRAVITY COORDINATOR EXECUTION
+   ↓
+9. SUB-AGENTS EXECUTION
+```
 
-A lower-priority source MUST NOT silently weaken a higher-priority requirement.
+* **Canonical Precedence**: `AGENTS.md` is the repo bootstrap pointer and does not define a competing or divergent hierarchy; all decisions must follow this unified order.
+* **No Weakening**: A lower-priority source MUST NOT silently weaken a higher-priority requirement.
+
+Additional reference order for repository artifacts:
+10. Architecture and migration specifications.
+11. Existing implementation.
+12. Reports, summaries, previous agent claims (evidence ledgers, not authority).
 
 Reports are evidence artifacts, not authority.
 

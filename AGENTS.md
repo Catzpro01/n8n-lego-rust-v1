@@ -8,24 +8,29 @@ Compliance with this document and its referenced contracts is **non-negotiable, 
 
 ## 1. Governance Authority Hierarchy
 
-Every agent must resolve instructions strictly through this descending hierarchy of authority:
+Every agent must resolve instructions strictly through this single descending canonical hierarchy of authority:
 
 ```text
-1. AGENTS.md (Root Agent Policy)
+1. PLATFORM / SYSTEM (Developer safety & platform constraints)
    ↓
-2. MASTER EXECUTION CONTRACT (docs/migration/ANTIGRAVITY-MASTER-EXECUTION-CONTRACT.md)
+2. LATEST USER INSTRUCTION (Direct user prompt / override)
    ↓
-3. AGENTIC EXECUTION STANDARD (docs/migration/ANTIGRAVITY-AGENTIC-EXECUTION-STANDARD.md)
+3. MASTER EXECUTION CONTRACT (docs/migration/ANTIGRAVITY-MASTER-EXECUTION-CONTRACT.md)
    ↓
-4. Active GitHub Issue / Explicit Acceptance Criteria (e.g. Issue #4)
+4. AGENTS.md (Root Agent Governance Policy & Bootstrap Pointer)
    ↓
-5. Task-Specific Prompt & Scoped Instructions
+5. AGENTIC EXECUTION STANDARD (docs/migration/ANTIGRAVITY-AGENTIC-EXECUTION-STANDARD.md)
    ↓
-6. Antigravity Coordinator Execution
+6. ACTIVE ISSUE / ACCEPTANCE CRITERIA (e.g. Issue #4)
    ↓
-7. Sub-Agent Execution
+7. TASK-SPECIFIC PROMPT & SCOPED INSTRUCTIONS
+   ↓
+8. ANTIGRAVITY COORDINATOR EXECUTION
+   ↓
+9. SUB-AGENTS EXECUTION
 ```
 
+* **Bootstrap & Enforcement Anchor**: `AGENTS.md` serves as the repository bootstrap and enforcement anchor pointing to this single canonical hierarchy; it is not a competing or divergent source of precedence.
 * **No Weakening**: A lower layer MUST NOT silently reinterpret, reduce, or weaken a requirement defined by a higher layer.
 * **Conflict Resolution**: If two documents conflict, the agent must preserve the stricter requirement and report the conflict.
 * **Reports Are Not Authority**: `./report.md` and chat outputs are evidence ledgers, NEVER authoritative sources of truth. The repository state is the sole source of truth.
