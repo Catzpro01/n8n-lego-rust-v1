@@ -361,3 +361,153 @@ async fn test_graph_evaluation_port_security_boundary_enforcement() {
     let resp2 = adapter.invoke(inv2).await;
     assert_eq!(resp2.status, PortStatus::SecurityDenied);
 }
+
+#[tokio::test]
+async fn test_wait_and_resume_ports_roundtrip() {
+    let adapter = InProcessAdapter::new();
+    let suspend_port = PortId::new("port.execution.wait.suspend.v1");
+    let resume_port = PortId::new("port.execution.wait.resume.v1");
+
+    let wait_store = Arc::new(RwLock::new(HashMap::<String, serde_json::Value>::new()));
+
+    // 1. Suspend Port Handler
+    let store_c1 = wait_store.clone();
+    let suspend_handler = Arc::new(move |inv: PortInvocation| {
+        let store = store_c1.clone();
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            if let PortPayload::Json(val) = inv.payload {
+                let exec_id = val.get("execution_id").and_then(|v| v.as_str()).unwrap_or("def_exec");
+                let node_id = val.get("node_id").and_then(|v| v.as_str()).unwrap_or("def_node");
+                let key = format!("{exec_id}:{node_id}");
+                let mut map = store.write().await;
+                map.insert(key.clone(), val.clone());
+                PortResponse::success(
+                    inv.invocation_id,
+                    PortPayload::Json(json!({
+                        "execution_id": exec_id,
+                        "node_id": node_id,
+                        "suspended": true,
+                        "active": true
+                    })),
+                    PortTelemetry::new(trace_id),
+                )
+            } else {
+                PortResponse::error(
+                    inv.invocation_id,
+                    PortStatus::ClientError,
+                    n8n_port_contract::invocation::PortErrorDetail::new(
+                        n8n_port_contract::invocation::PortErrorCode::BadRequest,
+                        "Payload must be JSON",
+                        false,
+                    ),
+                    PortTelemetry::new(trace_id),
+                )
+            }
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+    adapter.register_handler(suspend_port.clone(), suspend_handler).await;
+
+    // 2. Resume Port Handler
+    let store_c2 = wait_store.clone();
+    let resume_handler = Arc::new(move |inv: PortInvocation| {
+        let store = store_c2.clone();
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            if let PortPayload::Json(val) = inv.payload {
+                let exec_id = val.get("execution_id").and_then(|v| v.as_str()).unwrap_or("def_exec");
+                let node_id = val.get("node_id").and_then(|v| v.as_str()).unwrap_or("def_node");
+                let key = format!("{exec_id}:{node_id}");
+                let mut map = store.write().await;
+                if let Some(record) = map.remove(&key) {
+                    PortResponse::success(
+                        inv.invocation_id,
+                        PortPayload::Json(json!({
+                            "execution_id": exec_id,
+                            "node_id": node_id,
+                            "resumed": true,
+                            "active": false,
+                            "record": record
+                        })),
+                        PortTelemetry::new(trace_id),
+                    )
+                } else {
+                    PortResponse::error(
+                        inv.invocation_id,
+                        PortStatus::ClientError,
+                        n8n_port_contract::invocation::PortErrorDetail::new(
+                            n8n_port_contract::invocation::PortErrorCode::BadRequest,
+                            "Wait record not found",
+                            false,
+                        ),
+                        PortTelemetry::new(trace_id),
+                    )
+                }
+            } else {
+                PortResponse::error(
+                    inv.invocation_id,
+                    PortStatus::ClientError,
+                    n8n_port_contract::invocation::PortErrorDetail::new(
+                        n8n_port_contract::invocation::PortErrorCode::BadRequest,
+                        "Payload must be JSON",
+                        false,
+                    ),
+                    PortTelemetry::new(trace_id),
+                )
+            }
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+    adapter.register_handler(resume_port.clone(), resume_handler).await;
+
+    let sec_ctx = SecurityContext::builder("coordinator", "tenant_prod")
+        .authority_scope(vec![
+            "port.execution.wait.suspend.v1".to_string(),
+            "port.execution.wait.resume.v1".to_string(),
+        ])
+        .build();
+
+    // Test suspend invocation
+    let susp_inv = PortInvocation::new(
+        SubLegoId::new("L01.S01"),
+        SubLegoId::new("L01.S02"),
+        suspend_port.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H03ExecutionHost,
+        sec_ctx.clone(),
+        PortPayload::Json(json!({
+            "execution_id": "exec_wait_99",
+            "node_id": "wait_step",
+            "condition": { "type": "webhook_event" }
+        })),
+    );
+    let susp_resp = adapter.invoke(susp_inv).await;
+    assert_eq!(susp_resp.status, PortStatus::Success);
+    if let PortPayload::Json(data) = susp_resp.payload {
+        assert_eq!(data["suspended"], true);
+        assert_eq!(data["active"], true);
+    } else {
+        panic!("Expected Json payload from suspend port");
+    }
+
+    // Test resume invocation
+    let res_inv = PortInvocation::new(
+        SubLegoId::new("L01.S01"),
+        SubLegoId::new("L01.S02"),
+        resume_port.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H03ExecutionHost,
+        sec_ctx.clone(),
+        PortPayload::Json(json!({
+            "execution_id": "exec_wait_99",
+            "node_id": "wait_step"
+        })),
+    );
+    let res_resp = adapter.invoke(res_inv).await;
+    assert_eq!(res_resp.status, PortStatus::Success);
+    if let PortPayload::Json(data) = res_resp.payload {
+        assert_eq!(data["resumed"], true);
+        assert_eq!(data["active"], false);
+    } else {
+        panic!("Expected Json payload from resume port");
+    }
+}

@@ -249,5 +249,141 @@ mod tests {
         let trans_res = engine.handle_port_node_status(&trans_payload).expect("Transition node status port");
         assert_eq!(trans_res["success"], true);
         assert_eq!(trans_res["status"], "running");
+        assert_eq!(trans_res["valid"], true);
+    }
+
+    #[test]
+    fn test_deep_linear_recursion_iterative_dfs() {
+        let engine = GraphEvaluationEngine::new();
+        let depth = 15_000;
+        let mut nodes = Vec::with_capacity(depth);
+        let mut edges = Vec::with_capacity(depth - 1);
+
+        for i in 0..depth {
+            nodes.push(GraphNode {
+                id: format!("node_{i}"),
+                name: format!("N_{i}"),
+                node_type: "step".to_string(),
+            });
+            if i > 0 {
+                edges.push(GraphEdge {
+                    source: format!("N_{}", i - 1),
+                    target: format!("N_{i}"),
+                    connection_type: None,
+                });
+            }
+        }
+
+        let graph = GraphDefinition {
+            workflow_id: "wf_deep_15k".to_string(),
+            nodes,
+            edges,
+        };
+
+        // This would overflow stack if DFS was recursive, but passes easily with iterative DFS
+        let result = engine.evaluate(&graph).expect("15,000-node linear DAG evaluation must succeed");
+        assert!(result.is_dag);
+        assert_eq!(result.root_triggers, vec!["N_0"]);
+        assert_eq!(result.terminal_nodes, vec![format!("N_{}", depth - 1)]);
+        assert_eq!(result.topological_order.len(), depth);
+    }
+
+    #[test]
+    fn test_precise_cycle_slice_extraction() {
+        let engine = GraphEvaluationEngine::new();
+
+        // Path: A -> B -> C -> B (cycle is B -> C -> B, A is not in cycle)
+        let graph = GraphDefinition {
+            workflow_id: "wf_precise_cycle".to_string(),
+            nodes: vec![
+                GraphNode { id: "1".to_string(), name: "A".to_string(), node_type: "noOp".to_string() },
+                GraphNode { id: "2".to_string(), name: "B".to_string(), node_type: "noOp".to_string() },
+                GraphNode { id: "3".to_string(), name: "C".to_string(), node_type: "noOp".to_string() },
+            ],
+            edges: vec![
+                GraphEdge { source: "A".to_string(), target: "B".to_string(), connection_type: None },
+                GraphEdge { source: "B".to_string(), target: "C".to_string(), connection_type: None },
+                GraphEdge { source: "C".to_string(), target: "B".to_string(), connection_type: None },
+            ],
+        };
+
+        let result = engine.evaluate(&graph).expect("Evaluate should run");
+        assert!(!result.is_dag);
+        assert!(result.cycle_detected.is_some());
+        let cycle = result.cycle_detected.unwrap();
+        // Exact cycle must be ["B", "C", "B"] and must NOT contain "A"
+        assert_eq!(cycle, vec!["B", "C", "B"]);
+    }
+
+    #[test]
+    fn test_self_loop_cycle_detection() {
+        let engine = GraphEvaluationEngine::new();
+
+        // Self-loop: A -> A
+        let graph = GraphDefinition {
+            workflow_id: "wf_self_loop".to_string(),
+            nodes: vec![
+                GraphNode { id: "1".to_string(), name: "SelfLooper".to_string(), node_type: "noOp".to_string() },
+            ],
+            edges: vec![
+                GraphEdge { source: "SelfLooper".to_string(), target: "SelfLooper".to_string(), connection_type: None },
+            ],
+        };
+
+        let result = engine.evaluate(&graph).expect("Evaluate should run");
+        assert!(!result.is_dag);
+        let cycle = result.cycle_detected.unwrap();
+        assert_eq!(cycle, vec!["SelfLooper", "SelfLooper"]);
+    }
+
+    #[test]
+    fn test_deterministic_topological_sort_multi_roots() {
+        let engine = GraphEvaluationEngine::new();
+
+        // Multiple roots: RootZ, RootA, RootM, each leading to convergent Sink
+        let graph = GraphDefinition {
+            workflow_id: "wf_multi_roots".to_string(),
+            nodes: vec![
+                GraphNode { id: "1".to_string(), name: "RootZ".to_string(), node_type: "manualTrigger".to_string() },
+                GraphNode { id: "2".to_string(), name: "RootA".to_string(), node_type: "manualTrigger".to_string() },
+                GraphNode { id: "3".to_string(), name: "RootM".to_string(), node_type: "manualTrigger".to_string() },
+                GraphNode { id: "4".to_string(), name: "Sink".to_string(), node_type: "merge".to_string() },
+            ],
+            edges: vec![
+                GraphEdge { source: "RootZ".to_string(), target: "Sink".to_string(), connection_type: None },
+                GraphEdge { source: "RootA".to_string(), target: "Sink".to_string(), connection_type: None },
+                GraphEdge { source: "RootM".to_string(), target: "Sink".to_string(), connection_type: None },
+            ],
+        };
+
+        // Repeated evaluations must yield identical order every single time
+        let r1 = engine.evaluate(&graph).unwrap();
+        let r2 = engine.evaluate(&graph).unwrap();
+        assert_eq!(r1.topological_order, r2.topological_order);
+        assert_eq!(r1.root_triggers, vec!["RootA", "RootM", "RootZ"]);
+        assert_eq!(r1.topological_order, vec!["RootA", "RootM", "RootZ", "Sink"]);
+    }
+
+    #[test]
+    fn test_ghost_nodes_and_minimal_deserialization() {
+        let engine = GraphEvaluationEngine::new();
+
+        // Edge references ghost nodes not in nodes list
+        let graph = GraphDefinition {
+            workflow_id: "wf_ghost".to_string(),
+            nodes: vec![
+                GraphNode { id: "1".to_string(), name: "ValidNode".to_string(), node_type: "step".to_string() },
+            ],
+            edges: vec![
+                GraphEdge { source: "GhostA".to_string(), target: "ValidNode".to_string(), connection_type: None },
+                GraphEdge { source: "ValidNode".to_string(), target: "GhostB".to_string(), connection_type: None },
+            ],
+        };
+
+        let result = engine.evaluate(&graph).expect("Should evaluate safely");
+        assert!(result.is_dag);
+        assert_eq!(result.root_triggers, vec!["ValidNode"]);
+        assert_eq!(result.terminal_nodes, vec!["ValidNode"]);
+        assert!(result.orphan_nodes.is_empty());
     }
 }

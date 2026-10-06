@@ -16,24 +16,30 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::RwLock;
 
 /// High-level Graph Definition for DAG evaluation
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 pub struct GraphDefinition {
+    #[serde(default)]
     pub workflow_id: String,
+    #[serde(default)]
     pub nodes: Vec<GraphNode>,
+    #[serde(default)]
     pub edges: Vec<GraphEdge>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 pub struct GraphNode {
+    #[serde(default)]
     pub id: String,
     pub name: String,
+    #[serde(default)]
     pub node_type: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 pub struct GraphEdge {
     pub source: String,
     pub target: String,
+    #[serde(default)]
     pub connection_type: Option<String>,
 }
 
@@ -164,7 +170,7 @@ impl GraphEvaluationEngine {
             *in_degree.entry(edge.target.clone()).or_insert(0) += 1;
         }
 
-        // Cycle detection via DFS
+        // Cycle detection via iterative DFS
         if let Some(cycle) = self.detect_cycle(graph) {
             return Ok(GraphEvaluationResult {
                 workflow_id: graph.workflow_id.clone(),
@@ -205,28 +211,48 @@ impl GraphEvaluationEngine {
             .collect();
         convergent_nodes.sort();
 
-        // Topological sorting via Kahn's algorithm
+        // Deterministic Topological sorting via Kahn's algorithm
+        // Seeding the queue in sorted order ensures 100% reproducible execution sequence
         let mut current_in_degree = in_degree.clone();
         let mut queue: VecDeque<String> = VecDeque::new();
-        for (name, deg) in &current_in_degree {
-            if *deg == 0 {
-                queue.push_back(name.clone());
-            }
+        for root in &root_triggers {
+            queue.push_back(root.clone());
         }
 
         let mut topological_order = Vec::new();
         while let Some(curr) = queue.pop_front() {
             topological_order.push(curr.clone());
             if let Some(neighbors) = adj.get(&curr) {
-                for next in neighbors {
-                    if let Some(deg) = current_in_degree.get_mut(next) {
+                let mut sorted_neighbors = neighbors.clone();
+                sorted_neighbors.sort();
+                for next in sorted_neighbors {
+                    if let Some(deg) = current_in_degree.get_mut(&next) {
                         *deg -= 1;
                         if *deg == 0 {
-                            queue.push_back(next.clone());
+                            queue.push_back(next);
                         }
                     }
                 }
             }
+        }
+
+        // Fail-closed verification: if topological_order count does not match total nodes, a cycle remains
+        if topological_order.len() < graph.nodes.len() {
+            let unvisited: Vec<String> = graph.nodes
+                .iter()
+                .filter(|n| !topological_order.contains(&n.name))
+                .map(|n| n.name.clone())
+                .collect();
+            return Ok(GraphEvaluationResult {
+                workflow_id: graph.workflow_id.clone(),
+                is_dag: false,
+                cycle_detected: Some(unvisited),
+                orphan_nodes: self.find_orphans(graph),
+                root_triggers,
+                terminal_nodes,
+                convergent_nodes,
+                topological_order: Vec::new(),
+            });
         }
 
         Ok(GraphEvaluationResult {
@@ -241,55 +267,66 @@ impl GraphEvaluationEngine {
         })
     }
 
-    /// Detects cycles using standard DFS with recursion stack
+    /// Detects cycles using iterative DFS with an explicit heap-allocated stack.
+    /// Immune to thread stack overflow on deep graphs (>100,000 nodes).
     pub fn detect_cycle(&self, graph: &GraphDefinition) -> Option<Vec<String>> {
-        let mut adj: HashMap<String, Vec<String>> = HashMap::new();
+        let node_set: HashSet<&str> = graph.nodes.iter().map(|n| n.name.as_str()).collect();
+        let mut adj: HashMap<&str, Vec<&str>> = HashMap::new();
         for edge in &graph.edges {
-            adj.entry(edge.source.clone()).or_default().push(edge.target.clone());
+            if node_set.contains(edge.source.as_str()) && node_set.contains(edge.target.as_str()) {
+                adj.entry(edge.source.as_str()).or_default().push(edge.target.as_str());
+            }
         }
 
-        let mut visited = HashSet::new();
-        let mut rec_stack = HashSet::new();
-        let mut path = Vec::new();
+        let mut visited: HashSet<&str> = HashSet::new();
+        let mut on_stack: HashSet<&str> = HashSet::new();
 
-        for node in &graph.nodes {
-            if !visited.contains(&node.name) {
-                if self.dfs_cycle(&node.name, &adj, &mut visited, &mut rec_stack, &mut path) {
-                    return Some(path);
+        for root_node in &graph.nodes {
+            let root_name = root_node.name.as_str();
+            if visited.contains(root_name) {
+                continue;
+            }
+
+            // Explicit call stack: (node_name, next_neighbor_index)
+            let mut stack: Vec<(&str, usize)> = Vec::new();
+            stack.push((root_name, 0));
+            on_stack.insert(root_name);
+            let mut path: Vec<String> = vec![root_name.to_string()];
+
+            while let Some((curr, next_idx)) = stack.last_mut() {
+                let curr_name = *curr;
+                let empty_neighbors = Vec::new();
+                let neighbors = adj.get(curr_name).unwrap_or(&empty_neighbors);
+
+                if *next_idx < neighbors.len() {
+                    let next_name = neighbors[*next_idx];
+                    *next_idx += 1;
+
+                    if on_stack.contains(next_name) {
+                        // Cycle detected! Extract the exact cycle slice (e.g. [B, C, B])
+                        let mut cycle = Vec::new();
+                        if let Some(pos) = path.iter().position(|x| x == next_name) {
+                            cycle.extend_from_slice(&path[pos..]);
+                        } else {
+                            cycle = path.clone();
+                        }
+                        cycle.push(next_name.to_string());
+                        return Some(cycle);
+                    } else if !visited.contains(next_name) {
+                        on_stack.insert(next_name);
+                        path.push(next_name.to_string());
+                        stack.push((next_name, 0));
+                    }
+                } else {
+                    // All neighbors explored, backtrack
+                    on_stack.remove(curr_name);
+                    visited.insert(curr_name);
+                    path.pop();
+                    stack.pop();
                 }
             }
         }
         None
-    }
-
-    fn dfs_cycle(
-        &self,
-        current: &str,
-        adj: &HashMap<String, Vec<String>>,
-        visited: &mut HashSet<String>,
-        rec_stack: &mut HashSet<String>,
-        path: &mut Vec<String>,
-    ) -> bool {
-        visited.insert(current.to_string());
-        rec_stack.insert(current.to_string());
-        path.push(current.to_string());
-
-        if let Some(neighbors) = adj.get(current) {
-            for next in neighbors {
-                if !visited.contains(next) {
-                    if self.dfs_cycle(next, adj, visited, rec_stack, path) {
-                        return true;
-                    }
-                } else if rec_stack.contains(next) {
-                    path.push(next.clone());
-                    return true;
-                }
-            }
-        }
-
-        rec_stack.remove(current);
-        path.pop();
-        false
     }
 
     /// Discovers disconnected / orphan nodes in the workflow
@@ -298,16 +335,19 @@ impl GraphEvaluationEngine {
             return Vec::new();
         }
 
+        let node_set: HashSet<&str> = graph.nodes.iter().map(|n| n.name.as_str()).collect();
         let mut connected = HashSet::new();
         for edge in &graph.edges {
-            connected.insert(edge.source.clone());
-            connected.insert(edge.target.clone());
+            if node_set.contains(edge.source.as_str()) && node_set.contains(edge.target.as_str()) {
+                connected.insert(edge.source.as_str());
+                connected.insert(edge.target.as_str());
+            }
         }
 
         let mut orphans: Vec<String> = graph
             .nodes
             .iter()
-            .filter(|n| !connected.contains(&n.name))
+            .filter(|n| !connected.contains(n.name.as_str()))
             .map(|n| n.name.clone())
             .collect();
         orphans.sort();
@@ -431,24 +471,30 @@ impl GraphEvaluationEngine {
     /// Dispatcher for `port.execution.node.status.v1`
     pub fn handle_port_node_status(&self, payload: &serde_json::Value) -> Result<serde_json::Value, String> {
         let action = payload.get("action").and_then(|v| v.as_str()).unwrap_or("");
-        let exec_id = payload.get("execution_id").and_then(|v| v.as_str()).unwrap_or("default");
+        let exec_id = payload.get("execution_id")
+            .or_else(|| payload.get("exec_id"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("default");
         let node_id = payload.get("node_id").and_then(|v| v.as_str()).unwrap_or("unknown");
 
         match action {
             "init" => {
                 self.init_node_status(exec_id, node_id);
-                Ok(serde_json::json!({ "status": "pending", "success": true }))
+                Ok(serde_json::json!({ "node_id": node_id, "status": "pending", "success": true, "valid": true }))
             }
             "get" => {
                 let status = self.get_node_status(exec_id, node_id);
-                Ok(serde_json::json!({ "status": status, "found": status.is_some() }))
+                Ok(serde_json::json!({ "node_id": node_id, "status": status, "found": status.is_some() }))
             }
             "transition" => {
-                let target_raw = payload.get("target_status").and_then(|v| v.as_str()).unwrap_or("");
+                let target_raw = payload.get("target_status")
+                    .or_else(|| payload.get("target"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
                 let target: NodeExecutionStatus = serde_json::from_value(serde_json::json!(target_raw))
                     .map_err(|e| format!("Invalid target status '{target_raw}': {e}"))?;
                 self.transition_node_status(exec_id, node_id, target).map_err(|e| e.to_string())?;
-                Ok(serde_json::json!({ "status": target, "success": true }))
+                Ok(serde_json::json!({ "node_id": node_id, "status": target, "success": true, "valid": true }))
             }
             _ => Err(format!("Unknown action '{action}' for port.execution.node.status.v1")),
         }
@@ -456,9 +502,15 @@ impl GraphEvaluationEngine {
 
     /// Dispatcher for `port.execution.wait.suspend.v1`
     pub fn handle_port_wait_suspend(&self, payload: &serde_json::Value) -> Result<serde_json::Value, String> {
-        let exec_id = payload.get("execution_id").and_then(|v| v.as_str()).unwrap_or("default");
+        let exec_id = payload.get("execution_id")
+            .or_else(|| payload.get("exec_id"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("default");
         let node_id = payload.get("node_id").and_then(|v| v.as_str()).unwrap_or("unknown");
-        let condition = payload.get("condition").cloned().unwrap_or(serde_json::json!({}));
+        let condition = payload.get("condition")
+            .or_else(|| payload.get("resume_condition"))
+            .cloned()
+            .unwrap_or(serde_json::json!({}));
 
         let rec = self.suspend_wait(exec_id, node_id, condition).map_err(|e| e.to_string())?;
         serde_json::to_value(rec).map_err(|e| format!("Serialization error: {e}"))
@@ -466,7 +518,10 @@ impl GraphEvaluationEngine {
 
     /// Dispatcher for `port.execution.wait.resume.v1`
     pub fn handle_port_wait_resume(&self, payload: &serde_json::Value) -> Result<serde_json::Value, String> {
-        let exec_id = payload.get("execution_id").and_then(|v| v.as_str()).unwrap_or("default");
+        let exec_id = payload.get("execution_id")
+            .or_else(|| payload.get("exec_id"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("default");
         let node_id = payload.get("node_id").and_then(|v| v.as_str()).unwrap_or("unknown");
 
         let rec = self.resume_wait(exec_id, node_id).map_err(|e| e.to_string())?;

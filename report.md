@@ -1634,4 +1634,41 @@ Report: ./report.md
 5. `python -m unittest tests/governance/test_ci_architecture_check.py`: **5/5 PASS** (Exit Code 0).
 6. Isolasi Fisik: **24 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports**.
 
+---
+
+## INDEPENDENT REVIEW & HARDENING: L01.S02 GRAPH EVALUATION ENGINE
+
+**Timestamp**: 2026-10-07T01:30:00Z  
+**Branch**: `main`  
+**Base Commit**: `511e7d97f1a2c0419b916c376be1445108b63ed9`  
+**Status**: **REVIEW VERIFIED & HARDENED (12/12 Unit Tests, 3/3 Port Tests, 11/11 CI Checks PASS)**  
+
+### 1. Temuan Review Terhadap Prior Attempt
+1. **Risiko Stack Overflow pada Rekursi DFS**:
+   - *Akar Masalah*: Implementasi awal `detect_cycle` menggunakan pemanggilan fungsi rekursif `dfs_cycle` yang membebani call stack thread (batas default Windows 1 MB), berisiko memicu `EXCEPTION_STACK_OVERFLOW` pada graf rantai linier dalam (>10.000 node).
+   - *Perbaikan*: Direfaktor menjadi iterative DFS berbasis heap stack `Vec<(&str, usize)>` dengan status `on_stack` (3-color DFS equivalent), sepenuhnya kebal terhadap limit kedalaman recursion call stack.
+2. **Presisi Ekstraksi Siklus (Cycle Path Slicing)**:
+   - *Akar Masalah*: Siklus dengan awalan non-siklik (e.g. `A -> B -> C -> B`) sebelumnya menyertakan node prefix `A` ke dalam array siklus.
+   - *Perbaikan*: Mengekstrak irisan tepat dari kemunculan pertama node penutup (`[B, C, B]`).
+3. **Determinisme Topological Sort (Kahn's Algorithm)**:
+   - *Akar Masalah*: Seeding antrean Kahn menggunakan iterasi `HashMap` yang memiliki urutan non-deterministik antar-run di Rust karena randomized hasher seed.
+   - *Perbaikan*: Seeding queue diinisialisasi dari `root_triggers` terurut leksikografis, dan tetangga kandidat diurutkan sebelum dimasukkan ke antrean.
+4. **Verifikasi Fail-Closed Topological Order Length**:
+   - *Akar Masalah*: Jika terdapat siklus pada subgraf terisolasi, Kahn's algorithm akan menghasilkan panjang order < total node tanpa fail-closed safeguard.
+   - *Perbaikan*: Ditambahkan pengecekan eksplisit `topological_order.len() < graph.nodes.len()` yang otomatis mengembalikan `is_dag: false`.
+5. **Toleransi Skema Serde & Interoperabilitas Dispatcher**:
+   - Ditambahkan `#[serde(default)]` pada field-field `GraphDefinition`, `GraphNode`, dan `GraphEdge` sehingga definisi graf minimal tanpa `workflow_id`, `id`, atau `node_type` dapat dide-serialize tanpa error.
+   - Dispatcher `handle_port_node_status` dan `handle_port_wait_suspend`/`resume` diselaraskan agar menerima key fleksibel (`target`/`target_status`, `exec_id`/`execution_id`).
+6. **Cakupan Pengujian 4/4 Port Disediakan**:
+   - Ditambahkan pengujian `test_wait_and_resume_ports_roundtrip` di `crates/n8n-port-contract/tests/graph_evaluation_port_test.rs` sehingga ke-4 port yang disediakan (`evaluate`, `node.status`, `wait.suspend`, `wait.resume`) teruji secara menyeluruh.
+   - Unit test suite diperluas dari 7 menjadi 12 test mencakup uji graf rantai linier 15.000 node.
+
+### 2. Rekapitulasi Verifikasi Pengujian Pasca-Hardening
+1. `rustc --test lego/.../implementation/mod.rs`: **12/12 unit tests PASS** (termasuk 15.000 node chain, exact cycle slicing, self-loops, deterministic sort).
+2. `cargo test -p n8n-port-contract`: **19 passed; 0 failed** (Exit Code 0).
+3. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+4. `python -m unittest tests/governance/test_subagent_result_validator.py`: **13/13 PASS** (Exit Code 0).
+5. `python -m unittest tests/governance/test_ci_architecture_check.py`: **5/5 PASS** (Exit Code 0).
+6. `cargo test --workspace`: **All workspace tests PASS** (Exit Code 0).
+
 Report: ./report.md
