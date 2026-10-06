@@ -444,8 +444,8 @@ class CIArchitectureEnforcer:
         # 3. Exact taxonomy distribution enforcement
         expected_counts = {
             "CERTIFIED": 0,
-            "TESTED": 10,
-            "IMPLEMENTED": 21,
+            "TESTED": 11,
+            "IMPLEMENTED": 20,
             "CONTRACTED": 44,
             "DESIGNED": 8,
         }
@@ -455,11 +455,11 @@ class CIArchitectureEnforcer:
             if actual != expected:
                 res.error(f"Taxonomy count mismatch for status '{st}': expected {expected}, found {actual}")
 
-        # 4. Verify 10 priority Sub-LEGOs are exactly the ones marked TESTED
+        # 4. Verify priority Sub-LEGOs are exactly the ones marked TESTED
         priority_tested_ids = {
             "L00.S01", "L00.S02", "L00.S03", "L00.S04",
             "L01.S01", "L01.S04", "L02.S04", "L03.S01",
-            "L05.S02", "L06.S01"
+            "L05.S01", "L05.S02", "L06.S01"
         }
         actual_tested_ids = {s_id for s_id, s_data in self.sublegos.items() if s_data.get("status") == "TESTED"}
 
@@ -469,7 +469,7 @@ class CIArchitectureEnforcer:
         if missing_tested:
             res.error(f"Missing priority Sub-LEGO(s) from TESTED status: {sorted(missing_tested)}")
         if unexpected_tested:
-            res.error(f"Unexpected Sub-LEGO(s) marked TESTED (not in 10 priority list): {sorted(unexpected_tested)}")
+            res.error(f"Unexpected Sub-LEGO(s) marked TESTED (not in priority list): {sorted(unexpected_tested)}")
 
         # 5. Verify 8 DESIGNED Sub-LEGOs belong to L11 Future Platform
         expected_designed_ids = {f"L11.S0{i}" for i in range(1, 9)}
@@ -482,7 +482,7 @@ class CIArchitectureEnforcer:
             res.log(f"Taxonomy ladder enforced: DESIGNED -> CONTRACTED -> IMPLEMENTED -> TESTED -> CERTIFIED")
             res.log(f"Taxonomy breakdown: CERTIFIED={status_counts['CERTIFIED']}, TESTED={status_counts['TESTED']}, IMPLEMENTED={status_counts['IMPLEMENTED']}, CONTRACTED={status_counts['CONTRACTED']}, DESIGNED={status_counts['DESIGNED']}")
             res.log(f"Quality floor verified: Exactly 0 individual Sub-LEGOs overclaimed as CERTIFIED.")
-            res.log(f"Priority floor verified: Exactly 10 priority Sub-LEGOs verified at TESTED status.")
+            res.log(f"Priority floor verified: Exactly 11 Sub-LEGOs verified at TESTED status.")
 
     def _print_summary(self, overall_pass: bool, results: List[ArchitectureCheckResult]):
         print(f"{BOLD}{CYAN}{'='*78}{RESET}")

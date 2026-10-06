@@ -1417,3 +1417,57 @@ Antigravity dan seluruh sub-agent mengadopsi secara mutlak 20 pasal pada `ANTIGR
 - **Issue #4 Status**: **OPEN / IN PROGRESS** (Quality Floor Active).
 
 Report: ./report.md
+
+
+---
+
+## EXECUTION GATE: SUB-LEGO L05.S01 (WORKFLOW & EXECUTION PERSISTENCE) MIGRATION
+
+**Timestamp**: 2026-10-07T00:14:00Z  
+**Sub-LEGO Identity**: `L05.S01` (Workflow/execution persistence)  
+**Owning LEGO**: `L05-data-storage`  
+**Runtime Host**: `H05` (Data Host)  
+**Authoritative State Domain**: `workflow-metadata-store`  
+**Execution Model**: `stateful-component`  
+**Transition Status**: `IMPLEMENTED → TESTED` (Quality floor active: NOT CERTIFIED)  
+
+### 1. Cakupan Implementasi Fisik Kanonikal
+- **Direktori Fisik**: `lego/L05-data-storage/S01-workflow-execution-persistence/`
+  - `CONTRACT.md`: Status diperbarui ke `TESTED`, batasan port & invariansi terdefinisi.
+  - `ports/provided.json`: `port.storage.persistence.save.v1`, `port.storage.persistence.load.v1`.
+  - `ports/required.json`: `port.security.context.validate.v1` (Provider `L02.S01`).
+  - `implementation/mod.rs`: `WorkflowExecutionPersistenceStore`, `ExecutionPersistenceRecord`, `WorkflowPersistenceRecord`, `PersistenceSavePayload`, `PersistenceLoadQuery`, `PersistenceLoadResponse`, dispatcher port save & load, fsync atomic durability.
+  - `tests/persistence_test.rs`: Unit test & crash recovery verification.
+  - `evidence/S01-EVIDENCE.md`: Ledger bukti verifikasi invarian.
+- **Port Contract Integration**:
+  - `crates/n8n-port-contract/tests/persistence_port_test.rs`: Pengujian InProcessAdapter roundtrip dan penegakan batas keamanan (SecurityDenied jika missing principal/tenant/authority).
+
+### 2. Verifikasi 5 Invarian Utama
+1. **Durabilitas Atomik**: Setiap penulisan record eksekusi dan workflow metadata melakukan pemanggilan eksplisit fsync (`file.sync_all()`).
+2. **Crash-Recovery Parity**: Verifikasi melintasi instance berbeda (`test_durable_crash_recovery_across_instances`). Instance yang dihentikan (crash simulation) dapat memulihkan 100% data tanpa kehilangan state.
+3. **Fail-Closed Persistence**: Upaya inisialisasi pada path tidak valid/unwritable langsung menghasilkan error (`test_fail_closed_on_unwritable_path`). Nol toleransi silent fallback ke in-memory.
+4. **Transport-Neutral Port Contract**: Port save dan load menangani serialisasi payload typed tanpa dependensi transport spesifik.
+5. **Isolasi Fisik & Import**: `scripts/ci_architecture_check.py` memindai 22 file sumber di `lego/` dan menemukan **0 private cross-Sub-LEGO imports** (100% terisolasi).
+
+### 3. Rekapitulasi Hasil Pengujian
+1. **CI Architecture Enforcement (`scripts/ci_architecture_check.py`)**:
+   - 7/7 checks **PASS** (Exit Code 0).
+   - Validasi taksonomi: CERTIFIED=0, TESTED=11, IMPLEMENTED=20, CONTRACTED=44, DESIGNED=8.
+2. **Port Contract Test Suite (`cargo test -p n8n-port-contract`)**:
+   - **16 passed; 0 failed** (termasuk 2 persistence port integration tests).
+3. **Monorepo Workspace Test Suite (`cargo test --workspace`)**:
+   - **537 passed; 0 failed; 1 ignored** (0 errors).
+4. **App Integration Test Suite (`cargo test --manifest-path apps/n8n-rust/Cargo.toml --lib`)**:
+   - **8 passed; 0 failed**.
+5. **CLI E2E WAL Fail-Closed (`tests/integration/test_wal_fail_closed_cli.py`)**:
+   - **2/2 passed** (Exit Code 1 fail-closed terverifikasi).
+
+### 4. Distribusi Status 83 Sub-LEGO Terkini
+- **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+- **TESTED**: **11** (13.3%) — Bertambah 1 (`L05.S01`).
+- **IMPLEMENTED (Debt)**: **20** (24.1%) — Berkurang 1 (migrasi L05.S01 selesai).
+- **CONTRACTED**: **44** (53.0%)
+- **DESIGNED**: **8** (9.6%)
+- **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+Report: ./report.md

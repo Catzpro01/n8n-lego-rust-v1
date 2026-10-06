@@ -10,7 +10,7 @@
 - **State Ownership**: `workflow-metadata-store`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `rolling-dual-version`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 

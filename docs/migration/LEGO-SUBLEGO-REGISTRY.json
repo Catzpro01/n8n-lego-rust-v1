@@ -817,7 +817,7 @@
           "state_ownership": "workflow-metadata-store",
           "contract_version": "1.0.0",
           "compatibility_policy": "rolling-dual-version",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L05-data-storage/S01-workflow-execution-persistence/CONTRACT.md",
           "ports": {
             "provided": [
