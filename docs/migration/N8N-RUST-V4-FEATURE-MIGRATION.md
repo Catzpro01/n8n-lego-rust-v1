@@ -119,6 +119,44 @@ Every migrated capability must have:
 
 No source issue is considered migrated merely because its title or design document exists in the new repo.
 
+
+## Additional source issue coverage
+
+The migration scope also includes these implementation-relevant requirements:
+
+- #78 — single-tenant-first VPS-native control plane with future multi-tenant boundaries.
+- #79 — burst traffic, overload control, admission/backpressure, graceful degradation.
+- #80 — Rust strangler migration while preserving the official n8n UI and node compatibility.
+- #84 — installation, upgrade, packaging and compatibility lifecycle.
+- #86 — AI provider capability honesty, approval-bound authority and usage accounting.
+- #87 — MCP/Agent boundary, node portability, Node Creator and translation contracts.
+- #88 — AI decision boundary and human-controlled high-impact actions.
+- #93 — lightweight local AI routing/decision runtime as an optional provider/runtime adapter.
+- #95/#100 — official/community/private/custom/native node ecosystem admission and runtime locality.
+- #96 — VPS operational boundary, gateway health, network binding and remote reachability.
+- #98 — parallel milestone isolation and agent/workspace boundaries as delivery infrastructure, not runtime product behavior.
+- #99/#103–#109 — trigger/webhook/schedule/event/manual/waiting ingress, route lifecycle, activation/reconciliation, admission, idempotency and performance gates.
+- #111 — advanced ingress efficiency and smart runtime features.
+- #115 — resilient scraper/browser hybrid node capability.
+- #116 — native high-performance node catalog beyond the upstream baseline.
+- #210 — uncovered architecture gaps discovered during design discussions; each concrete requirement must be promoted into the migration matrix before implementation.
+- #223 — dynamic parameters/schema runtime.
+- #224/#225 — advanced runtime/platform feature backlog.
+- #228–#239 — post-P11 feature families; these are now part of this migration program because the owner explicitly requested the full feature set, but each capability still needs executable acceptance evidence before it is marked implemented.
+- #240/#241/#245 — frontend LEGO evolution, migration foundation, notification/accessibility parity.
+- #266/#271/#272/#282/#285/#286/#294/#295/#307/#415 — governance/operations/worker-control requirements; retain only those portions needed to make migration delivery safe and auditable, not as n8n product features.
+- #418 — lazy capability discovery and token-aware execution budgets; migrate as runtime capability/budget logic rather than Manager-specific orchestration.
+
+## Feature-fidelity rule for legacy innovations
+
+The source repo contains several innovation proposals whose implementation may be highly domain-specific. They are not copied as opaque old code. Their observable product requirement is re-expressed using the current architecture:
+
+- scraper/browser hybrid -> node capability + isolated runtime locality + bounded network policy;
+- native node catalog -> native Rust node registry + admission metadata + compatibility contracts;
+- Laya/local AI router -> provider adapter behind the Agent/AI runtime boundary;
+- token-aware budgets -> execution-context resource budgets and admission policy;
+- frontend migration -> keep the official n8n Vue consumer contract while changing backend/runtime internals.
+
 ## Priority order
 
 P0:
