@@ -22,7 +22,21 @@ A source issue is classified into one of four buckets:
 
 Governance issues must not become user-facing application features.
 
-## Canonical migration tracks
+## Milestone model
+
+The migration is now organized by **LEGO → Sub-LEGO → Work Item**, not by slice-based planning.
+
+- **LEGO** = GitHub milestone / product capability.
+- **Sub-LEGO** = independently verifiable capability inside the LEGO.
+- **Work Item** = issue, PR, test, migration, or evidence artifact.
+
+Canonical hierarchy and identifiers are defined in `docs/migration/LEGO-MILESTONE-PLAN.md`.
+
+GitHub milestone planning must use the LEGO level. Issues and PRs reference one primary Sub-LEGO using the stable `Lxx.Syy` identifier. Historical n8n-rust-v.4 issue numbers remain source references only.
+
+**Slice is not a planning primitive in this repository.** Do not introduce roadmap structure using slice/vertical-slice terminology.
+
+## Legacy requirement mapping
 
 | Track | Source issues | Target in n8n-lego-rust-v1 |
 |---|---|---|
