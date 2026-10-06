@@ -466,8 +466,8 @@ class CIArchitectureEnforcer:
         # 3. Exact taxonomy distribution enforcement
         expected_counts = {
             "CERTIFIED": 0,
-            "TESTED": 13,
-            "IMPLEMENTED": 19,
+            "TESTED": 14,
+            "IMPLEMENTED": 18,
             "CONTRACTED": 43,
             "DESIGNED": 8,
         }
@@ -480,7 +480,8 @@ class CIArchitectureEnforcer:
         # 4. Verify priority Sub-LEGOs are exactly the ones marked TESTED
         priority_tested_ids = {
             "L00.S01", "L00.S02", "L00.S03", "L00.S04",
-            "L01.S01", "L01.S02", "L01.S03", "L01.S04", "L02.S04", "L03.S01",
+            "L01.S01", "L01.S02", "L01.S03", "L01.S04",
+            "L02.S01", "L02.S04", "L03.S01",
             "L05.S01", "L05.S02", "L06.S01"
         }
         actual_tested_ids = {s_id for s_id, s_data in self.sublegos.items() if s_data.get("status") == "TESTED"}
@@ -504,7 +505,7 @@ class CIArchitectureEnforcer:
             res.log(f"Taxonomy ladder enforced: DESIGNED -> CONTRACTED -> IMPLEMENTED -> TESTED -> CERTIFIED")
             res.log(f"Taxonomy breakdown: CERTIFIED={status_counts['CERTIFIED']}, TESTED={status_counts['TESTED']}, IMPLEMENTED={status_counts['IMPLEMENTED']}, CONTRACTED={status_counts['CONTRACTED']}, DESIGNED={status_counts['DESIGNED']}")
             res.log(f"Quality floor verified: Exactly 0 individual Sub-LEGOs overclaimed as CERTIFIED.")
-            res.log(f"Priority floor verified: Exactly 13 Sub-LEGOs verified at TESTED status.")
+            res.log(f"Priority floor verified: Exactly 14 Sub-LEGOs verified at TESTED status.")
 
     def check_governance_semantic_consistency(self, res: ArchitectureCheckResult):
         """Check 8: Semantic governance consistency between AGENTS.md and MASTER EXECUTION CONTRACT.

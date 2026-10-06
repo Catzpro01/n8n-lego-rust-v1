@@ -304,7 +304,7 @@
           "state_ownership": "stateless",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L02-security/S01-principal-security-context/CONTRACT.md",
           "ports": {
             "provided": [

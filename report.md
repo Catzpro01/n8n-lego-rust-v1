@@ -1719,4 +1719,52 @@ Report: ./report.md
 4. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
 5. Isolasi Fisik: **26 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
 
+
+---
+
+## EXECUTION MILESTONE: L02.S01 PRINCIPAL AND SECURITY CONTEXT
+
+**Timestamp**: 2026-10-07T02:00:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `3a7464b83b38c208492087e59b369527fe4b931a`  
+**Status**: **L02.S01 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L02.S01
+- **Sub-LEGO**: `L02.S01` — `Principal and security context`
+- **Canonical Root**: `lego/L02-security/S01-principal-security-context/`
+- **Runtime Host**: `H02` (Control Host)
+- **State Ownership Domain**: `stateless`
+- **Provided Ports**:
+  - `port.security.context.create.v1`: Pembuatan SecurityContext terverifikasi dari principal, tenant, scopes, deadline, audience, dan resource budget.
+  - `port.security.context.validate.v1`: Validasi fail-closed terhadap ketiadaan principal/tenant, kedaluwarsa deadline epoch, pemeriksaan wewenang scope (exact, prefix wildcard `port.execution.*`, universal wildcard `*`), dan audience mismatch.
+- **Required Ports**:
+  - `port.runtime.contract.envelope.v1` (Provider: `L00.S01`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi port dan invarian L02.S01.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: SecurityContextService mandiri, fail-closed validator, scope evaluator, dan port dispatchers.
+  - `tests/principal_security_context_test.rs`: 9 unit tests (kreasi context, penolakan empty principal/tenant, evaluasi wewenang exact & wildcard, penegakan kedaluwarsa deadline, validasi audience, dan dispatching port create & validate).
+  - `evidence/S01-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur L02.S01.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/security_context_port_test.rs`.
+- Menguji `InProcessAdapter` roundtrip kreasi dan validasi context, penolakan wewenang scope yang tidak memadai, serta penolakan caller tanpa scope izin (`PortStatus::SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L02.S01` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **14** (16.9%) — Bertambah 1 (`L02.S01`).
+  - **IMPLEMENTED (Debt)**: **18** (21.7%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `rustc --test lego/L02-security/S01-principal-security-context/implementation/mod.rs`: **9/9 unit tests PASS** (Exit Code 0).
+2. `cargo test -p n8n-port-contract`: **24 passed; 0 failed** (Exit Code 0).
+3. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+4. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
+5. Isolasi Fisik: **28 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
+
 Report: ./report.md
