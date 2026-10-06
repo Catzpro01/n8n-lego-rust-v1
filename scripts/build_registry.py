@@ -125,7 +125,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Security", "lego_slug": "L02-security", "sub_slug": "S03-authorization",
         "ownership": "security-kernel", "execution_model": "in-process", "runtime_host": "H02",
         "state_ownership": "authz-policy-cache", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "IMPLEMENTED",
+        "status": "TESTED",
         "provided_ports": ["port.security.authz.authorize.v1"],
         "required_ports": ["port.security.context.validate.v1"]
     },
@@ -792,15 +792,16 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 14, f"Expected 14 TESTED, got {status_counts['TESTED']}"
-    assert status_counts["IMPLEMENTED"] == 18, f"Expected 18 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
+    assert status_counts["TESTED"] == 15, f"Expected 15 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["IMPLEMENTED"] == 17, f"Expected 17 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
     assert status_counts["CONTRACTED"] == 43, f"Expected 43 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
     priority_tested = {
         'L00.S01', 'L00.S02', 'L00.S03', 'L00.S04',
         'L01.S01', 'L01.S02', 'L01.S03', 'L01.S04',
-        'L02.S01', 'L02.S04', 'L03.S01', 'L05.S01', 'L05.S02', 'L06.S01'
+        'L02.S01', 'L02.S03', 'L02.S04', 'L03.S01',
+        'L05.S01', 'L05.S02', 'L06.S01'
     }
     actual_tested = {item['id'] for item in SUBLEGOS_DATA if item['status'] == 'TESTED'}
     assert actual_tested == priority_tested, f"TESTED Sub-LEGOs do not match priority list: {actual_tested ^ priority_tested}"
