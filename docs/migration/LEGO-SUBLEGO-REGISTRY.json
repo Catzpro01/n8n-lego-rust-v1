@@ -865,7 +865,7 @@
           "state_ownership": "execution-item-blobs",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L05-data-storage/S03-execution-data-plane/CONTRACT.md",
           "ports": {
             "provided": [
