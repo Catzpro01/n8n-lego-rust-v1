@@ -10,7 +10,7 @@
 - **State Ownership**: `enterprise-license-claims`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 
@@ -19,6 +19,7 @@
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Evaluates enterprise license claims, feature entitlements, tier quotas, and SAML/SSO surface configurations.
 
 ---
 
