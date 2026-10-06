@@ -71,9 +71,26 @@ pub struct WorkflowExecutionResult {
     pub error: Option<String>,
 }
 
+/// Kernel error unifying DAG planning, durability journaling, and node execution errors.
+#[derive(Debug, thiserror::Error)]
+pub enum KernelError {
+    #[error("Plan error: {0}")]
+    Plan(#[from] PlanError),
+
+    #[error("Durability error: {0}")]
+    DurabilityError(#[from] crate::journal::JournalError),
+
+    #[error("Execution error: {0}")]
+    Execution(#[from] KernelExecutionError),
+
+    #[error("Runtime error: {0}")]
+    Runtime(String),
+}
+
 /// The core asynchronous DAG execution engine.
 pub struct KernelScheduler {
     options: SchedulerOptions,
+    journal: Option<Arc<ExecutionJournal>>,
 }
 
 impl Default for KernelScheduler {
@@ -85,7 +102,44 @@ impl Default for KernelScheduler {
 impl KernelScheduler {
     /// Creates a KernelScheduler with given options.
     pub fn new(options: SchedulerOptions) -> Self {
-        Self { options }
+        Self {
+            options,
+            journal: None,
+        }
+    }
+
+    /// Injects a preconfigured ExecutionJournal into the scheduler.
+    pub fn with_journal(mut self, journal: Arc<ExecutionJournal>) -> Self {
+        self.journal = Some(journal);
+        self
+    }
+
+    /// Access reference to the injected journal, if configured.
+    pub fn journal(&self) -> Option<&Arc<ExecutionJournal>> {
+        self.journal.as_ref()
+    }
+
+    /// Configures durable append-only WAL storage at the given path with `DurabilityPolicy::Strict`.
+    pub async fn with_durable_wal<P: AsRef<std::path::Path>>(
+        mut self,
+        path: P,
+    ) -> Result<Self, crate::journal::JournalError> {
+        let storage = Arc::new(crate::journal::FileAppendJournalStorage::create_or_open(path).await?);
+        let journal = Arc::new(crate::journal::ExecutionJournal::with_storage_and_policy(
+            storage,
+            crate::journal::DurabilityPolicy::Strict,
+        ));
+        self.journal = Some(journal);
+        Ok(self)
+    }
+
+    /// Creates a KernelScheduler configured with durable append-only WAL storage and `DurabilityPolicy::Strict`.
+    pub async fn new_with_durable_wal<P: AsRef<std::path::Path>>(
+        options: SchedulerOptions,
+        path: P,
+    ) -> Result<Self, crate::journal::JournalError> {
+        let scheduler = Self::new(options);
+        scheduler.with_durable_wal(path).await
     }
 
     /// Executes a workflow using default KernelNodeExecutor and ExecutionJournal.
@@ -94,9 +148,12 @@ impl KernelScheduler {
         workflow: &Workflow,
         initial_data: Option<Vec<INodeExecutionData>>,
         context: &Arc<ExecutionContext>,
-    ) -> Result<WorkflowExecutionResult, PlanError> {
+    ) -> Result<WorkflowExecutionResult, KernelError> {
         let executor = Arc::new(crate::executor::KernelNodeExecutor::new());
-        let journal = Arc::new(crate::journal::ExecutionJournal::new());
+        let journal = self
+            .journal
+            .clone()
+            .unwrap_or_else(|| Arc::new(crate::journal::ExecutionJournal::new()));
         self.execute_workflow(workflow, initial_data, Arc::clone(context), executor, journal).await
     }
 
@@ -108,7 +165,7 @@ impl KernelScheduler {
         context: Arc<ExecutionContext>,
         executor: Arc<dyn NodeExecutor>,
         journal: Arc<ExecutionJournal>,
-    ) -> Result<WorkflowExecutionResult, PlanError> {
+    ) -> Result<WorkflowExecutionResult, KernelError> {
         let plan = ExecutionPlan::from_workflow(workflow)?;
         self.execute_plan(&plan, workflow, initial_data, context, executor, journal)
             .await
@@ -123,13 +180,23 @@ impl KernelScheduler {
         context: Arc<ExecutionContext>,
         executor: Arc<dyn NodeExecutor>,
         journal: Arc<ExecutionJournal>,
-    ) -> Result<WorkflowExecutionResult, PlanError> {
+    ) -> Result<WorkflowExecutionResult, KernelError> {
         let start_time = Utc::now();
         let run_id = context.run_id.clone();
         let wf_id = context.workflow_id.clone();
 
+        macro_rules! check_journal {
+            ($op:expr) => {
+                if let Err(e) = $op {
+                    if journal.durability_policy() == crate::journal::DurabilityPolicy::Strict {
+                        return Err(KernelError::DurabilityError(e));
+                    }
+                }
+            };
+        }
+
         // 1. Lifecycle start events
-        let _ = journal.record_workflow_started(&wf_id, &run_id).await;
+        check_journal!(journal.record_workflow_started(&wf_id, &run_id).await);
         if self.options.emit_events {
             context.emit_event(
                 EventType::WorkflowStarted,
@@ -187,7 +254,6 @@ impl KernelScheduler {
         loop {
             // Check cancellation
             if context.is_cancelled() {
-                execution_error = Some("Execution cancelled by request".to_string());
                 break;
             }
 
@@ -212,9 +278,11 @@ impl KernelScheduler {
                 if has_incoming && input_items.is_empty() {
                     frame.mark_skipped();
                     skipped_nodes.insert(node_name.clone());
-                    let _ = journal
-                        .record_node_skipped(&node_name, "No input items routed to node")
-                        .await;
+                    check_journal!(
+                        journal
+                            .record_node_skipped(&node_name, "No input items routed to node")
+                            .await
+                    );
 
                     // Propagate skip to children
                     for edge in plan.get_all_child_edges(&node_name) {
@@ -232,9 +300,11 @@ impl KernelScheduler {
                 frame.mark_running();
                 running_nodes.insert(node_name.clone());
 
-                let _ = journal
-                    .record_node_started(&node_name, frame.input_data.clone())
-                    .await;
+                check_journal!(
+                    journal
+                        .record_node_started(&node_name, frame.input_data.clone())
+                        .await
+                );
 
                 if self.options.emit_realtime {
                     context
@@ -280,13 +350,15 @@ impl KernelScheduler {
                     frame.mark_completed(output_data.clone());
                     completed_nodes.insert(finished_node.clone());
 
-                    let _ = journal
-                        .record_node_completed(
-                            &finished_node,
-                            output_data.clone(),
-                            frame.execution_time_ms.unwrap_or(0),
-                        )
-                        .await;
+                    check_journal!(
+                        journal
+                            .record_node_completed(
+                                &finished_node,
+                                output_data.clone(),
+                                frame.execution_time_ms.unwrap_or(0),
+                            )
+                            .await
+                    );
 
                     if self.options.emit_events {
                         context.emit_event(
@@ -345,7 +417,7 @@ impl KernelScheduler {
                 Err(err) => {
                     let err_msg = err.to_string();
                     frame.mark_failed(err_msg.clone());
-                    let _ = journal.record_node_failed(&finished_node, &err_msg).await;
+                    check_journal!(journal.record_node_failed(&finished_node, &err_msg).await);
 
                     if self.options.stop_on_first_error {
                         execution_error = Some(err_msg.clone());
@@ -391,12 +463,10 @@ impl KernelScheduler {
         let end_time = Utc::now();
         let duration_ms = (end_time - start_time).num_milliseconds().max(0) as u64;
 
-        let final_status = if execution_error.is_some() {
-            if context.is_cancelled() {
-                WorkflowExecutionStatus::Cancelled
-            } else {
-                WorkflowExecutionStatus::Failed
-            }
+        let final_status = if let Some(ref _err) = execution_error {
+            WorkflowExecutionStatus::Failed
+        } else if context.is_cancelled() {
+            WorkflowExecutionStatus::Cancelled
         } else {
             WorkflowExecutionStatus::Success
         };
@@ -404,7 +474,7 @@ impl KernelScheduler {
         // Finalize journal and notifications
         match final_status {
             WorkflowExecutionStatus::Success => {
-                let _ = journal.record_workflow_completed(duration_ms).await;
+                check_journal!(journal.record_workflow_completed(duration_ms).await);
                 if self.options.emit_realtime {
                     context
                         .push_realtime(PushMessage::execution_finished(&run_id, &wf_id, "success"))
@@ -413,7 +483,7 @@ impl KernelScheduler {
             }
             WorkflowExecutionStatus::Failed => {
                 let err_str = execution_error.as_deref().unwrap_or("Unknown failure");
-                let _ = journal.record_workflow_failed(err_str).await;
+                check_journal!(journal.record_workflow_failed(err_str).await);
                 if self.options.emit_realtime {
                     context
                         .push_realtime(PushMessage::execution_finished(&run_id, &wf_id, "error"))
@@ -421,16 +491,20 @@ impl KernelScheduler {
                 }
             }
             WorkflowExecutionStatus::Cancelled => {
-                let _ = journal
-                    .record(
-                        None,
-                        crate::journal::JournalStepType::WorkflowCancelled,
-                        None,
-                        None,
-                        execution_error.clone(),
-                        serde_json::json!({}),
-                    )
-                    .await;
+                check_journal!(
+                    journal
+                        .record(
+                            None,
+                            crate::journal::JournalStepType::WorkflowCancelled,
+                            None,
+                            None,
+                            execution_error
+                                .clone()
+                                .or_else(|| Some("Execution cancelled by request".to_string())),
+                            serde_json::json!({}),
+                        )
+                        .await
+                );
                 if self.options.emit_realtime {
                     context
                         .push_realtime(PushMessage::execution_finished(
@@ -443,6 +517,12 @@ impl KernelScheduler {
             }
         }
 
+        let result_error = if final_status == WorkflowExecutionStatus::Cancelled && execution_error.is_none() {
+            Some("Execution cancelled by request".to_string())
+        } else {
+            execution_error
+        };
+
         Ok(WorkflowExecutionResult {
             execution_id: run_id,
             workflow_id: wf_id,
@@ -451,7 +531,7 @@ impl KernelScheduler {
             start_time,
             end_time,
             duration_ms,
-            error: execution_error,
+            error: result_error,
         })
     }
 }

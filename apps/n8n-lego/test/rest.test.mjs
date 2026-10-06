@@ -13,6 +13,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startServer } from '../src/server.mjs';
+import { deserializeRustExecutionResult } from '../src/rust-engine-client.mjs';
 
 /**
  * The catalog (node types, icons, roles) is fetched per install, not committed —
@@ -260,9 +261,58 @@ test('POST /rest/workflows/run executes unsaved workflow and GET /rest/execution
 
   const execution = await api('GET', `/rest/executions/${execId}`);
   assert.equal(execution.status, 200);
+  assert.ok(execution.json.data.workflowData, 'workflowData must not be null');
+  assert.equal(execution.json.data.workflowData.name, 'Unsaved run');
   const { parse: flattedParse } = await import('flatted');
   const executionData = typeof execution.json.data.data === 'string' ? flattedParse(execution.json.data.data) : execution.json.data.data;
   assert.deepEqual(executionData.resultData.runData['Edit Fields'][0].data.main[0][0].json, { status: 'unsaved-ok' });
+  assert.equal(executionData.resultData.runData['Edit Fields'][0].executionIndex, 0, 'executionIndex must be 0');
+  assert.equal(executionData.resultData.runData['Manual'][0].executionIndex, 0, 'executionIndex must be 0');
+});
+
+test('GET & POST /rest/workflow-history routes return valid snapshots and versions', async () => {
+  const created = await api('POST', '/rest/workflows', {
+    name: 'History Test Workflow',
+    nodes: [{ id: '1', name: 'Manual', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0], parameters: {} }],
+    connections: {},
+  });
+  assert.equal(created.status, 200);
+  const wfId = created.json.data.id;
+
+  const list = await api('GET', `/rest/workflow-history/workflow/${wfId}`);
+  assert.equal(list.status, 200);
+  assert.equal(list.json.count, 1);
+  assert.equal(list.json.data.length, 1);
+  assert.equal(list.json.data[0].workflowId, wfId);
+  assert.equal(list.json.data[0].authors, 'Owner Admin');
+
+  const version = await api('GET', `/rest/workflow-history/workflow/${wfId}/version/v123`);
+  assert.equal(version.status, 200);
+  assert.equal(version.json.data.versionId, 'v123');
+  assert.equal(version.json.data.workflowId, wfId);
+  assert.equal(version.json.data.authors, 'Owner Admin');
+  assert.ok(Array.isArray(version.json.data.nodes));
+
+  const versions = await api('POST', `/rest/workflow-history/workflow/${wfId}/versions`, { versionIds: ['v123'] });
+  assert.equal(versions.status, 200);
+  assert.deepEqual(versions.json.data.versions, []);
+
+  const notFoundHistory = await api('GET', '/rest/workflow-history/workflow/nonexistent-id');
+  assert.equal(notFoundHistory.status, 404);
+
+  const notFoundVersion = await api('GET', '/rest/workflow-history/workflow/nonexistent-id/version/v1');
+  assert.equal(notFoundVersion.status, 404);
+
+  await api('DELETE', `/rest/workflows/${wfId}`);
+});
+
+test('GET /rest/workflows/:workflowId/test-runs endpoints return empty list or 404', async () => {
+  const list = await api('GET', '/rest/workflows/some-wf-id/test-runs');
+  assert.equal(list.status, 200);
+  assert.deepEqual(list.json.data, []);
+
+  const single = await api('GET', '/rest/workflows/some-wf-id/test-runs/run-1');
+  assert.equal(single.status, 404);
 });
 
 test('unknown /rest endpoint answers with explicit unsupported semantics', async () => {
@@ -284,3 +334,151 @@ test('unauthenticated /rest writes are rejected', async () => {
   });
   assert.equal(response.status, 401);
 });
+
+test('GET /rest/workflows/:workflowId/collaboration/write-lock returns data: null', async () => {
+  const res = await api('GET', '/rest/workflows/test-wf/collaboration/write-lock');
+  assert.equal(res.status, 200);
+  assert.strictEqual(res.json.data, null);
+});
+
+test('GET /rest/executions/:id returns complete workflowData schema with id and versionId', async () => {
+  const run = await api('POST', '/rest/workflows/run', {
+    workflowData: {
+      id: 'wf-schema-test',
+      name: 'Schema Test Run',
+      nodes: [
+        { id: '1', name: 'Manual', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0], parameters: {} },
+      ],
+      connections: {},
+    },
+  });
+  assert.equal(run.status, 200);
+  const execId = run.json.data.executionId;
+  const execRes = await api('GET', `/rest/executions/${execId}`);
+  assert.equal(execRes.status, 200);
+  const wfData = execRes.json.data.workflowData;
+  assert.ok(wfData, 'workflowData must exist');
+  assert.ok(wfData.id, 'workflowData.id must exist');
+  assert.ok(wfData.versionId, 'workflowData.versionId must exist');
+  assert.equal(wfData.name, 'Schema Test Run');
+});
+
+test('node catalog exposes languageVersion for JS and Python on n8n-nodes-base.code', async () => {
+  // Test GET /rest/types/nodes.json
+  const { status, json: nodes } = await api('GET', '/rest/types/nodes.json');
+  assert.equal(status, 200);
+  const codeNode = nodes.find((n) => n.name === 'n8n-nodes-base.code');
+  assert.ok(codeNode, 'n8n-nodes-base.code must be present in catalog');
+
+  const jsVersionProp = codeNode.properties.find(
+    (p) => p.name === 'languageVersion' && p.displayOptions?.show?.language?.includes('javaScript'),
+  );
+  assert.ok(jsVersionProp, 'JavaScript languageVersion property must exist');
+  assert.equal(jsVersionProp.displayName, 'JavaScript Version');
+  assert.deepEqual(
+    jsVersionProp.options.map((o) => o.value),
+    ['default', '22', '20', '18'],
+  );
+
+  const pyVersionProp = codeNode.properties.find(
+    (p) =>
+      p.name === 'languageVersion' &&
+      (p.displayOptions?.show?.language?.includes('python') ||
+        p.displayOptions?.show?.language?.includes('pythonNative')),
+  );
+  assert.ok(pyVersionProp, 'Python languageVersion property must exist');
+  assert.equal(pyVersionProp.displayName, 'Python Version');
+  assert.deepEqual(
+    pyVersionProp.options.map((o) => o.value),
+    ['default', '3.12', '3.11', '3.10'],
+  );
+
+  // Test POST /rest/node-types
+  const typesRes = await api('POST', '/rest/node-types', {
+    nodeInfos: [{ name: 'n8n-nodes-base.code', version: 2 }],
+  });
+  assert.equal(typesRes.status, 200);
+  const fetchedCode = typesRes.json.data.find((n) => n.name === 'n8n-nodes-base.code');
+  assert.ok(fetchedCode, 'Fetched code node type must exist');
+  const fetchedJsVersion = fetchedCode.properties.find(
+    (p) => p.name === 'languageVersion' && p.displayOptions?.show?.language?.includes('javaScript'),
+  );
+  assert.ok(fetchedJsVersion, 'POST /rest/node-types must expose JavaScript languageVersion');
+});
+
+test('deserializeRustExecutionResult correctly flags error status and resultData.error on node error', () => {
+  const mockResponseWithNodeError = {
+    status: 'success', // Simulated misleading top-level status
+    data: {
+      id: 'mock-exec-1',
+      status: 'success',
+      resultData: {
+        runData: {
+          Code: [
+            {
+              executionIndex: 0,
+              executionStatus: 'error',
+              error: { message: 'ReferenceError: foo is not defined' },
+              data: { main: [[]] },
+            },
+          ],
+        },
+      },
+    },
+  };
+
+  const result = deserializeRustExecutionResult(mockResponseWithNodeError, {
+    workflowData: { id: 'test-wf', name: 'Test' },
+  });
+
+  assert.equal(result.status, 'error', 'Status must be error when a node failed');
+  assert.ok(result.data.resultData.error, 'resultData.error must be populated');
+  assert.equal(result.data.resultData.error.name, 'NodeExecutionError');
+  assert.ok(result.data.resultData.error.message.includes('ReferenceError: foo is not defined'));
+});
+
+test('POST /rest/workflows/run correctly propagates error when code execution fails', async () => {
+  const run = await api('POST', '/rest/workflows/run', {
+    workflowData: {
+      id: 'wf-code-error-propagate',
+      name: 'Code Error Propagation Run',
+      nodes: [
+        {
+          id: '1',
+          name: 'FailingCode',
+          type: 'n8n-nodes-base.code',
+          typeVersion: 2,
+          position: [0, 0],
+          parameters: {
+            language: 'javaScript',
+            languageVersion: 'default',
+            jsCode: 'throw new Error("Explicit error from user code");',
+          },
+        },
+      ],
+      connections: {},
+    },
+  });
+
+  assert.equal(run.status, 200);
+  assert.equal(run.json.data.status, 'error', 'Execution status must be error');
+
+  const execId = run.json.data.executionId;
+  const execRes = await api('GET', `/rest/executions/${execId}`);
+  assert.equal(execRes.status, 200);
+  assert.equal(execRes.json.data.status, 'error', 'Persisted execution status must be error');
+
+  const { parse: flattedParse } = await import('flatted');
+  const executionData = typeof execRes.json.data.data === 'string'
+    ? flattedParse(execRes.json.data.data)
+    : execRes.json.data.data;
+
+  assert.ok(executionData.resultData.error, 'Persisted execution must contain resultData.error');
+  assert.equal(executionData.resultData.error.name, 'NodeExecutionError');
+  assert.ok(
+    executionData.resultData.error.message.includes('Explicit error from user code'),
+    'Error message must reflect the failure',
+  );
+});
+
+

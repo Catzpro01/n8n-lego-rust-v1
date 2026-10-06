@@ -28,7 +28,8 @@ pub use journal::{
 };
 pub use plan::{ExecutionPlan, ExecutionStage, PlanEdge, PlanError};
 pub use scheduler::{
-    KernelScheduler, SchedulerOptions, WorkflowExecutionResult, WorkflowExecutionStatus,
+    KernelError, KernelScheduler, SchedulerOptions, WorkflowExecutionResult,
+    WorkflowExecutionStatus,
 };
 
 #[cfg(test)]
@@ -891,5 +892,130 @@ mod tests {
         assert_eq!(output[0][0].json["calc"], 50);
         assert_eq!(output[0][0].json["tag"], "node_processed");
         assert!(journal.is_node_completed("ComputeJs").await);
+    }
+
+    struct FailingStorage;
+    #[async_trait::async_trait]
+    impl JournalStorage for FailingStorage {
+        async fn append(&self, _entry: &JournalEntry) -> Result<(), JournalError> {
+            Err(JournalError::Storage("Simulated WAL disk I/O write failure".to_string()))
+        }
+        async fn load_all(&self) -> Result<Vec<JournalEntry>, JournalError> {
+            Ok(vec![])
+        }
+        async fn checkpoint(&self) -> Result<(), JournalError> {
+            Err(JournalError::Storage("Checkpoint failed".to_string()))
+        }
+    }
+
+    #[tokio::test]
+    async fn test_scheduler_strict_durability_fails_on_journal_error() {
+        let node_start = make_test_node("Start", "n8n-nodes-base.start", json!({}), json!({}));
+        let connections: Connections = Connections::new();
+        let workflow = Workflow::new(
+            Some("wf-durability-fail".into()),
+            None,
+            vec![node_start],
+            connections,
+            true,
+            None,
+            None,
+            None,
+        );
+
+        let context = Arc::new(ExecutionContext::new("wf-durability-fail", ExecutionMode::Manual));
+        let executor = Arc::new(KernelNodeExecutor::new());
+        let journal = Arc::new(ExecutionJournal::with_storage_and_policy(
+            Arc::new(FailingStorage),
+            DurabilityPolicy::Strict,
+        ));
+        let scheduler = KernelScheduler::default();
+
+        let result = scheduler
+            .execute_workflow(&workflow, None, context, executor, journal)
+            .await;
+
+        match result {
+            Err(KernelError::DurabilityError(JournalError::Storage(msg))) => {
+                assert!(msg.contains("Simulated WAL disk I/O write failure"));
+            }
+            other => panic!("Expected KernelError::DurabilityError, got: {:?}", other),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_scheduler_best_effort_durability_tolerates_journal_error() {
+        let node_start = make_test_node("Start", "n8n-nodes-base.start", json!({}), json!({}));
+        let connections: Connections = Connections::new();
+        let workflow = Workflow::new(
+            Some("wf-durability-tolerate".into()),
+            None,
+            vec![node_start],
+            connections,
+            true,
+            None,
+            None,
+            None,
+        );
+
+        let context = Arc::new(ExecutionContext::new("wf-durability-tolerate", ExecutionMode::Manual));
+        let executor = Arc::new(KernelNodeExecutor::new());
+        let journal = Arc::new(ExecutionJournal::with_storage_and_policy(
+            Arc::new(FailingStorage),
+            DurabilityPolicy::BestEffort,
+        ));
+        let scheduler = KernelScheduler::default();
+
+        let result = scheduler
+            .execute_workflow(&workflow, None, context, executor, journal)
+            .await;
+
+        assert!(result.is_ok(), "BestEffort policy must tolerate journal write errors");
+        let outcome = result.unwrap();
+        assert_eq!(outcome.status, WorkflowExecutionStatus::Success);
+    }
+
+    #[tokio::test]
+    async fn test_scheduler_journal_injection_and_durable_wal_config() {
+        let temp_dir = std::env::temp_dir().join(format!("n8n_test_scheduler_wal_{}", uuid::Uuid::new_v4()));
+        let wal_path = temp_dir.join("scheduler.wal");
+
+        let node_start = make_test_node("Start", "n8n-nodes-base.start", json!({}), json!({}));
+        let connections: Connections = Connections::new();
+        let workflow = Workflow::new(
+            Some("wf-wal-inject".into()),
+            None,
+            vec![node_start],
+            connections,
+            true,
+            None,
+            None,
+            None,
+        );
+
+        let context = Arc::new(ExecutionContext::new("wf-wal-inject", ExecutionMode::Manual));
+        let scheduler = KernelScheduler::new(SchedulerOptions::default())
+            .with_durable_wal(&wal_path)
+            .await
+            .expect("Configuring durable WAL on scheduler must succeed");
+
+        assert!(scheduler.journal().is_some());
+        assert_eq!(scheduler.journal().unwrap().durability_policy(), DurabilityPolicy::Strict);
+
+        let result = scheduler
+            .execute(&workflow, None, &context)
+            .await
+            .expect("Execution with durable WAL scheduler must succeed");
+
+        assert_eq!(result.status, WorkflowExecutionStatus::Success);
+
+        // Verify WAL file has persisted records
+        let restored = ExecutionJournal::open_file(&wal_path)
+            .await
+            .expect("Reopening WAL file must succeed");
+        assert!(restored.count().await >= 2);
+        assert!(restored.is_node_completed("Start").await);
+
+        let _ = tokio::fs::remove_dir_all(&temp_dir).await;
     }
 }

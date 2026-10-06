@@ -1064,7 +1064,7 @@ async fn api_v1_executions_handler(
     execute_workflow_internal(state, id, body).await
 }
 
-fn parse_kernel_workflow(val: serde_json::Value, fallback_id: &str) -> Result<KernelWorkflow, String> {
+pub fn parse_kernel_workflow(val: serde_json::Value, fallback_id: &str) -> Result<KernelWorkflow, String> {
     let wf_val = if let Some(inner) = val.get("workflowData").cloned() {
         inner
     } else if let Some(inner) = val.get("workflow").cloned() {

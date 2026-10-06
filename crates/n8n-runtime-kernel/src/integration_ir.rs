@@ -205,6 +205,75 @@ impl NetworkPolicy {
         Ok(())
     }
 
+    /// Asynchronously validates a target URL against anti-SSRF rules,
+    /// resolving DNS via `tokio::net::lookup_host` for hostnames before opening connections.
+    /// This prevents DNS rebinding and host spoofing attacks pointing to internal/private IPs:
+    /// 127.0.0.1, 10.x, 172.16.x, 192.168.x, 169.254.x, ::1, fc00::/7, fe80::/10.
+    pub async fn validate_url_async(&self, url_str: &str) -> Result<(), NetworkPolicyError> {
+        if self.allow_private_ips {
+            return Ok(());
+        }
+
+        // 1. Static validation first (format, blocked hostnames, and IP literals)
+        self.validate_url(url_str)?;
+
+        let parsed = reqwest::Url::parse(url_str)
+            .map_err(|e| NetworkPolicyError::InvalidUrl(e.to_string()))?;
+
+        let Some(host) = parsed.host_str() else {
+            return Err(NetworkPolicyError::InvalidUrl("Missing host in URL".to_string()));
+        };
+
+        let clean_host = host.trim().trim_start_matches('[').trim_end_matches(']');
+
+        // If host is an IP literal, validate_url has already checked it via is_blocked_ip
+        if let Ok(ip) = clean_host.parse::<std::net::IpAddr>() {
+            if Self::is_blocked_ip(&ip) {
+                return Err(NetworkPolicyError::BlockedHost(ip.to_string()));
+            }
+            return Ok(());
+        }
+
+        // 2. DNS resolution check using tokio::net::lookup_host
+        let port = parsed.port_or_known_default().unwrap_or(80);
+        let host_port = format!("{}:{}", clean_host, port);
+
+        match tokio::net::lookup_host(&host_port).await {
+            Ok(addrs) => {
+                let mut found_any = false;
+                for addr in addrs {
+                    found_any = true;
+                    let ip = addr.ip();
+                    if Self::is_blocked_ip(&ip) {
+                        return Err(NetworkPolicyError::BlockedHost(format!(
+                            "Host '{}' resolved to blocked IP '{}'",
+                            clean_host, ip
+                        )));
+                    }
+                }
+                if !found_any {
+                    return Err(NetworkPolicyError::BlockedHost(format!(
+                        "Host '{}' did not resolve to any IP address",
+                        clean_host
+                    )));
+                }
+            }
+            Err(e) => {
+                return Err(NetworkPolicyError::BlockedHost(format!(
+                    "DNS lookup failed for host '{}': {}",
+                    clean_host, e
+                )));
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Alias for `validate_url_async` performing DNS resolution check before connecting.
+    pub async fn validate_url_with_dns(&self, url_str: &str) -> Result<(), NetworkPolicyError> {
+        self.validate_url_async(url_str).await
+    }
+
     /// Checks if a hostname or IP string matches blocked internal/private targets.
     pub fn is_blocked_host(host: &str) -> bool {
         let host_lower = host.trim().to_lowercase();
@@ -789,6 +858,7 @@ impl IntegrationExecutor {
         let client = reqwest::Client::builder()
             .pool_max_idle_per_host(50)
             .timeout(Duration::from_secs(30))
+            .redirect(reqwest::redirect::Policy::none())
             .build()
             .unwrap_or_else(|_| reqwest::Client::new());
 
@@ -835,7 +905,7 @@ impl IntegrationExecutor {
         context_params: &HashMap<String, serde_json::Value>,
     ) -> Result<Vec<INodeExecutionData>, IntegrationError> {
         let base_url = interpolate_str(&spec.url_template, &item.json, context_params);
-        self.network_policy.validate_url(&base_url)?;
+        self.network_policy.validate_url_async(&base_url).await?;
         let method = parse_http_method(&spec.method);
 
         // Resolve Auth
@@ -878,55 +948,103 @@ impl IntegrationExecutor {
         let mut current_query = query_params;
 
         loop {
-            self.network_policy.validate_url(&current_url)?;
-            let mut attempt = 0;
+            let mut current_request_url = current_url.clone();
+            let mut current_request_method = method.clone();
+            let mut redirect_count = 0;
+
             let resp_text = loop {
-                attempt += 1;
-                let mut req = self.client.request(method.clone(), &current_url);
+                self.network_policy.validate_url_async(&current_request_url).await?;
 
-                for (hk, hv) in &headers {
-                    req = req.header(hk, hv);
-                }
-                for (qk, qv) in &current_query {
-                    req = req.query(&[(qk, qv)]);
-                }
-                if let Some(ref body) = resolved_body {
-                    req = req.json(body);
-                }
+                let mut attempt = 0;
+                let resp = loop {
+                    attempt += 1;
+                    let mut req = self.client.request(current_request_method.clone(), &current_request_url);
 
-                match req.send().await {
-                    Ok(resp) => {
-                        let status = resp.status().as_u16();
-                        if spec.rate_limit.should_retry(status, attempt) {
-                            let retry_header = resp
-                                .headers()
-                                .get("retry-after")
-                                .and_then(|v| v.to_str().ok());
-                            let backoff = spec.rate_limit.compute_backoff(attempt, retry_header);
-                            tokio::time::sleep(backoff).await;
-                            continue;
-                        }
-
-                        if !resp.status().is_success() {
-                            let err_text = resp.text().await.unwrap_or_default();
-                            return Err(IntegrationError::HttpError {
-                                status,
-                                body: err_text,
-                            });
-                        }
-
-                        let text = resp.text().await?;
-                        break text;
+                    for (hk, hv) in &headers {
+                        req = req.header(hk, hv);
                     }
-                    Err(err) => {
-                        if attempt < spec.rate_limit.max_retries {
-                            let backoff = spec.rate_limit.compute_backoff(attempt, None);
-                            tokio::time::sleep(backoff).await;
-                            continue;
+                    if redirect_count == 0 {
+                        for (qk, qv) in &current_query {
+                            req = req.query(&[(qk, qv)]);
                         }
-                        return Err(IntegrationError::RequestError(err));
                     }
+                    if current_request_method != reqwest::Method::GET && current_request_method != reqwest::Method::HEAD {
+                        if let Some(ref body) = resolved_body {
+                            req = req.json(body);
+                        }
+                    }
+
+                    match req.send().await {
+                        Ok(resp) => {
+                            let status = resp.status().as_u16();
+                            if spec.rate_limit.should_retry(status, attempt) {
+                                let retry_header = resp
+                                    .headers()
+                                    .get("retry-after")
+                                    .and_then(|v| v.to_str().ok());
+                                let backoff = spec.rate_limit.compute_backoff(attempt, retry_header);
+                                tokio::time::sleep(backoff).await;
+                                continue;
+                            }
+                            break resp;
+                        }
+                        Err(err) => {
+                            if attempt < spec.rate_limit.max_retries {
+                                let backoff = spec.rate_limit.compute_backoff(attempt, None);
+                                tokio::time::sleep(backoff).await;
+                                continue;
+                            }
+                            return Err(IntegrationError::RequestError(err));
+                        }
+                    }
+                };
+
+                let status = resp.status().as_u16();
+                if resp.status().is_redirection() {
+                    let location = resp
+                        .headers()
+                        .get(reqwest::header::LOCATION)
+                        .and_then(|v| v.to_str().ok())
+                        .ok_or_else(|| {
+                            IntegrationError::NetworkPolicy(NetworkPolicyError::InvalidUrl(
+                                "Redirect response missing Location header".to_string(),
+                            ))
+                        })?;
+
+                    let base_req_url = reqwest::Url::parse(&current_request_url)
+                        .map_err(|e| NetworkPolicyError::InvalidUrl(e.to_string()))?;
+                    let target_redirect = base_req_url
+                        .join(location)
+                        .map_err(|e| NetworkPolicyError::InvalidUrl(e.to_string()))?;
+                    let target_str = target_redirect.to_string();
+
+                    // Revalidate target redirect URL with anti-SSRF DNS check
+                    self.network_policy.validate_url_async(&target_str).await?;
+
+                    redirect_count += 1;
+                    if redirect_count > 10 {
+                        return Err(IntegrationError::PaginationError(
+                            "Too many redirects (exceeded limit of 10)".to_string(),
+                        ));
+                    }
+
+                    current_request_url = target_str;
+                    if status == 301 || status == 302 || status == 303 {
+                        current_request_method = reqwest::Method::GET;
+                    }
+                    continue;
                 }
+
+                if !resp.status().is_success() {
+                    let err_text = resp.text().await.unwrap_or_default();
+                    return Err(IntegrationError::HttpError {
+                        status,
+                        body: err_text,
+                    });
+                }
+
+                let text = resp.text().await?;
+                break text;
             };
 
             // Parse response body to JSON
@@ -982,8 +1100,16 @@ impl IntegrationExecutor {
                     let next_url = extract_path(&resp_json, url_path);
                     match next_url {
                         Some(serde_json::Value::String(u)) if !u.is_empty() => {
-                            self.network_policy.validate_url(u)?;
-                            current_url = u.clone();
+                            let base_req_url = reqwest::Url::parse(&current_url)
+                                .map_err(|e| NetworkPolicyError::InvalidUrl(e.to_string()))?;
+                            let next_resolved = base_req_url
+                                .join(u)
+                                .map_err(|e| NetworkPolicyError::InvalidUrl(e.to_string()))?
+                                .to_string();
+
+                            // Revalidate new target page URL with anti-SSRF and DNS lookup
+                            self.network_policy.validate_url_async(&next_resolved).await?;
+                            current_url = next_resolved;
                         }
                         _ => break,
                     }
@@ -1567,5 +1693,68 @@ mod tests {
             validation_result,
             Err(NetworkPolicyError::BlockedHost(h)) if h == "169.254.169.254"
         ));
+    }
+
+    #[tokio::test]
+    async fn test_network_policy_dns_resolution_rebinding() {
+        let policy = NetworkPolicy::strict();
+
+        // Hostnames resolving to loopback/private IPs must be blocked via DNS lookup
+        let res_localhost = policy.validate_url_async("http://localhost:8080/sensitive").await;
+        assert!(matches!(res_localhost, Err(NetworkPolicyError::BlockedHost(_))));
+
+        // IP literals must still be blocked
+        assert!(matches!(
+            policy.validate_url_async("http://127.0.0.1:9000/").await,
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+        assert!(matches!(
+            policy.validate_url_async("http://10.1.2.3/secret").await,
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+        assert!(matches!(
+            policy.validate_url_async("http://172.16.50.1/admin").await,
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+        assert!(matches!(
+            policy.validate_url_async("http://192.168.1.254/").await,
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+        assert!(matches!(
+            policy.validate_url_async("http://169.254.169.254/latest/meta-data").await,
+            Err(NetworkPolicyError::BlockedHost(_))
+        ));
+    }
+
+    #[tokio::test]
+    async fn test_integration_executor_redirect_anti_ssrf_blocked() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+
+        tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let mut buf = [0u8; 1024];
+            let _ = socket.read(&mut buf).await.unwrap();
+
+            // Responds with 302 redirect pointing to prohibited cloud metadata IP
+            let resp = "HTTP/1.1 302 Found\r\nLocation: http://169.254.169.254/latest/meta-data\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+            socket.write_all(resp.as_bytes()).await.unwrap();
+        });
+
+        let spec = IntegrationSpec::new("GET", format!("http://127.0.0.1:{}/redirect-evil", port));
+        let item = INodeExecutionData {
+            json: json!({}),
+            binary: None,
+            paired_item: None,
+        };
+
+        // Permissive policy allows redirect to 169.254... if allow_private_ips is true.
+        // Now test strict policy:
+        let strict_executor = IntegrationExecutor::new();
+        let err = strict_executor
+            .execute_spec(&spec, &item, &HashMap::new())
+            .await
+            .unwrap_err();
+        assert!(matches!(err, IntegrationError::NetworkPolicy(NetworkPolicyError::BlockedHost(_))));
     }
 }

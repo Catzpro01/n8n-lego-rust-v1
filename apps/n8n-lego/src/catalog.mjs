@@ -34,6 +34,73 @@ export function catalogPresent(config) {
   return existsSync(paths.nodes);
 }
 
+export const CODE_LANGUAGE_VERSION_PROPERTIES = [
+  {
+    displayName: 'JavaScript Version',
+    name: 'languageVersion',
+    type: 'options',
+    options: [
+      { name: 'Default (System Node.js)', value: 'default' },
+      { name: 'Node.js 22', value: '22' },
+      { name: 'Node.js 20', value: '20' },
+      { name: 'Node.js 18', value: '18' },
+    ],
+    default: 'default',
+    description: 'Select the Node.js runtime version to execute this code',
+    noDataExpression: true,
+    displayOptions: {
+      show: {
+        language: ['javaScript'],
+      },
+    },
+  },
+  {
+    displayName: 'Python Version',
+    name: 'languageVersion',
+    type: 'options',
+    options: [
+      { name: 'Default (System Python)', value: 'default' },
+      { name: 'Python 3.12', value: '3.12' },
+      { name: 'Python 3.11', value: '3.11' },
+      { name: 'Python 3.10', value: '3.10' },
+    ],
+    default: 'default',
+    description: 'Select the Python runtime version to execute this code',
+    noDataExpression: true,
+    displayOptions: {
+      show: {
+        language: ['python', 'pythonNative'],
+      },
+    },
+  },
+];
+
+export function ensureCodeLanguageVersionProperties(nodes) {
+  if (!Array.isArray(nodes)) return;
+  for (const node of nodes) {
+    if (node && node.name === 'n8n-nodes-base.code' && Array.isArray(node.properties)) {
+      const hasJs = node.properties.some(
+        (p) => p.name === 'languageVersion' && p.displayOptions?.show?.language?.includes('javaScript')
+      );
+      const hasPy = node.properties.some(
+        (p) =>
+          p.name === 'languageVersion' &&
+          (p.displayOptions?.show?.language?.includes('python') ||
+            p.displayOptions?.show?.language?.includes('pythonNative'))
+      );
+
+      if (!hasJs || !hasPy) {
+        const lastLangIdx = node.properties.findLastIndex((p) => p.name === 'language');
+        const insertIdx = lastLangIdx >= 0 ? lastLangIdx + 1 : node.properties.length;
+        const toInsert = [];
+        if (!hasJs) toInsert.push(CODE_LANGUAGE_VERSION_PROPERTIES[0]);
+        if (!hasPy) toInsert.push(CODE_LANGUAGE_VERSION_PROPERTIES[1]);
+        node.properties.splice(insertIdx, 0, ...toInsert);
+      }
+    }
+  }
+}
+
 /** Loads the catalog once per process. Returns `null` when it has not been fetched yet. */
 export function loadCatalog(config) {
   if (cache) return cache;
@@ -41,6 +108,9 @@ export function loadCatalog(config) {
   if (!existsSync(paths.nodes)) return null;
 
   const nodes = JSON.parse(readFileSync(paths.nodes, 'utf8'));
+  ensureCodeLanguageVersionProperties(nodes);
+  const serializedNodes = Buffer.from(JSON.stringify(nodes));
+
   const credentials = existsSync(paths.credentials) ? JSON.parse(readFileSync(paths.credentials, 'utf8')) : [];
   const byName = new Map();
   for (const node of nodes) {
@@ -56,7 +126,7 @@ export function loadCatalog(config) {
     byName,
     /** "n8n-nodes-base.set@3.4" style identifiers, newest version first within a name. */
     versions: nodes.map((node) => `${node.name}@${node.version}`),
-    raw: { nodes: () => readFileSync(paths.nodes), credentials: () => readFileSync(paths.credentials) },
+    raw: { nodes: () => serializedNodes, credentials: () => readFileSync(paths.credentials) },
   };
   return cache;
 }

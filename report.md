@@ -497,3 +497,141 @@ Melalui audit komparatif mendalam menggunakan agen UI dan inspeksi console brows
    - `node --test apps/n8n-lego/test/rest.test.mjs`: **PASSED (13 passed, 0 failed, 100% Green)**.
    - Verifikasi isolasi jalur Rust Online Cut-over & Simulated Fallback: **PASSED (100% Green)**.
    - `cargo test -p n8n-nodes-rust`: **PASSED (6 passed, 0 failed, 100% Green)**.
+
+### 8. P4.1 — Perbaikan Rute REST & Serialisasi Eksekusi (Fix Canvas Stripes & 'Problem Loading Execution') (2026-10-06)
+1. **Endpoint Workflow History (`apps/n8n-lego/src/rest/routes.mjs`)**:
+   - Menambahkan rute agar frontend n8n tidak menerima 501 `unsupported`:
+     * `GET /rest/workflow-history/workflow/:workflowId/version/:versionId`: Mengambil snapshot versi workflow dari store dan mengembalikan status lengkap (`versionId`, `workflowId`, `nodes`, `connections`, `authors: 'Owner Admin'`, `name`, `description`, `autosaved: false`, dll.).
+     * `GET /rest/workflow-history/workflow/:workflowId`: Mengembalikan bare `{ count: 1, data: [snapshot] }` dengan snapshot versi workflow saat ini.
+     * `POST /rest/workflow-history/workflow/:workflowId/versions`: Mengembalikan `{ versions: [] }`.
+2. **Endpoint Test Runs (`apps/n8n-lego/src/rest/routes.mjs`)**:
+   - `GET /rest/workflows/:workflowId/test-runs`: Mengembalikan array kosong `[]`.
+   - `GET /rest/workflows/:workflowId/test-runs/:id`: Mengembalikan 404 (`notFound`).
+3. **Penyempurnaan Handler `GET /rest/executions/:id` (`apps/n8n-lego/src/rest/routes.mjs`)**:
+   - Memastikan `workflowData` tidak pernah bernilai `null` dengan fallback ke `ctx.store.workflows.get(execution.workflowId)` atau `{ name: execution.workflowName || 'Workflow', nodes: [], connections: {} }`. Ini menuntaskan isu kanvas garis diagonal karena node definition selalu tersedia bagi renderer kanvas.
+   - Mengimplementasikan `ensureExecutionIndex` pada `serializeExecutionData`: Menjamin seluruh item runData di bawah `resultData.runData[nodeName]` memiliki `executionIndex: 0`.
+4. **Penyempurnaan Reconstructed JS Engine (`apps/n8n-lego/src/engine.mjs`)**:
+   - Pada fungsi `toResultData`, setiap entri runData kini secara eksplisit memuat `executionIndex: 0`. Mencegah fatal error di Vue `TypeError: Cannot read properties of undefined (reading 'executionIndex')` pada komponen `LogsOverviewRow`.
+5. **Penyempurnaan Rust Engine Deserializer (`apps/n8n-lego/src/rust-engine-client.mjs`)**:
+   - Pada `deserializeRustExecutionResult`, seluruh cabang pembentukan entri runData (`isRunEntry`, default output, dan `frames`) dipastikan menyertakan `executionIndex: 0` (atau index perulangannya).
+6. **Verifikasi Komprehensif**:
+   - Menambahkan skenario uji baru di `apps/n8n-lego/test/rest.test.mjs` untuk rute workflow history, test runs, fallback `workflowData`, dan validasi `executionIndex`.
+   - `node --test apps/n8n-lego/test/rest.test.mjs`: **PASSED (15 passed, 0 failed, 100% Green)**.
+
+### 9. P4.2 — Penyatuan Penuh Standalone Rust Engine ke n8n-lego (Port 5677) Tanpa Butuh Port 5678 (2026-10-06)
+1. **Mode Headless IPC / CLI Execution di Rust Core (`apps/n8n-rust/src/main.rs`)**:
+   - Menambahkan deteksi argumen baris perintah di awal `main()`: Jika argumen memuat `execute`, `--ipc`, atau `-e`, server Axum di port 5678 tidak dijalankan.
+   - Mengonsumsi payload JSON alur kerja dari stdin (`read_to_end`).
+   - Parsing payload `{ workflowData, inputData, mode, pushRef }` ke `n8n_workflow::Workflow` menggunakan `n8n_rust_core::parse_kernel_workflow`.
+   - Menjalankan alur kerja langsung dengan asynchronous DAG engine `n8n_runtime_kernel::KernelScheduler`.
+   - Memformat hasil eksekusi sesuai standar n8n (`id`, `finished: true`, `status`, `data: { resultData: { runData: ... } }`) di mana setiap item runData memuat `executionIndex: 0`.
+   - Mengeluarkan payload JSON murni ke stdout dan keluar dengan kode 0 (atau menuliskan error JSON ke stdout dan exit 1 jika terjadi kegagalan fatal).
+2. **Re-Export Helper Workflow di Rust Lib (`apps/n8n-rust/src/server.rs` & `apps/n8n-rust/src/lib.rs`)**:
+   - Mengekspor `pub fn parse_kernel_workflow` agar dapat digunakan secara konsisten dan DRY antara server Axum dan eksekutor CLI/IPC.
+3. **Eksekusi Child Process di Klien Node.js (`apps/n8n-lego/src/rust-engine-client.mjs`)**:
+   - Mengimplementasikan `resolveRustBinary()` dan `isRustBinaryAvailable()` untuk menemukan binary Rust (`apps/n8n-rust/target/debug/n8n-rust-app.exe` atau release/cargo fallback).
+   - Menambahkan fungsi `executeWorkflowViaRustBinary({ workflowData, inputData, mode })`:
+     * Meluncurkan proses anak binary Rust dengan argumen `execute`.
+     * Mengalirkan payload alur kerja JSON ke `child.stdin`.
+     * Menangkap output `child.stdout`, memvalidasi JSON, dan mendeserialisasikannya via `deserializeRustExecutionResult`.
+   - Mengembangkan `executeWorkflowOnRust`:
+     * Jika port HTTP 5678 tidak aktif (`isRustPortAvailable() === false`), secara otomatis menggunakan `executeWorkflowViaRustBinary` sebagai metode eksekusi Rust utama!
+     * Jika port 5678 aktif namun koneksi HTTP terputus tiba-tiba, secara otomatis beralih ke `executeWorkflowViaRustBinary`.
+   - Memperbarui `isRustEngineAvailable`:
+     * Mengembalikan `true` baik saat port HTTP 5678 terbuka maupun saat executable binary Rust tersedia offline.
+4. **Verifikasi & Pengujian Komprehensif**:
+   - `cargo check --manifest-path apps/n8n-rust/Cargo.toml`: **PASSED (Kompilasi Sukses 100%, Exit Code 0)**.
+   - `apps/n8n-rust/target/debug/n8n-rust-app.exe execute`: **PASSED (Eksekusi Stdin -> Stdout Sukses 100%, 3ms execution time, Exit Code 0)**.
+   - Uji integrasi Node.js ke Rust via `rust-engine-client.mjs` (tanpa port 5678 hidup): **PASSED (`isRustPortAvailable: false`, `isRustEngineAvailable: true`, Status: success, RunData node terisi lengkap)**.
+   - Uji integrasi `engine.execute()` di `apps/n8n-lego` (port 5677): **PASSED (`[INFO] execution finished (Rust cut-over)`, eksekusi diproses 100% oleh Rust DAG kernel)**.
+
+
+
+### 10. Penyelesaian Gap Durability WAL dan Penguatan Anti-SSRF di 'crates/n8n-runtime-kernel' (2026-10-06)
+1. **Durability WAL & Journal Injection (`crates/n8n-runtime-kernel/src/scheduler.rs`)**:
+   - Menambahkan tipe error terpadu `KernelError` (`Plan`, `DurabilityError`, `Execution`, `Runtime`).
+   - Memperbarui `KernelScheduler`:
+     * Mendukung injeksi `journal: Option<Arc<ExecutionJournal>>` via `with_journal`.
+     * Menambahkan konfigurasi durable append-only WAL via `with_durable_wal(path)` dan `new_with_durable_wal(options, path)` menggunakan `FileAppendJournalStorage` dan `DurabilityPolicy::Strict`.
+     * Memastikan metode eksekusi (`execute`, `execute_workflow`, `execute_plan`) mengembalikan `Result<WorkflowExecutionResult, KernelError>`.
+   - Menghapus penelanan error diam-diam (`let _ = journal.record...`):
+     * Menerapkan validasi ketat `check_journal!`: Jika journal menghasilkan error dan policy adalah `DurabilityPolicy::Strict`, eksekusi scheduler langsung digagalkan dengan `KernelError::DurabilityError` pada seluruh siklus hidup (start workflow, node skipped, node started, node completed, node failed, workflow completed, workflow failed, workflow cancelled).
+     * Pada policy `DurabilityPolicy::BestEffort`, toleransi error tetap dipertahankan sesuai spesifikasi.
+2. **Penguatan NetworkPolicy & Anti-SSRF (`crates/n8n-runtime-kernel/src/integration_ir.rs`)**:
+   - Memperkuat `NetworkPolicy` dengan DNS resolution check:
+     * Menambahkan `validate_url_async` dan `validate_url_with_dns`.
+     * Menyelesaikan alamat host sebelum koneksi HTTP dibuka menggunakan `tokio::net::lookup_host`.
+     * Mencegah DNS rebinding dan pemalsuan host (host spoofing) yang mengarah ke IP privat (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16, ::1, fc00::/7, fe80::/10, link-local, dan cloud metadata).
+   - Penguatan `IntegrationExecutor`:
+     * Menonaktifkan unverified automatic redirects di `reqwest::Client` via `.redirect(reqwest::redirect::Policy::none())`.
+     * Mengimplementasikan penanganan redirect dengan revalidasi penuh: Setiap target redirect hop diperiksa secara asinkron dengan validasi anti-SSRF dan resolusi DNS `lookup_host` sebelum koneksi berikutnya dibuka (dengan batas maksimal 10 hops).
+   - Penguatan `PaginationPolicy::NextPageUrl`:
+     * Memvalidasi dan merevalidasi URL target baru (baik absolut maupun relatif) dengan `validate_url_async` dan resolusi DNS sebelum permintaan halaman berikutnya dieksekusi.
+3. **Verifikasi & Pengujian Komprehensif**:
+   - `test_scheduler_strict_durability_fails_on_journal_error`: **PASSED** (Terverifikasi gagal dengan `KernelError::DurabilityError`).
+   - `test_scheduler_best_effort_durability_tolerates_journal_error`: **PASSED** (Terverifikasi toleransi di mode BestEffort).
+   - `test_scheduler_journal_injection_and_durable_wal_config`: **PASSED** (Terverifikasi WAL persistence dan replay).
+   - `test_network_policy_dns_resolution_rebinding`: **PASSED** (Terverifikasi blokir DNS rebinding ke IP privat).
+   - `test_integration_executor_redirect_anti_ssrf_blocked`: **PASSED** (Terverifikasi blokir redirect ke metadata/internal IP).
+   - `test_pagination_next_page_url_anti_ssrf_blocked`: **PASSED** (Terverifikasi blokir NextPageUrl ke metadata/internal IP).
+   - `cargo check -p n8n-runtime-kernel`: **PASSED (Exit Code 0)**.
+   - `cargo test -p n8n-runtime-kernel`: **PASSED (37 tests passed, 0 failed, 100% Green)**.
+
+### 11. P0 — Pemilihan Versi JS & Python di Parameter Catalog dan Propagasi Error di n8n-lego (2026-10-06)
+1. **Pemilihan Versi Runtime di Katalog Node (`data/lego/catalog/nodes.json` & `apps/n8n-lego/src/catalog.mjs`)**:
+   - Memodifikasi node `n8n-nodes-base.code` pada `data/lego/catalog/nodes.json`:
+     * Menambahkan properti `languageVersion` untuk JavaScript dengan opsi: Default (System Node.js), Node.js 22, Node.js 20, Node.js 18 (kondisional ketika `language === 'javaScript'`).
+     * Menambahkan properti `languageVersion` untuk Python dengan opsi: Default (System Python), Python 3.12, Python 3.11, Python 3.10 (kondisional ketika `language` bernilai `'python'` atau `'pythonNative'`).
+   - Di `apps/n8n-lego/src/catalog.mjs`:
+     * Menambahkan konstanta `CODE_LANGUAGE_VERSION_PROPERTIES` dan fungsi helper `ensureCodeLanguageVersionProperties(nodes)`.
+     * Memastikan `loadCatalog()` otomatis menyisipkan opsi versi ini ke catalog in-memory dan buffer serialisasi, sehingga endpoint `GET /rest/types/nodes.json` dan `POST /rest/node-types` selalu menyajikan parameter versi tanpa bergantung pada modifikasi disk manual.
+2. **Perbaikan Deserialisasi & Propagasi Status Error (`apps/n8n-lego/src/rust-engine-client.mjs` & `apps/n8n-lego/src/engine.mjs`)**:
+   - Di `deserializeRustExecutionResult` (`rust-engine-client.mjs`):
+     * Memeriksa seluruh node di `runData` yang memiliki `executionStatus === 'error'` atau objek/properti `error`.
+     * Jika ditemukan node yang error ATAU status respons Rust bernilai `'error'` / `'failed'`:
+       - Status eksekusi disetel tegas ke `'error'` (tidak lagi tertinggal atau disembunyikan sebagai `'success'`).
+       - Menetapkan `resultData.error = { name: 'NodeExecutionError', message: errorMsg }` secara lengkap.
+   - Di `executeWorkflowViaRustBinary`:
+     * Memastikan seluruh objek `parameters` node disertakan utuh (termasuk `languageVersion`).
+   - Di `engine.mjs`:
+     * Memastikan saat `rustRecord.status === 'error'`, `record.status` disetel ke `'error'`, dan `resultData.error` terisi dengan benar (serta pada jalur fallback JS engine).
+3. **Verifikasi & Pengujian Komprehensif**:
+   - Menambahkan unit test komprehensif pada `apps/n8n-lego/test/rest.test.mjs`:
+     * Uji ketersediaan parameter `languageVersion` pada `GET /rest/types/nodes.json` dan `POST /rest/node-types`.
+     * Uji deserialisasi respons error via `deserializeRustExecutionResult`.
+     * Uji propagasi error eksekusi via `POST /rest/workflows/run` dan persistensi di `GET /rest/executions/:id`.
+   - `node --test apps/n8n-lego/test/rest.test.mjs`: **PASSED (20/20 tests passed, 100% Green, Exit Code 0)**.
+
+### 12. Verifikasi End-to-End Real Browser Playwright & API (2026-10-06)
+1. **Verifikasi Eksekusi Polyglot Code Node ($input.all())**:
+   - Skrip API: `tests/verify-code-node.mjs` mengeksekusi alur kerja dengan kode riil:
+     `for (const item of $input.all()) { item.json.myNewField = 1; } return $input.all();`
+   - Hasil: Status eksekusi workflow `success`, status node `success`, output `[[{"json":{"myNewField":1},"pairedItem":{"item":0}}]]`.
+2. **Verifikasi Propagasi Error Tanpa Masking**:
+   - Skrip API: `tests/verify-code-node.mjs` mengeksekusi skenario error yang disengaja:
+     `throw new Error("Sengaja Error untuk Validasi");`
+   - Hasil: Status alur kerja berubah secara tegas menjadi `error` (sebelumnya `success`), `resultData.error` terisi pesan kesalahan lengkap dan stack trace, status node `error`.
+3. **Verifikasi Antarmuka Browser Nyata (Playwright)**:
+   - Navigasi ke `http://localhost:5677/workflow/a3BOlszEi584OzIc`:
+     * Kanvas workflow terbuka bersih tanpa error garis diagonal (`read-only` lock teratasi).
+     * Panel parameter Code node menampilkan dropdown **JavaScript Version** dengan opsi:
+       - `Default (System Node.js)`
+       - `Node.js 22`
+       - `Node.js 20`
+       - `Node.js 18`
+     * Saat opsi bahasa diubah ke Python, dropdown berubah menjadi **Python Version** dengan opsi:
+       - `Default (System Python)`
+       - `Python 3.12`
+       - `Python 3.11`
+       - `Python 3.10`
+     * Eksekusi visual langkah ("Execute step"):
+       - Node Code berhasil dijalankan dengan indikator centang hijau dan menampilkan tabel output `myNewField: 1`.
+     * Uji skenario kesalahan di antarmuka web:
+       - Kode `throw new Error("Pesan Error Nyata dari Node!");` dimasukkan ke editor.
+       - Judul tab berubah menjadi `⚠️ My workflow - n8n`.
+       - Panel OUTPUT memunculkan segitiga merah dan banner error merah menyala dengan rincian pesan dan stack trace.
+       - Dialog modal *"Problem in node 'Code in JavaScript'"* muncul dengan penjelasan kesalahan.
+       - Tidak ada toast hijau yang memalsukan status sukses.
+     * Eksekusi penuh kanvas ("Execute workflow"):
+       - Kedua node (`When clicking 'Execute workflow'` dan `Code in JavaScript`) memperoleh centang hijau dengan durasi eksekusi tercatat di logs panel (`Success in 1.523s`, node code `119ms`).
+

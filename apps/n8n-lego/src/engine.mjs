@@ -109,19 +109,37 @@ export function createEngine(config = {}, logger) {
       const startedAt = new Date();
       const registry = createNodeRegistry({ locale: config.locale, allowCodeEval: true, httpTransport: fetch });
 
+      const stored = workflowId ? store.workflows.get(workflowId) : null;
+      const finalWorkflowId = workflowId || stored?.id || definition?.id || executionId;
+      const finalVersionId = stored?.versionId || definition?.versionId || finalWorkflowId;
+      const finalWorkflowName = workflowName || stored?.name || definition?.name || 'Workflow';
+
       const record = {
-        id: executionId,
+        id: String(executionId),
         finished: false,
         mode,
         status: 'running',
-        createdAt: startedAt.toISOString(),
-        startedAt: startedAt.toISOString(),
+        createdAt: new Date().toISOString(),
+        startedAt: new Date().toISOString(),
         stoppedAt: null,
-        workflowId,
-        workflowName,
+        workflowId: finalWorkflowId,
+        workflowVersionId: finalVersionId,
+        workflowName: finalWorkflowName,
         requestedBy,
         data: { resultData: { runData: {} } },
-        workflowData: { name: workflowName, nodes: definition?.nodes ?? [], connections: definition?.connections ?? {} },
+        workflowData: {
+          id: finalWorkflowId,
+          versionId: finalVersionId,
+          name: finalWorkflowName,
+          active: stored?.active ?? definition?.active ?? false,
+          nodes: definition?.nodes ?? stored?.nodes ?? [],
+          connections: definition?.connections ?? stored?.connections ?? {},
+          settings: definition?.settings ?? stored?.settings ?? {},
+          pinData: definition?.pinData ?? stored?.pinData ?? {},
+          meta: definition?.meta ?? stored?.meta ?? {},
+          createdAt: stored?.createdAt || new Date().toISOString(),
+          updatedAt: stored?.updatedAt || new Date().toISOString(),
+        },
       };
 
       const validation = validateWorkflowDefinition(definition, { registry });
@@ -159,7 +177,37 @@ export function createEngine(config = {}, logger) {
           record.finished = rustRecord.finished !== false;
           record.status = rustRecord.status;
           record.stoppedAt = rustRecord.stoppedAt || new Date().toISOString();
-          record.data = rustRecord.data;
+          record.data = rustRecord.data || { resultData: { runData: {} } };
+
+          if (rustRecord.status === 'error' || record.status === 'error') {
+            record.status = 'error';
+            if (!record.data.resultData) {
+              record.data.resultData = { runData: {} };
+            }
+            if (!record.data.resultData.error) {
+              let errorMsg = 'Workflow execution error';
+              const runData = record.data.resultData.runData || {};
+              for (const [nodeName, runs] of Object.entries(runData)) {
+                if (Array.isArray(runs)) {
+                  for (const r of runs) {
+                    if (r?.error || r?.executionStatus === 'error') {
+                      errorMsg =
+                        r?.error?.message ||
+                        (typeof r?.error === 'string' ? r.error : null) ||
+                        r?.statusText ||
+                        `Node "${nodeName}" execution failed`;
+                      break;
+                    }
+                  }
+                }
+              }
+              record.data.resultData.error = {
+                name: 'NodeExecutionError',
+                message: errorMsg,
+              };
+            }
+          }
+
           if (Array.isArray(rustRecord.warnings) && rustRecord.warnings.length > 0) {
             record.data.resultData.warnings = rustRecord.warnings;
           }
@@ -204,6 +252,34 @@ export function createEngine(config = {}, logger) {
         };
         if (Array.isArray(result.warnings) && result.warnings.length > 0) {
           record.data.resultData.warnings = result.warnings;
+        }
+
+        let hasJsNodeError = false;
+        let jsNodeErrorMsg = null;
+        for (const [nodeName, runs] of Object.entries(record.data.resultData.runData || {})) {
+          if (Array.isArray(runs)) {
+            for (const r of runs) {
+              if (r?.executionStatus === 'error' || r?.error) {
+                hasJsNodeError = true;
+                if (!jsNodeErrorMsg) {
+                  jsNodeErrorMsg =
+                    r?.error?.message ||
+                    (typeof r?.error === 'string' ? r.error : null) ||
+                    r?.statusText ||
+                    `Node "${nodeName}" execution failed`;
+                }
+              }
+            }
+          }
+        }
+        if (hasJsNodeError || record.status === 'error') {
+          record.status = 'error';
+          if (!record.data.resultData.error) {
+            record.data.resultData.error = {
+              name: 'NodeExecutionError',
+              message: jsNodeErrorMsg || result.error || 'Workflow execution error',
+            };
+          }
         }
         store.executions.insert(record);
         logger.info('execution finished (JS engine fallback)', {
@@ -274,6 +350,7 @@ function toResultData(result, definition) {
     if (!entry && items.length === 0) continue;
     runData[nodeName] = [
       {
+        executionIndex: 0,
         startTime: Number.isFinite(entry?.durationMs) ? Number(entry.durationMs) : 0,
         executionTime: Number.isFinite(entry?.durationMs) ? Number(entry.durationMs) : 0,
         source: [],

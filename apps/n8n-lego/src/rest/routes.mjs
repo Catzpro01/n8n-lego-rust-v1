@@ -133,25 +133,50 @@ function executionSummary(execution) {
   };
 }
 
+function ensureExecutionIndex(data) {
+  if (!data || typeof data !== 'object') return data;
+  const targets = [data.resultData?.runData, data.runData].filter(
+    (rd) => rd && typeof rd === 'object',
+  );
+  for (const runData of targets) {
+    for (const runs of Object.values(runData)) {
+      if (Array.isArray(runs)) {
+        for (let i = 0; i < runs.length; i++) {
+          const run = runs[i];
+          if (run && typeof run === 'object' && run.executionIndex === undefined) {
+            run.executionIndex = 0;
+          }
+        }
+      }
+    }
+  }
+  return data;
+}
+
 function serializeExecutionData(data) {
   if (data === null || data === undefined) {
     return flattedStringify({});
   }
+  let parsed;
   if (typeof data === 'string') {
     try {
-      flattedParse(data);
-      return data;
+      parsed = flattedParse(data);
     } catch {
       try {
-        const parsed = JSON.parse(data);
-        return flattedStringify(parsed);
+        parsed = JSON.parse(data);
       } catch {
         return flattedStringify({});
       }
     }
+  } else if (typeof data === 'object') {
+    parsed = data;
+  } else {
+    return flattedStringify({});
   }
-  return flattedStringify(data);
+  ensureExecutionIndex(parsed);
+  return flattedStringify(parsed);
 }
+
 
 /* -------------------------------------------------------------------- routes */
 
@@ -366,7 +391,7 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
       handler: (ctx) => {
         requireUser(ctx);
         // Single-user instance: no other session can hold the editor write lock.
-        sendData(ctx.res, { userId: null });
+        sendData(ctx.res, null);
       },
     },
     {
@@ -581,6 +606,81 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
       },
     },
 
+    /* -------------------------------------------------------- workflow history */
+    {
+      method: 'GET',
+      path: '/rest/workflow-history/workflow/:workflowId/version/:versionId',
+      handler: (ctx) => {
+        requireUser(ctx);
+        const workflow = ctx.store.workflows.get(ctx.params.workflowId);
+        if (!workflow) throw notFound('Workflow not found');
+        sendData(ctx.res, {
+          versionId: ctx.params.versionId,
+          workflowId: workflow.id,
+          nodes: workflow.nodes ?? [],
+          connections: workflow.connections ?? {},
+          authors: 'Owner Admin',
+          name: workflow.name,
+          description: workflow.description ?? null,
+          autosaved: false,
+          workflowPublishHistory: [],
+          createdAt: workflow.createdAt,
+          updatedAt: workflow.updatedAt,
+        });
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/workflow-history/workflow/:workflowId',
+      handler: (ctx) => {
+        requireUser(ctx);
+        const workflow = ctx.store.workflows.get(ctx.params.workflowId);
+        if (!workflow) throw notFound('Workflow not found');
+        const snapshot = {
+          versionId: workflow.versionId ?? workflow.id,
+          workflowId: workflow.id,
+          nodes: workflow.nodes ?? [],
+          connections: workflow.connections ?? {},
+          authors: 'Owner Admin',
+          name: workflow.name,
+          description: workflow.description ?? null,
+          autosaved: false,
+          workflowPublishHistory: [],
+          createdAt: workflow.createdAt,
+          updatedAt: workflow.updatedAt,
+        };
+        sendBare(ctx.res, { count: 1, data: [snapshot] });
+      },
+    },
+    {
+      method: 'POST',
+      path: '/rest/workflow-history/workflow/:workflowId/versions',
+      handler: (ctx) => {
+        requireUser(ctx);
+        const workflow = ctx.store.workflows.get(ctx.params.workflowId);
+        if (!workflow) throw notFound('Workflow not found');
+        sendData(ctx.res, { versions: [] });
+      },
+    },
+
+    /* ------------------------------------------------------------- test runs */
+    {
+      method: 'GET',
+      path: '/rest/workflows/:workflowId/test-runs',
+      handler: (ctx) => {
+        requireUser(ctx);
+        sendData(ctx.res, []);
+      },
+    },
+    {
+      method: 'GET',
+      path: '/rest/workflows/:workflowId/test-runs/:id',
+      handler: (ctx) => {
+        requireUser(ctx);
+        throw notFound('Test run not found');
+      },
+    },
+
     /* ------------------------------------------------------------- executions */
     {
       method: 'GET',
@@ -607,10 +707,38 @@ export function buildRoutes({ engine, logger, push, vault = null }) {
         requireUser(ctx);
         const execution = ctx.store.executions.find((candidate) => String(candidate.id) === String(ctx.params.id));
         if (!execution) throw notFound('Execution not found');
+        const workflowId = execution.workflowId || ctx.params.id;
+        const stored = ctx.store.workflows.get(workflowId);
+        let rawWf = execution.workflowData;
+        if (!rawWf && stored) {
+          rawWf = stored;
+        }
+        const finalId = stored?.id || execution.workflowId || rawWf?.id || 'workflow';
+        const finalVersionId = stored?.versionId || execution.workflowVersionId || rawWf?.versionId || finalId;
+        const finalName = stored?.name || execution.workflowName || rawWf?.name || 'Workflow';
+
+        const workflowData = {
+          id: finalId,
+          versionId: finalVersionId,
+          name: finalName,
+          active: stored?.active ?? rawWf?.active ?? false,
+          nodes: rawWf?.nodes ?? stored?.nodes ?? [],
+          connections: rawWf?.connections ?? stored?.connections ?? {},
+          settings: rawWf?.settings ?? stored?.settings ?? {},
+          staticData: rawWf?.staticData ?? stored?.staticData ?? null,
+          pinData: rawWf?.pinData ?? stored?.pinData ?? {},
+          meta: rawWf?.meta ?? stored?.meta ?? {},
+          createdAt: stored?.createdAt || execution.createdAt || new Date().toISOString(),
+          updatedAt: stored?.updatedAt || execution.startedAt || new Date().toISOString(),
+        };
+
         sendData(ctx.res, {
           ...executionSummary(execution),
+          workflowId: finalId,
+          workflowVersionId: finalVersionId,
+          workflowName: finalName,
           data: serializeExecutionData(execution.data),
-          workflowData: execution.workflowData ?? null,
+          workflowData,
         });
       },
     },

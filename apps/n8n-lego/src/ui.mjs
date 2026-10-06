@@ -88,7 +88,8 @@ export function createUi({ config, logger, frontend = null }) {
     out = out.split('%CONFIG_TAGS%').join(configTags);
     out = out.split('{{REST_ENDPOINT}}').join(restEndpoint);
     if (fileName.endsWith('index.html')) {
-      out = out.replace('</title>', `</title><meta name="application-name" content="${config.appName}">${bootMetaTag}`);
+      const cleanHeaderStyle = '<style>[data-test-id="home-project"],[data-test-id="home-project"]+span,[class*="_path-separator_"]{display:none!important;}</style>';
+      out = out.replace('</title>', `</title><meta name="application-name" content="${config.appName}">${bootMetaTag}${cleanHeaderStyle}`);
       out = out.replace(/<title>.*?<\/title>/, `<title>${config.appName} — Workflow Automation</title>`);
     }
     return out;

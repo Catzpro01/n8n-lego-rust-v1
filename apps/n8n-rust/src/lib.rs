@@ -18,7 +18,7 @@ pub use events::ExecutionEvent;
 pub use executor::WorkflowExecutor;
 pub use parser::WorkflowGraph;
 pub use scheduler::WorkflowScheduler;
-pub use server::{create_router, AppState};
+pub use server::{create_router, parse_kernel_workflow, AppState};
 pub use workflow::{Connection, Node, Workflow};
 
 #[cfg(feature = "napi-binding")]

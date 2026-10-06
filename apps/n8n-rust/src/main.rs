@@ -1,14 +1,30 @@
+use std::io::Write;
 use std::net::SocketAddr;
+use tokio::io::AsyncReadExt;
 use tokio::sync::broadcast;
 
+use n8n_common::INodeExecutionData;
+use n8n_runtime_kernel::{
+    ExecutionContext, ExecutionMode, KernelScheduler, NodeExecutionStatus,
+    WorkflowExecutionStatus,
+};
 use n8n_rust_core::db::Database;
 use n8n_rust_core::events::ExecutionEvent;
+use n8n_rust_core::parse_kernel_workflow;
 use n8n_rust_core::scheduler::WorkflowScheduler;
 use n8n_rust_core::server::{create_router, AppState};
 use n8n_rust_core::workflow::{Connection, Node, Workflow};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    // Mode Deteksi Argumen: CLI Execution / IPC via Stdin-Stdout
+    let args: Vec<String> = std::env::args().collect();
+    let is_ipc_mode = args.iter().any(|arg| arg == "execute" || arg == "--ipc" || arg == "-e");
+    if is_ipc_mode {
+        run_ipc_execution().await;
+        return Ok(());
+    }
+
     println!("============================================================");
     println!("       ⚡ N8N RUST FULL SERVER (STANDALONE ENGINE) ⚡       ");
     println!("============================================================\n");
@@ -142,4 +158,286 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+/// Mode Eksekusi IPC Headless (Stdin -> Rust Kernel Engine -> Stdout)
+/// Tanpa membutuhkan server Axum HTTP port 5678 aktif!
+async fn run_ipc_execution() {
+    let mut stdin_bytes = Vec::new();
+    let mut stdin = tokio::io::stdin();
+    if let Err(e) = stdin.read_to_end(&mut stdin_bytes).await {
+        let err_json = serde_json::json!({
+            "error": format!("Gagal membaca data dari stdin: {}", e),
+            "status": "error",
+            "finished": true,
+            "data": {
+                "resultData": {
+                    "runData": {}
+                }
+            }
+        });
+        println!("{}", serde_json::to_string(&err_json).unwrap_or_default());
+        std::io::stdout().flush().ok();
+        std::process::exit(1);
+    }
+
+    if stdin_bytes.is_empty() {
+        let err_json = serde_json::json!({
+            "error": "Input stdin kosong. Payload workflow JSON dibutuhkan.",
+            "status": "error",
+            "finished": true,
+            "data": {
+                "resultData": {
+                    "runData": {}
+                }
+            }
+        });
+        println!("{}", serde_json::to_string(&err_json).unwrap_or_default());
+        std::io::stdout().flush().ok();
+        std::process::exit(1);
+    }
+
+    let payload: serde_json::Value = match serde_json::from_slice(&stdin_bytes) {
+        Ok(val) => val,
+        Err(e) => {
+            let err_json = serde_json::json!({
+                "error": format!("Format JSON payload dari stdin tidak valid: {}", e),
+                "status": "error",
+                "finished": true,
+                "data": {
+                    "resultData": {
+                        "runData": {}
+                    }
+                }
+            });
+            println!("{}", serde_json::to_string(&err_json).unwrap_or_default());
+            std::io::stdout().flush().ok();
+            std::process::exit(1);
+        }
+    };
+
+    let workflow_val = payload
+        .get("workflowData")
+        .or_else(|| payload.get("workflow"))
+        .cloned()
+        .unwrap_or_else(|| payload.clone());
+
+    let exec_id = uuid::Uuid::new_v4().to_string();
+    let wf_id = workflow_val
+        .get("id")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| exec_id.clone());
+
+    let workflow = match parse_kernel_workflow(workflow_val, &wf_id) {
+        Ok(w) => w,
+        Err(err) => {
+            let err_json = serde_json::json!({
+                "id": exec_id,
+                "error": format!("Gagal parsing workflow ke KernelWorkflow: {}", err),
+                "status": "error",
+                "finished": true,
+                "data": {
+                    "resultData": {
+                        "runData": {}
+                    }
+                }
+            });
+            println!("{}", serde_json::to_string(&err_json).unwrap_or_default());
+            std::io::stdout().flush().ok();
+            std::process::exit(1);
+        }
+    };
+
+    let initial_data: Option<Vec<INodeExecutionData>> = payload
+        .get("inputData")
+        .or_else(|| payload.get("triggerData"))
+        .or_else(|| payload.get("data"))
+        .and_then(|dv| {
+            if dv.is_null() {
+                None
+            } else if let Some(arr) = dv.as_array() {
+                if arr.is_empty() {
+                    None
+                } else {
+                    Some(
+                        arr.iter()
+                            .map(|item| {
+                                if item.get("json").is_some() {
+                                    serde_json::from_value(item.clone()).unwrap_or_else(|_| {
+                                        INodeExecutionData {
+                                            json: item.clone(),
+                                            binary: None,
+                                            paired_item: None,
+                                        }
+                                    })
+                                } else {
+                                    INodeExecutionData {
+                                        json: item.clone(),
+                                        binary: None,
+                                        paired_item: None,
+                                    }
+                                }
+                            })
+                            .collect(),
+                    )
+                }
+            } else {
+                Some(vec![INodeExecutionData {
+                    json: dv.clone(),
+                    binary: None,
+                    paired_item: None,
+                }])
+            }
+        });
+
+    let mode_str = payload
+        .get("mode")
+        .and_then(|m| m.as_str())
+        .unwrap_or("manual");
+
+    let exec_mode = match mode_str.to_lowercase().as_str() {
+        "trigger" => ExecutionMode::Trigger,
+        "webhook" => ExecutionMode::Webhook,
+        "retry" => ExecutionMode::Retry,
+        "evaluation" => ExecutionMode::Evaluation,
+        "subworkflow" => ExecutionMode::Subworkflow,
+        _ => ExecutionMode::Manual,
+    };
+
+    let start_time = chrono::Utc::now();
+    let start_str = start_time.to_rfc3339();
+
+    let mut ctx = ExecutionContext::new(wf_id.clone(), exec_mode).with_run_id(exec_id.clone());
+    if let Some(push_ref) = payload
+        .get("pushRef")
+        .or_else(|| payload.get("push_ref"))
+        .and_then(|v| v.as_str())
+    {
+        ctx = ctx.with_push_ref(push_ref);
+    }
+    let context = std::sync::Arc::new(ctx);
+    let scheduler = KernelScheduler::default();
+
+    let exec_res = scheduler.execute(&workflow, initial_data, &context).await;
+
+    match exec_res {
+        Ok(result) => {
+            let mut first_error_msg = result.error.clone();
+            if first_error_msg.is_none() {
+                for frame in result.frames.values() {
+                    if let Some(ref err) = frame.error {
+                        first_error_msg = Some(err.clone());
+                        break;
+                    }
+                    if frame.status == NodeExecutionStatus::Failed {
+                        first_error_msg = Some("Node execution failed".to_string());
+                        break;
+                    }
+                }
+            }
+
+            let has_error = result.status != WorkflowExecutionStatus::Success
+                || first_error_msg.is_some()
+                || result.frames.values().any(|f| f.status == NodeExecutionStatus::Failed || f.error.is_some());
+
+            let status_str = if has_error {
+                "error"
+            } else {
+                match result.status {
+                    WorkflowExecutionStatus::Success => "success",
+                    WorkflowExecutionStatus::Failed => "error",
+                    WorkflowExecutionStatus::Cancelled => "crashed",
+                }
+            };
+
+            let mut run_data = serde_json::Map::new();
+            for (name, frame) in &result.frames {
+                let mut task_run = serde_json::Map::new();
+                if let Some(st) = frame.start_time {
+                    task_run.insert(
+                        "startTime".to_string(),
+                        serde_json::json!(st.timestamp_millis()),
+                    );
+                }
+                if let Some(dur) = frame.execution_time_ms {
+                    task_run.insert("executionTime".to_string(), serde_json::json!(dur));
+                }
+                task_run.insert("executionIndex".to_string(), serde_json::json!(0));
+                let exec_status = if frame.status == NodeExecutionStatus::Completed {
+                    "success"
+                } else {
+                    "error"
+                };
+                task_run.insert("executionStatus".to_string(), serde_json::json!(exec_status));
+
+                let mut data_map = serde_json::Map::new();
+                if let Some(ref out_data) = frame.output_data {
+                    data_map.insert(
+                        "main".to_string(),
+                        serde_json::to_value(out_data).unwrap_or(serde_json::json!([])),
+                    );
+                } else {
+                    data_map.insert("main".to_string(), serde_json::json!([[]]));
+                }
+                task_run.insert("data".to_string(), serde_json::Value::Object(data_map));
+                if let Some(ref err) = frame.error {
+                    task_run.insert("error".to_string(), serde_json::json!({ "message": err }));
+                }
+                run_data.insert(name.clone(), serde_json::json!([task_run]));
+            }
+
+            let stop_str = result.end_time.to_rfc3339();
+
+            let mut result_data = serde_json::json!({
+                "runData": run_data
+            });
+
+            if has_error {
+                let err_msg = first_error_msg.unwrap_or_else(|| "Workflow execution failed".to_string());
+                result_data.as_object_mut().unwrap().insert(
+                    "error".to_string(),
+                    serde_json::json!({
+                        "name": "NodeExecutionError",
+                        "message": err_msg,
+                    }),
+                );
+            }
+
+            let response_payload = serde_json::json!({
+                "id": result.execution_id,
+                "executionId": result.execution_id,
+                "workflowId": result.workflow_id,
+                "status": status_str,
+                "finished": true,
+                "mode": mode_str,
+                "startedAt": start_str,
+                "stoppedAt": stop_str,
+                "durationMs": result.duration_ms,
+                "data": {
+                    "resultData": result_data
+                }
+            });
+
+            println!("{}", serde_json::to_string(&response_payload).unwrap_or_default());
+            std::io::stdout().flush().ok();
+            std::process::exit(0);
+        }
+        Err(err) => {
+            let err_json = serde_json::json!({
+                "id": exec_id,
+                "status": "error",
+                "finished": true,
+                "error": format!("DAG Execution Plan Error: {}", err),
+                "data": {
+                    "resultData": {
+                        "runData": {}
+                    }
+                }
+            });
+            println!("{}", serde_json::to_string(&err_json).unwrap_or_default());
+            std::io::stdout().flush().ok();
+            std::process::exit(1);
+        }
+    }
 }
