@@ -112,7 +112,19 @@ class CIArchitectureEnforcer:
         return overall_pass
 
     def check_registry_validity(self, res: ArchitectureCheckResult):
-        """Check 1: Both YAML and JSON exist, parse cleanly, and have exactly 83 Sub-LEGOs."""
+        """Check 1: Mandatory governance contracts exist, and registry YAML/JSON parse cleanly with exactly 83 Sub-LEGOs."""
+        # 1. Verify Mandatory Governance Policy Triad
+        governance_files = [
+            ("Root Agent Governance Policy", os.path.join(self.root, "AGENTS.md")),
+            ("Master Execution Contract", os.path.join(self.root, "docs", "migration", "ANTIGRAVITY-MASTER-EXECUTION-CONTRACT.md")),
+            ("Agentic Execution Standard", os.path.join(self.root, "docs", "migration", "ANTIGRAVITY-AGENTIC-EXECUTION-STANDARD.md")),
+        ]
+        for name, path in governance_files:
+            if not os.path.isfile(path):
+                res.error(f"Missing mandatory governance file ({name}): {os.path.relpath(path, self.root)}")
+            elif os.path.getsize(path) == 0:
+                res.error(f"Empty mandatory governance file ({name}): {os.path.relpath(path, self.root)}")
+
         # Check files exist
         if not os.path.isfile(self.yaml_path):
             res.error(f"Missing registry YAML file at: {self.yaml_path}")

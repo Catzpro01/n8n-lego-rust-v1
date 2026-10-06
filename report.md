@@ -1471,3 +1471,56 @@ Report: ./report.md
 - **TOTAL**: **83 Sub-LEGO** (100.0%).
 
 Report: ./report.md
+
+
+---
+
+## GOVERNANCE GATE: REPOSITORY ENFORCEMENT OF MASTER EXECUTION CONTRACT & AGENTS.MD
+
+**Timestamp**: 2026-10-07T00:18:00Z  
+**Governance Artifacts Installed**:
+1. `AGENTS.md` (Root Agent Governance Policy)
+2. `docs/migration/ANTIGRAVITY-MASTER-EXECUTION-CONTRACT.md` (32 Sections of Non-Negotiable Contract)
+3. `docs/migration/ANTIGRAVITY-AGENTIC-EXECUTION-STANDARD.md` (Execution Standard)
+**Status**: **REPO ENFORCEMENT ACTIVE & CI VALIDATED**
+
+### 1. Hierarki Tata Kelola Resmi Terpasang
+```text
+AGENTS.md (Root Policy)
+   ↓
+MASTER EXECUTION CONTRACT (docs/migration/ANTIGRAVITY-MASTER-EXECUTION-CONTRACT.md)
+   ↓
+AGENTIC EXECUTION STANDARD (docs/migration/ANTIGRAVITY-AGENTIC-EXECUTION-STANDARD.md)
+   ↓
+GitHub Issue / Acceptance Criteria (Issue #4)
+   ↓
+Task-Specific Prompt & Scoped Instructions
+   ↓
+Antigravity Coordinator
+   ↓
+Sub-Agents
+```
+
+### 2. Skema Wajib Hasil Sub-Agent (Non-Negotiable)
+Setiap sub-agent yang dipanggil wajib mengembalikan hasil terstruktur sesuai skema parseable berikut (Coordinator dilarang menerima ringkasan informal):
+```text
+SUB-AGENT RESULT
+STATUS: <COMPLETE | PARTIAL | BLOCKED | FAILED | NOT VERIFIED>
+TASK: <Deskripsi tugas terdelegasi>
+SCOPE: <Sub-LEGO id, subsistem, atau direktori terdampak>
+FILES: <Daftar file added, modified, deleted>
+TESTS: <Perintah pengujian yang dijalankan>
+EXIT CODES: <Daftar exit codes>
+COMMIT: <SHA commit lokal/remote>
+LOCAL/REMOTE: <LOCAL | REMOTE>
+EVIDENCE: <Invarian terverifikasi / fakta numerik>
+REMAINING: <Pekerjaan tersisa>
+UNVERIFIED: <Daftar aspek yang belum diverifikasi>
+BLOCKERS: <Blocker konkret atau NONE>
+CHECKPOINT: <State untuk kelanjutan aman jika terinterupsi>
+```
+
+### 3. Otomatisasi CI Enforcer
+Skrip `scripts/ci_architecture_check.py` Check 1 secara resmi memvalidasi keberadaan dan non-empty status ketiga artefak tata kelola ini. Check 1: **PASS**.
+
+Report: ./report.md
