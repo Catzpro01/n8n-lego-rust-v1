@@ -2095,7 +2095,55 @@ Report: ./report.md
 4. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
 5. Isolasi Fisik: **42 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
 
+
+---
+
+## EXECUTION MILESTONE: L04.S08 DYNAMIC PARAMETER/SCHEMA RUNTIME
+
+**Timestamp**: 2026-10-07T02:30:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `24ee9af0804ac83b95ac7d1e97de2bc3b3ed27dc`  
+**Status**: **L04.S08 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L04.S08
+- **Sub-LEGO**: `L04.S08` — `Dynamic parameter/schema runtime`
+- **Canonical Root**: `lego/L04-node-ecosystem/S08-dynamic-parameter-schema/`
+- **Runtime Host**: `H04` (Worker Host)
+- **State Ownership Domain**: `dynamic-schema-cache`
+- **Provided Ports**:
+  - `port.node.schema.resolve_options.v1`: Menyelesaikan pilihan parameter dan skema node dinamis (database, tabel, kolom, zona waktu) dengan evaluasi konteks parameter dan in-memory caching pada domain `dynamic-schema-cache`.
+- **Required Ports**:
+  - `port.node.registry.query.v1` (Provider: `L04.S01`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi port dan invarian L04.S08.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: `DynamicSchemaService`, resolusi dropdown dan skema dinamis, manajemen `dynamic-schema-cache` dengan TTL & purge, serta dispatcher port contract.
+  - `tests/dynamic_schema_test.rs`: 6 unit tests (cache miss vs cache hit, bypass cache, resolusi tabel dengan konteks database, penolakan method tak dikenal, validasi input invalid, port dispatchers).
+  - `evidence/S08-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur L04.S08.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/dynamic_schema_port_test.rs`.
+- Menguji `InProcessAdapter` roundtrip resolusi skema/opsi via port typed `port.node.schema.resolve_options.v1`, serta penolakan caller tanpa scope izin (`PortStatus::SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L04.S08` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **22** (26.5%) — Bertambah 1 (`L04.S08`).
+  - **IMPLEMENTED (Debt)**: **10** (12.0%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `rustc --test lego/L04-node-ecosystem/S08-dynamic-parameter-schema/implementation/mod.rs`: **6/6 unit tests PASS** (Exit Code 0).
+2. `cargo test -p n8n-port-contract`: **38 passed; 0 failed** (Exit Code 0).
+3. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+4. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
+5. Isolasi Fisik: **44 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
+
 Report: ./report.md
+
 
 
 

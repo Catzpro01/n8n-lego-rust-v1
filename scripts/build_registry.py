@@ -300,7 +300,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Node Ecosystem", "lego_slug": "L04-node-ecosystem", "sub_slug": "S08-dynamic-parameter-schema",
         "ownership": "node-ecosystem", "execution_model": "in-process", "runtime_host": "H04",
         "state_ownership": "dynamic-schema-cache", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "IMPLEMENTED",
+        "status": "TESTED",
         "provided_ports": ["port.node.schema.resolve_options.v1"],
         "required_ports": ["port.node.registry.query.v1"]
     },
@@ -792,8 +792,8 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 21, f"Expected 21 TESTED, got {status_counts['TESTED']}"
-    assert status_counts["IMPLEMENTED"] == 11, f"Expected 11 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
+    assert status_counts["TESTED"] == 22, f"Expected 22 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["IMPLEMENTED"] == 10, f"Expected 10 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
     assert status_counts["CONTRACTED"] == 43, f"Expected 43 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
@@ -802,7 +802,8 @@ def main():
         'L01.S01', 'L01.S02', 'L01.S03', 'L01.S04',
         'L02.S01', 'L02.S03', 'L02.S04', 'L02.S05',
         'L03.S01', 'L03.S02', 'L03.S03', 'L04.S01',
-        'L04.S03', 'L04.S04', 'L05.S01', 'L05.S02', 'L06.S01'
+        'L04.S03', 'L04.S04', 'L04.S08', 'L05.S01',
+        'L05.S02', 'L06.S01'
     }
     actual_tested = {item['id'] for item in SUBLEGOS_DATA if item['status'] == 'TESTED'}
     assert actual_tested == priority_tested, f"TESTED Sub-LEGOs do not match priority list: {actual_tested ^ priority_tested}"

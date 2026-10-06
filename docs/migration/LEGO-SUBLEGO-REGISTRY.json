@@ -791,7 +791,7 @@
           "state_ownership": "dynamic-schema-cache",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L04-node-ecosystem/S08-dynamic-parameter-schema/CONTRACT.md",
           "ports": {
             "provided": [
