@@ -10,7 +10,7 @@
 - **State Ownership**: `rest-endpoint-specs`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `rolling-dual-version`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 
@@ -19,6 +19,7 @@
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Dispatches incoming REST API requests against registered endpoints with auth verification and response formatting.
 
 ---
 

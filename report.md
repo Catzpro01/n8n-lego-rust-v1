@@ -2415,7 +2415,44 @@ Report: ./report.md
 4. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
 5. Isolasi Fisik: **56 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
 
+
+---
+
+## Sesi Eksekusi: Promosi Sub-LEGO L09.S02 (REST/API Compatibility) ke TESTED
+
+### 1. Implementasi & Modul Fisik
+- **Sub-LEGO ID**: `L09.S02`
+- **Nama**: REST/API compatibility
+- **LEGO Induk**: `L09-ui-compatibility`
+- **Domain State**: `rest-endpoint-specs`
+- **Runtime Host**: `H01` (Gateway Host)
+- **Implementasi Fisik**: `lego/L09-ui-compatibility/S02-rest-api-compatibility/implementation/mod.rs`
+- **Unit Tests**: `lego/L09-ui-compatibility/S02-rest-api-compatibility/tests/rest_api_test.rs`
+- **Evidence Ledger**: `lego/L09-ui-compatibility/S02-rest-api-compatibility/evidence/S02-EVIDENCE.md`
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/rest_dispatch_port_test.rs`.
+- Menguji `port.ui.rest.dispatch.v1` dengan eksekusi workflow via REST roundtrip, validasi method HTTP, pencegahan akses tanpa sesi/token, dan penolakan caller tanpa scope (`PortStatus::SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L09.S02` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **29** (34.9%) — Bertambah 1 (`L09.S02`).
+  - **IMPLEMENTED (Debt)**: **3** (3.6%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `rustc --test lego/L09-ui-compatibility/S02-rest-api-compatibility/implementation/mod.rs`: **7/7 unit tests PASS** (Exit Code 0).
+2. `cargo test -p n8n-port-contract --test rest_dispatch_port_test`: **2/2 passed** (Exit Code 0).
+3. `cargo test -p n8n-port-contract`: **52 passed; 0 failed** (Exit Code 0).
+4. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+5. Isolasi Fisik: **58 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
+
 Report: ./report.md
+
 
 
 

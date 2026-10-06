@@ -1569,7 +1569,7 @@
           "state_ownership": "rest-endpoint-specs",
           "contract_version": "1.0.0",
           "compatibility_policy": "rolling-dual-version",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L09-ui-compatibility/S02-rest-api-compatibility/CONTRACT.md",
           "ports": {
             "provided": [
