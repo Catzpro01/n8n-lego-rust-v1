@@ -30,7 +30,7 @@ The migration is now organized by **LEGO → Sub-LEGO → Work Item**, not by sl
 - **Sub-LEGO** = independently verifiable capability inside the LEGO.
 - **Work Item** = issue, PR, test, migration, or evidence artifact.
 
-Canonical hierarchy and identifiers are defined in `docs/migration/LEGO-MILESTONE-PLAN.md`.
+Canonical hierarchy and identifiers are defined in `docs/migration/LEGO-MILESTONE-PLAN.md`. Physical/function boundary rules are defined in `docs/migration/LEGO-PHYSICAL-ISOLATION.md`.
 
 GitHub milestone planning must use the LEGO level. Issues and PRs reference one primary Sub-LEGO using the stable `Lxx.Syy` identifier. Historical n8n-rust-v.4 issue numbers remain source references only.
 
