@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L06.S06",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.observability.pressure.poll.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

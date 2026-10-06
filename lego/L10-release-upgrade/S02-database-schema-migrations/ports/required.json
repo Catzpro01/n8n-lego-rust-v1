@@ -1,0 +1,14 @@
+{
+  "sublego_id": "L10.S02",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.storage.persistence.save.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L05.S01",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

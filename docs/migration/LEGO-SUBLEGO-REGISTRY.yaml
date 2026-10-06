@@ -1,736 +1,1628 @@
 version: 1
 planning_model: lego-sublego-work-item
 path_root: lego
-
+total_sublegos: 83
 rules:
-  primary_work_item_identity: "sublego:Lxx.Syy"
+  primary_work_item_identity: sublego:Lxx.Syy
   one_file_one_sublego: true
   one_sublego_one_capability: true
   cross_sublego_private_imports: false
   cyclic_sublego_dependencies: false
   shared_behavior_in_contracts: false
-
+  no_process_per_sublego: true
+  fail_closed_durable_wal: true
+runtime_hosts:
+  H01:
+    name: Gateway Host
+    responsibility: HTTP/UI/realtime ingress
+  H02:
+    name: Control Host
+    responsibility: identity, policy, lifecycle, cluster HA
+  H03:
+    name: Execution Host
+    responsibility: workflow execution and state machine
+  H04:
+    name: Worker Host
+    responsibility: isolated/parallel node execution
+  H05:
+    name: Data Host
+    responsibility: durable database, WAL, object storage
+  H06:
+    name: Agent Host
+    responsibility: agent, tool, MCP execution
+  H07:
+    name: Compatibility Host
+    responsibility: official n8n/Node compatibility adapters
 legos:
   L00:
     name: Foundation
     path: lego/L00-foundation
     sublegos:
-      S01: { name: Runtime contracts, path: lego/L00-foundation/S01-runtime-contracts }
+      S01:
+        id: L00.S01
+        name: Runtime contracts
+        ownership: runtime-core
+        canonical_path: lego/L00-foundation/S01-runtime-contracts
         execution_model: contract-only
         runtime_host: H02
+        state_ownership: stateless
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: TESTED
         contract_path: lego/L00-foundation/S01-runtime-contracts/CONTRACT.md
         ports:
-          provided: [L00.S01.provided.v1]
-          required: [L00.S01.required.v1]
+          provided:
+          - port.runtime.contract.envelope.v1
+          - port.runtime.contract.negotiate.v1
+          required: []
           transport: contract-defined
-      S02: { name: Runtime registry, path: lego/L00-foundation/S02-runtime-registry }
+      S02:
+        id: L00.S02
+        name: Runtime registry
+        ownership: runtime-core
+        canonical_path: lego/L00-foundation/S02-runtime-registry
         execution_model: in-process
         runtime_host: H02
+        state_ownership: runtime-registry-state
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: TESTED
         contract_path: lego/L00-foundation/S02-runtime-registry/CONTRACT.md
         ports:
-          provided: [L00.S02.provided.v1]
-          required: [L00.S02.required.v1]
+          provided:
+          - port.runtime.registry.lookup.v1
+          - port.runtime.registry.register.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S03: { name: Policy and resource budgets, path: lego/L00-foundation/S03-policy-resource-budgets }
+      S03:
+        id: L00.S03
+        name: Policy and resource budgets
+        ownership: runtime-core
+        canonical_path: lego/L00-foundation/S03-policy-resource-budgets
         execution_model: in-process
         runtime_host: H02
+        state_ownership: policy-budget-store
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: TESTED
         contract_path: lego/L00-foundation/S03-policy-resource-budgets/CONTRACT.md
         ports:
-          provided: [L00.S03.provided.v1]
-          required: [L00.S03.required.v1]
+          provided:
+          - port.runtime.policy.check.v1
+          - port.runtime.budget.allocate.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S04: { name: Health and lifecycle, path: lego/L00-foundation/S04-health-lifecycle }
+      S04:
+        id: L00.S04
+        name: Health and lifecycle
+        ownership: runtime-core
+        canonical_path: lego/L00-foundation/S04-health-lifecycle
         execution_model: in-process
         runtime_host: H02
+        state_ownership: lifecycle-state
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: TESTED
         contract_path: lego/L00-foundation/S04-health-lifecycle/CONTRACT.md
         ports:
-          provided: [L00.S04.provided.v1]
-          required: [L00.S04.required.v1]
+          provided:
+          - port.runtime.lifecycle.probe.v1
+          - port.runtime.lifecycle.quarantine.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-
   L01:
     name: Execution
     path: lego/L01-execution
     sublegos:
-      S01: { name: Execution semantics, path: lego/L01-execution/S01-execution-semantics }
+      S01:
+        id: L01.S01
+        name: Execution semantics
+        ownership: execution-engine
+        canonical_path: lego/L01-execution/S01-execution-semantics
         execution_model: in-process
         runtime_host: H03
+        state_ownership: workflow-execution-frames
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: TESTED
         contract_path: lego/L01-execution/S01-execution-semantics/CONTRACT.md
         ports:
-          provided: [L01.S01.provided.v1]
-          required: [L01.S01.required.v1]
+          provided:
+          - port.execution.run.workflow.v1
+          - port.execution.cancel.workflow.v1
+          required:
+          - port.runtime.contract.envelope.v1
+          - port.runtime.budget.allocate.v1
+          - port.node.execute.invoke.v1
+          - port.storage.wal.append.v1
           transport: contract-defined
-      S02: { name: Wait and resume, path: lego/L01-execution/S02-wait-resume }
+      S02:
+        id: L01.S02
+        name: Wait and resume
+        ownership: execution-engine
+        canonical_path: lego/L01-execution/S02-wait-resume
         execution_model: stateful-component
         runtime_host: H03
+        state_ownership: wait-resumption-index
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L01-execution/S02-wait-resume/CONTRACT.md
         ports:
-          provided: [L01.S02.provided.v1]
-          required: [L01.S02.required.v1]
+          provided:
+          - port.execution.wait.suspend.v1
+          - port.execution.wait.resume.v1
+          required:
+          - port.execution.run.workflow.v1
+          - port.storage.wal.append.v1
           transport: contract-defined
-      S03: { name: Sub-workflows, path: lego/L01-execution/S03-subworkflows }
+      S03:
+        id: L01.S03
+        name: Sub-workflows
+        ownership: execution-engine
+        canonical_path: lego/L01-execution/S03-subworkflows
         execution_model: in-process
         runtime_host: H03
+        state_ownership: subworkflow-call-hierarchy
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
         contract_path: lego/L01-execution/S03-subworkflows/CONTRACT.md
         ports:
-          provided: [L01.S03.provided.v1]
-          required: [L01.S03.required.v1]
+          provided:
+          - port.execution.subworkflow.invoke.v1
+          required:
+          - port.execution.run.workflow.v1
+          - port.runtime.budget.allocate.v1
           transport: contract-defined
-      S04: { name: Checkpoint and crash recovery, path: lego/L01-execution/S04-checkpoint-recovery }
+      S04:
+        id: L01.S04
+        name: Checkpoint and crash recovery
+        ownership: execution-engine
+        canonical_path: lego/L01-execution/S04-checkpoint-recovery
         execution_model: stateful-component
         runtime_host: H03
+        state_ownership: execution-checkpoint-index
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: TESTED
         contract_path: lego/L01-execution/S04-checkpoint-recovery/CONTRACT.md
         ports:
-          provided: [L01.S04.provided.v1]
-          required: [L01.S04.required.v1]
+          provided:
+          - port.execution.checkpoint.save.v1
+          - port.execution.recovery.replay.v1
+          required:
+          - port.storage.wal.append.v1
+          - port.storage.wal.read.v1
           transport: contract-defined
-      S05: { name: Unlimited/lazy workflow graph, path: lego/L01-execution/S05-unlimited-lazy-graph }
+      S05:
+        id: L01.S05
+        name: Unlimited/lazy workflow graph
+        ownership: execution-engine
+        canonical_path: lego/L01-execution/S05-unlimited-lazy-graph
         execution_model: in-process
         runtime_host: H03
+        state_ownership: lazy-graph-frontier
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L01-execution/S05-unlimited-lazy-graph/CONTRACT.md
         ports:
-          provided: [L01.S05.provided.v1]
-          required: [L01.S05.required.v1]
+          provided:
+          - port.execution.graph.expand_frontier.v1
+          required:
+          - port.runtime.contract.envelope.v1
+          - port.runtime.budget.allocate.v1
           transport: contract-defined
-      S06: { name: Compatibility oracle, path: lego/L01-execution/S06-compatibility-oracle }
+      S06:
+        id: L01.S06
+        name: Compatibility oracle
+        ownership: execution-engine
+        canonical_path: lego/L01-execution/S06-compatibility-oracle
         execution_model: tooling
         runtime_host: H07
+        state_ownership: golden-differential-corpus
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L01-execution/S06-compatibility-oracle/CONTRACT.md
         ports:
-          provided: [L01.S06.provided.v1]
-          required: [L01.S06.required.v1]
+          provided:
+          - port.execution.oracle.verify.v1
+          required:
+          - port.execution.run.workflow.v1
           transport: contract-defined
-
   L02:
     name: Security
     path: lego/L02-security
     sublegos:
-      S01: { name: Principal and security context, path: lego/L02-security/S01-principal-security-context }
+      S01:
+        id: L02.S01
+        name: Principal and security context
+        ownership: security-kernel
+        canonical_path: lego/L02-security/S01-principal-security-context
         execution_model: in-process
         runtime_host: H02
+        state_ownership: stateless
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
         contract_path: lego/L02-security/S01-principal-security-context/CONTRACT.md
         ports:
-          provided: [L02.S01.provided.v1]
-          required: [L02.S01.required.v1]
+          provided:
+          - port.security.context.create.v1
+          - port.security.context.validate.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S02: { name: Session lifecycle, path: lego/L02-security/S02-session-lifecycle }
+      S02:
+        id: L02.S02
+        name: Session lifecycle
+        ownership: security-kernel
+        canonical_path: lego/L02-security/S02-session-lifecycle
         execution_model: stateful-component
         runtime_host: H02
+        state_ownership: active-sessions-store
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L02-security/S02-session-lifecycle/CONTRACT.md
         ports:
-          provided: [L02.S02.provided.v1]
-          required: [L02.S02.required.v1]
+          provided:
+          - port.security.session.create.v1
+          - port.security.session.revoke.v1
+          required:
+          - port.security.context.validate.v1
           transport: contract-defined
-      S03: { name: Authorization, path: lego/L02-security/S03-authorization }
+      S03:
+        id: L02.S03
+        name: Authorization
+        ownership: security-kernel
+        canonical_path: lego/L02-security/S03-authorization
         execution_model: in-process
         runtime_host: H02
+        state_ownership: authz-policy-cache
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
         contract_path: lego/L02-security/S03-authorization/CONTRACT.md
         ports:
-          provided: [L02.S03.provided.v1]
-          required: [L02.S03.required.v1]
+          provided:
+          - port.security.authz.authorize.v1
+          required:
+          - port.security.context.validate.v1
           transport: contract-defined
-      S04: { name: Credential broker, path: lego/L02-security/S04-credential-broker }
+      S04:
+        id: L02.S04
+        name: Credential broker
+        ownership: security-kernel
+        canonical_path: lego/L02-security/S04-credential-broker
         execution_model: stateful-component
         runtime_host: H02
+        state_ownership: vault-secret-references
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: TESTED
         contract_path: lego/L02-security/S04-credential-broker/CONTRACT.md
         ports:
-          provided: [L02.S04.provided.v1]
-          required: [L02.S04.required.v1]
+          provided:
+          - port.security.credential.release.v1
+          - port.security.credential.store.v1
+          required:
+          - port.security.authz.authorize.v1
+          - port.security.crypto.encrypt.v1
           transport: contract-defined
-      S05: { name: Cryptography and key lifecycle, path: lego/L02-security/S05-crypto-key-lifecycle }
+      S05:
+        id: L02.S05
+        name: Cryptography and key lifecycle
+        ownership: security-kernel
+        canonical_path: lego/L02-security/S05-cryptography-key-lifecycle
         execution_model: in-process
         runtime_host: H02
-        contract_path: lego/L02-security/S05-crypto-key-lifecycle/CONTRACT.md
+        state_ownership: master-key-manifest
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
+        contract_path: lego/L02-security/S05-cryptography-key-lifecycle/CONTRACT.md
         ports:
-          provided: [L02.S05.provided.v1]
-          required: [L02.S05.required.v1]
+          provided:
+          - port.security.crypto.encrypt.v1
+          - port.security.crypto.decrypt.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S06: { name: Machine identity, path: lego/L02-security/S06-machine-identity }
-        execution_model: in-process
+      S06:
+        id: L02.S06
+        name: Machine identity
+        ownership: security-kernel
+        canonical_path: lego/L02-security/S06-machine-identity
+        execution_model: stateful-component
         runtime_host: H02
+        state_ownership: machine-api-keys
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L02-security/S06-machine-identity/CONTRACT.md
         ports:
-          provided: [L02.S06.provided.v1]
-          required: [L02.S06.required.v1]
+          provided:
+          - port.security.machine.authenticate.v1
+          required:
+          - port.security.context.create.v1
           transport: contract-defined
-      S07: { name: Password and MFA recovery, path: lego/L02-security/S07-password-mfa-recovery }
-        execution_model: in-process
+      S07:
+        id: L02.S07
+        name: Password/MFA recovery
+        ownership: security-kernel
+        canonical_path: lego/L02-security/S07-password-mfa-recovery
+        execution_model: stateful-component
         runtime_host: H02
+        state_ownership: mfa-tokens-lockout
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L02-security/S07-password-mfa-recovery/CONTRACT.md
         ports:
-          provided: [L02.S07.provided.v1]
-          required: [L02.S07.required.v1]
+          provided:
+          - port.security.mfa.verify.v1
+          required:
+          - port.security.authz.authorize.v1
           transport: contract-defined
-
   L03:
     name: Ingress
     path: lego/L03-ingress
     sublegos:
-      S01: { name: Webhook routing, path: lego/L03-ingress/S01-webhook-routing }
+      S01:
+        id: L03.S01
+        name: Webhook routing
+        ownership: ingress-gateway
+        canonical_path: lego/L03-ingress/S01-webhook-routing
         execution_model: in-process
         runtime_host: H01
+        state_ownership: webhook-route-table
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: TESTED
         contract_path: lego/L03-ingress/S01-webhook-routing/CONTRACT.md
         ports:
-          provided: [L03.S01.provided.v1]
-          required: [L03.S01.required.v1]
+          provided:
+          - port.ingress.webhook.receive.v1
+          required:
+          - port.ingress.admission.filter.v1
+          - port.ingress.dedup.check.v1
+          - port.execution.run.workflow.v1
           transport: contract-defined
-      S02: { name: Activation state machine, path: lego/L03-ingress/S02-activation-state-machine }
-        execution_model: in-process
+      S02:
+        id: L03.S02
+        name: Activation state machine
+        ownership: ingress-gateway
+        canonical_path: lego/L03-ingress/S02-activation-state-machine
+        execution_model: control-component
         runtime_host: H02
+        state_ownership: active-triggers-registry
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
         contract_path: lego/L03-ingress/S02-activation-state-machine/CONTRACT.md
         ports:
-          provided: [L03.S02.provided.v1]
-          required: [L03.S02.required.v1]
+          provided:
+          - port.ingress.activation.toggle.v1
+          - port.ingress.activation.list.v1
+          required:
+          - port.security.authz.authorize.v1
           transport: contract-defined
-      S03: { name: Schedule event manual form triggers, path: lego/L03-ingress/S03-trigger-sources }
+      S03:
+        id: L03.S03
+        name: Schedule/event/manual/form triggers
+        ownership: ingress-gateway
+        canonical_path: lego/L03-ingress/S03-schedule-event-triggers
         execution_model: in-process
         runtime_host: H01
-        contract_path: lego/L03-ingress/S03-trigger-sources/CONTRACT.md
+        state_ownership: cron-timer-slots
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
+        contract_path: lego/L03-ingress/S03-schedule-event-triggers/CONTRACT.md
         ports:
-          provided: [L03.S03.provided.v1]
-          required: [L03.S03.required.v1]
+          provided:
+          - port.ingress.trigger.dispatch.v1
+          required:
+          - port.execution.run.workflow.v1
           transport: contract-defined
-      S04: { name: Admission and backpressure, path: lego/L03-ingress/S04-admission-backpressure }
+      S04:
+        id: L03.S04
+        name: Admission and backpressure
+        ownership: ingress-gateway
+        canonical_path: lego/L03-ingress/S04-admission-backpressure
         execution_model: in-process
-        runtime_host: H02
+        runtime_host: H01
+        state_ownership: rate-limit-buckets
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L03-ingress/S04-admission-backpressure/CONTRACT.md
         ports:
-          provided: [L03.S04.provided.v1]
-          required: [L03.S04.required.v1]
+          provided:
+          - port.ingress.admission.filter.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S05: { name: Idempotency and deduplication, path: lego/L03-ingress/S05-idempotency-deduplication }
+      S05:
+        id: L03.S05
+        name: Idempotency/deduplication
+        ownership: ingress-gateway
+        canonical_path: lego/L03-ingress/S05-idempotency-deduplication
         execution_model: stateful-component
-        runtime_host: H02
+        runtime_host: H01
+        state_ownership: dedup-hash-cache
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L03-ingress/S05-idempotency-deduplication/CONTRACT.md
         ports:
-          provided: [L03.S05.provided.v1]
-          required: [L03.S05.required.v1]
+          provided:
+          - port.ingress.dedup.check.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S06: { name: Response plans and streaming payloads, path: lego/L03-ingress/S06-response-streaming }
-        execution_model: worker-capability
-        runtime_host: H01
-        contract_path: lego/L03-ingress/S06-response-streaming/CONTRACT.md
-        ports:
-          provided: [L03.S06.provided.v1]
-          required: [L03.S06.required.v1]
-          transport: contract-defined
-      S07: { name: Startup reconciliation and recovery, path: lego/L03-ingress/S07-startup-reconciliation }
+      S06:
+        id: L03.S06
+        name: Response plans and streaming payloads
+        ownership: ingress-gateway
+        canonical_path: lego/L03-ingress/S06-response-plans-streaming
         execution_model: in-process
+        runtime_host: H01
+        state_ownership: pending-response-waiters
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L03-ingress/S06-response-plans-streaming/CONTRACT.md
+        ports:
+          provided:
+          - port.ingress.response.stream.v1
+          required:
+          - port.storage.binary.stream.v1
+          transport: contract-defined
+      S07:
+        id: L03.S07
+        name: Startup reconciliation and recovery
+        ownership: ingress-gateway
+        canonical_path: lego/L03-ingress/S07-startup-reconciliation
+        execution_model: control-component
         runtime_host: H02
+        state_ownership: reconciliation-markers
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L03-ingress/S07-startup-reconciliation/CONTRACT.md
         ports:
-          provided: [L03.S07.provided.v1]
-          required: [L03.S07.required.v1]
+          provided:
+          - port.ingress.reconcile.execute.v1
+          required:
+          - port.ingress.activation.list.v1
+          - port.storage.persistence.load.v1
           transport: contract-defined
-
   L04:
     name: Node Ecosystem
     path: lego/L04-node-ecosystem
     sublegos:
-      S01: { name: Node registry and admission, path: lego/L04-node-ecosystem/S01-node-registry-admission }
+      S01:
+        id: L04.S01
+        name: Node registry and admission
+        ownership: node-ecosystem
+        canonical_path: lego/L04-node-ecosystem/S01-node-registry-admission
         execution_model: in-process
-        runtime_host: H02
+        runtime_host: H04
+        state_ownership: node-manifest-catalog
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
         contract_path: lego/L04-node-ecosystem/S01-node-registry-admission/CONTRACT.md
         ports:
-          provided: [L04.S01.provided.v1]
-          required: [L04.S01.required.v1]
+          provided:
+          - port.node.registry.query.v1
+          - port.node.registry.register.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S02: { name: Trust quarantine runtime locality, path: lego/L04-node-ecosystem/S02-trust-quarantine-locality }
+      S02:
+        id: L04.S02
+        name: Trust/quarantine/runtime locality
+        ownership: node-ecosystem
+        canonical_path: lego/L04-node-ecosystem/S02-trust-quarantine-locality
         execution_model: in-process
-        runtime_host: H02
+        runtime_host: H04
+        state_ownership: node-trust-tiers
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L04-node-ecosystem/S02-trust-quarantine-locality/CONTRACT.md
         ports:
-          provided: [L04.S02.provided.v1]
-          required: [L04.S02.required.v1]
+          provided:
+          - port.node.trust.evaluate.v1
+          required:
+          - port.security.authz.authorize.v1
           transport: contract-defined
-      S03: { name: Native Rust node catalog, path: lego/L04-node-ecosystem/S03-native-node-catalog }
-        execution_model: library
+      S03:
+        id: L04.S03
+        name: Native Rust node catalog
+        ownership: node-ecosystem
+        canonical_path: lego/L04-node-ecosystem/S03-native-rust-node-catalog
+        execution_model: library/pure
         runtime_host: H04
-        contract_path: lego/L04-node-ecosystem/S03-native-node-catalog/CONTRACT.md
+        state_ownership: stateless
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
+        contract_path: lego/L04-node-ecosystem/S03-native-rust-node-catalog/CONTRACT.md
         ports:
-          provided: [L04.S03.provided.v1]
-          required: [L04.S03.required.v1]
+          provided:
+          - port.node.execute.invoke.v1
+          required:
+          - port.security.credential.release.v1
+          - port.storage.binary.stream.v1
           transport: contract-defined
-      S04: { name: Compatibility worker, path: lego/L04-node-ecosystem/S04-compatibility-worker }
+      S04:
+        id: L04.S04
+        name: Compatibility worker
+        ownership: node-ecosystem
+        canonical_path: lego/L04-node-ecosystem/S04-compatibility-worker
         execution_model: worker-capability
         runtime_host: H07
+        state_ownership: worker-bridge-sessions
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: IMPLEMENTED
         contract_path: lego/L04-node-ecosystem/S04-compatibility-worker/CONTRACT.md
         ports:
-          provided: [L04.S04.provided.v1]
-          required: [L04.S04.required.v1]
+          provided:
+          - port.node.compat.invoke_js.v1
+          required:
+          - port.node.execute.invoke.v1
+          - port.storage.binary.stream.v1
           transport: contract-defined
-      S05: { name: Community private custom node compatibility, path: lego/L04-node-ecosystem/S05-community-private-custom }
+      S05:
+        id: L04.S05
+        name: Community/private/custom node compatibility
+        ownership: node-ecosystem
+        canonical_path: lego/L04-node-ecosystem/S05-community-custom-nodes
         execution_model: worker-capability
         runtime_host: H07
-        contract_path: lego/L04-node-ecosystem/S05-community-private-custom/CONTRACT.md
+        state_ownership: custom-node-tarballs
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L04-node-ecosystem/S05-community-custom-nodes/CONTRACT.md
         ports:
-          provided: [L04.S05.provided.v1]
-          required: [L04.S05.required.v1]
+          provided:
+          - port.node.custom.load.v1
+          required:
+          - port.node.trust.evaluate.v1
+          - port.node.compat.invoke_js.v1
           transport: contract-defined
-      S06: { name: Code polyglot runtime contracts, path: lego/L04-node-ecosystem/S06-code-polyglot-runtime }
+      S06:
+        id: L04.S06
+        name: Code/polyglot runtime contracts
+        ownership: node-ecosystem
+        canonical_path: lego/L04-node-ecosystem/S06-code-polyglot-runtime
         execution_model: worker-capability
         runtime_host: H04
+        state_ownership: polyglot-isolated-sandbox
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L04-node-ecosystem/S06-code-polyglot-runtime/CONTRACT.md
         ports:
-          provided: [L04.S06.provided.v1]
-          required: [L04.S06.required.v1]
+          provided:
+          - port.node.polyglot.execute.v1
+          required:
+          - port.runtime.budget.allocate.v1
           transport: contract-defined
-      S07: { name: Browser scraper hybrid capability, path: lego/L04-node-ecosystem/S07-browser-scraper-hybrid }
+      S07:
+        id: L04.S07
+        name: Browser/scraper hybrid capability
+        ownership: node-ecosystem
+        canonical_path: lego/L04-node-ecosystem/S07-browser-scraper-hybrid
         execution_model: worker-capability
         runtime_host: H04
+        state_ownership: browser-session-pool
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L04-node-ecosystem/S07-browser-scraper-hybrid/CONTRACT.md
         ports:
-          provided: [L04.S07.provided.v1]
-          required: [L04.S07.required.v1]
+          provided:
+          - port.node.browser.render.v1
+          required:
+          - port.runtime.budget.allocate.v1
           transport: contract-defined
-      S08: { name: Dynamic parameter schema runtime, path: lego/L04-node-ecosystem/S08-dynamic-parameters-schema }
+      S08:
+        id: L04.S08
+        name: Dynamic parameter/schema runtime
+        ownership: node-ecosystem
+        canonical_path: lego/L04-node-ecosystem/S08-dynamic-parameter-schema
         execution_model: in-process
-        runtime_host: H02
-        contract_path: lego/L04-node-ecosystem/S08-dynamic-parameters-schema/CONTRACT.md
+        runtime_host: H04
+        state_ownership: dynamic-schema-cache
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
+        contract_path: lego/L04-node-ecosystem/S08-dynamic-parameter-schema/CONTRACT.md
         ports:
-          provided: [L04.S08.provided.v1]
-          required: [L04.S08.required.v1]
+          provided:
+          - port.node.schema.resolve_options.v1
+          required:
+          - port.node.registry.query.v1
           transport: contract-defined
-
   L05:
     name: Data and Storage
     path: lego/L05-data-storage
     sublegos:
-      S01: { name: Workflow execution persistence, path: lego/L05-data-storage/S01-workflow-execution-persistence }
+      S01:
+        id: L05.S01
+        name: Workflow/execution persistence
+        ownership: data-persistence
+        canonical_path: lego/L05-data-storage/S01-workflow-execution-persistence
         execution_model: stateful-component
         runtime_host: H05
+        state_ownership: workflow-metadata-store
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: IMPLEMENTED
         contract_path: lego/L05-data-storage/S01-workflow-execution-persistence/CONTRACT.md
         ports:
-          provided: [L05.S01.provided.v1]
-          required: [L05.S01.required.v1]
+          provided:
+          - port.storage.persistence.save.v1
+          - port.storage.persistence.load.v1
+          required:
+          - port.security.context.validate.v1
           transport: contract-defined
-      S02: { name: Durable WAL and transactions, path: lego/L05-data-storage/S02-durable-wal-transactions }
+      S02:
+        id: L05.S02
+        name: Durable WAL and transactions
+        ownership: data-persistence
+        canonical_path: lego/L05-data-storage/S02-durable-wal-transactions
         execution_model: stateful-component
         runtime_host: H05
+        state_ownership: wal-append-records
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: TESTED
         contract_path: lego/L05-data-storage/S02-durable-wal-transactions/CONTRACT.md
         ports:
-          provided: [L05.S02.provided.v1]
-          required: [L05.S02.required.v1]
+          provided:
+          - port.storage.wal.append.v1
+          - port.storage.wal.read.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S03: { name: Execution data plane, path: lego/L05-data-storage/S03-execution-data-plane }
-        execution_model: in-process
-        runtime_host: H03
+      S03:
+        id: L05.S03
+        name: Execution data plane
+        ownership: data-persistence
+        canonical_path: lego/L05-data-storage/S03-execution-data-plane
+        execution_model: stateful-component
+        runtime_host: H05
+        state_ownership: execution-item-blobs
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
         contract_path: lego/L05-data-storage/S03-execution-data-plane/CONTRACT.md
         ports:
-          provided: [L05.S03.provided.v1]
-          required: [L05.S03.required.v1]
+          provided:
+          - port.storage.dataplane.store_handle.v1
+          - port.storage.dataplane.read_handle.v1
+          required:
+          - port.runtime.budget.allocate.v1
           transport: contract-defined
-      S04: { name: Binary data and streaming, path: lego/L05-data-storage/S04-binary-streaming }
-        execution_model: worker-capability
-        runtime_host: H05
-        contract_path: lego/L05-data-storage/S04-binary-streaming/CONTRACT.md
-        ports:
-          provided: [L05.S04.provided.v1]
-          required: [L05.S04.required.v1]
-          transport: contract-defined
-      S05: { name: Retention and compaction, path: lego/L05-data-storage/S05-retention-compaction }
+      S04:
+        id: L05.S04
+        name: Binary data and streaming
+        ownership: data-persistence
+        canonical_path: lego/L05-data-storage/S04-binary-data-streaming
         execution_model: stateful-component
         runtime_host: H05
+        state_ownership: blob-filesystem-chunks
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
+        contract_path: lego/L05-data-storage/S04-binary-data-streaming/CONTRACT.md
+        ports:
+          provided:
+          - port.storage.binary.stream.v1
+          required:
+          - port.runtime.contract.envelope.v1
+          transport: contract-defined
+      S05:
+        id: L05.S05
+        name: Retention/compaction
+        ownership: data-persistence
+        canonical_path: lego/L05-data-storage/S05-retention-compaction
+        execution_model: control-component
+        runtime_host: H05
+        state_ownership: compaction-tombstones
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L05-data-storage/S05-retention-compaction/CONTRACT.md
         ports:
-          provided: [L05.S05.provided.v1]
-          required: [L05.S05.required.v1]
+          provided:
+          - port.storage.retention.compact.v1
+          required:
+          - port.storage.persistence.load.v1
+          - port.storage.wal.read.v1
           transport: contract-defined
-      S06: { name: Snapshot backup restore, path: lego/L05-data-storage/S06-snapshot-backup-restore }
-        execution_model: stateful-component
+      S06:
+        id: L05.S06
+        name: Snapshot/backup/restore
+        ownership: data-persistence
+        canonical_path: lego/L05-data-storage/S06-snapshot-backup-restore
+        execution_model: control-component
         runtime_host: H05
+        state_ownership: backup-archives
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L05-data-storage/S06-snapshot-backup-restore/CONTRACT.md
         ports:
-          provided: [L05.S06.provided.v1]
-          required: [L05.S06.required.v1]
+          provided:
+          - port.storage.backup.create.v1
+          - port.storage.backup.restore.v1
+          required:
+          - port.storage.persistence.load.v1
           transport: contract-defined
-      S07: { name: Disaster recovery, path: lego/L05-data-storage/S07-disaster-recovery }
-        execution_model: stateful-component
+      S07:
+        id: L05.S07
+        name: Disaster recovery
+        ownership: data-persistence
+        canonical_path: lego/L05-data-storage/S07-disaster-recovery
+        execution_model: control-component
         runtime_host: H05
+        state_ownership: dr-replica-offsets
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L05-data-storage/S07-disaster-recovery/CONTRACT.md
         ports:
-          provided: [L05.S07.provided.v1]
-          required: [L05.S07.required.v1]
+          provided:
+          - port.storage.dr.sync.v1
+          required:
+          - port.storage.backup.restore.v1
           transport: contract-defined
-      S08: { name: Environment promotion, path: lego/L05-data-storage/S08-environment-promotion }
-        execution_model: control-component
-        runtime_host: H02
+      S08:
+        id: L05.S08
+        name: Environment promotion
+        ownership: data-persistence
+        canonical_path: lego/L05-data-storage/S08-environment-promotion
+        execution_model: in-process
+        runtime_host: H05
+        state_ownership: promotion-bundle-cache
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L05-data-storage/S08-environment-promotion/CONTRACT.md
         ports:
-          provided: [L05.S08.provided.v1]
-          required: [L05.S08.required.v1]
+          provided:
+          - port.storage.promotion.export.v1
+          - port.storage.promotion.import.v1
+          required:
+          - port.storage.persistence.load.v1
+          - port.security.credential.release.v1
           transport: contract-defined
-
   L06:
     name: Realtime and Observability
     path: lego/L06-realtime-observability
     sublegos:
-      S01: { name: Realtime event contract, path: lego/L06-realtime-observability/S01-realtime-event-contract }
+      S01:
+        id: L06.S01
+        name: Realtime event contract
+        ownership: observability
+        canonical_path: lego/L06-realtime-observability/S01-realtime-event-contract
         execution_model: in-process
-        runtime_host: H03
+        runtime_host: H01
+        state_ownership: websocket-active-sockets
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: TESTED
         contract_path: lego/L06-realtime-observability/S01-realtime-event-contract/CONTRACT.md
         ports:
-          provided: [L06.S01.provided.v1]
-          required: [L06.S01.required.v1]
+          provided:
+          - port.observability.realtime.publish.v1
+          - port.observability.realtime.subscribe.v1
+          required:
+          - port.security.context.validate.v1
           transport: contract-defined
-      S02: { name: Execution telemetry, path: lego/L06-realtime-observability/S02-execution-telemetry }
+      S02:
+        id: L06.S02
+        name: Execution telemetry
+        ownership: observability
+        canonical_path: lego/L06-realtime-observability/S02-execution-telemetry
         execution_model: in-process
         runtime_host: H03
+        state_ownership: telemetry-metrics-ring
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
         contract_path: lego/L06-realtime-observability/S02-execution-telemetry/CONTRACT.md
         ports:
-          provided: [L06.S02.provided.v1]
-          required: [L06.S02.required.v1]
+          provided:
+          - port.observability.telemetry.record.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S03: { name: Node plugin worker diagnostics, path: lego/L06-realtime-observability/S03-node-plugin-worker-diagnostics }
+      S03:
+        id: L06.S03
+        name: Node/plugin/worker diagnostics
+        ownership: observability
+        canonical_path: lego/L06-realtime-observability/S03-node-worker-diagnostics
         execution_model: in-process
-        runtime_host: H06
-        contract_path: lego/L06-realtime-observability/S03-node-plugin-worker-diagnostics/CONTRACT.md
+        runtime_host: H04
+        state_ownership: diagnostics-ring-buffer
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L06-realtime-observability/S03-node-worker-diagnostics/CONTRACT.md
         ports:
-          provided: [L06.S03.provided.v1]
-          required: [L06.S03.required.v1]
+          provided:
+          - port.observability.diagnostics.capture.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S04: { name: Health readiness, path: lego/L06-realtime-observability/S04-health-readiness }
+      S04:
+        id: L06.S04
+        name: Health/readiness
+        ownership: observability
+        canonical_path: lego/L06-realtime-observability/S04-health-readiness
         execution_model: in-process
         runtime_host: H02
+        state_ownership: system-readiness-map
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
         contract_path: lego/L06-realtime-observability/S04-health-readiness/CONTRACT.md
         ports:
-          provided: [L06.S04.provided.v1]
-          required: [L06.S04.required.v1]
+          provided:
+          - port.observability.health.check.v1
+          required:
+          - port.runtime.lifecycle.probe.v1
           transport: contract-defined
-      S05: { name: Replay and causal diagnostics, path: lego/L06-realtime-observability/S05-replay-causal-diagnostics }
-        execution_model: tooling
+      S05:
+        id: L06.S05
+        name: Replay and causal diagnostics
+        ownership: observability
+        canonical_path: lego/L06-realtime-observability/S05-replay-causal-diagnostics
+        execution_model: stateful-component
         runtime_host: H03
+        state_ownership: causal-trace-index
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L06-realtime-observability/S05-replay-causal-diagnostics/CONTRACT.md
         ports:
-          provided: [L06.S05.provided.v1]
-          required: [L06.S05.required.v1]
+          provided:
+          - port.observability.replay.trace.v1
+          required:
+          - port.storage.wal.read.v1
           transport: contract-defined
-      S06: { name: Resource pressure and queue metrics, path: lego/L06-realtime-observability/S06-resource-queue-metrics }
+      S06:
+        id: L06.S06
+        name: Resource pressure and queue metrics
+        ownership: observability
+        canonical_path: lego/L06-realtime-observability/S06-resource-pressure-metrics
         execution_model: in-process
-        runtime_host: H03
-        contract_path: lego/L06-realtime-observability/S06-resource-queue-metrics/CONTRACT.md
+        runtime_host: H02
+        state_ownership: pressure-gauge-counters
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L06-realtime-observability/S06-resource-pressure-metrics/CONTRACT.md
         ports:
-          provided: [L06.S06.provided.v1]
-          required: [L06.S06.required.v1]
+          provided:
+          - port.observability.pressure.poll.v1
+          required:
+          - port.runtime.budget.allocate.v1
           transport: contract-defined
-      S07: { name: Audit and bounded retention, path: lego/L06-realtime-observability/S07-audit-retention }
+      S07:
+        id: L06.S07
+        name: Audit and bounded retention
+        ownership: observability
+        canonical_path: lego/L06-realtime-observability/S07-audit-bounded-retention
         execution_model: stateful-component
-        runtime_host: H05
-        contract_path: lego/L06-realtime-observability/S07-audit-retention/CONTRACT.md
+        runtime_host: H02
+        state_ownership: immutable-audit-records
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L06-realtime-observability/S07-audit-bounded-retention/CONTRACT.md
         ports:
-          provided: [L06.S07.provided.v1]
-          required: [L06.S07.required.v1]
+          provided:
+          - port.observability.audit.record.v1
+          - port.observability.audit.query.v1
+          required:
+          - port.security.context.validate.v1
           transport: contract-defined
-
   L07:
     name: Scale and Worker Fabric
     path: lego/L07-scale-worker-fabric
     sublegos:
-      S01: { name: Scheduler resource intelligence, path: lego/L07-scale-worker-fabric/S01-scheduler-resource-intelligence }
-        execution_model: in-process
-        runtime_host: H03
+      S01:
+        id: L07.S01
+        name: Scheduler/resource intelligence
+        ownership: fabric-scale
+        canonical_path: lego/L07-scale-worker-fabric/S01-scheduler-resource-intelligence
+        execution_model: control-component
+        runtime_host: H02
+        state_ownership: worker-capacity-table
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L07-scale-worker-fabric/S01-scheduler-resource-intelligence/CONTRACT.md
         ports:
-          provided: [L07.S01.provided.v1]
-          required: [L07.S01.required.v1]
+          provided:
+          - port.scale.scheduler.dispatch.v1
+          required:
+          - port.scale.queue.dequeue.v1
           transport: contract-defined
-      S02: { name: Burst admission and graceful degradation, path: lego/L07-scale-worker-fabric/S02-burst-admission-degradation }
-        execution_model: in-process
-        runtime_host: H03
-        contract_path: lego/L07-scale-worker-fabric/S02-burst-admission-degradation/CONTRACT.md
-        ports:
-          provided: [L07.S02.provided.v1]
-          required: [L07.S02.required.v1]
-          transport: contract-defined
-      S03: { name: Queue and lease model, path: lego/L07-scale-worker-fabric/S03-queue-lease }
-        execution_model: stateful-component
-        runtime_host: H05
-        contract_path: lego/L07-scale-worker-fabric/S03-queue-lease/CONTRACT.md
-        ports:
-          provided: [L07.S03.provided.v1]
-          required: [L07.S03.required.v1]
-          transport: contract-defined
-      S04: { name: Worker lifecycle, path: lego/L07-scale-worker-fabric/S04-worker-lifecycle }
-        execution_model: worker-capability
-        runtime_host: H04
-        contract_path: lego/L07-scale-worker-fabric/S04-worker-lifecycle/CONTRACT.md
-        ports:
-          provided: [L07.S04.provided.v1]
-          required: [L07.S04.required.v1]
-          transport: contract-defined
-      S05: { name: Worker recovery and failover, path: lego/L07-scale-worker-fabric/S05-worker-recovery-failover }
-        execution_model: control-component
-        runtime_host: H02
-        contract_path: lego/L07-scale-worker-fabric/S05-worker-recovery-failover/CONTRACT.md
-        ports:
-          provided: [L07.S05.provided.v1]
-          required: [L07.S05.required.v1]
-          transport: contract-defined
-      S06: { name: HA control plane, path: lego/L07-scale-worker-fabric/S06-ha-control-plane }
-        execution_model: control-component
-        runtime_host: H02
-        contract_path: lego/L07-scale-worker-fabric/S06-ha-control-plane/CONTRACT.md
-        ports:
-          provided: [L07.S06.provided.v1]
-          required: [L07.S06.required.v1]
-          transport: contract-defined
-      S07: { name: Ingress runtime efficiency, path: lego/L07-scale-worker-fabric/S07-ingress-runtime-efficiency }
+      S02:
+        id: L07.S02
+        name: Burst admission and graceful degradation
+        ownership: fabric-scale
+        canonical_path: lego/L07-scale-worker-fabric/S02-burst-admission-degradation
         execution_model: in-process
         runtime_host: H01
+        state_ownership: degradation-thresholds
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L07-scale-worker-fabric/S02-burst-admission-degradation/CONTRACT.md
+        ports:
+          provided:
+          - port.scale.admission.throttle.v1
+          required:
+          - port.runtime.contract.envelope.v1
+          transport: contract-defined
+      S03:
+        id: L07.S03
+        name: Queue/lease model
+        ownership: fabric-scale
+        canonical_path: lego/L07-scale-worker-fabric/S03-queue-lease-model
+        execution_model: stateful-component
+        runtime_host: H05
+        state_ownership: job-queue-leases
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: IMPLEMENTED
+        contract_path: lego/L07-scale-worker-fabric/S03-queue-lease-model/CONTRACT.md
+        ports:
+          provided:
+          - port.scale.queue.enqueue.v1
+          - port.scale.queue.dequeue.v1
+          - port.scale.queue.ack.v1
+          required:
+          - port.runtime.contract.envelope.v1
+          transport: contract-defined
+      S04:
+        id: L07.S04
+        name: Worker lifecycle
+        ownership: fabric-scale
+        canonical_path: lego/L07-scale-worker-fabric/S04-worker-lifecycle
+        execution_model: control-component
+        runtime_host: H02
+        state_ownership: worker-heartbeats-map
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L07-scale-worker-fabric/S04-worker-lifecycle/CONTRACT.md
+        ports:
+          provided:
+          - port.scale.worker.register.v1
+          - port.scale.worker.heartbeat.v1
+          - port.scale.worker.drain.v1
+          required:
+          - port.runtime.lifecycle.probe.v1
+          transport: contract-defined
+      S05:
+        id: L07.S05
+        name: Worker recovery and failover
+        ownership: fabric-scale
+        canonical_path: lego/L07-scale-worker-fabric/S05-worker-recovery-failover
+        execution_model: control-component
+        runtime_host: H02
+        state_ownership: stale-lease-reclaimers
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L07-scale-worker-fabric/S05-worker-recovery-failover/CONTRACT.md
+        ports:
+          provided:
+          - port.scale.failover.reclaim.v1
+          required:
+          - port.scale.queue.ack.v1
+          - port.scale.worker.heartbeat.v1
+          transport: contract-defined
+      S06:
+        id: L07.S06
+        name: HA control plane
+        ownership: fabric-scale
+        canonical_path: lego/L07-scale-worker-fabric/S06-ha-control-plane
+        execution_model: control-component
+        runtime_host: H02
+        state_ownership: leader-epoch-lock
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L07-scale-worker-fabric/S06-ha-control-plane/CONTRACT.md
+        ports:
+          provided:
+          - port.scale.ha.leader_query.v1
+          required:
+          - port.runtime.contract.envelope.v1
+          transport: contract-defined
+      S07:
+        id: L07.S07
+        name: Ingress/runtime efficiency
+        ownership: fabric-scale
+        canonical_path: lego/L07-scale-worker-fabric/S07-ingress-runtime-efficiency
+        execution_model: in-process
+        runtime_host: H01
+        state_ownership: zero-copy-pool
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L07-scale-worker-fabric/S07-ingress-runtime-efficiency/CONTRACT.md
         ports:
-          provided: [L07.S07.provided.v1]
-          required: [L07.S07.required.v1]
+          provided:
+          - port.scale.efficiency.buffer_pool.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-
   L08:
     name: Agent and MCP
     path: lego/L08-agent-mcp
     sublegos:
-      S01: { name: Agent state machine, path: lego/L08-agent-mcp/S01-agent-state-machine }
-        execution_model: worker-capability
+      S01:
+        id: L08.S01
+        name: Agent state machine
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S01-agent-state-machine
+        execution_model: stateful-component
         runtime_host: H06
+        state_ownership: agent-execution-tree
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L08-agent-mcp/S01-agent-state-machine/CONTRACT.md
         ports:
-          provided: [L08.S01.provided.v1]
-          required: [L08.S01.required.v1]
+          provided:
+          - port.agent.engine.run.v1
+          required:
+          - port.agent.tool.invoke.v1
+          - port.agent.provider.chat.v1
+          - port.agent.memory.retrieve.v1
           transport: contract-defined
-      S02: { name: Tool registry, path: lego/L08-agent-mcp/S02-tool-registry }
+      S02:
+        id: L08.S02
+        name: Tool registry
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S02-tool-registry
         execution_model: in-process
         runtime_host: H06
+        state_ownership: agent-tool-manifests
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L08-agent-mcp/S02-tool-registry/CONTRACT.md
         ports:
-          provided: [L08.S02.provided.v1]
-          required: [L08.S02.required.v1]
+          provided:
+          - port.agent.tool.register.v1
+          - port.agent.tool.invoke.v1
+          required:
+          - port.security.authz.authorize.v1
           transport: contract-defined
-      S03: { name: Workflow as tool, path: lego/L08-agent-mcp/S03-workflow-as-tool }
+      S03:
+        id: L08.S03
+        name: Workflow-as-tool
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S03-workflow-as-tool
         execution_model: in-process
         runtime_host: H06
+        state_ownership: workflow-tool-bridges
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L08-agent-mcp/S03-workflow-as-tool/CONTRACT.md
         ports:
-          provided: [L08.S03.provided.v1]
-          required: [L08.S03.required.v1]
+          provided:
+          - port.agent.wf_tool.bridge.v1
+          required:
+          - port.execution.run.workflow.v1
+          - port.agent.tool.register.v1
           transport: contract-defined
-      S04: { name: Human approval and policy boundary, path: lego/L08-agent-mcp/S04-human-approval-policy }
-        execution_model: control-component
-        runtime_host: H02
+      S04:
+        id: L08.S04
+        name: Human approval and policy boundary
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S04-human-approval-policy
+        execution_model: stateful-component
+        runtime_host: H06
+        state_ownership: pending-human-approvals
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L08-agent-mcp/S04-human-approval-policy/CONTRACT.md
         ports:
-          provided: [L08.S04.provided.v1]
-          required: [L08.S04.required.v1]
+          provided:
+          - port.agent.approval.request.v1
+          - port.agent.approval.submit.v1
+          required:
+          - port.security.authz.authorize.v1
           transport: contract-defined
-      S05: { name: AI provider routing, path: lego/L08-agent-mcp/S05-ai-provider-routing }
+      S05:
+        id: L08.S05
+        name: AI provider routing
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S05-ai-provider-routing
         execution_model: remote-adapter
         runtime_host: H06
+        state_ownership: llm-provider-routes
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L08-agent-mcp/S05-ai-provider-routing/CONTRACT.md
         ports:
-          provided: [L08.S05.provided.v1]
-          required: [L08.S05.required.v1]
+          provided:
+          - port.agent.provider.chat.v1
+          required:
+          - port.security.credential.release.v1
+          - port.agent.budget.enforce.v1
           transport: contract-defined
-      S06: { name: Memory, path: lego/L08-agent-mcp/S06-memory }
+      S06:
+        id: L08.S06
+        name: Memory
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S06-agent-memory
         execution_model: stateful-component
         runtime_host: H06
-        contract_path: lego/L08-agent-mcp/S06-memory/CONTRACT.md
+        state_ownership: conversation-history-chunks
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L08-agent-mcp/S06-agent-memory/CONTRACT.md
         ports:
-          provided: [L08.S06.provided.v1]
-          required: [L08.S06.required.v1]
+          provided:
+          - port.agent.memory.store.v1
+          - port.agent.memory.retrieve.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S07: { name: Token execution budgets, path: lego/L08-agent-mcp/S07-token-execution-budgets }
+      S07:
+        id: L08.S07
+        name: Token/execution budgets
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S07-token-execution-budgets
         execution_model: in-process
         runtime_host: H06
+        state_ownership: token-consumption-counters
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L08-agent-mcp/S07-token-execution-budgets/CONTRACT.md
         ports:
-          provided: [L08.S07.provided.v1]
-          required: [L08.S07.required.v1]
+          provided:
+          - port.agent.budget.enforce.v1
+          required:
+          - port.runtime.budget.allocate.v1
           transport: contract-defined
-      S08: { name: MCP interoperability, path: lego/L08-agent-mcp/S08-mcp-interoperability }
+      S08:
+        id: L08.S08
+        name: MCP interoperability
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S08-mcp-interoperability
         execution_model: remote-adapter
         runtime_host: H06
+        state_ownership: mcp-server-processes
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L08-agent-mcp/S08-mcp-interoperability/CONTRACT.md
         ports:
-          provided: [L08.S08.provided.v1]
-          required: [L08.S08.required.v1]
+          provided:
+          - port.agent.mcp.connect.v1
+          - port.agent.mcp.call_tool.v1
+          required:
+          - port.agent.tool.register.v1
           transport: contract-defined
-      S09: { name: Usage accounting and audit, path: lego/L08-agent-mcp/S09-usage-accounting-audit }
+      S09:
+        id: L08.S09
+        name: Usage accounting and audit
+        ownership: agent-runtime
+        canonical_path: lego/L08-agent-mcp/S09-usage-accounting-audit
         execution_model: stateful-component
-        runtime_host: H05
+        runtime_host: H06
+        state_ownership: token-audit-records
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L08-agent-mcp/S09-usage-accounting-audit/CONTRACT.md
         ports:
-          provided: [L08.S09.provided.v1]
-          required: [L08.S09.required.v1]
+          provided:
+          - port.agent.usage.record.v1
+          required:
+          - port.observability.audit.record.v1
           transport: contract-defined
-
   L09:
     name: UI and Compatibility
     path: lego/L09-ui-compatibility
     sublegos:
-      S01: { name: Official Vue surface compatibility, path: lego/L09-ui-compatibility/S01-official-vue-surface }
+      S01:
+        id: L09.S01
+        name: Official Vue surface compatibility
+        ownership: ui-compat
+        canonical_path: lego/L09-ui-compatibility/S01-vue-surface-compatibility
         execution_model: in-process
         runtime_host: H01
-        contract_path: lego/L09-ui-compatibility/S01-official-vue-surface/CONTRACT.md
+        state_ownership: ui-static-bundle
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
+        contract_path: lego/L09-ui-compatibility/S01-vue-surface-compatibility/CONTRACT.md
         ports:
-          provided: [L09.S01.provided.v1]
-          required: [L09.S01.required.v1]
+          provided:
+          - port.ui.static.serve.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S02: { name: REST API compatibility, path: lego/L09-ui-compatibility/S02-rest-api-compatibility }
+      S02:
+        id: L09.S02
+        name: REST/API compatibility
+        ownership: ui-compat
+        canonical_path: lego/L09-ui-compatibility/S02-rest-api-compatibility
         execution_model: in-process
         runtime_host: H01
+        state_ownership: rest-endpoint-specs
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: IMPLEMENTED
         contract_path: lego/L09-ui-compatibility/S02-rest-api-compatibility/CONTRACT.md
         ports:
-          provided: [L09.S02.provided.v1]
-          required: [L09.S02.required.v1]
+          provided:
+          - port.ui.rest.dispatch.v1
+          required:
+          - port.storage.persistence.load.v1
+          - port.execution.run.workflow.v1
+          - port.security.session.create.v1
           transport: contract-defined
-      S03: { name: Realtime browser compatibility, path: lego/L09-ui-compatibility/S03-realtime-browser-compatibility }
+      S03:
+        id: L09.S03
+        name: Realtime/browser compatibility
+        ownership: ui-compat
+        canonical_path: lego/L09-ui-compatibility/S03-browser-realtime-compatibility
         execution_model: in-process
         runtime_host: H01
-        contract_path: lego/L09-ui-compatibility/S03-realtime-browser-compatibility/CONTRACT.md
+        state_ownership: browser-sock-clients
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
+        contract_path: lego/L09-ui-compatibility/S03-browser-realtime-compatibility/CONTRACT.md
         ports:
-          provided: [L09.S03.provided.v1]
-          required: [L09.S03.required.v1]
+          provided:
+          - port.ui.browser_sock.stream.v1
+          required:
+          - port.observability.realtime.publish.v1
           transport: contract-defined
-      S04: { name: Notifications accessibility parity, path: lego/L09-ui-compatibility/S04-notifications-accessibility }
+      S04:
+        id: L09.S04
+        name: Notifications/accessibility parity
+        ownership: ui-compat
+        canonical_path: lego/L09-ui-compatibility/S04-notifications-accessibility
         execution_model: in-process
         runtime_host: H01
+        state_ownership: ui-banner-notifs
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L09-ui-compatibility/S04-notifications-accessibility/CONTRACT.md
         ports:
-          provided: [L09.S04.provided.v1]
-          required: [L09.S04.required.v1]
+          provided:
+          - port.ui.notifications.publish.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S05: { name: Enterprise facing compatibility surfaces, path: lego/L09-ui-compatibility/S05-enterprise-compatibility }
+      S05:
+        id: L09.S05
+        name: Enterprise-facing compatibility surfaces
+        ownership: ui-compat
+        canonical_path: lego/L09-ui-compatibility/S05-enterprise-compatibility-surfaces
         execution_model: in-process
         runtime_host: H01
-        contract_path: lego/L09-ui-compatibility/S05-enterprise-compatibility/CONTRACT.md
+        state_ownership: enterprise-license-claims
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: IMPLEMENTED
+        contract_path: lego/L09-ui-compatibility/S05-enterprise-compatibility-surfaces/CONTRACT.md
         ports:
-          provided: [L09.S05.provided.v1]
-          required: [L09.S05.required.v1]
+          provided:
+          - port.ui.enterprise.features.v1
+          required:
+          - port.security.authz.authorize.v1
           transport: contract-defined
-      S06: { name: Frontend migration decommission plan, path: lego/L09-ui-compatibility/S06-frontend-migration }
-        execution_model: tooling
-        runtime_host: H01
-        contract_path: lego/L09-ui-compatibility/S06-frontend-migration/CONTRACT.md
+      S06:
+        id: L09.S06
+        name: Frontend migration/decommission plan
+        ownership: ui-compat
+        canonical_path: lego/L09-ui-compatibility/S06-frontend-migration-decommission
+        execution_model: contract-only
+        runtime_host: H07
+        state_ownership: decommission-milestones
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L09-ui-compatibility/S06-frontend-migration-decommission/CONTRACT.md
         ports:
-          provided: [L09.S06.provided.v1]
-          required: [L09.S06.required.v1]
+          provided:
+          - port.ui.decommission.audit.v1
+          required: []
           transport: contract-defined
-
   L10:
     name: Release and Upgrade
     path: lego/L10-release-upgrade
     sublegos:
-      S01: { name: Installation packaging, path: lego/L10-release-upgrade/S01-installation-packaging }
+      S01:
+        id: L10.S01
+        name: Installation/packaging
+        ownership: release-lifecycle
+        canonical_path: lego/L10-release-upgrade/S01-installation-packaging
         execution_model: tooling
         runtime_host: H01
+        state_ownership: package-artifacts
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L10-release-upgrade/S01-installation-packaging/CONTRACT.md
         ports:
-          provided: [L10.S01.provided.v1]
-          required: [L10.S01.required.v1]
+          provided:
+          - port.release.packaging.build.v1
+          required: []
           transport: contract-defined
-      S02: { name: Database schema migrations, path: lego/L10-release-upgrade/S02-db-schema-migrations }
-        execution_model: stateful-component
+      S02:
+        id: L10.S02
+        name: Database/schema migrations
+        ownership: release-lifecycle
+        canonical_path: lego/L10-release-upgrade/S02-database-schema-migrations
+        execution_model: tooling
         runtime_host: H05
-        contract_path: lego/L10-release-upgrade/S02-db-schema-migrations/CONTRACT.md
+        state_ownership: migration-version-ledger
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: IMPLEMENTED
+        contract_path: lego/L10-release-upgrade/S02-database-schema-migrations/CONTRACT.md
         ports:
-          provided: [L10.S02.provided.v1]
-          required: [L10.S02.required.v1]
+          provided:
+          - port.release.migration.apply.v1
+          required:
+          - port.storage.persistence.save.v1
           transport: contract-defined
-      S03: { name: Runtime node compatibility matrix, path: lego/L10-release-upgrade/S03-runtime-node-compatibility }
+      S03:
+        id: L10.S03
+        name: Runtime/node compatibility matrix
+        ownership: release-lifecycle
+        canonical_path: lego/L10-release-upgrade/S03-node-compat-matrix
         execution_model: tooling
         runtime_host: H07
-        contract_path: lego/L10-release-upgrade/S03-runtime-node-compatibility/CONTRACT.md
+        state_ownership: compat-matrix-rules
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L10-release-upgrade/S03-node-compat-matrix/CONTRACT.md
         ports:
-          provided: [L10.S03.provided.v1]
-          required: [L10.S03.required.v1]
+          provided:
+          - port.release.compat_matrix.evaluate.v1
+          required:
+          - port.node.registry.query.v1
           transport: contract-defined
-      S04: { name: Upgrade rollback, path: lego/L10-release-upgrade/S04-upgrade-rollback }
+      S04:
+        id: L10.S04
+        name: Upgrade/rollback
+        ownership: release-lifecycle
+        canonical_path: lego/L10-release-upgrade/S04-upgrade-rollback
         execution_model: control-component
         runtime_host: H02
+        state_ownership: upgrade-stage-offsets
+        contract_version: 1.0.0
+        compatibility_policy: rolling-dual-version
+        status: CONTRACTED
         contract_path: lego/L10-release-upgrade/S04-upgrade-rollback/CONTRACT.md
         ports:
-          provided: [L10.S04.provided.v1]
-          required: [L10.S04.required.v1]
+          provided:
+          - port.release.lifecycle.upgrade_step.v1
+          - port.release.lifecycle.rollback_step.v1
+          required:
+          - port.release.migration.apply.v1
+          - port.scale.worker.drain.v1
           transport: contract-defined
-      S05: { name: Release certification, path: lego/L10-release-upgrade/S05-release-certification }
+      S05:
+        id: L10.S05
+        name: Release certification
+        ownership: release-lifecycle
+        canonical_path: lego/L10-release-upgrade/S05-release-certification
         execution_model: tooling
-        runtime_host: H07
+        runtime_host: H02
+        state_ownership: certification-test-results
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
         contract_path: lego/L10-release-upgrade/S05-release-certification/CONTRACT.md
         ports:
-          provided: [L10.S05.provided.v1]
-          required: [L10.S05.required.v1]
+          provided:
+          - port.release.certify.run_gates.v1
+          required:
+          - port.observability.health.check.v1
           transport: contract-defined
-      S06: { name: Security performance certification, path: lego/L10-release-upgrade/S06-security-performance-cert }
+      S06:
+        id: L10.S06
+        name: Security/performance certification
+        ownership: release-lifecycle
+        canonical_path: lego/L10-release-upgrade/S06-security-perf-certification
         execution_model: tooling
-        runtime_host: H07
-        contract_path: lego/L10-release-upgrade/S06-security-performance-cert/CONTRACT.md
+        runtime_host: H02
+        state_ownership: benchmark-audit-traces
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: CONTRACTED
+        contract_path: lego/L10-release-upgrade/S06-security-perf-certification/CONTRACT.md
         ports:
-          provided: [L10.S06.provided.v1]
-          required: [L10.S06.required.v1]
+          provided:
+          - port.release.security_audit.scan.v1
+          required:
+          - port.security.authz.authorize.v1
           transport: contract-defined
-
   L11:
     name: Future Platform
     path: lego/L11-future-platform
     sublegos:
-      S01: { name: Event automation control plane, path: lego/L11-future-platform/S01-event-automation-control-plane }
+      S01:
+        id: L11.S01
+        name: Event/automation control plane
+        ownership: platform-future
+        canonical_path: lego/L11-future-platform/S01-event-automation-control
         execution_model: control-component
         runtime_host: H02
-        contract_path: lego/L11-future-platform/S01-event-automation-control-plane/CONTRACT.md
+        state_ownership: event-control-bus
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: DESIGNED
+        contract_path: lego/L11-future-platform/S01-event-automation-control/CONTRACT.md
         ports:
-          provided: [L11.S01.provided.v1]
-          required: [L11.S01.required.v1]
+          provided:
+          - port.future.event_bus.publish.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S02: { name: Execution side effect reliability, path: lego/L11-future-platform/S02-side-effect-reliability }
-        execution_model: in-process
+      S02:
+        id: L11.S02
+        name: Execution side-effect reliability
+        ownership: platform-future
+        canonical_path: lego/L11-future-platform/S02-execution-side-effect-reliability
+        execution_model: stateful-component
         runtime_host: H03
-        contract_path: lego/L11-future-platform/S02-side-effect-reliability/CONTRACT.md
+        state_ownership: side-effect-outbox
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: DESIGNED
+        contract_path: lego/L11-future-platform/S02-execution-side-effect-reliability/CONTRACT.md
         ports:
-          provided: [L11.S02.provided.v1]
-          required: [L11.S02.required.v1]
+          provided:
+          - port.future.side_effect.record.v1
+          required:
+          - port.storage.wal.append.v1
           transport: contract-defined
-      S03: { name: Advanced scheduler resource intelligence, path: lego/L11-future-platform/S03-advanced-scheduler-resource }
-        execution_model: in-process
-        runtime_host: H03
-        contract_path: lego/L11-future-platform/S03-advanced-scheduler-resource/CONTRACT.md
+      S03:
+        id: L11.S03
+        name: Advanced scheduler/resource intelligence
+        ownership: platform-future
+        canonical_path: lego/L11-future-platform/S03-advanced-scheduler-intelligence
+        execution_model: control-component
+        runtime_host: H02
+        state_ownership: ml-resource-heuristics
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: DESIGNED
+        contract_path: lego/L11-future-platform/S03-advanced-scheduler-intelligence/CONTRACT.md
         ports:
-          provided: [L11.S03.provided.v1]
-          required: [L11.S03.required.v1]
+          provided:
+          - port.future.smart_schedule.plan.v1
+          required:
+          - port.scale.scheduler.dispatch.v1
           transport: contract-defined
-      S04: { name: Worker distributed execution extensions, path: lego/L11-future-platform/S04-worker-distributed-extensions }
+      S04:
+        id: L11.S04
+        name: Worker/distributed execution extensions
+        ownership: platform-future
+        canonical_path: lego/L11-future-platform/S04-worker-distributed-extensions
         execution_model: worker-capability
         runtime_host: H04
+        state_ownership: mesh-worker-leases
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: DESIGNED
         contract_path: lego/L11-future-platform/S04-worker-distributed-extensions/CONTRACT.md
         ports:
-          provided: [L11.S04.provided.v1]
-          required: [L11.S04.required.v1]
+          provided:
+          - port.future.cluster.dispatch.v1
+          required:
+          - port.scale.worker.register.v1
           transport: contract-defined
-      S05: { name: Storage lifecycle DR extensions, path: lego/L11-future-platform/S05-storage-lifecycle-dr }
-        execution_model: stateful-component
-        runtime_host: H05
-        contract_path: lego/L11-future-platform/S05-storage-lifecycle-dr/CONTRACT.md
-        ports:
-          provided: [L11.S05.provided.v1]
-          required: [L11.S05.required.v1]
-          transport: contract-defined
-      S06: { name: Operator edge control plane, path: lego/L11-future-platform/S06-operator-edge-control }
+      S05:
+        id: L11.S05
+        name: Storage lifecycle/DR extensions
+        ownership: platform-future
+        canonical_path: lego/L11-future-platform/S05-storage-lifecycle-dr-extensions
         execution_model: control-component
-        runtime_host: H02
-        contract_path: lego/L11-future-platform/S06-operator-edge-control/CONTRACT.md
+        runtime_host: H05
+        state_ownership: cold-archive-tiers
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: DESIGNED
+        contract_path: lego/L11-future-platform/S05-storage-lifecycle-dr-extensions/CONTRACT.md
         ports:
-          provided: [L11.S06.provided.v1]
-          required: [L11.S06.required.v1]
+          provided:
+          - port.future.cold_archive.store.v1
+          required:
+          - port.storage.backup.create.v1
           transport: contract-defined
-      S07: { name: Ecosystem interoperability, path: lego/L11-future-platform/S07-ecosystem-interoperability }
-        execution_model: remote-adapter
-        runtime_host: H06
+      S06:
+        id: L11.S06
+        name: Operator/edge control plane
+        ownership: platform-future
+        canonical_path: lego/L11-future-platform/S06-operator-edge-control-plane
+        execution_model: control-component
+        runtime_host: H01
+        state_ownership: edge-cluster-nodes
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: DESIGNED
+        contract_path: lego/L11-future-platform/S06-operator-edge-control-plane/CONTRACT.md
+        ports:
+          provided:
+          - port.future.edge.sync.v1
+          required:
+          - port.runtime.contract.envelope.v1
+          transport: contract-defined
+      S07:
+        id: L11.S07
+        name: Ecosystem interoperability
+        ownership: platform-future
+        canonical_path: lego/L11-future-platform/S07-ecosystem-interoperability
+        execution_model: library/pure
+        runtime_host: H07
+        state_ownership: stateless
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: DESIGNED
         contract_path: lego/L11-future-platform/S07-ecosystem-interoperability/CONTRACT.md
         ports:
-          provided: [L11.S07.provided.v1]
-          required: [L11.S07.required.v1]
+          provided:
+          - port.future.ecosystem.convert.v1
+          required:
+          - port.runtime.contract.envelope.v1
           transport: contract-defined
-      S08: { name: Advanced Agent AI optimization, path: lego/L11-future-platform/S08-agent-ai-optimization }
-        execution_model: worker-capability
+      S08:
+        id: L11.S08
+        name: Advanced Agent/AI optimization
+        ownership: platform-future
+        canonical_path: lego/L11-future-platform/S08-advanced-agent-ai-optimization
+        execution_model: in-process
         runtime_host: H06
-        contract_path: lego/L11-future-platform/S08-agent-ai-optimization/CONTRACT.md
+        state_ownership: prompt-cache-mesh
+        contract_version: 1.0.0
+        compatibility_policy: semver-additive
+        status: DESIGNED
+        contract_path: lego/L11-future-platform/S08-advanced-agent-ai-optimization/CONTRACT.md
         ports:
-          provided: [L11.S08.provided.v1]
-          required: [L11.S08.required.v1]
+          provided:
+          - port.future.speculative_llm.predict.v1
+          required:
+          - port.agent.engine.run.v1
           transport: contract-defined

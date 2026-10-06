@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L08.S01",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.agent.engine.run.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

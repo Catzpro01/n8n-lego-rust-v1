@@ -333,7 +333,23 @@ async fn run_ipc_execution() {
     };
 
     if let Err(err) = tokio::fs::create_dir_all(&wal_dir).await {
-        eprintln!("[WAL-ERROR] Gagal membuat direktori WAL di {:?}: {}", wal_dir, err);
+        let err_msg = format!("Durable WAL Directory Failure: Gagal membuat direktori WAL di {:?}: {}", wal_dir, err);
+        eprintln!("[WAL-FAIL-CLOSED] {}", err_msg);
+        let err_json = serde_json::json!({
+            "id": exec_id,
+            "status": "error",
+            "finished": true,
+            "error": err_msg,
+            "walPath": wal_dir.to_string_lossy().to_string(),
+            "data": {
+                "resultData": {
+                    "runData": {}
+                }
+            }
+        });
+        println!("{}", serde_json::to_string(&err_json).unwrap_or_default());
+        std::io::stdout().flush().ok();
+        std::process::exit(1);
     }
 
     let wal_file = wal_dir.join(format!("{}.wal", exec_id));
@@ -342,8 +358,23 @@ async fn run_ipc_execution() {
     let scheduler = match KernelScheduler::new_with_durable_wal(SchedulerOptions::default(), &wal_file).await {
         Ok(s) => s,
         Err(err) => {
-            eprintln!("[WAL-ERROR] Gagal inisialisasi durable WAL di {:?}: {}, fallback ke default", wal_file, err);
-            KernelScheduler::default()
+            let err_msg = format!("Durable WAL Initialization Failure: Gagal inisialisasi durable WAL di {:?}: {}", wal_file, err);
+            eprintln!("[WAL-FAIL-CLOSED] {}", err_msg);
+            let err_json = serde_json::json!({
+                "id": exec_id,
+                "status": "error",
+                "finished": true,
+                "error": err_msg,
+                "walPath": wal_path_str,
+                "data": {
+                    "resultData": {
+                        "runData": {}
+                    }
+                }
+            });
+            println!("{}", serde_json::to_string(&err_json).unwrap_or_default());
+            std::io::stdout().flush().ok();
+            std::process::exit(1);
         }
     };
 

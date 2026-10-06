@@ -1,0 +1,18 @@
+{
+  "sublego_id": "L02.S05",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.security.crypto.encrypt.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
+      "port_id": "port.security.crypto.decrypt.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

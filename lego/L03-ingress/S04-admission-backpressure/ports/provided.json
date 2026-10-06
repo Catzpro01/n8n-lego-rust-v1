@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L03.S04",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.ingress.admission.filter.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

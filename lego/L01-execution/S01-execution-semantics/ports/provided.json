@@ -1,0 +1,22 @@
+{
+  "sublego_id": "L01.S01",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.execution.run.workflow.v1",
+      "category": "Command",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 300000,
+      "idempotent": false
+    },
+    {
+      "port_id": "port.execution.cancel.workflow.v1",
+      "category": "Command",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 10000,
+      "idempotent": true
+    }
+  ]
+}

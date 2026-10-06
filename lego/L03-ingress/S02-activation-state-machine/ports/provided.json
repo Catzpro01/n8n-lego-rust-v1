@@ -1,0 +1,18 @@
+{
+  "sublego_id": "L03.S02",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.ingress.activation.toggle.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
+      "port_id": "port.ingress.activation.list.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

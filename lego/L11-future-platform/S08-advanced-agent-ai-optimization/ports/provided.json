@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L11.S08",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.future.speculative_llm.predict.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

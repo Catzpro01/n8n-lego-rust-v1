@@ -1,0 +1,14 @@
+{
+  "sublego_id": "L03.S02",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.security.authz.authorize.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L02.S03",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

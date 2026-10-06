@@ -1,0 +1,30 @@
+{
+  "sublego_id": "L08.S01",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.agent.tool.invoke.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L08.S02",
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.agent.provider.chat.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L08.S05",
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.agent.memory.retrieve.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L08.S06",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

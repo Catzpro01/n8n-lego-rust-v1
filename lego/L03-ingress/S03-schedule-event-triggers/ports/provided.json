@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L03.S03",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.ingress.trigger.dispatch.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

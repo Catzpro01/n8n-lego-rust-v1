@@ -1,0 +1,27 @@
+{
+  "sublego_id": "L03.S01",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.ingress.admission.filter.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L03.S03",
+      "timeout_ms": 3000,
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.ingress.dedup.check.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L03.S04",
+      "timeout_ms": 3000,
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.execution.run.workflow.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L01.S01",
+      "timeout_ms": 30000,
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

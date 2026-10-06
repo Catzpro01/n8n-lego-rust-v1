@@ -1,0 +1,34 @@
+{
+  "sublego_id": "L01.S01",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.runtime.contract.envelope.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L00.S01",
+      "timeout_ms": 5000,
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.runtime.budget.allocate.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L00.S03",
+      "timeout_ms": 5000,
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.node.execute.invoke.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L04.S02",
+      "timeout_ms": 60000,
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.storage.wal.append.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L05.S02",
+      "timeout_ms": 5000,
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

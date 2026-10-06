@@ -1,0 +1,22 @@
+{
+  "sublego_id": "L01.S04",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.execution.checkpoint.save.v1",
+      "category": "Command",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 10000,
+      "idempotent": true
+    },
+    {
+      "port_id": "port.execution.recovery.replay.v1",
+      "category": "Query",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 30000,
+      "idempotent": true
+    }
+  ]
+}

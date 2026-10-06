@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L11.S01",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.future.event_bus.publish.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

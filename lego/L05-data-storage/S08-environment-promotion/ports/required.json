@@ -1,0 +1,22 @@
+{
+  "sublego_id": "L05.S08",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.storage.persistence.load.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L05.S01",
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.security.credential.release.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L02.S04",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

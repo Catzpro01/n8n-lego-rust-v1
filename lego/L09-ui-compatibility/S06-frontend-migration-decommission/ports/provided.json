@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L09.S06",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.ui.decommission.audit.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

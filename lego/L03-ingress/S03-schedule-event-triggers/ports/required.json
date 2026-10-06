@@ -1,0 +1,14 @@
+{
+  "sublego_id": "L03.S03",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.execution.run.workflow.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L01.S01",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

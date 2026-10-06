@@ -792,6 +792,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "n8n-port-contract"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "n8n-queue"
 version = "0.1.0"
 dependencies = [

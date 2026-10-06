@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L07.S06",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.scale.ha.leader_query.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

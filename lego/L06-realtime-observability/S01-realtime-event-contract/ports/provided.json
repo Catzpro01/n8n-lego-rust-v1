@@ -1,0 +1,22 @@
+{
+  "sublego_id": "L06.S01",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.observability.realtime.publish.v1",
+      "category": "Event",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 3000,
+      "idempotent": true
+    },
+    {
+      "port_id": "port.observability.realtime.subscribe.v1",
+      "category": "Stream",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 5000,
+      "idempotent": true
+    }
+  ]
+}

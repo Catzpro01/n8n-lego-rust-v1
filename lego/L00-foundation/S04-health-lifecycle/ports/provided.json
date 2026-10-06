@@ -1,0 +1,22 @@
+{
+  "sublego_id": "L00.S04",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.runtime.lifecycle.probe.v1",
+      "category": "Query",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 3000,
+      "idempotent": true
+    },
+    {
+      "port_id": "port.runtime.lifecycle.quarantine.v1",
+      "category": "Command",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 5000,
+      "idempotent": true
+    }
+  ]
+}

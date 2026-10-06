@@ -1,0 +1,22 @@
+{
+  "sublego_id": "L00.S01",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.runtime.contract.envelope.v1",
+      "category": "Command",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 30000,
+      "idempotent": false
+    },
+    {
+      "port_id": "port.runtime.contract.negotiate.v1",
+      "category": "Lifecycle",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 5000,
+      "idempotent": true
+    }
+  ]
+}

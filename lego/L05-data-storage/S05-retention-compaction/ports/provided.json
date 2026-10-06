@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L05.S05",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.storage.retention.compact.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

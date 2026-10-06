@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L08.S07",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.agent.budget.enforce.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "sublego_id": "L03.S06",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.storage.binary.stream.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L05.S04",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

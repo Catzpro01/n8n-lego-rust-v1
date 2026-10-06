@@ -1,0 +1,20 @@
+{
+  "sublego_id": "L01.S04",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.storage.wal.append.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L05.S02",
+      "timeout_ms": 5000,
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.storage.wal.read.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L05.S02",
+      "timeout_ms": 15000,
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

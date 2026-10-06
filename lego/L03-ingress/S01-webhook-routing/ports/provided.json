@@ -1,0 +1,14 @@
+{
+  "sublego_id": "L03.S01",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.ingress.webhook.receive.v1",
+      "category": "Command",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 15000,
+      "idempotent": false
+    }
+  ]
+}

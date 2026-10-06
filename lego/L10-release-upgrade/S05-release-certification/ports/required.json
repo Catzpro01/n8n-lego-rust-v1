@@ -1,0 +1,14 @@
+{
+  "sublego_id": "L10.S05",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.observability.health.check.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L06.S04",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "sublego_id": "L11.S05",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.storage.backup.create.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L05.S06",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

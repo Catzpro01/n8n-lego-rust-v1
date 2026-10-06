@@ -1,0 +1,20 @@
+{
+  "sublego_id": "L02.S04",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.security.authz.authorize.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L02.S03",
+      "timeout_ms": 3000,
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.security.crypto.encrypt.v1",
+      "acceptable_versions": ["1.0.0"],
+      "provider_sublego": "L02.S05",
+      "timeout_ms": 3000,
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "sublego_id": "L07.S04",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.scale.worker.register.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
+      "port_id": "port.scale.worker.heartbeat.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
+      "port_id": "port.scale.worker.drain.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

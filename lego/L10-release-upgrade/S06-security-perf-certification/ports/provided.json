@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L10.S06",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.release.security_audit.scan.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

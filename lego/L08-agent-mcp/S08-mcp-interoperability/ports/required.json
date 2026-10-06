@@ -1,0 +1,14 @@
+{
+  "sublego_id": "L08.S08",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.agent.tool.register.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L08.S02",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

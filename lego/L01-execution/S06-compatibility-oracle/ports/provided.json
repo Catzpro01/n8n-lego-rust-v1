@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L01.S06",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.execution.oracle.verify.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

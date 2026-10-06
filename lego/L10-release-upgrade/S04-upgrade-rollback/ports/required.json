@@ -1,0 +1,22 @@
+{
+  "sublego_id": "L10.S04",
+  "version": "1.0.0",
+  "required_ports": [
+    {
+      "port_id": "port.release.migration.apply.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L10.S02",
+      "fail_behavior": "fail-closed"
+    },
+    {
+      "port_id": "port.scale.worker.drain.v1",
+      "acceptable_versions": [
+        "1.0.0"
+      ],
+      "provider_sublego": "L07.S04",
+      "fail_behavior": "fail-closed"
+    }
+  ]
+}

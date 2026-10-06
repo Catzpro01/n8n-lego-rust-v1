@@ -1,0 +1,22 @@
+{
+  "sublego_id": "L00.S02",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.runtime.registry.lookup.v1",
+      "category": "Query",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 5000,
+      "idempotent": true
+    },
+    {
+      "port_id": "port.runtime.registry.register.v1",
+      "category": "Command",
+      "schema_version": "1.0.0",
+      "transport": "transport-neutral",
+      "timeout_ms": 5000,
+      "idempotent": true
+    }
+  ]
+}

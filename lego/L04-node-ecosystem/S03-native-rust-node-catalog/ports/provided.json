@@ -1,0 +1,12 @@
+{
+  "sublego_id": "L04.S03",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.node.execute.invoke.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}

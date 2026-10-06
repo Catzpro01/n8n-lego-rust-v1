@@ -1,0 +1,18 @@
+{
+  "sublego_id": "L05.S01",
+  "version": "1.0.0",
+  "provided_ports": [
+    {
+      "port_id": "port.storage.persistence.save.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
+      "port_id": "port.storage.persistence.load.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    }
+  ]
+}
