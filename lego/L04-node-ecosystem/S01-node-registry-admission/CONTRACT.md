@@ -10,7 +10,7 @@
 - **State Ownership**: `node-manifest-catalog`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 

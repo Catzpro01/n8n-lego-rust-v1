@@ -1814,4 +1814,143 @@ Report: ./report.md
 4. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
 5. Isolasi Fisik: **30 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
 
+
+---
+
+## EXECUTION MILESTONE: L02.S05 CRYPTOGRAPHY AND KEY LIFECYCLE
+
+**Timestamp**: 2026-10-07T02:09:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `4d742cdc48ef11ca69ff740ad6eaef6b53b89088`  
+**Status**: **L02.S05 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L02.S05
+- **Sub-LEGO**: `L02.S05` — `Cryptography and key lifecycle`
+- **Canonical Root**: `lego/L02-security/S05-cryptography-key-lifecycle/`
+- **Runtime Host**: `H02` (Control Host)
+- **State Ownership Domain**: `master-key-manifest`
+- **Provided Ports**:
+  - `port.security.crypto.encrypt.v1`: Enkripsi payload plaintext menjadi versioned envelope terotentikasi (`enc:v1:<key_id>:<iv>:<ciphertext>:<hmac>`) menggunakan active master key.
+  - `port.security.crypto.decrypt.v1`: Dekripsi terverifikasi envelope ciphertext dengan penegakan integritas HMAC, dukungan rotasi kunci (kunci deprecated tetap dapat didekripsi), dan fail-closed terhadap kunci yang dicabut (revoked).
+- **Required Ports**:
+  - `port.runtime.contract.envelope.v1` (Provider: `L00.S01`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi port dan invarian L02.S05.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: KeyLifecycleCryptoService mandiri, manifest siklus hidup master key, enkripsi/dekripsi envelope, dan dispatcher port contract.
+  - `tests/cryptography_test.rs`: 7 unit tests (roundtrip enkripsi/dekripsi, rotasi kunci transparan, penolakan kunci revoked, deteksi tamper ciphertext via HMAC, penolakan plaintext kosong, parsing format envelope, serta dispatching port encrypt & decrypt).
+  - `evidence/S05-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur L02.S05.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/cryptography_port_test.rs`.
+- Menguji `InProcessAdapter` roundtrip enkripsi dan dekripsi envelope dengan `SecurityContext` valid, serta penolakan caller tanpa scope izin (`PortStatus::SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L02.S05` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **16** (19.3%) — Bertambah 1 (`L02.S05`).
+  - **IMPLEMENTED (Debt)**: **16** (19.3%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `rustc --test lego/L02-security/S05-cryptography-key-lifecycle/implementation/mod.rs`: **7/7 unit tests PASS** (Exit Code 0).
+2. `cargo test -p n8n-port-contract`: **30 passed; 0 failed** (Exit Code 0).
+3. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+4. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
+5. Isolasi Fisik: **32 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
+
+
+---
+
+## EXECUTION MILESTONE: L03.S02 ACTIVATION STATE MACHINE
+
+**Timestamp**: 2026-10-07T02:13:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `4d742cdc48ef11ca69ff740ad6eaef6b53b89088`  
+**Status**: **L03.S02 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L03.S02
+- **Sub-LEGO**: `L03.S02` — `Activation state machine`
+- **Canonical Root**: `lego/L03-ingress/S02-activation-state-machine/`
+- **Runtime Host**: `H02` (Control Host)
+- **State Ownership Domain**: `active-triggers-registry`
+- **Provided Ports**:
+  - `port.ingress.activation.toggle.v1`: Mengaktifkan atau menonaktifkan trigger workflow dengan transisi state deterministik (`Active`, `Inactive`, `Error`).
+  - `port.ingress.activation.list.v1`: Query trigger aktif terdaftar pada domain `active-triggers-registry` dengan filtering per-workflow dan per-status.
+- **Required Ports**:
+  - `port.security.authz.authorize.v1` (Provider: `L02.S03`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi port dan invarian L03.S02.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: `ActivationStateMachineService`, state transisi, trigger registry, dan dispatcher port contract.
+  - `tests/activation_state_machine_test.rs`: 6 unit tests (toggle activate/deactivate, idempotensi, transisi error, query list filtering, penolakan input invalid, port dispatchers).
+  - `evidence/S02-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur L03.S02.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/activation_port_test.rs`.
+- Menguji `InProcessAdapter` roundtrip toggle dan list aktivasi trigger, serta penolakan caller tanpa scope izin (`PortStatus::SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L03.S02` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **17** (20.5%) — Bertambah 1 (`L03.S02`).
+  - **IMPLEMENTED (Debt)**: **15** (18.1%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+---
+
+## EXECUTION MILESTONE: L04.S01 NODE REGISTRY AND ADMISSION
+
+**Timestamp**: 2026-10-07T02:14:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `4d742cdc48ef11ca69ff740ad6eaef6b53b89088`  
+**Status**: **L04.S01 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L04.S01
+- **Sub-LEGO**: `L04.S01` — `Node registry and admission`
+- **Canonical Root**: `lego/L04-node-ecosystem/S01-node-registry-admission/`
+- **Runtime Host**: `H04` (Worker Host)
+- **State Ownership Domain**: `node-manifest-catalog`
+- **Provided Ports**:
+  - `port.node.registry.query.v1`: Query manifest node berdasarkan type name, category, atau version.
+  - `port.node.registry.register.v1`: Mendaftarkan node manifest baru ke catalog dengan validasi admission ketat (fail-closed, semver validation, capability check).
+- **Required Ports**:
+  - `port.runtime.contract.envelope.v1` (Provider: `L00.S01`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi port dan invarian L04.S01.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: `NodeRegistryAdmissionService`, node manifest catalog, admission validator, dan port dispatchers.
+  - `tests/node_registry_admission_test.rs`: 5 unit tests (built-in nodes loading, registration & querying, admission fail-closed validation, query filtering, port dispatchers).
+  - `evidence/S01-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur L04.S01.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/node_registry_port_test.rs`.
+- Menguji `InProcessAdapter` roundtrip register dan query catalog manifest node, serta penolakan caller tanpa scope izin (`PortStatus::SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L04.S01` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **18** (21.7%) — Bertambah 1 (`L04.S01`).
+  - **IMPLEMENTED (Debt)**: **14** (16.9%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `rustc --test lego/L02-security/S05-cryptography-key-lifecycle/implementation/mod.rs`: **7/7 unit tests PASS** (Exit Code 0).
+2. `rustc --test lego/L03-ingress/S02-activation-state-machine/implementation/mod.rs`: **6/6 unit tests PASS** (Exit Code 0).
+3. `rustc --test lego/L04-node-ecosystem/S01-node-registry-admission/implementation/mod.rs`: **5/5 unit tests PASS** (Exit Code 0).
+4. `cargo test -p n8n-port-contract`: **30 passed; 0 failed** (Exit Code 0).
+5. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+6. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
+7. Isolasi Fisik: **36 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
+
 Report: ./report.md
+

@@ -327,7 +327,7 @@ legos:
         state_ownership: master-key-manifest
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: IMPLEMENTED
+        status: TESTED
         contract_path: lego/L02-security/S05-cryptography-key-lifecycle/CONTRACT.md
         ports:
           provided:
@@ -406,7 +406,7 @@ legos:
         state_ownership: active-triggers-registry
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: IMPLEMENTED
+        status: TESTED
         contract_path: lego/L03-ingress/S02-activation-state-machine/CONTRACT.md
         ports:
           provided:
@@ -520,7 +520,7 @@ legos:
         state_ownership: node-manifest-catalog
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: IMPLEMENTED
+        status: TESTED
         contract_path: lego/L04-node-ecosystem/S01-node-registry-admission/CONTRACT.md
         ports:
           provided:

@@ -143,7 +143,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Security", "lego_slug": "L02-security", "sub_slug": "S05-cryptography-key-lifecycle",
         "ownership": "security-kernel", "execution_model": "in-process", "runtime_host": "H02",
         "state_ownership": "master-key-manifest", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "IMPLEMENTED",
+        "status": "TESTED",
         "provided_ports": ["port.security.crypto.encrypt.v1", "port.security.crypto.decrypt.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -181,7 +181,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Ingress", "lego_slug": "L03-ingress", "sub_slug": "S02-activation-state-machine",
         "ownership": "ingress-gateway", "execution_model": "control-component", "runtime_host": "H02",
         "state_ownership": "active-triggers-registry", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "IMPLEMENTED",
+        "status": "TESTED",
         "provided_ports": ["port.ingress.activation.toggle.v1", "port.ingress.activation.list.v1"],
         "required_ports": ["port.security.authz.authorize.v1"]
     },
@@ -237,7 +237,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Node Ecosystem", "lego_slug": "L04-node-ecosystem", "sub_slug": "S01-node-registry-admission",
         "ownership": "node-ecosystem", "execution_model": "in-process", "runtime_host": "H04",
         "state_ownership": "node-manifest-catalog", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "IMPLEMENTED",
+        "status": "TESTED",
         "provided_ports": ["port.node.registry.query.v1", "port.node.registry.register.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -792,15 +792,16 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 15, f"Expected 15 TESTED, got {status_counts['TESTED']}"
-    assert status_counts["IMPLEMENTED"] == 17, f"Expected 17 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
+    assert status_counts["TESTED"] == 18, f"Expected 18 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["IMPLEMENTED"] == 14, f"Expected 14 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
     assert status_counts["CONTRACTED"] == 43, f"Expected 43 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
     priority_tested = {
         'L00.S01', 'L00.S02', 'L00.S03', 'L00.S04',
         'L01.S01', 'L01.S02', 'L01.S03', 'L01.S04',
-        'L02.S01', 'L02.S03', 'L02.S04', 'L03.S01',
+        'L02.S01', 'L02.S03', 'L02.S04', 'L02.S05',
+        'L03.S01', 'L03.S02', 'L04.S01',
         'L05.S01', 'L05.S02', 'L06.S01'
     }
     actual_tested = {item['id'] for item in SUBLEGOS_DATA if item['status'] == 'TESTED'}
