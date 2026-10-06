@@ -357,6 +357,115 @@ Primary source scope: #228–#239 and remaining P12–P23 requirements.
 
 ---
 
+## 3. Delivery stages
+
+Delivery stages control implementation order only. They do not redefine LEGO/Sub-LEGO ownership and are not slices.
+
+### D0 — Baseline & Freeze
+- validate the 83 Sub-LEGO registry;
+- reconcile documentation and registry;
+- capture mixed-file ownership debt;
+- freeze the approved architecture.
+
+Exit gate: machine-parseable registry, exact 83 IDs, baseline/evidence recorded.
+
+### D1 — Contract & Port Foundation
+- typed Port Contract;
+- versioned request/response/error schemas;
+- provided/required port declarations;
+- contract registry and validator;
+- transport-neutral in-process contract adapter.
+
+Exit gate: contracts validate and implemented boundaries have concrete ports.
+
+### D2 — Dependency & Runtime Composition
+- machine-readable dependency graph;
+- required→provided bindings;
+- Runtime Host registry;
+- execution models;
+- port lifecycle: DISCOVER → NEGOTIATE → BIND → READY → INVOKE → DRAIN → UNBIND;
+- no process-per-Sub-LEGO.
+
+Exit gate: graph is acyclic, dependencies resolve, runtime-host placement is valid.
+
+### D3 — Security, Reliability & Data Boundaries
+- principal/tenant/scope/audience;
+- deadline/cancellation/budget;
+- idempotency;
+- SecretRef/broker boundary;
+- authoritative state ownership;
+- control/data plane separation;
+- DataHandle/StreamPort and backpressure;
+- port-level observability.
+
+Exit gate: security and data-boundary tests pass and state ownership is unambiguous.
+
+### D4 — Physical Sub-LEGO Migration
+- canonical `lego/Lxx-*/Syy-*/` roots;
+- `CONTRACT.md`, `ports/`, implementation, tests, evidence;
+- move mixed behavior to its owner;
+- replace private cross-boundary imports.
+
+Migration order:
+1. foundation;
+2. execution/data/security;
+3. ingress/node ecosystem;
+4. observability/scale/agent/UI;
+5. future platform.
+
+Exit gate: migrated scope has physical ownership and no illegal internal imports.
+
+### D5 — Runtime Extraction & Scalability
+- in-process adapter;
+- framed IPC where isolation is required;
+- remote adapter where required;
+- worker pools;
+- queue/backpressure;
+- scaling classes;
+- drain/restart/failover.
+
+Exit gate: representative Sub-LEGOs run in at least two runtime modes without contract changes.
+
+### D6 — Upgrade, Recovery & Compatibility
+- v1/v2 rolling compatibility;
+- provider dual-version operation;
+- rollback;
+- restart/recovery;
+- checkpoint/WAL recovery;
+- official n8n differential compatibility evidence.
+
+WAL must fail closed: WAL directory/init failure must fail execution and may not downgrade to in-memory durability.
+
+Exit gate: upgrade, rollback, recovery, WAL-negative, and compatibility tests pass.
+
+### D7 — Architecture Certification
+- architecture CI enforcement;
+- contract/dependency graph verification;
+- security/boundary suite;
+- runtime-host conformance;
+- scaling evidence;
+- upgrade/recovery evidence;
+- exact verified commit;
+- migration debt report.
+
+Exit gate: required Sub-LEGOs meet applicable gates, latest main is clean, and evidence is complete.
+
+### Delivery status
+
+Use:
+
+`DESIGNED → CONTRACTED → IMPLEMENTED → TESTED → CERTIFIED`
+
+A stage is complete only when its exit gate is executable and evidenced.
+
+### Delivery dependency
+
+```
+D0 → D1 → D2 → D3 → D4 → D5 → D6 → D7
+```
+
+Parallel work is allowed only after its declared dependencies are satisfied.
+
 ## 3. LEGO connection model
 
 The architecture uses four distinct concepts:
