@@ -76,6 +76,57 @@ LOCAL != REMOTE
             self.assertFalse(res.passed, "Inverted hierarchy should fail check 8")
             self.assertTrue(any("violates" in e.lower() or "missing" in e.lower() for e in res.errors))
 
+    def test_negative_check_10_missing_implementation_fails(self):
+        """Simulate a Sub-LEGO claiming TESTED without implementation/mod.rs."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_enforcer = CIArchitectureEnforcer(tmpdir)
+            sub_path = os.path.join(tmpdir, "lego", "L00", "S01")
+            os.makedirs(os.path.join(sub_path, "ports"), exist_ok=True)
+            with open(os.path.join(sub_path, "ports", "lib.rs"), "w") as f:
+                f.write("// port")
+            with open(os.path.join(sub_path, "CONTRACT.md"), "w") as f:
+                f.write("# Contract\n" * 15)  # > 100 bytes
+
+            temp_enforcer.sublegos = {
+                "L00.S01": {
+                    "status": "TESTED",
+                    "canonical_path": "lego/L00/S01",
+                }
+            }
+            res = ArchitectureCheckResult("Negative Test Missing Implementation")
+            temp_enforcer.check_status_transition_and_evidence(res)
+            self.assertFalse(res.passed)
+            self.assertTrue(any("implementation/ directory is missing" in e for e in res.errors))
+
+    def test_negative_check_10_stub_evidence_fails(self):
+        """Simulate a Sub-LEGO claiming TESTED with stub evidence (<= 200 bytes)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_enforcer = CIArchitectureEnforcer(tmpdir)
+            sub_path = os.path.join(tmpdir, "lego", "L00", "S01")
+            os.makedirs(os.path.join(sub_path, "ports"), exist_ok=True)
+            os.makedirs(os.path.join(sub_path, "implementation"), exist_ok=True)
+            os.makedirs(os.path.join(sub_path, "evidence"), exist_ok=True)
+            with open(os.path.join(sub_path, "ports", "lib.rs"), "w") as f:
+                f.write("// port")
+            with open(os.path.join(sub_path, "CONTRACT.md"), "w") as f:
+                f.write("# Contract\n" * 15)
+            with open(os.path.join(sub_path, "implementation", "mod.rs"), "w") as f:
+                f.write("// impl")
+            with open(os.path.join(sub_path, "evidence", "L00-S01-EVIDENCE.md"), "w") as f:
+                f.write("# Stub Evidence")  # ~15 bytes <= 200 bytes
+
+            temp_enforcer.sublegos = {
+                "L00.S01": {
+                    "status": "TESTED",
+                    "canonical_path": "lego/L00/S01",
+                }
+            }
+            res = ArchitectureCheckResult("Negative Test Stub Evidence")
+            temp_enforcer.check_status_transition_and_evidence(res)
+            self.assertFalse(res.passed)
+            self.assertTrue(any("evidence files are stubs" in e for e in res.errors))
+
 
 if __name__ == "__main__":
     unittest.main()
+

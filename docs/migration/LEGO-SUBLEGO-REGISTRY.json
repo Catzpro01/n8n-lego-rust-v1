@@ -538,7 +538,7 @@
           "state_ownership": "rate-limit-buckets",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L03-ingress/S04-admission-backpressure/CONTRACT.md",
           "ports": {
             "provided": [
@@ -656,7 +656,7 @@
           "state_ownership": "node-trust-tiers",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L04-node-ecosystem/S02-trust-quarantine-locality/CONTRACT.md",
           "ports": {
             "provided": [
@@ -724,7 +724,7 @@
           "state_ownership": "custom-node-tarballs",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L04-node-ecosystem/S05-community-custom-nodes/CONTRACT.md",
           "ports": {
             "provided": [
@@ -747,7 +747,7 @@
           "state_ownership": "polyglot-isolated-sandbox",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L04-node-ecosystem/S06-code-polyglot-runtime/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1053,7 +1053,7 @@
           "state_ownership": "diagnostics-ring-buffer",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L06-realtime-observability/S03-node-worker-diagnostics/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1097,7 +1097,7 @@
           "state_ownership": "causal-trace-index",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L06-realtime-observability/S05-replay-causal-diagnostics/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1170,7 +1170,7 @@
           "state_ownership": "worker-capacity-table",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L07-scale-worker-fabric/S01-scheduler-resource-intelligence/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1192,7 +1192,7 @@
           "state_ownership": "degradation-thresholds",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L07-scale-worker-fabric/S02-burst-admission-degradation/CONTRACT.md",
           "ports": {
             "provided": [

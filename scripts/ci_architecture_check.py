@@ -466,9 +466,9 @@ class CIArchitectureEnforcer:
         # 3. Exact taxonomy distribution enforcement
         expected_counts = {
             "CERTIFIED": 0,
-            "TESTED": 32,
+            "TESTED": 40,
             "IMPLEMENTED": 0,
-            "CONTRACTED": 43,
+            "CONTRACTED": 35,
             "DESIGNED": 8,
         }
 
@@ -482,11 +482,14 @@ class CIArchitectureEnforcer:
             "L00.S01", "L00.S02", "L00.S03", "L00.S04",
             "L01.S01", "L01.S02", "L01.S03", "L01.S04",
             "L02.S01", "L02.S03", "L02.S04", "L02.S05",
-            "L03.S01", "L03.S02", "L03.S03", "L04.S01",
-            "L04.S03", "L04.S04", "L04.S08", "L05.S01",
-            "L05.S02", "L05.S03", "L05.S04", "L06.S01",
-            "L06.S02", "L06.S04", "L07.S03", "L09.S01",
-            "L09.S02", "L09.S03", "L09.S05", "L10.S02"
+            "L03.S01", "L03.S02", "L03.S03", "L03.S04",
+            "L04.S01", "L04.S02", "L04.S03", "L04.S04",
+            "L04.S05", "L04.S06", "L04.S08",
+            "L05.S01", "L05.S02", "L05.S03", "L05.S04",
+            "L06.S01", "L06.S02", "L06.S03", "L06.S04", "L06.S05",
+            "L07.S01", "L07.S02", "L07.S03",
+            "L09.S01", "L09.S02", "L09.S03", "L09.S05",
+            "L10.S02"
         }
         actual_tested_ids = {s_id for s_id, s_data in self.sublegos.items() if s_data.get("status") == "TESTED"}
 
@@ -655,7 +658,8 @@ class CIArchitectureEnforcer:
         Guarantees:
         - Strict ladder: DESIGNED -> CONTRACTED -> IMPLEMENTED -> TESTED -> CERTIFIED.
         - Zero CERTIFIED allowed without human/maintainer signoff (quality floor).
-        - Every TESTED Sub-LEGO must have physical presence, non-empty CONTRACT.md, and ports/ files.
+        - Every TESTED Sub-LEGO must have physical presence, non-empty CONTRACT.md, ports/ files,
+          implementation/mod.rs non-empty, and evidence/*-EVIDENCE.md non-stub (> 200 bytes).
         """
         if not self.sublegos:
             res.error("Registry not populated.")
@@ -683,19 +687,42 @@ class CIArchitectureEnforcer:
                     if not port_files:
                         res.error(f"Sub-LEGO {s_id} marked TESTED but ports/ directory is empty")
 
+                # Mechanically verify implementation/mod.rs
+                impl_dir = os.path.join(abs_path, "implementation")
+                impl_mod = os.path.join(impl_dir, "mod.rs")
+                if not os.path.isdir(impl_dir):
+                    res.error(f"Sub-LEGO {s_id} marked TESTED but implementation/ directory is missing: {canonical_path}/implementation")
+                elif not os.path.isfile(impl_mod) or os.path.getsize(impl_mod) == 0:
+                    res.error(f"Sub-LEGO {s_id} marked TESTED but implementation/mod.rs is missing or empty (0 bytes)")
+
+                # Mechanically verify evidence/*-EVIDENCE.md (> 200 bytes)
+                evidence_dir = os.path.join(abs_path, "evidence")
+                if not os.path.isdir(evidence_dir):
+                    res.error(f"Sub-LEGO {s_id} marked TESTED but evidence/ directory is missing: {canonical_path}/evidence")
+                else:
+                    ev_files = [f for f in os.listdir(evidence_dir) if f.endswith("-EVIDENCE.md")]
+                    if not ev_files:
+                        res.error(f"Sub-LEGO {s_id} marked TESTED but no *-EVIDENCE.md file found in evidence/")
+                    else:
+                        valid_ev = [f for f in ev_files if os.path.getsize(os.path.join(evidence_dir, f)) > 200]
+                        if not valid_ev:
+                            res.error(f"Sub-LEGO {s_id} marked TESTED but evidence files are stubs (<= 200 bytes): {ev_files}")
+
             elif status == "CERTIFIED":
                 res.error(f"Sub-LEGO {s_id} marked CERTIFIED: Violation of Section 2 - Zero self-awarded certification permitted.")
 
         if res.passed:
             tested_count = len([s for s in self.sublegos.values() if s.get("status") == "TESTED"])
-            res.log(f"Status transition lifecycle verified: all {tested_count} TESTED Sub-LEGOs have verified physical contracts, ports, and implementation evidence.")
+            res.log(f"Status transition lifecycle verified: all {tested_count} TESTED Sub-LEGOs have mechanically verified physical contracts (CONTRACT.md >= 100 bytes), non-empty ports/, physical Rust implementation (implementation/mod.rs > 0 bytes), and verified evidence (evidence/*-EVIDENCE.md > 200 bytes).")
+            res.log("Zero Sub-LEGOs marked CERTIFIED (zero self-awarded certification floor strictly preserved).")
 
     def check_report_provenance_and_git_ledger(self, res: ArchitectureCheckResult):
-        """Check 11: Report provenance & git ledger audit.
+        """Check 11: Remote Provenance & Git Ledger Integrity Check.
         Verifies:
         1. report.md exists and is non-empty.
-        2. Git commit hashes mentioned in latest governance gate section match repository history.
-        3. Locality claims (LOCAL vs REMOTE) accurately reflect repository state.
+        2. Remote provenance: verifies git rev-parse origin/main against git rev-parse HEAD
+           and ensures claimed remote commits accurately reflect remote repository state.
+        3. Distinguishes clearly between Implementation Commit SHAs vs Report/Evidence Commit SHAs.
         """
         report_path = os.path.join(self.root, "report.md")
         if not os.path.isfile(report_path):
@@ -706,26 +733,67 @@ class CIArchitectureEnforcer:
             return
 
         try:
+            # 1. Local HEAD verification
             git_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=self.root, text=True).strip()
             git_head_short = git_head[:9]
 
-            git_log = subprocess.check_output(["git", "log", "-n", "30", "--format=%H %h"], cwd=self.root, text=True).strip().splitlines()
-            real_short_shas = {line.split()[1] for line in git_log if line.strip()}
+            # 2. Remote Provenance verification via origin/main
+            remote_main = None
+            try:
+                remote_main = subprocess.check_output(["git", "rev-parse", "origin/main"], cwd=self.root, text=True).strip()
+            except Exception as e:
+                res.error(f"Failed to resolve origin/main ref for remote provenance: {e}")
+
+            if remote_main:
+                remote_main_short = remote_main[:9]
+                if git_head == remote_main:
+                    res.log(f"Remote provenance verified: Local HEAD ({git_head_short}) matches origin/main ({remote_main_short}).")
+                else:
+                    try:
+                        subprocess.check_call(["git", "merge-base", "--is-ancestor", remote_main, git_head], cwd=self.root)
+                        res.log(f"Remote provenance note: Local HEAD ({git_head_short}) is ahead of origin/main ({remote_main_short}); pending atomic batch push.")
+                    except subprocess.CalledProcessError:
+                        res.error(f"Remote provenance diverged: Local HEAD ({git_head_short}) has diverged from origin/main ({remote_main_short}).")
+
+            # 3. Categorize Implementation Commit SHAs vs Report/Evidence Commit SHAs from git history
+            git_log = subprocess.check_output(
+                ["git", "log", "-n", "50", "--format=%H|%h|%s"],
+                cwd=self.root,
+                text=True
+            ).strip().splitlines()
+
+            impl_commits = []
+            report_commits = []
+
+            for line in git_log:
+                if not line.strip():
+                    continue
+                parts = line.split("|", 2)
+                if len(parts) == 3:
+                    full_sha, short_sha, subject = parts
+                    # Implementation commits: feat(..., fix(..., refactor(...
+                    if subject.startswith("feat(") or subject.startswith("fix(") or subject.startswith("refactor("):
+                        impl_commits.append((short_sha, full_sha, subject))
+                    elif subject.startswith("docs(") or "report" in subject.lower() or "evidence" in subject.lower():
+                        report_commits.append((short_sha, full_sha, subject))
 
             with open(report_path, "r", encoding="utf-8") as f:
                 report_text = f.read()
 
-            found_real_commits = 0
-            for short_sha in real_short_shas:
-                if short_sha in report_text:
-                    found_real_commits += 1
+            found_impl_citations = [s for s, _, _ in impl_commits if s in report_text]
+            found_report_citations = [s for s, _, _ in report_commits if s in report_text]
 
-            if found_real_commits == 0:
-                res.log(f"Warning: None of the last 30 git commits were explicitly cited in report.md.")
-            else:
-                res.log(f"Report provenance verified: found {found_real_commits} valid commit SHA citations matching repository git log.")
+            res.log(f"Commit Ledger Categorization: {len(impl_commits)} implementation commits, {len(report_commits)} report/evidence commits tracked in recent history.")
+            res.log(f"Implementation Commit Citations verified in report.md: {len(found_impl_citations)} matches (e.g. {found_impl_citations[:5]}).")
+            res.log(f"Report/Evidence Commit Citations verified in report.md: {len(found_report_citations)} matches (e.g. {found_report_citations[:5]}).")
 
-            res.log(f"Current local HEAD verified: {git_head_short} ({git_head}).")
+            # Check if report.md explicitly cites REMOTE MAIN and verify that claim
+            remote_main_citations = re.findall(r"REMOTE MAIN\s*(?:=|:)?\s*([0-9a-f]{7,40})", report_text, re.IGNORECASE)
+            for cited_sha in remote_main_citations:
+                if remote_main and not remote_main.startswith(cited_sha.lower()):
+                    res.error(f"Report cited REMOTE MAIN '{cited_sha}' does not match actual origin/main SHA '{remote_main}'!")
+                else:
+                    res.log(f"Report cited REMOTE MAIN '{cited_sha}' matches actual remote git origin/main ref.")
 
         except Exception as e:
             res.error(f"Failed to verify git provenance for report.md: {e}")
