@@ -2561,6 +2561,45 @@ Report: ./report.md
 
 Report: ./report.md
 
+---
+
+## Sesi Eksekusi: Independent Adversarial Review & Hardening 5 Sub-LEGO (L09.S01, L09.S02, L09.S03, L09.S05, L10.S02)
+
+### 1. Temuan Audit Kritis & Akar Masalah
+Sesi adversarial review independen menguji dan membedah kelima Sub-LEGO yang baru diimplementasikan, mengidentifikasi 5 cacat fungsional nyata:
+1. **L09.S01 (Vue Surface Compatibility)**:
+   - *Masalah*: Pemeriksaan path traversal `requested_path.contains("..")` tidak menormalisasi path separator Windows (`\`), dan penanganan binary asset di `handle_port_serve` mendegradasi konten biner non-UTF8 (seperti favicon atau icon binary) menjadi placeholder teks string.
+   - *Solusi*: Normalisasi backslash separator sebelum traversal guard, dan implementasi encoding Base64 bawaan untuk mempertahankan integritas data biner pada port contract.
+2. **L09.S02 (REST/API Compatibility)**:
+   - *Masalah*: `extract_params` memecah URL mentah langsung dengan `/` tanpa memisahkan query string (`?active=true`). Setiap request REST dengan parameter query (misal `/rest/workflows?active=true` atau `/rest/workflows/:id?include=all`) gagal dicocokkan (menghasilkan 404 RouteNotFound) atau mencemari nama parameter `:id`.
+   - *Solusi*: Memisahkan query string secara bersih sebelum tokenisasi path segment dan memfilter segmen kosong.
+3. **L09.S03 (Browser Realtime Compatibility)**:
+   - *Masalah*: Pemanggilan `register_client` berulang untuk client yang sama (siklus reconnect koneksi WebSocket/SSE) menimpa session dengan set langganan kosong tanpa membersihkan referensi client lama dari `topic_subscribers`, menyebabkan memory leak permanen dan subscriber ghost/desync. Tidak ada fasilitas pembersihan client heartbeat stale.
+   - *Solusi*: Pembersihan langganan lama secara otomatis saat registrasi ulang ID klien yang sama, penambahan metode `evict_stale_clients(timeout_ms, now_ms)`, serta penambahan aksi port contract `evict_stale`.
+4. **L09.S05 (Enterprise-Facing Compatibility Surfaces)**:
+   - *Masalah*: `is_feature_enabled` hanya menerapkan fallback fitur komunitas dasar (`basic_execution`, `community_nodes`, `standard_auth`) jika tenant belum terdaftar di memori (`self.claims`). Jika tenant mendaftarkan lisensi tier `Community` atau `Starter` dengan daftar fitur kustom kosong, fungsi mengembalikan `false` dan mematikan eksekusi dasar n8n.
+   - *Solusi*: Memastikan invariant bahwa fitur dasar komunitas selalu aktif untuk seluruh lisensi valid yang belum kadaluarsa di semua tier.
+5. **L10.S02 (Database/Schema Migrations)**:
+   - *Masalah*: `applied_ledger` hanya menyimpan pasangan `version -> applied_at_ms` tanpa mencatat checksum yang telah diterapkan. Komentar `// Verify checksum hasn't mutated` dilanjutkan dengan pernyataan `continue` kosong, dan varian error `MigrationError::ChecksumMismatch` merupakan dead code yang tidak pernah dipicu meskipun checksum migrasi yang telah diterapkan diubah/dimutasi secara tidak sah.
+   - *Solusi*: Dibuat struktur `AppliedMigrationRecord { version, name, checksum, applied_at_ms }`, dicatat ke dalam `applied_ledger`, dan diverifikasi fail-closed pada setiap eksekusi `apply_all`.
+
+### 2. Rekapitulasi Verifikasi Pengujian Pasca Hardening
+1. Unit Tests Kelima Sub-LEGO (`rustc --test ...`):
+   - `L09.S01`: **9/9 tests PASS** (bertambah 2 test: backslash traversal prevention & binary base64 serving).
+   - `L09.S02`: **9/9 tests PASS** (bertambah 2 test: query string matching & clean param extraction).
+   - `L09.S03`: **8/8 tests PASS** (bertambah 2 test: reconnect subscriber cleanup & stale client eviction).
+   - `L09.S05`: **7/7 tests PASS** (bertambah 1 test: explicit community license baseline retention).
+   - `L10.S02`: **7/7 tests PASS** (bertambah 1 test: checksum mismatch detection fail-closed).
+2. Port Contract Integration Suite (`cargo test -p n8n-port-contract`): **58/58 passed** (Exit Code 0).
+3. Monorepo Cargo Workspace Tests (`cargo test`): **109+ tests passed** (Exit Code 0).
+4. CI Architecture Checks (`python scripts/ci_architecture_check.py`): **11/11 checks PASS** (Exit Code 0).
+5. Governance Unit Tests (`python -m unittest discover tests/governance`): **18/18 tests PASS** (Exit Code 0).
+6. Verifikasi Port Server Web Aktif:
+   - Port 5677 (`apps/n8n-lego`): Status HTTP 200, menyajikan Vue 3 SPA bundle (`n8n-editor-ui@2.9.4`) & `/rest/settings`.
+   - Port 5678 (`apps/n8n-rust`): Status HTTP 200, menyajikan `/health` (`{"engine":"n8n-rust","status":"ok"}`), `/api/polyglot/versions`, `/rest/workflows`, `/rest/settings`.
+
+Report: ./report.md
+
 
 
 
