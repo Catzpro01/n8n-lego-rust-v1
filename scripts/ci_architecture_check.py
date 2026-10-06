@@ -28,6 +28,7 @@ import os
 import json
 import re
 import subprocess
+from collections import Counter
 from typing import Dict, List, Set, Tuple, Any
 
 try:
@@ -735,8 +736,9 @@ class CIArchitectureEnforcer:
 
         print(f"{BOLD}{CYAN}{'-'*78}{RESET}")
         if overall_pass:
+            status_counts = Counter(s.get("status", "UNKNOWN") for s in self.sublegos.values())
             print(f"  {BOLD}{GREEN}OVERALL STATUS: ARCHITECTURAL & GOVERNANCE INTEGRITY PASS (Exit Code 0){RESET}")
-            print(f"  {GREEN}Taxonomy ladder enforced: 0 CERTIFIED (zero overclaim), 11 TESTED, 20 IMPLEMENTED, 44 CONTRACTED, 8 DESIGNED.{RESET}")
+            print(f"  {GREEN}Taxonomy ladder enforced: {status_counts.get('CERTIFIED', 0)} CERTIFIED (zero overclaim), {status_counts.get('TESTED', 0)} TESTED, {status_counts.get('IMPLEMENTED', 0)} IMPLEMENTED, {status_counts.get('CONTRACTED', 0)} CONTRACTED, {status_counts.get('DESIGNED', 0)} DESIGNED.{RESET}")
             print(f"  {GREEN}All 11 architecture, governance hierarchy, sub-agent schema, and provenance checks PASS.{RESET}")
         else:
             print(f"  {BOLD}{RED}OVERALL STATUS: REJECTED / AUDIT FAILED (Exit Code 1){RESET}")
