@@ -148,8 +148,15 @@ impl CausalDiagnosticsService {
         let span_map: HashMap<String, &CausalTraceSpan> = trace.spans.iter().map(|s| (s.span_id.clone(), s)).collect();
         let mut current_id = Some(failed_span_id.to_string());
         let mut path = Vec::new();
+        let mut visited = std::collections::HashSet::new();
 
         while let Some(sid) = current_id {
+            if visited.contains(&sid) {
+                // Break cycle immediately to prevent infinite loops
+                break;
+            }
+            visited.insert(sid.clone());
+
             if let Some(span) = span_map.get(&sid) {
                 path.push((*span).clone());
                 current_id = span.parent_span_id.clone();

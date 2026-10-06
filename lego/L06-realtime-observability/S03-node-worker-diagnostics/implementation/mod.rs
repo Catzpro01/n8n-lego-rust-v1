@@ -161,8 +161,19 @@ impl DiagnosticsRingBufferService {
             }
             "query" => {
                 let source = payload.get("source").and_then(|v| v.as_str());
+                let min_level = payload
+                    .get("min_level")
+                    .or_else(|| payload.get("level"))
+                    .and_then(|v| v.as_str())
+                    .map(|lvl| match lvl.to_lowercase().as_str() {
+                        "debug" => DiagnosticLevel::Debug,
+                        "info" => DiagnosticLevel::Info,
+                        "warn" => DiagnosticLevel::Warn,
+                        "error" => DiagnosticLevel::Error,
+                        _ => DiagnosticLevel::Info,
+                    });
                 let limit = payload.get("limit").and_then(|v| v.as_u64()).unwrap_or(50) as usize;
-                let results = self.query(source, None, limit);
+                let results = self.query(source, min_level, limit);
                 Ok(serde_json::json!({
                     "success": true,
                     "events": results,

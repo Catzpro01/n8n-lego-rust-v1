@@ -80,4 +80,15 @@ mod tests {
         assert_eq!(rel_resp["success"], true);
         assert_eq!(rel_resp["current_inflight"], 0);
     }
+
+    #[test]
+    fn test_cost_exceeding_capacity_rejected() {
+        let service = AdmissionService::new(5);
+        service.set_tenant_config("small_bucket", BucketConfig { max_capacity: 10, refill_tokens_per_sec: 1 });
+
+        let res = service.acquire_admission("small_bucket", 100, 1000);
+        assert!(res.is_err());
+        let err_msg = res.unwrap_err().to_string();
+        assert!(err_msg.contains("exceeds maximum bucket capacity"));
+    }
 }

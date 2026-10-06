@@ -50,4 +50,36 @@ mod tests {
         assert_eq!(resp["trace_id"], "trace-golden-1");
         assert_eq!(resp["spans_count"], 2);
     }
+
+    #[test]
+    fn test_causal_root_cause_path_breaks_cycles() {
+        let service = CausalDiagnosticsService::new();
+        service.create_trace("cyclic-trace", "wf-1", "exec-1");
+        service.record_span(
+            "cyclic-trace",
+            "span-a",
+            Some("span-b".to_string()),
+            "NodeA",
+            "Error",
+            serde_json::json!({}),
+            None,
+            None,
+            10,
+        ).unwrap();
+        service.record_span(
+            "cyclic-trace",
+            "span-b",
+            Some("span-a".to_string()),
+            "NodeB",
+            "Error",
+            serde_json::json!({}),
+            None,
+            None,
+            10,
+        ).unwrap();
+
+        // Must terminate safely and not loop indefinitely
+        let path = service.trace_root_cause_path("cyclic-trace", "span-a").unwrap();
+        assert_eq!(path.len(), 2);
+    }
 }

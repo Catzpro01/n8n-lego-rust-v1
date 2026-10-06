@@ -104,7 +104,11 @@ impl SchedulerIntelligenceService {
         Ok(())
     }
 
-    pub fn select_and_dispatch(&self, job_id: &str, required_slots: usize) -> Result<String, SchedulerError> {
+    pub fn select_and_dispatch(&self, _job_id: &str, required_slots: usize) -> Result<String, SchedulerError> {
+        if required_slots == 0 {
+            return Err(SchedulerError::InvalidPayload("required_slots must be greater than 0".to_string()));
+        }
+
         let mut table = self.worker_table.write().unwrap();
 
         // Find active worker with most available slots and lowest CPU

@@ -78,4 +78,22 @@ mod tests {
         assert_eq!(resp["success"], true);
         assert_eq!(resp["buffer_count"], 1);
     }
+
+    #[test]
+    fn test_port_handler_diagnostics_query_with_min_level() {
+        let service = DiagnosticsRingBufferService::new();
+        service.capture("worker-1", DiagnosticLevel::Debug, "cat", "debug message", serde_json::json!({}), 100);
+        service.capture("worker-1", DiagnosticLevel::Error, "cat", "error message", serde_json::json!({}), 200);
+
+        let req = serde_json::json!({
+            "action": "query",
+            "source": "worker-1",
+            "min_level": "error"
+        });
+
+        let resp = service.handle_port_diagnostics_capture(&req).unwrap();
+        assert_eq!(resp["success"], true);
+        assert_eq!(resp["total_returned"], 1);
+        assert_eq!(resp["events"][0]["message"], "error message");
+    }
 }

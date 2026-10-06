@@ -115,11 +115,12 @@ impl BurstAdmissionService {
     }
 
     pub fn evaluate_admission(&self, task_priority: &str) -> ThrottleDecision {
+        let norm_priority = task_priority.trim().to_lowercase();
         let tier = self.current_tier();
         match tier {
             DegradationTier::Nominal => ThrottleDecision::Admitted,
             DegradationTier::ShedBackground => {
-                if task_priority == "background" || task_priority == "telemetry" {
+                if norm_priority == "background" || norm_priority == "telemetry" {
                     ThrottleDecision::Throttled {
                         reason: "Background tasks deferred under moderate system pressure".to_string(),
                         retry_after_ms: 5000,
@@ -129,7 +130,7 @@ impl BurstAdmissionService {
                 }
             }
             DegradationTier::CriticalShedding => {
-                if task_priority == "high" || task_priority == "critical" {
+                if norm_priority == "high" || norm_priority == "critical" {
                     ThrottleDecision::Admitted
                 } else {
                     ThrottleDecision::Throttled {
@@ -139,7 +140,7 @@ impl BurstAdmissionService {
                 }
             }
             DegradationTier::EmergencyLockdown => {
-                if task_priority == "critical" {
+                if norm_priority == "critical" {
                     ThrottleDecision::Admitted
                 } else {
                     ThrottleDecision::Rejected {

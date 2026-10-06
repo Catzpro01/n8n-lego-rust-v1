@@ -695,6 +695,19 @@ class CIArchitectureEnforcer:
                 elif not os.path.isfile(impl_mod) or os.path.getsize(impl_mod) == 0:
                     res.error(f"Sub-LEGO {s_id} marked TESTED but implementation/mod.rs is missing or empty (0 bytes)")
 
+                # Mechanically verify tests/ directory and non-empty test files
+                tests_dir = os.path.join(abs_path, "tests")
+                if not os.path.isdir(tests_dir):
+                    res.error(f"Sub-LEGO {s_id} marked TESTED but tests/ directory is missing: {canonical_path}/tests")
+                else:
+                    test_files = [f for f in os.listdir(tests_dir) if f.endswith(('.rs', '.ts', '.js', '.mjs'))]
+                    if not test_files:
+                        res.error(f"Sub-LEGO {s_id} marked TESTED but no test files found in tests/")
+                    else:
+                        valid_tests = [f for f in test_files if os.path.getsize(os.path.join(tests_dir, f)) > 0]
+                        if not valid_tests:
+                            res.error(f"Sub-LEGO {s_id} marked TESTED but all test files in tests/ are empty (0 bytes): {test_files}")
+
                 # Mechanically verify evidence/*-EVIDENCE.md (> 200 bytes)
                 evidence_dir = os.path.join(abs_path, "evidence")
                 if not os.path.isdir(evidence_dir):
@@ -708,12 +721,26 @@ class CIArchitectureEnforcer:
                         if not valid_ev:
                             res.error(f"Sub-LEGO {s_id} marked TESTED but evidence files are stubs (<= 200 bytes): {ev_files}")
 
+            elif status == "IMPLEMENTED":
+                if not os.path.isdir(abs_path):
+                    res.error(f"Sub-LEGO {s_id} marked IMPLEMENTED but directory missing: {canonical_path}")
+                    continue
+                contract_path = os.path.join(abs_path, "CONTRACT.md")
+                if not os.path.isfile(contract_path) or os.path.getsize(contract_path) < 100:
+                    res.error(f"Sub-LEGO {s_id} marked IMPLEMENTED but CONTRACT.md is missing or stub (<100 bytes)")
+                ports_dir = os.path.join(abs_path, "ports")
+                if not os.path.isdir(ports_dir) or not os.listdir(ports_dir):
+                    res.error(f"Sub-LEGO {s_id} marked IMPLEMENTED but ports/ directory missing or empty")
+                impl_mod = os.path.join(abs_path, "implementation", "mod.rs")
+                if not os.path.isfile(impl_mod) or os.path.getsize(impl_mod) == 0:
+                    res.error(f"Sub-LEGO {s_id} marked IMPLEMENTED but implementation/mod.rs is missing or empty (0 bytes)")
+
             elif status == "CERTIFIED":
                 res.error(f"Sub-LEGO {s_id} marked CERTIFIED: Violation of Section 2 - Zero self-awarded certification permitted.")
 
         if res.passed:
             tested_count = len([s for s in self.sublegos.values() if s.get("status") == "TESTED"])
-            res.log(f"Status transition lifecycle verified: all {tested_count} TESTED Sub-LEGOs have mechanically verified physical contracts (CONTRACT.md >= 100 bytes), non-empty ports/, physical Rust implementation (implementation/mod.rs > 0 bytes), and verified evidence (evidence/*-EVIDENCE.md > 200 bytes).")
+            res.log(f"Status transition lifecycle verified: all {tested_count} TESTED Sub-LEGOs have mechanically verified physical contracts (CONTRACT.md >= 100 bytes), non-empty ports/, physical Rust implementation (implementation/mod.rs > 0 bytes), physical test suites (tests/* > 0 bytes), and verified evidence (evidence/*-EVIDENCE.md > 200 bytes).")
             res.log("Zero Sub-LEGOs marked CERTIFIED (zero self-awarded certification floor strictly preserved).")
 
     def check_report_provenance_and_git_ledger(self, res: ArchitectureCheckResult):
@@ -788,12 +815,15 @@ class CIArchitectureEnforcer:
             res.log(f"Report/Evidence Commit Citations verified in report.md: {len(found_report_citations)} matches (e.g. {found_report_citations[:5]}).")
 
             # Check if report.md explicitly cites REMOTE MAIN and verify that claim
-            remote_main_citations = re.findall(r"REMOTE MAIN\s*(?:=|:)?\s*([0-9a-f]{7,40})", report_text, re.IGNORECASE)
-            for cited_sha in remote_main_citations:
-                if remote_main and not remote_main.startswith(cited_sha.lower()):
-                    res.error(f"Report cited REMOTE MAIN '{cited_sha}' does not match actual origin/main SHA '{remote_main}'!")
-                else:
-                    res.log(f"Report cited REMOTE MAIN '{cited_sha}' matches actual remote git origin/main ref.")
+            remote_main_citations = re.findall(r"REMOTE MAIN[*:\s=]*[`\s]*([0-9a-f]{7,40})", report_text, re.IGNORECASE)
+            if not remote_main_citations:
+                res.error("report.md does not contain explicit 'REMOTE MAIN' citation required for remote provenance verification.")
+            else:
+                for cited_sha in remote_main_citations:
+                    if remote_main and not remote_main.startswith(cited_sha.lower()):
+                        res.error(f"Report cited REMOTE MAIN '{cited_sha}' does not match actual origin/main SHA '{remote_main}'!")
+                    else:
+                        res.log(f"Report cited REMOTE MAIN '{cited_sha}' matches actual remote git origin/main ref.")
 
         except Exception as e:
             res.error(f"Failed to verify git provenance for report.md: {e}")

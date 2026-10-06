@@ -88,11 +88,23 @@ impl CustomNodeLoaderService {
         manifest_json: &str,
         now_ms: u64,
     ) -> Result<(), CustomNodeError> {
+        let trimmed_pkg = package_name.trim();
+        if trimmed_pkg.is_empty() || trimmed_pkg.contains("..") || trimmed_pkg.contains('/') || trimmed_pkg.contains('\\') {
+            return Err(CustomNodeError::InvalidPayload(format!(
+                "Invalid package name '{package_name}': cannot be empty or contain path traversal characters"
+            )));
+        }
+
+        // Validate that manifest_json is syntactically valid JSON
+        serde_json::from_str::<serde_json::Value>(manifest_json).map_err(|e| {
+            CustomNodeError::InvalidPayload(format!("Invalid manifest JSON syntax: {e}"))
+        })?;
+
         let mut ledger = self.tarball_ledger.write().unwrap();
         ledger.insert(
-            package_name.to_string(),
+            trimmed_pkg.to_string(),
             CustomNodePackage {
-                package_name: package_name.to_string(),
+                package_name: trimmed_pkg.to_string(),
                 version: version.to_string(),
                 author: author.to_string(),
                 tarball_checksum: tarball_checksum.to_string(),

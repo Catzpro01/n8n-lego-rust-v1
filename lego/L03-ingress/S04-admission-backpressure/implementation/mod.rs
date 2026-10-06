@@ -133,6 +133,13 @@ impl AdmissionService {
             overrides.get(key).cloned().unwrap_or_else(|| self.default_config.clone())
         };
 
+        if cost > cfg.max_capacity {
+            return Err(AdmissionError::InvalidPayload(format!(
+                "Requested cost ({cost}) exceeds maximum bucket capacity ({})",
+                cfg.max_capacity
+            )));
+        }
+
         let mut buckets = self.buckets.write().unwrap();
         let bucket = buckets
             .entry(key.to_string())

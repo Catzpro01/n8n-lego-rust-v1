@@ -70,4 +70,11 @@ mod tests {
         assert_eq!(resp["job_id"], "job-via-port-1");
         assert!(resp["dispatched_to"].as_str().is_some());
     }
+
+    #[test]
+    fn test_dispatch_zero_slots_rejected() {
+        let service = SchedulerIntelligenceService::new();
+        let res = service.select_and_dispatch("job-zero", 0);
+        assert!(matches!(res, Err(SchedulerError::InvalidPayload(_))));
+    }
 }

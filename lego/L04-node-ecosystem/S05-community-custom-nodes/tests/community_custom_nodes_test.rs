@@ -57,4 +57,17 @@ mod tests {
         assert_eq!(resp["package_name"], "n8n-nodes-slack-enhanced");
         assert_eq!(resp["version"], "1.2.0");
     }
+
+    #[test]
+    fn test_install_package_path_traversal_and_invalid_json_rejected() {
+        let service = CustomNodeLoaderService::new();
+
+        // Path traversal package name rejected
+        let res1 = service.install_package("../../evil", "1.0", "author", "csum", "{}", 100);
+        assert!(matches!(res1, Err(CustomNodeError::InvalidPayload(_))));
+
+        // Invalid manifest JSON rejected
+        let res2 = service.install_package("valid-pkg", "1.0", "author", "csum", "{not-valid-json", 100);
+        assert!(matches!(res2, Err(CustomNodeError::InvalidPayload(_))));
+    }
 }

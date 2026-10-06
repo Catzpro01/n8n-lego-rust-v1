@@ -126,7 +126,68 @@ LOCAL != REMOTE
             self.assertFalse(res.passed)
             self.assertTrue(any("evidence files are stubs" in e for e in res.errors))
 
+    def test_negative_check_10_missing_tests_dir_fails(self):
+        """Simulate a Sub-LEGO claiming TESTED without tests/ directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_enforcer = CIArchitectureEnforcer(tmpdir)
+            sub_path = os.path.join(tmpdir, "lego", "L00", "S01")
+            os.makedirs(os.path.join(sub_path, "ports"), exist_ok=True)
+            os.makedirs(os.path.join(sub_path, "implementation"), exist_ok=True)
+            os.makedirs(os.path.join(sub_path, "evidence"), exist_ok=True)
+            with open(os.path.join(sub_path, "ports", "lib.rs"), "w") as f:
+                f.write("// port")
+            with open(os.path.join(sub_path, "CONTRACT.md"), "w") as f:
+                f.write("# Contract\n" * 15)
+            with open(os.path.join(sub_path, "implementation", "mod.rs"), "w") as f:
+                f.write("// impl")
+            with open(os.path.join(sub_path, "evidence", "L00-S01-EVIDENCE.md"), "w") as f:
+                f.write("# Valid Evidence\n" * 20)  # > 200 bytes
+
+            temp_enforcer.sublegos = {
+                "L00.S01": {
+                    "status": "TESTED",
+                    "canonical_path": "lego/L00/S01",
+                }
+            }
+            res = ArchitectureCheckResult("Negative Test Missing Tests Dir")
+            temp_enforcer.check_status_transition_and_evidence(res)
+            self.assertFalse(res.passed)
+            self.assertTrue(any("tests/ directory is missing" in e for e in res.errors))
+
+    def test_negative_check_11_missing_remote_main_citation_fails(self):
+        """Simulate report.md missing explicit REMOTE MAIN citation."""
+        real_report = os.path.join(self.workspace, "report.md")
+        backup = real_report + ".test_bak"
+        try:
+            shutil.copyfile(real_report, backup)
+            with open(real_report, "w", encoding="utf-8") as f:
+                f.write("# Report without remote main citation\nfeat(sublego-batch): commit\n")
+            res = ArchitectureCheckResult("Negative Test Missing Remote Main Citation")
+            self.enforcer.check_report_provenance_and_git_ledger(res)
+            self.assertFalse(res.passed)
+            self.assertTrue(any("does not contain explicit 'REMOTE MAIN' citation" in e for e in res.errors))
+        finally:
+            if os.path.isfile(backup):
+                shutil.move(backup, real_report)
+
+    def test_negative_check_11_divergent_remote_main_citation_fails(self):
+        """Simulate report.md citing a wrong/divergent REMOTE MAIN SHA."""
+        real_report = os.path.join(self.workspace, "report.md")
+        backup = real_report + ".test_bak"
+        try:
+            shutil.copyfile(real_report, backup)
+            with open(real_report, "w", encoding="utf-8") as f:
+                f.write("# Report\n- **REMOTE MAIN**: 0000000000000000000000000000000000000000\n")
+            res = ArchitectureCheckResult("Negative Test Divergent Remote Main Citation")
+            self.enforcer.check_report_provenance_and_git_ledger(res)
+            self.assertFalse(res.passed)
+            self.assertTrue(any("does not match actual origin/main SHA" in e for e in res.errors))
+        finally:
+            if os.path.isfile(backup):
+                shutil.move(backup, real_report)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

@@ -59,4 +59,18 @@ mod tests {
         assert_eq!(resp["admitted"], true);
         assert_eq!(resp["status"], "admitted");
     }
+
+    #[test]
+    fn test_casing_and_whitespace_priority_normalized() {
+        let service = BurstAdmissionService::new();
+        service.update_metrics(PressureMetrics {
+            cpu_pct: 75.0,
+            mem_pct: 40.0,
+            queue_depth: 200,
+        });
+
+        // Uppercase and padded whitespace should still match ShedBackground
+        assert!(matches!(service.evaluate_admission(" BACKGROUND "), ThrottleDecision::Throttled { .. }));
+        assert!(matches!(service.evaluate_admission("Telemetry"), ThrottleDecision::Throttled { .. }));
+    }
 }
