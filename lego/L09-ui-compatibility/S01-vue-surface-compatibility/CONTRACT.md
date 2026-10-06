@@ -10,7 +10,7 @@
 - **State Ownership**: `ui-static-bundle`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 
@@ -19,6 +19,7 @@
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Serves static web frontend bundles, assets, manifests, and SPA fallback routes for the Vue editor surface.
 
 ---
 

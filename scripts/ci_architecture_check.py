@@ -466,8 +466,8 @@ class CIArchitectureEnforcer:
         # 3. Exact taxonomy distribution enforcement
         expected_counts = {
             "CERTIFIED": 0,
-            "TESTED": 27,
-            "IMPLEMENTED": 5,
+            "TESTED": 28,
+            "IMPLEMENTED": 4,
             "CONTRACTED": 43,
             "DESIGNED": 8,
         }
@@ -485,7 +485,7 @@ class CIArchitectureEnforcer:
             "L03.S01", "L03.S02", "L03.S03", "L04.S01",
             "L04.S03", "L04.S04", "L04.S08", "L05.S01",
             "L05.S02", "L05.S03", "L05.S04", "L06.S01",
-            "L06.S02", "L06.S04", "L07.S03"
+            "L06.S02", "L06.S04", "L07.S03", "L09.S01"
         }
         actual_tested_ids = {s_id for s_id, s_data in self.sublegos.items() if s_data.get("status") == "TESTED"}
 

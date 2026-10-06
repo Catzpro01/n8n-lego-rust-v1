@@ -1268,7 +1268,7 @@ legos:
         state_ownership: ui-static-bundle
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: IMPLEMENTED
+        status: TESTED
         contract_path: lego/L09-ui-compatibility/S01-vue-surface-compatibility/CONTRACT.md
         ports:
           provided:
