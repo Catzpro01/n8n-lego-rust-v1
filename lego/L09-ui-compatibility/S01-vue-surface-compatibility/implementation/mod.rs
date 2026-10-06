@@ -120,11 +120,13 @@ impl UiStaticBundleService {
     }
 
     pub fn resolve_asset(&self, requested_path: &str) -> Result<StaticAsset, UiStaticError> {
-        if requested_path.contains("..") {
+        let cleaned = requested_path.replace('\\', "/");
+        if cleaned.contains("..") {
             return Err(UiStaticError::PathTraversal(requested_path.to_string()));
         }
 
-        let mut path = requested_path.split('?').next().unwrap_or(requested_path);
+        let path_no_query = cleaned.split('?').next().unwrap_or(&cleaned);
+        let mut path = path_no_query;
         if path.is_empty() || path == "/" {
             path = "/index.html";
         }
@@ -174,10 +176,20 @@ impl UiStaticBundleService {
                     .ok_or_else(|| UiStaticError::InvalidPayload("Missing 'path' field".to_string()))?;
 
                 let asset = self.resolve_asset(path)?;
-                let body_str = String::from_utf8(asset.content.clone()).unwrap_or_else(|_| {
-                    // Base64 or binary placeholder
-                    format!("<binary data {} bytes>", asset.size)
-                });
+                let is_text = asset.content_type.starts_with("text/")
+                    || asset.content_type.contains("javascript")
+                    || asset.content_type.contains("json")
+                    || asset.content_type.contains("svg")
+                    || asset.content_type.contains("xml");
+
+                let (body_str, is_base64) = if is_text {
+                    match String::from_utf8(asset.content.clone()) {
+                        Ok(s) => (s, false),
+                        Err(_) => (Self::to_base64(&asset.content), true),
+                    }
+                } else {
+                    (Self::to_base64(&asset.content), true)
+                };
 
                 Ok(serde_json::json!({
                     "success": true,
@@ -186,7 +198,8 @@ impl UiStaticBundleService {
                     "etag": asset.etag,
                     "cache_control": asset.cache_control,
                     "size": asset.size,
-                    "body": body_str
+                    "body": body_str,
+                    "is_base64": is_base64
                 }))
             }
             "manifest" => {
@@ -231,6 +244,31 @@ impl UiStaticBundleService {
             hash = hash.wrapping_mul(33).wrapping_add(b as u32);
         }
         hash
+    }
+
+    fn to_base64(bytes: &[u8]) -> String {
+        const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        let mut result = String::with_capacity((bytes.len() + 2) / 3 * 4);
+        for chunk in bytes.chunks(3) {
+            let b0 = chunk[0] as u32;
+            let b1 = chunk.get(1).copied().unwrap_or(0) as u32;
+            let b2 = chunk.get(2).copied().unwrap_or(0) as u32;
+            let triple = (b0 << 16) | (b1 << 8) | b2;
+
+            result.push(CHARS[((triple >> 18) & 0x3F) as usize] as char);
+            result.push(CHARS[((triple >> 12) & 0x3F) as usize] as char);
+            if chunk.len() > 1 {
+                result.push(CHARS[((triple >> 6) & 0x3F) as usize] as char);
+            } else {
+                result.push('=');
+            }
+            if chunk.len() > 2 {
+                result.push(CHARS[(triple & 0x3F) as usize] as char);
+            } else {
+                result.push('=');
+            }
+        }
+        result
     }
 }
 

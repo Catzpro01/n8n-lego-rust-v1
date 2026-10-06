@@ -51,12 +51,20 @@ impl std::fmt::Display for MigrationError {
 
 impl std::error::Error for MigrationError {}
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AppliedMigrationRecord {
+    pub version: u32,
+    pub name: String,
+    pub checksum: String,
+    pub applied_at_ms: u64,
+}
+
 #[derive(Debug, Clone)]
 pub struct DatabaseMigrationService {
     // Registered migrations ordered by version
     catalog: Arc<RwLock<Vec<SchemaMigration>>>,
-    // Applied history: version -> applied_at_ms
-    applied_ledger: Arc<RwLock<HashMap<u32, u64>>>,
+    // Applied history: version -> AppliedMigrationRecord
+    applied_ledger: Arc<RwLock<HashMap<u32, AppliedMigrationRecord>>>,
 }
 
 impl Default for DatabaseMigrationService {
@@ -126,8 +134,15 @@ impl DatabaseMigrationService {
         let mut current_version = ledger.keys().max().copied().unwrap_or(0);
 
         for mig in cat.iter() {
-            if ledger.contains_key(&mig.version) {
-                // Verify checksum hasn't mutated
+            if let Some(record) = ledger.get(&mig.version) {
+                // Verify checksum hasn't mutated for already applied migrations
+                if record.checksum != mig.checksum {
+                    return Err(MigrationError::ChecksumMismatch {
+                        version: mig.version,
+                        expected: record.checksum.clone(),
+                        found: mig.checksum.clone(),
+                    });
+                }
                 continue;
             }
 
@@ -138,7 +153,12 @@ impl DatabaseMigrationService {
                 });
             }
 
-            ledger.insert(mig.version, now_ms);
+            ledger.insert(mig.version, AppliedMigrationRecord {
+                version: mig.version,
+                name: mig.name.clone(),
+                checksum: mig.checksum.clone(),
+                applied_at_ms: now_ms,
+            });
             current_version = mig.version;
             applied_count += 1;
         }

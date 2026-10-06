@@ -125,4 +125,43 @@ mod tests {
         assert_eq!(disc_res["success"], true);
         assert_eq!(service.get_client_count(), 0);
     }
+
+    #[test]
+    fn test_client_reconnect_cleans_old_subscriptions() {
+        let service = BrowserRealtimeService::new(100);
+        service.register_client("reconnect-c1", "s1", None, 1000).unwrap();
+        service.subscribe("reconnect-c1", "wf:1").unwrap();
+
+        // Broadcast reaches 1 subscriber
+        assert_eq!(service.broadcast("wf:1", "e", json!({}), 1000), 1);
+
+        // Reconnect client with same client_id (fresh session)
+        service.register_client("reconnect-c1", "s2", None, 1050).unwrap();
+
+        // Now client unregisters without subscribing again
+        service.unregister_client("reconnect-c1").unwrap();
+
+        // Broadcast must NOT deliver to orphaned subscription
+        assert_eq!(service.broadcast("wf:1", "e", json!({}), 1050), 0);
+    }
+
+    #[test]
+    fn test_evict_stale_clients_heartbeat_timeout() {
+        let service = BrowserRealtimeService::new(100);
+        service.register_client("stale-c1", "s1", None, 1000).unwrap();
+        service.register_client("active-c2", "s2", None, 1000).unwrap();
+        service.subscribe("stale-c1", "ch:1").unwrap();
+        service.subscribe("active-c2", "ch:1").unwrap();
+
+        // Active client sends heartbeat at t=50000
+        service.heartbeat("active-c2", 50000).unwrap();
+
+        // Evict with 30s timeout at t=55000 (stale-c1 last ping was t=1000, 54s ago > 30s)
+        let evicted = service.evict_stale_clients(30000, 55000);
+        assert_eq!(evicted, 1);
+        assert_eq!(service.get_client_count(), 1);
+
+        // Only active client remains subscribed
+        assert_eq!(service.broadcast("ch:1", "msg", json!({}), 55000), 1);
+    }
 }

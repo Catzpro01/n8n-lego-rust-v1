@@ -118,4 +118,23 @@ mod tests {
         assert_eq!(lic_res["success"], true);
         assert_eq!(lic_res["license"]["plan_tier"], "enterprise");
     }
+
+    #[test]
+    fn test_explicit_community_license_retains_baseline_features() {
+        let service = EnterpriseFeatureService::new();
+        // Register an explicit Community license with empty custom features
+        service.set_license(
+            "tenant-registered-community",
+            EnterprisePlanTier::Community,
+            vec![],
+            10,
+            2,
+            5000,
+        );
+
+        assert!(service.is_feature_enabled("tenant-registered-community", "basic_execution", 1000));
+        assert!(service.is_feature_enabled("tenant-registered-community", "community_nodes", 1000));
+        assert!(service.is_feature_enabled("tenant-registered-community", "standard_auth", 1000));
+        assert!(!service.is_feature_enabled("tenant-registered-community", "saml_sso", 1000));
+    }
 }

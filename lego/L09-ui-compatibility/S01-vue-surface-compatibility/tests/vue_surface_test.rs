@@ -103,4 +103,27 @@ mod tests {
         let err = service.resolve_asset("/assets/non_existent.js");
         assert!(matches!(err, Err(UiStaticError::NotFound(_))));
     }
+
+    #[test]
+    fn test_backslash_path_traversal_prevention() {
+        let service = UiStaticBundleService::new("2.9.4");
+        let err = service.resolve_asset(r"\..\..\windows\system32");
+        assert!(matches!(err, Err(UiStaticError::PathTraversal(_))));
+    }
+
+    #[test]
+    fn test_serve_binary_asset_base64() {
+        let service = UiStaticBundleService::new("2.9.4");
+        let serve_res = service
+            .handle_port_serve(&json!({
+                "action": "serve",
+                "path": "/favicon.ico"
+            }))
+            .expect("serve binary favicon should succeed");
+
+        assert_eq!(serve_res["success"], true);
+        assert_eq!(serve_res["is_base64"], true);
+        assert_eq!(serve_res["content_type"], "image/x-icon");
+        assert_eq!(serve_res["body"], "AAABAA==");
+    }
 }

@@ -95,4 +95,32 @@ mod tests {
         assert_eq!(s_rb["rolled_back_version"], 3);
         assert_eq!(s_rb["current_version"], 2);
     }
+
+    #[test]
+    fn test_checksum_mismatch_detected_on_tampered_migration() {
+        let service = DatabaseMigrationService::new();
+        // 1. Initial apply succeeds
+        service.apply_all(1000).unwrap();
+
+        // 2. Tamper migration catalog: overwrite version 2 with a modified checksum
+        {
+            let mut cat = service.catalog.write().unwrap();
+            for m in cat.iter_mut() {
+                if m.version == 2 {
+                    m.checksum = "chk_0002_TAMPERED".to_string();
+                }
+            }
+        }
+
+        // 3. Subsequent apply_all must detect the checksum mismatch fail-closed
+        let err = service.apply_all(2000);
+        match err {
+            Err(MigrationError::ChecksumMismatch { version, expected, found }) => {
+                assert_eq!(version, 2);
+                assert_eq!(expected, "chk_0002_v1");
+                assert_eq!(found, "chk_0002_TAMPERED");
+            }
+            other => panic!("Expected ChecksumMismatch, got {:?}", other),
+        }
+    }
 }

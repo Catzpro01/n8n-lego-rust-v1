@@ -83,6 +83,16 @@ impl BrowserRealtimeService {
             )));
         }
 
+        // If client was previously registered, clean up old topic subscriptions to prevent subscriber leaks
+        if let Some(old_sess) = clients.remove(client_id) {
+            let mut subs = self.topic_subscribers.write().unwrap();
+            for topic in old_sess.subscriptions {
+                if let Some(set) = subs.get_mut(&topic) {
+                    set.remove(client_id);
+                }
+            }
+        }
+
         let session = BrowserClientSession {
             client_id: client_id.to_string(),
             session_id: session_id.to_string(),
@@ -164,6 +174,33 @@ impl BrowserRealtimeService {
         }
     }
 
+    pub fn evict_stale_clients(&self, timeout_ms: u64, now_ms: u64) -> usize {
+        let mut clients = self.clients.write().unwrap();
+        let mut stale_ids = Vec::new();
+
+        for (id, sess) in clients.iter() {
+            if now_ms.saturating_sub(sess.last_ping_ms) > timeout_ms {
+                stale_ids.push(id.clone());
+            }
+        }
+
+        let evicted_count = stale_ids.len();
+        if !stale_ids.is_empty() {
+            let mut subs = self.topic_subscribers.write().unwrap();
+            for id in stale_ids {
+                if let Some(sess) = clients.remove(&id) {
+                    for topic in sess.subscriptions {
+                        if let Some(set) = subs.get_mut(&topic) {
+                            set.remove(&id);
+                        }
+                    }
+                }
+            }
+        }
+
+        evicted_count
+    }
+
     pub fn get_client_count(&self) -> usize {
         self.clients.read().unwrap().len()
     }
@@ -237,6 +274,16 @@ impl BrowserRealtimeService {
                     "success": true,
                     "topic": topic,
                     "delivered_clients": delivered_count
+                }))
+            }
+            "evict_stale" => {
+                let timeout_ms = payload.get("timeout_ms").and_then(|v| v.as_u64()).unwrap_or(30000);
+                let now_ms = payload.get("now_ms").and_then(|v| v.as_u64()).unwrap_or(1775520000);
+                let evicted = self.evict_stale_clients(timeout_ms, now_ms);
+                Ok(serde_json::json!({
+                    "success": true,
+                    "evicted_count": evicted,
+                    "remaining_clients": self.get_client_count()
                 }))
             }
             "stats" => {

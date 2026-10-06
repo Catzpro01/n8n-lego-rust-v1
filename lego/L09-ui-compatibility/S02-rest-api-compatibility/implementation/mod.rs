@@ -240,8 +240,9 @@ impl RestApiDispatchService {
     }
 
     fn extract_params(pattern: &str, path: &str) -> Option<HashMap<String, String>> {
-        let pat_parts: Vec<&str> = pattern.trim_matches('/').split('/').collect();
-        let path_parts: Vec<&str> = path.trim_matches('/').split('/').collect();
+        let clean_path = path.split('?').next().unwrap_or(path);
+        let pat_parts: Vec<&str> = pattern.trim_matches('/').split('/').filter(|s| !s.is_empty()).collect();
+        let path_parts: Vec<&str> = clean_path.trim_matches('/').split('/').filter(|s| !s.is_empty()).collect();
 
         if pat_parts.len() != path_parts.len() {
             return None;

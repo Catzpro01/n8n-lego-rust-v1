@@ -74,4 +74,23 @@ mod tests {
         assert_eq!(port_res["body"]["data"]["id"], "42");
         assert_eq!(port_res["body"]["data"]["name"], "Workflow 42");
     }
+
+    #[test]
+    fn test_match_route_with_query_string() {
+        let service = RestApiDispatchService::new();
+        let (route, params) = service.match_route("GET", "/rest/workflows?active=true&limit=50").unwrap();
+
+        assert_eq!(route.route_id, "workflows_list");
+        assert_eq!(route.method, "GET");
+        assert!(params.is_empty());
+    }
+
+    #[test]
+    fn test_param_extraction_with_query_string() {
+        let service = RestApiDispatchService::new();
+        let (route, params) = service.match_route("GET", "/rest/workflows/wf-888?include=tags").unwrap();
+
+        assert_eq!(route.route_id, "workflow_get");
+        assert_eq!(params.get("id").unwrap(), "wf-888");
+    }
 }

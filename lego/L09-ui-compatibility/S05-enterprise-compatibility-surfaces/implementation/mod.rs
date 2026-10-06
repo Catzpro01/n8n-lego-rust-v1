@@ -102,6 +102,10 @@ impl EnterpriseFeatureService {
             if claim.plan_tier == EnterprisePlanTier::Enterprise {
                 return true; // Enterprise has all features
             }
+            // Baseline core features remain available for all valid non-expired licenses
+            if matches!(feature_name, "basic_execution" | "community_nodes" | "standard_auth") {
+                return true;
+            }
             claim.enabled_features.contains(feature_name)
         } else {
             // Default community tier
