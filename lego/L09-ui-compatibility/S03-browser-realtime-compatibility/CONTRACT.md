@@ -10,7 +10,7 @@
 - **State Ownership**: `browser-sock-clients`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 
@@ -19,6 +19,7 @@
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Manages realtime browser streaming connections, channel subscriptions, and event distribution.
 
 ---
 

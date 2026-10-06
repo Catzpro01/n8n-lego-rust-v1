@@ -616,7 +616,7 @@ SUBLEGOS_DATA = [
         "lego_name": "UI and Compatibility", "lego_slug": "L09-ui-compatibility", "sub_slug": "S03-browser-realtime-compatibility",
         "ownership": "ui-compat", "execution_model": "in-process", "runtime_host": "H01",
         "state_ownership": "browser-sock-clients", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "IMPLEMENTED",
+        "status": "TESTED",
         "provided_ports": ["port.ui.browser_sock.stream.v1"],
         "required_ports": ["port.observability.realtime.publish.v1"]
     },
@@ -792,8 +792,8 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 29, f"Expected 29 TESTED, got {status_counts['TESTED']}"
-    assert status_counts["IMPLEMENTED"] == 3, f"Expected 3 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
+    assert status_counts["TESTED"] == 30, f"Expected 30 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["IMPLEMENTED"] == 2, f"Expected 2 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
     assert status_counts["CONTRACTED"] == 43, f"Expected 43 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
@@ -805,7 +805,7 @@ def main():
         'L04.S03', 'L04.S04', 'L04.S08', 'L05.S01',
         'L05.S02', 'L05.S03', 'L05.S04', 'L06.S01',
         'L06.S02', 'L06.S04', 'L07.S03', 'L09.S01',
-        'L09.S02'
+        'L09.S02', 'L09.S03'
     }
     actual_tested = {item['id'] for item in SUBLEGOS_DATA if item['status'] == 'TESTED'}
     assert actual_tested == priority_tested, f"TESTED Sub-LEGOs do not match priority list: {actual_tested ^ priority_tested}"
