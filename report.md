@@ -1582,3 +1582,56 @@ Suite verifikasi arsitektur diperluas dari 7 checks menjadi **11 checks komprehe
 4. `cargo test -p n8n-port-contract`: **16 passed; 0 failed** (Exit Code 0).
 
 Report: ./report.md
+
+---
+
+## SUB-LEGO IMPLEMENTATION & MIGRATION: L01.S02 — GRAPH EVALUATION ENGINE (PROMOTED TO TESTED)
+
+**Timestamp**: 2026-10-07T01:20:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `f87b65755fa0787f3a9c7b0ae67d7b7e77569445`  
+**Status**: **L01.S02 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L01.S02
+- **Sub-LEGO**: `L01.S02` — `Graph Evaluation Engine`
+- **Canonical Root**: `lego/L01-execution/S02-graph-evaluation-engine/`
+- **Runtime Host**: `H03` (Execution Host)
+- **State Ownership Domain**: `graph-evaluation-index`
+- **Provided Ports**:
+  - `port.execution.graph.evaluate.v1`: Evaluasi topologi DAG, deteksi siklus via DFS recursion stack, kalkulasi in-degree & out-degree, penemuan root triggers, terminal nodes, dan node konvergen (diamond pattern), serta penentuan Kahn's topological execution order.
+  - `port.execution.node.status.v1`: Pengelolaan siklus hidup status node eksekusi mematuhi finite state machine (FSM) M2 (`Pending -> Running/Skipped/Failed -> Succeeded/Failed/Waiting`) dengan jaminan imutabilitas status terminal (`Succeeded`, `Failed`, `Skipped`).
+  - `port.execution.wait.suspend.v1`: Penundaan (suspension) eksekusi pada wait node ke indeks suspensi aktif.
+  - `port.execution.wait.resume.v1`: Pemulihan (resumption) frame yang ditunda kembali ke status Running.
+- **Required Ports**:
+  - `port.execution.run.workflow.v1` (Provider: `L01.S01`)
+  - `port.storage.wal.append.v1` (Provider: `L05.S02`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi port dan invarian.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: Engine evaluasi graf DAG mandiri, FSM status transition validator, wait resumption index, dan port dispatchers.
+  - `tests/graph_evaluation_test.rs`: 7 unit tests (linear DAG, diamond convergence, cycle detection, orphan nodes, FSM state immutability, wait/resume, port dispatchers).
+  - `evidence/S02-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/graph_evaluation_port_test.rs`.
+- Menguji InProcessAdapter roundtrip dengan `SecurityContext` valid, evaluasi DAG topologi (diamond join pattern), deteksi siklus, transisi FSM status, dan penolakan pelanggaran keamanan (`SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L01.S02` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **12** (14.5%) — Bertambah 1 (`L01.S02`).
+  - **IMPLEMENTED (Debt)**: **20** (24.1%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `cargo test -p n8n-port-contract`: **18 passed; 0 failed** (Exit Code 0).
+2. `cargo test --workspace`: **All tests passed; 0 failed** (Exit Code 0).
+3. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+4. `python -m unittest tests/governance/test_subagent_result_validator.py`: **13/13 PASS** (Exit Code 0).
+5. `python -m unittest tests/governance/test_ci_architecture_check.py`: **5/5 PASS** (Exit Code 0).
+6. Isolasi Fisik: **24 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports**.
+
+Report: ./report.md

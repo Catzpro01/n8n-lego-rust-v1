@@ -56,12 +56,12 @@ SUBLEGOS_DATA = [
         "required_ports": ["port.runtime.contract.envelope.v1", "port.runtime.budget.allocate.v1", "port.node.execute.invoke.v1", "port.storage.wal.append.v1"]
     },
     {
-        "id": "L01.S02", "lego": "L01", "sub": "S02", "name": "Wait and resume",
-        "lego_name": "Execution", "lego_slug": "L01-execution", "sub_slug": "S02-wait-resume",
-        "ownership": "execution-engine", "execution_model": "stateful-component", "runtime_host": "H03",
-        "state_ownership": "wait-resumption-index", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.execution.wait.suspend.v1", "port.execution.wait.resume.v1"],
+        "id": "L01.S02", "lego": "L01", "sub": "S02", "name": "Graph Evaluation Engine",
+        "lego_name": "Execution", "lego_slug": "L01-execution", "sub_slug": "S02-graph-evaluation-engine",
+        "ownership": "execution-engine", "execution_model": "in-process", "runtime_host": "H03",
+        "state_ownership": "graph-evaluation-index", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.execution.graph.evaluate.v1", "port.execution.node.status.v1", "port.execution.wait.suspend.v1", "port.execution.wait.resume.v1"],
         "required_ports": ["port.execution.run.workflow.v1", "port.storage.wal.append.v1"]
     },
     {

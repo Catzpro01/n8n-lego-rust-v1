@@ -141,18 +141,20 @@ legos:
           transport: contract-defined
       S02:
         id: L01.S02
-        name: Wait and resume
+        name: Graph Evaluation Engine
         ownership: execution-engine
-        canonical_path: lego/L01-execution/S02-wait-resume
-        execution_model: stateful-component
+        canonical_path: lego/L01-execution/S02-graph-evaluation-engine
+        execution_model: in-process
         runtime_host: H03
-        state_ownership: wait-resumption-index
+        state_ownership: graph-evaluation-index
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
-        contract_path: lego/L01-execution/S02-wait-resume/CONTRACT.md
+        status: TESTED
+        contract_path: lego/L01-execution/S02-graph-evaluation-engine/CONTRACT.md
         ports:
           provided:
+          - port.execution.graph.evaluate.v1
+          - port.execution.node.status.v1
           - port.execution.wait.suspend.v1
           - port.execution.wait.resume.v1
           required:

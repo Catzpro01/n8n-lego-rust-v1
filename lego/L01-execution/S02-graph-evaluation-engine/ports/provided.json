@@ -3,6 +3,18 @@
   "version": "1.0.0",
   "provided_ports": [
     {
+      "port_id": "port.execution.graph.evaluate.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
+      "port_id": "port.execution.node.status.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
       "port_id": "port.execution.wait.suspend.v1",
       "category": "PublicContract",
       "schema_version": "1.0.0",
