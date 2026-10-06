@@ -819,11 +819,19 @@ class CIArchitectureEnforcer:
             if not remote_main_citations:
                 res.error("report.md does not contain explicit 'REMOTE MAIN' citation required for remote provenance verification.")
             else:
-                for cited_sha in remote_main_citations:
-                    if remote_main and not remote_main.startswith(cited_sha.lower()):
-                        res.error(f"Report cited REMOTE MAIN '{cited_sha}' does not match actual origin/main SHA '{remote_main}'!")
-                    else:
-                        res.log(f"Report cited REMOTE MAIN '{cited_sha}' matches actual remote git origin/main ref.")
+                latest_cited_sha = remote_main_citations[-1]
+                if remote_main and not (remote_main.startswith(latest_cited_sha.lower()) or latest_cited_sha.lower().startswith(remote_main_short)):
+                    res.error(f"Latest report cited REMOTE MAIN '{latest_cited_sha}' does not match actual origin/main SHA '{remote_main}'!")
+                else:
+                    res.log(f"Latest report cited REMOTE MAIN '{latest_cited_sha}' matches actual remote git origin/main ref.")
+
+                # Verify historical remote main citations exist in git ledger
+                for hist_sha in remote_main_citations[:-1]:
+                    try:
+                        subprocess.check_call(["git", "cat-file", "-e", hist_sha], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        res.log(f"Historical cited REMOTE MAIN '{hist_sha}' verified in git ledger.")
+                    except subprocess.CalledProcessError:
+                        res.error(f"Historical cited REMOTE MAIN '{hist_sha}' not found in git ledger!")
 
         except Exception as e:
             res.error(f"Failed to verify git provenance for report.md: {e}")

@@ -2688,8 +2688,8 @@ Delapan Sub-LEGO dari 43 Sub-LEGO berstatus `CONTRACTED` telah diimplementasikan
 - **Implementation Commit SHA**: `546c3c890` (`fix(sublego-hardening): remediate token bucket capacity bypass, causal graph infinite loops, manifest validation, priority normalization, and harden CI checks 10 and 11`)
 - **Prior Implementation Commit SHA**: `1fec0f30b` (`feat(sublego-batch): implement and promote 8 contracted sublegos across ingress, nodes, scale, and observability with hardened CI checks 10 and 11`)
 - **Prior Evidence Commit SHA**: `c062a7ceb` (`docs(report): update ledger with 8 newly tested sublegos, hardened CI checks 10 and 11, and scoped local UI status`)
-- **Report / Evidence Commit SHA**: Pending atomic push commit
-- **REMOTE MAIN**: Diverifikasi dan disinkronisasi melalui `git rev-parse origin/main`
+- **Report / Evidence Commit SHA**: `99e3cb91c` (`docs(report): record adversarial review, remediation of sublego defects, and strengthened CI checks 10 and 11`)
+- **REMOTE MAIN**: `99e3cb91ca33ba568c60572f855bb47bb79f5d85`
 
 ### 2. Temuan Audit Adversarial & Remediasi Defek Nyata
 1. **Defek L03.S04 (Admission & Backpressure)**:
