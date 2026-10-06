@@ -15,6 +15,8 @@ from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional, Tuple, Any
 
 VALID_STATUSES = {"COMPLETE", "PARTIAL", "BLOCKED", "FAILED", "NOT VERIFIED"}
+TERMINAL_STATUSES = {"COMPLETE", "BLOCKED", "FAILED"}
+NON_TERMINAL_STATUSES = {"PARTIAL", "NOT VERIFIED"}
 VALID_LOCALITIES = {"LOCAL", "REMOTE"}
 
 REQUIRED_FIELDS = [
@@ -51,9 +53,13 @@ class SubAgentResult:
     checkpoint: str
     raw_dict: Dict[str, str]
 
+    def is_terminal(self) -> bool:
+        return self.status in TERMINAL_STATUSES
+
     def to_dict(self) -> Dict[str, Any]:
         d = asdict(self)
         del d["raw_dict"]
+        d["is_terminal"] = self.is_terminal()
         return d
 
 
@@ -98,15 +104,15 @@ class SubAgentResultValidator:
         current_field: Optional[str] = None
 
         for line in lines[1:]:  # skip 'SUB-AGENT RESULT' header line
-            # Check if line marks a known field
+            # Only consider unindented lines as potential new field headers
             field_matched = None
-            for req in REQUIRED_FIELDS:
-                prefix = f"{req}:"
-                stripped = line.strip()
-                if stripped.startswith(prefix):
-                    field_matched = req
-                    value_part = stripped[len(prefix):].strip()
-                    break
+            if line and not line[0].isspace() and not line.startswith(("-", "*", "#")):
+                for req in REQUIRED_FIELDS:
+                    prefix = f"{req}:"
+                    if line.startswith(prefix):
+                        field_matched = req
+                        value_part = line[len(prefix):].strip()
+                        break
 
             if field_matched:
                 current_field = field_matched
@@ -137,9 +143,13 @@ class SubAgentResultValidator:
             return False, None, errors
 
         # Check for unreplaced template placeholders e.g. <...>
+        placeholder_pattern = re.compile(r"<[A-Za-z0-9_ /|–-]+>")
         for req, val in field_values.items():
-            if re.match(r"^<.*>$", val.strip()):
-                errors.append(f"Field '{req}' contains unreplaced template placeholder: '{val}'")
+            found_placeholders = placeholder_pattern.findall(val)
+            if found_placeholders:
+                errors.append(
+                    f"Field '{req}' contains unreplaced template placeholder(s): {found_placeholders}"
+                )
 
         # 1. Validate STATUS
         status_val = field_values.get("STATUS", "").strip().upper()
@@ -165,10 +175,12 @@ class SubAgentResultValidator:
 
         if exit_codes_raw.upper() in ("NONE", "N/A", "EMPTY", "[]", ""):
             if tests_val not in ("NONE", "N/A", "0", ""):
-                errors.append(f"TESTS were declared ('{field_values.get('TESTS')}'), but EXIT CODES is '{exit_codes_raw}'. Concrete exit codes must be provided.")
+                errors.append(
+                    f"TESTS were declared ('{field_values.get('TESTS')}'), but EXIT CODES is '{exit_codes_raw}'. Concrete exit codes must be provided."
+                )
         else:
-            # Parse integers from raw exit codes string, e.g. "0", "0, 0", "[0, 0]", "Exit code 0"
-            found_ints = re.findall(r"\b\d+\b", exit_codes_raw)
+            # Parse signed integers from raw exit codes string, e.g. "0", "0, 0", "[0, 0]", "-1"
+            found_ints = re.findall(r"-?\b\d+\b", exit_codes_raw)
             if not found_ints:
                 errors.append(f"Invalid EXIT CODES: '{exit_codes_raw}'. Expected integer exit codes (e.g. 0).")
             else:
@@ -177,14 +189,25 @@ class SubAgentResultValidator:
         # 4. Validate COMMIT
         commit_val = field_values.get("COMMIT", "").strip()
         commit_upper = commit_val.upper()
-        if commit_upper not in ("UNCOMMITTED", "NONE", "N/A", "WORKTREE"):
-            # Should look like a valid hex SHA (7 to 40 hex characters)
-            sha_clean = re.sub(r"[^0-9a-fA-F]", "", commit_val)
-            if len(sha_clean) < 7:
-                errors.append(f"Invalid COMMIT SHA: '{commit_val}'. Expected git commit SHA (minimum 7 hex characters) or 'UNCOMMITTED'.")
+        sha_hex_pattern = re.compile(r"^[0-9a-fA-F]{7,40}$")
+        if commit_upper in ("UNCOMMITTED", "NONE", "N/A", "WORKTREE"):
+            if locality_val == "REMOTE":
+                errors.append(
+                    f"Contradiction: LOCAL/REMOTE is 'REMOTE', but COMMIT is '{commit_val}'. Remote state must refer to a committed git SHA."
+                )
+        elif not sha_hex_pattern.match(commit_val):
+            errors.append(
+                f"Invalid COMMIT SHA: '{commit_val}'. Expected git commit hex SHA (7 to 40 characters) or 'UNCOMMITTED'."
+            )
 
         # 5. Check anti-premature completion rules
         if status_val == "COMPLETE":
+            # Check non-zero exit codes
+            if any(code != 0 for code in exit_codes):
+                errors.append(
+                    f"Contradiction: STATUS is COMPLETE, but EXIT CODES contains failure code(s) (non-zero): {exit_codes}. Use FAILED or BLOCKED."
+                )
+
             remaining_val = field_values.get("REMAINING", "").strip().upper()
             if remaining_val not in ("NONE", "N/A", "0", "NOTHING", "NIL") and not remaining_val.startswith("NONE"):
                 # If remaining work exists, status should be PARTIAL
@@ -197,6 +220,21 @@ class SubAgentResultValidator:
                 errors.append(
                     f"Contradiction: STATUS is COMPLETE, but BLOCKERS specifies active blockers: '{field_values.get('BLOCKERS')}'. Use BLOCKED."
                 )
+
+        # 6. Check evasive EVIDENCE
+        evidence_val = field_values.get("EVIDENCE", "").strip()
+        evasive_tokens = {"done", "none", "tests passed", "passed", "ok", "all good", "all tests passed", "fixed", "completed", "n/a"}
+        if evidence_val.lower() in evasive_tokens:
+            errors.append(
+                f"REJECTED: Evasive EVIDENCE '{evidence_val}'. Evidence must cite concrete facts, test results, outputs, or invariant verification."
+            )
+
+        # 7. Check evasive CHECKPOINT
+        checkpoint_val = field_values.get("CHECKPOINT", "").strip()
+        if checkpoint_val.lower() in evasive_tokens:
+            errors.append(
+                f"REJECTED: Evasive CHECKPOINT '{checkpoint_val}'. Checkpoint must describe a resumption state enabling safe restart."
+            )
 
         if errors:
             return False, None, errors
