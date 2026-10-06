@@ -701,7 +701,7 @@
           "state_ownership": "worker-bridge-sessions",
           "contract_version": "1.0.0",
           "compatibility_policy": "rolling-dual-version",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L04-node-ecosystem/S04-compatibility-worker/CONTRACT.md",
           "ports": {
             "provided": [
