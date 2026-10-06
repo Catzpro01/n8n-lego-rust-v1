@@ -1,4 +1,14 @@
 #!/usr/bin/env node
+/**
+ * JavaScript Compatibility Worker (Isolated Child-Process Execution Harness)
+ *
+ * Runs as an isolated Node.js child process communicating via JSON Lines IPC
+ * over stdin/stdout with the Rust runtime kernel (NodeCompatibilityWorker).
+ *
+ * NOTE: This is NOT a replacement for the full @n8n/nodes-base package (400+ nodes).
+ * It executes custom JavaScript (via Node.js vm sandbox) and provides fallback/mock
+ * execution for unported community nodes.
+ */
 import readline from 'node:readline';
 import vm from 'node:vm';
 

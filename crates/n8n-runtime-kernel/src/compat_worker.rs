@@ -1,8 +1,11 @@
-//! Node Compatibility Worker — Real child process bridge to Node.js runner.
+//! JavaScript Compatibility Worker — Isolated Child-Process Node.js JSON Lines IPC Bridge.
 //!
-//! Spawns `node workers/compatibility-worker.mjs` with piped stdio to execute
-//! legacy n8n nodes, custom community nodes, and JS code nodes that have not yet
-//! been natively ported to Rust.
+//! Spawns `node workers/compatibility-worker.mjs` as an isolated child process with piped stdio
+//! communicating via JSON Lines IPC over stdin/stdout.
+//!
+//! NOTE: This is a JavaScript Compatibility Worker execution harness, NOT a full runtime replacement
+//! for the 400+ nodes in `@n8n/nodes-base`. It executes custom JavaScript (`vm` sandbox) and
+//! unported/community node jobs that require an isolated Node.js runtime environment.
 
 use n8n_common::INodeExecutionData;
 use serde::{Deserialize, Serialize};
@@ -144,7 +147,7 @@ impl WorkerProcess {
     }
 }
 
-/// Real Node.js compatibility worker supervisor managing child processes.
+/// JavaScript Compatibility Worker supervisor managing isolated Node.js child processes via JSON Lines IPC.
 #[derive(Clone)]
 pub struct NodeCompatibilityWorker {
     script_path: PathBuf,

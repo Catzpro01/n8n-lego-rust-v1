@@ -2,9 +2,8 @@
  * scripts/start-all.mjs
  * 
  * Monorepo Multi-Instance Orchestrator:
- * - Starts n8n-lego on port 5677
- * - Starts n8n-rust on port 5678
- * - Starts n8n-reference on port 5680
+ * - Port 5677: n8n-lego (UI & Single Public Gateway dengan Rust Engine via child process)
+ * - Port 5680: n8n-reference (Oracle truth)
  */
 import { spawn } from 'node:child_process';
 import { resolve, dirname } from 'node:path';
@@ -41,7 +40,9 @@ const instances = [
 ];
 
 console.log('====================================================');
-console.log('🚀 Starting Unified n8n LEGO (Port 5677) + Oracle (Port 5680)...');
+console.log('🚀 Starting Monorepo Architecture:');
+console.log('   * Port 5677: n8n-lego (UI & Single Public Gateway dengan Rust Engine via child process)');
+console.log('   * Port 5680: n8n-reference (Oracle truth)');
 console.log('====================================================');
 
 const children = [];

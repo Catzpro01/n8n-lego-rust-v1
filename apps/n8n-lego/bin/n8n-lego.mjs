@@ -153,7 +153,7 @@ async function doctor() {
     detail: iconCount > 0 ? `${iconCount} files` : 'run: n8n-lego catalog',
   });
 
-  const port = Number(process.env.N8N_LEGO_PORT ?? process.env.N8N_PORT ?? 5678);
+  const port = Number(process.env.N8N_LEGO_PORT ?? process.env.PORT ?? process.env.N8N_PORT ?? 5677);
   const free = await portFree(port);
   checks.push({ name: `port ${port} free`, ok: free, detail: free ? 'available' : 'in use — the app will fail to bind' });
 
@@ -229,7 +229,7 @@ function usage() {
       '  help       show this help',
       '',
       'environment (n8n-compatible; N8N_LEGO_* takes precedence):',
-      '  N8N_LEGO_PORT / N8N_PORT             listen port (default 5678)',
+      '  N8N_LEGO_PORT / N8N_PORT             listen port (default 5677)',
       '  N8N_LEGO_HOST / N8N_HOST             listen address (default 0.0.0.0)',
       '  N8N_LEGO_USER_FOLDER / N8N_USER_FOLDER  data directory (default ~/.n8n-lego)',
       '  N8N_LEGO_OWNER_EMAIL / _PASSWORD     create the owner account on first boot',

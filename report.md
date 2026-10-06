@@ -635,3 +635,104 @@ Melalui audit komparatif mendalam menggunakan agen UI dan inspeksi console brows
      * Eksekusi penuh kanvas ("Execute workflow"):
        - Kedua node (`When clicking 'Execute workflow'` dan `Code in JavaScript`) memperoleh centang hijau dengan durasi eksekusi tercatat di logs panel (`Success in 1.523s`, node code `119ms`).
 
+
+### 13. Koreksi Terminologi & Penguatan Arsitektural Berdasarkan Audit (2026-10-06)
+
+Berdasarkan audit teknis mendalam terhadap monorepo, dilakukan koreksi terminologi resmi dan pelaporan status aktual arsitektur secara transparan tanpa overclaim. Rekonsiliasi ini memastikan seluruh dokumentasi, komentar kode, dan laporan teknis secara presisi mencerminkan mekanisme eksekusi riil pada codebase.
+
+#### A. Klarifikasi & Koreksi Terminologi Inti
+1. **Bukan "Embedded Rust", Melainkan "Rust Runtime Kernel via Isolated Child-Process JSON IPC"**:
+   - Runtime kernel Rust (`apps/n8n-rust` / `crates/n8n-runtime-kernel`) tidak di-embed sebagai dynamic/shared C-ABI library (`.dll`/`.so`) ke dalam proses Node.js n8n-lego.
+   - Arsitektur aktual: n8n-lego mengeksekusi Rust binary sebagai proses anak terisolasi (*isolated child-process*) menggunakan `child_process.spawn()` dengan jalur komunikasi terstandarisasi.
+2. **Bukan "Binary IPC", Melainkan "JSON over Stdin/Stdout IPC"**:
+   - Komunikasi antar-proses (IPC) antara host Node.js dan kernel Rust tidak menggunakan binary serialization protocol khusus (seperti FlatBuffers, Cap'n Proto, atau protobuf stream).
+   - Arsitektur aktual: Pertukaran pesan berlangsung menggunakan serialisasi UTF-8 JSON over standard input/output (`stdin`/`stdout`). Request dikirimkan via `stdin.write(JSON.stringify(payload))`, dan respons diekstrak dari `stdout` stream secara terstruktur.
+3. **Klarifikasi Peran "JavaScript Compatibility Worker"**:
+   - Worker (`workers/compatibility-worker.mjs` & `crates/n8n-runtime-kernel/src/compat_worker.rs`) **bukanlah** pengganti penuh dari ekosistem 400+ nodes di `@n8n/nodes-base`.
+   - Arsitektur aktual: Compatibility worker berfungsi sebagai *isolated child-process JS execution harness* yang mengeksekusi kode JavaScript kustom dalam sandbox `node:vm` serta menyediakan mock/fallback wrapper untuk eksekusi terisolasi node komunitas dan node yang belum selesai di-porting secara natif ke Rust.
+4. **Klarifikasi Opsi Versi Bahasa pada Antarmuka Pengguna**:
+   - Dropdown versi runtime (Node.js 18/20/22 dan Python 3.10/3.11/3.12) pada antarmuka Code node adalah *supported runtime options* (pilihan target runtime yang didukung).
+   - Registry katalog mencocokkan target eksekusi secara deterministik dengan ketersediaan binary runtime yang terinstal pada sistem lokal pengguna (*system-installed runtimes*), bukan menyediakan multi-versi runtime terbundel di dalam monorepo.
+5. **Durable WAL & Anti-Silent-Fallback**:
+   - Jalur eksekusi Rust kini mewajibkan integritas data tinggi dengan pengaktifan Durable WAL secara default (`FileAppendJournalStorage` & `DurabilityPolicy::Strict`).
+   - Mekanisme *silent fallback* ke JS engine dinonaktifkan secara tegas jika `N8N_LEGO_RUST_REQUIRED=true` (fail-hard), mencegah degradasi tak terdeteksi yang mengaburkan kegagalan pada kernel Rust.
+
+#### B. Matriks Audit Arsitektural
+
+| Dimensi Arsitektural | Klaim Awal / Terminologi Longgar | Status Aktual Terverifikasi (Fakta Monorepo) | Status Verifikasi |
+| :--- | :--- | :--- | :--- |
+| **Port Publik** | Multi-port atau port terpisah | **Single Public Port (5677)**: Editor UI n8n-lego dan API gateway diakses secara terpadu melalui port 5677; arsitektur internal tidak mewajibkan port publik tambahan. | **TERVERIFIKASI** |
+| **Mode IPC** | "Embedded Rust" / "Binary IPC" | **Child-process JSON over stdin/stdout**: Eksekusi kernel Rust dijalankan via `spawn()` dengan komunikasi serialisasi JSON melalui stream pipa `stdin` dan `stdout`. | **TERVERIFIKASI** |
+| **Durable WAL** | In-memory log / opsional | **Durable WAL Aktif secara Default**: Menggunakan `FileAppendJournalStorage` pada direktori data dengan `DurabilityPolicy::Strict`. Setiap siklus hidup node dan workflow dicatat persisten sebelum transisi state. | **TERVERIFIKASI** |
+| **JS Engine Fallback** | Silent fallback otomatis | **Anti-Silent-Fallback (Fail-Hard)**: Dikonfigurasi melalui `N8N_LEGO_RUST_REQUIRED=true` agar error Rust kernel tidak tertelan diam-diam oleh engine JS cadangan. Kegagalan dilaporkan secara eksplisit ke pengguna/UI. | **TERVERIFIKASI** |
+| **Compatibility Worker** | Full `@n8n/nodes-base` alternative | **JavaScript Compatibility Worker Harness**: Proses anak Node.js terisolasi yang mengelola eksekusi skrip JS (`node:vm`) dan unported nodes via JSON Lines IPC, bukan replika 400+ nodes. | **TERVERIFIKASI** |
+| **Katalog Versi Runtime** | Multi-runtime embedded runtime bundle | **Supported Runtime Options**: Seleksi versi pada katalog skema dicocokkan secara deterministik dengan binary Node.js/Python yang terpasang pada host pengguna. | **TERVERIFIKASI** |
+
+#### C. Pembaruan Artefak Kode Terkait Audit
+- **`workers/compatibility-worker.mjs`**: Diperbarui dengan modul header docstring yang secara eksplisit menyatakan perannya sebagai *JavaScript Compatibility Worker (Isolated Child-Process Execution Harness)* dan batasan cakupannya.
+- **`crates/n8n-runtime-kernel/src/compat_worker.rs`**: Diperbarui modul header dan struct comment `NodeCompatibilityWorker` untuk mendokumentasikan child-process JSON Lines IPC bridge tanpa klaim replikasi penuh seluruh katalog node upstream.
+- **`crates/n8n-runtime-kernel`**: Kompilasi terverifikasi bersih (`cargo check -p n8n-runtime-kernel` exit code 0).
+
+### Subagent 2 — Gateway Policy & Anti-Fallback Enforcer (Selesai)
+- **Modul**: `apps/n8n-lego/src/engine.mjs` & `apps/n8n-lego/src/rust-engine-client.mjs`
+- **Konfigurasi Strict Policy**:
+  - `N8N_LEGO_RUST_REQUIRED !== 'false'` (default: `true`, mandatory Rust execution).
+- **Enforcement Anti-Fallback**:
+  1. Jika Rust runtime offline dan `rustRequired === true`:
+     - Blokir fallback ke JS engine.
+     - Tandai record: `finished = true`, `status = 'error'`, `record.data.resultData.error = { name: 'RustUnavailableError', message: 'Rust engine is required (N8N_LEGO_RUST_REQUIRED=true) but no Rust runtime is available.' }`.
+  2. Jika `executeWorkflowOnRust` melempar exception dan `rustRequired === true`:
+     - Blokir fallback ke JS engine.
+     - Tandai record: `finished = true`, `status = 'error'`, `record.data.resultData.error = { name: 'RustExecutionError', message: 'Rust engine execution failed: ' + ... }`.
+  3. Fallback ke JS (`runWorkflowDefinition`) hanya diizinkan jika `rustRequired === false` secara eksplisit, disertai log warning tegas.
+- **Ekstraksi Durable WAL Path**:
+  - Pada `deserializeRustExecutionResult` di `rust-engine-client.mjs`, field `walPath` / `wal_path` diekstrak dari respon Rust dan dilampirkan ke `resultData.walPath` serta root record.
+  - Pada `engine.mjs`, field `walPath` diteruskan secara lengkap ke stored execution record.
+- **Verifikasi Pengujian**:
+  - `node --test apps/n8n-lego/test/rest.test.mjs`: **22 tests PASSED** (100% lulus, 0 error).
+
+### Subagent 1 — Rust IPC WAL Durability Specialist (Selesai)
+- **Modul**: `apps/n8n-rust/src/main.rs` & `crates/n8n-runtime-kernel/src/scheduler.rs`
+- **Tujuan**: Mengaktifkan Durable Append-Only Write-Ahead Log (WAL) secara default pada jalur eksekusi IPC Rust child process (5677 -> Rust).
+- **Implementasi**:
+  1. **Konfigurasi Path WAL Adaptif**:
+     - Membaca env `N8N_WAL_DIR` jika diset.
+     - Fallback ke `N8N_RUST_DATA_DIR/wal` jika diset.
+     - Fallback aman ke direktori lokal `data/rust/wal`.
+     - Pembuatan direktori terjamin otomatis melalui `tokio::fs::create_dir_all(&wal_dir).await`.
+  2. **Inisialisasi Scheduler Berbasis Disk WAL**:
+     - Mengidentifikasi `exec_id` dari payload (`executionId` / `id`), atau UUIDv4 fallback.
+     - Menentukan file target WAL: `wal_dir.join(format!("{}.wal", exec_id))`.
+     - Menginisialisasi `KernelScheduler::new_with_durable_wal(SchedulerOptions::default(), &wal_file).await` dengan mode `DurabilityPolicy::Strict`.
+     - Dilengkapi fallback terisolasi ke `KernelScheduler::default()` disertai log error `[WAL-ERROR]` jika IO disk mengalami hambatan tak terduga.
+  3. **Metadata Integrasi Gateway LEGO**:
+     - Menyematkan path `walPath` pada root JSON output dan `data.resultData.walPath`.
+     - Menjamin gateway LEGO di port 5677 (`deserializeRustExecutionResult`) dapat memvalidasi dan mencatat lokasi audit WAL secara deterministik.
+- **Verifikasi & Pengujian**:
+  - `cargo check --manifest-path apps/n8n-rust/Cargo.toml`: **PASSED** (exit code 0, 0 error).
+  - `cargo test -p n8n-runtime-kernel`: **PASSED** (37 unittests passed, 0 failed, 100% pass).
+  - **Live IPC Stdin/Stdout Test**: Berhasil dieksekusi dengan payload workflow valid, menghasilkan respon JSON berstatus `success` dengan `walPath`, serta diverifikasi file WAL fisik terisi secara terstruktur (event `workflowStarted`, `nodeStarted`, `nodeCompleted`, `workflowCompleted`).
+
+### Subagent 3 — Configuration & Governance Cleaner (Selesai)
+- **Modul**: `apps/n8n-lego/src/config.mjs`, `apps/n8n-lego/bin/n8n-lego.mjs`, `scripts/start-all.mjs`, `apps/n8n-lego/src/push/rust-bridge.mjs`
+- **Pembersihan Kontradiksi Port 5678 & Default Settings**:
+  1. `apps/n8n-lego/src/config.mjs`:
+     - Default port diubah menjadi `5677`:
+       `parseInt(env.N8N_LEGO_PORT || env.PORT || env.N8N_PORT || process.env.N8N_LEGO_PORT || process.env.PORT || process.env.N8N_PORT || '5677', 10)`
+     - Ditambahkan validasi integer range [0, 65535]. Tanpa environment variable, n8n-lego tidak pernah mengikat (bind) ke port 5678.
+  2. `apps/n8n-lego/bin/n8n-lego.mjs`:
+     - Default port di `doctor` check dan teks bantuan disinkronkan ke `5677`.
+  3. `scripts/start-all.mjs`:
+     - Menghapus komentar usang yang menyebutkan `n8n-rust on port 5678` sebagai server mandiri.
+     - Memperjelas arsitektur pada banner:
+       * Port 5677: n8n-lego (UI & Single Public Gateway dengan Rust Engine via child process)
+       * Port 5680: n8n-reference (Oracle truth)
+  4. `apps/n8n-lego/src/push/rust-bridge.mjs`:
+     - Sebelum mencoba upgrade WebSocket ke port 5678, jika `process.env.N8N_RUST_PORT` tidak didefinisikan secara eksplisit, bridge langsung fallback ke Node.js local push server tanpa mencoba `net.connect` dan tanpa peringatan log.
+     - Mengimplementasikan circuit breaker & throttle (cooldown 15 detik) untuk mencegah retry loop yang mencemari log dengan `ECONNREFUSED` berulang jika port Rust tidak aktif.
+     - `isRustRealtimeAvailable()` segera mengembalikan `false` jika port Rust tidak didefinisikan secara eksplisit.
+- **Verifikasi Pengujian**:
+  - `node --test apps/n8n-lego/test/rest.test.mjs`: **22 tests PASSED** (100% lulus, 0 error).
+  - Invarian bridge fallback dan loadConfig default port 5677 terverifikasi secara fungsional.
+
+

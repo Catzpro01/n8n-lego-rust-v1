@@ -204,6 +204,23 @@ export function deserializeRustExecutionResult(rawResponse, { workflowData = {},
   const finished = inner.finished !== false;
   let status = mapRustStatus(inner.status ?? rawResponse?.status);
 
+  const walPath =
+    inner.walPath ||
+    inner.wal_path ||
+    inner.data?.walPath ||
+    inner.data?.wal_path ||
+    inner.resultData?.walPath ||
+    inner.resultData?.wal_path ||
+    inner.data?.resultData?.walPath ||
+    inner.data?.resultData?.wal_path ||
+    rawResponse?.walPath ||
+    rawResponse?.wal_path ||
+    rawResponse?.data?.walPath ||
+    rawResponse?.data?.wal_path ||
+    rawResponse?.data?.resultData?.walPath ||
+    rawResponse?.data?.resultData?.wal_path ||
+    null;
+
   const rawRunData = inner.data?.resultData?.runData || inner.resultData?.runData || inner.runData || {};
   const frames = inner.frames && typeof inner.frames === 'object' ? inner.frames : {};
 
@@ -386,6 +403,7 @@ export function deserializeRustExecutionResult(rawResponse, { workflowData = {},
 
   const resultData = {
     runData: sortedRunData,
+    ...(walPath ? { walPath } : {}),
     ...(lastExecuted ? { lastNodeExecuted: lastExecuted } : {}),
     ...(existingError ? { error: existingError } : {}),
   };
@@ -403,6 +421,7 @@ export function deserializeRustExecutionResult(rawResponse, { workflowData = {},
     data: {
       resultData,
     },
+    ...(walPath ? { walPath } : {}),
     workflowData: {
       id: workflowId || workflowData?.id,
       versionId: workflowData?.versionId || workflowId || workflowData?.id,

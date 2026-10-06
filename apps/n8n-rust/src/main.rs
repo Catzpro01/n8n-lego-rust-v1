@@ -6,7 +6,7 @@ use tokio::sync::broadcast;
 use n8n_common::INodeExecutionData;
 use n8n_runtime_kernel::{
     ExecutionContext, ExecutionMode, KernelScheduler, NodeExecutionStatus,
-    WorkflowExecutionStatus,
+    SchedulerOptions, WorkflowExecutionStatus,
 };
 use n8n_rust_core::db::Database;
 use n8n_rust_core::events::ExecutionEvent;
@@ -222,7 +222,12 @@ async fn run_ipc_execution() {
         .cloned()
         .unwrap_or_else(|| payload.clone());
 
-    let exec_id = uuid::Uuid::new_v4().to_string();
+    let exec_id = payload
+        .get("executionId")
+        .or_else(|| payload.get("id"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
     let wf_id = workflow_val
         .get("id")
         .and_then(|v| v.as_str())
@@ -317,7 +322,30 @@ async fn run_ipc_execution() {
         ctx = ctx.with_push_ref(push_ref);
     }
     let context = std::sync::Arc::new(ctx);
-    let scheduler = KernelScheduler::default();
+
+    // Tentukan direktori WAL: Ambil dari env N8N_WAL_DIR atau N8N_RUST_DATA_DIR/wal, atau fallback ke data/rust/wal
+    let wal_dir = if let Ok(val) = std::env::var("N8N_WAL_DIR") {
+        std::path::PathBuf::from(val)
+    } else if let Ok(data_dir) = std::env::var("N8N_RUST_DATA_DIR") {
+        std::path::PathBuf::from(data_dir).join("wal")
+    } else {
+        std::path::PathBuf::from("data/rust/wal")
+    };
+
+    if let Err(err) = tokio::fs::create_dir_all(&wal_dir).await {
+        eprintln!("[WAL-ERROR] Gagal membuat direktori WAL di {:?}: {}", wal_dir, err);
+    }
+
+    let wal_file = wal_dir.join(format!("{}.wal", exec_id));
+    let wal_path_str = wal_file.to_string_lossy().to_string();
+
+    let scheduler = match KernelScheduler::new_with_durable_wal(SchedulerOptions::default(), &wal_file).await {
+        Ok(s) => s,
+        Err(err) => {
+            eprintln!("[WAL-ERROR] Gagal inisialisasi durable WAL di {:?}: {}, fallback ke default", wal_file, err);
+            KernelScheduler::default()
+        }
+    };
 
     let exec_res = scheduler.execute(&workflow, initial_data, &context).await;
 
@@ -390,7 +418,8 @@ async fn run_ipc_execution() {
             let stop_str = result.end_time.to_rfc3339();
 
             let mut result_data = serde_json::json!({
-                "runData": run_data
+                "runData": run_data,
+                "walPath": wal_path_str,
             });
 
             if has_error {
@@ -414,6 +443,7 @@ async fn run_ipc_execution() {
                 "startedAt": start_str,
                 "stoppedAt": stop_str,
                 "durationMs": result.duration_ms,
+                "walPath": wal_path_str,
                 "data": {
                     "resultData": result_data
                 }
@@ -429,9 +459,11 @@ async fn run_ipc_execution() {
                 "status": "error",
                 "finished": true,
                 "error": format!("DAG Execution Plan Error: {}", err),
+                "walPath": wal_path_str,
                 "data": {
                     "resultData": {
-                        "runData": {}
+                        "runData": {},
+                        "walPath": wal_path_str,
                     }
                 }
             });

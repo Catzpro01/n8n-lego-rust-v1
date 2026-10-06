@@ -156,6 +156,10 @@ export function createEngine(config = {}, logger) {
         return record;
       }
 
+      const rustRequired = config?.rustRequired !== undefined
+        ? config.rustRequired !== false
+        : process.env.N8N_LEGO_RUST_REQUIRED !== 'false';
+
       // Priority 1: Rust Runtime Cut-over
       const rustOnline = await checkRustAvailable();
       if (rustOnline) {
@@ -212,6 +216,14 @@ export function createEngine(config = {}, logger) {
             record.data.resultData.warnings = rustRecord.warnings;
           }
 
+          const walPath = rustRecord.walPath || rustRecord.data?.resultData?.walPath;
+          if (walPath) {
+            if (record.data.resultData) {
+              record.data.resultData.walPath = walPath;
+            }
+            record.walPath = walPath;
+          }
+
           store.executions.insert(record);
           logger.info('execution finished (Rust cut-over)', {
             executionId,
@@ -223,6 +235,25 @@ export function createEngine(config = {}, logger) {
         } catch (rustError) {
           lastProbeResult = false;
           lastProbeTime = 0;
+          if (rustRequired) {
+            logger.error('Rust engine execution failed and Rust is required (N8N_LEGO_RUST_REQUIRED=true)', {
+              executionId,
+              workflowId,
+              error: rustError.message,
+            });
+            record.finished = true;
+            record.status = 'error';
+            record.stoppedAt = new Date().toISOString();
+            record.data.resultData = {
+              runData: {},
+              error: {
+                name: 'RustExecutionError',
+                message: 'Rust engine execution failed: ' + (rustError.message || String(rustError)),
+              },
+            };
+            store.executions.insert(record);
+            return record;
+          }
           logger.warn('Rust runtime execution failed, falling back to reconstructed JS engine', {
             executionId,
             workflowId,
@@ -230,6 +261,31 @@ export function createEngine(config = {}, logger) {
           });
           // Fall through to JS engine fallback below
         }
+      } else {
+        if (rustRequired) {
+          logger.error('Rust runtime is required (N8N_LEGO_RUST_REQUIRED=true) but no Rust runtime is available', {
+            executionId,
+            workflowId,
+          });
+          record.finished = true;
+          record.status = 'error';
+          record.stoppedAt = new Date().toISOString();
+          record.data = {
+            resultData: {
+              runData: {},
+              error: {
+                name: 'RustUnavailableError',
+                message: 'Rust engine is required (N8N_LEGO_RUST_REQUIRED=true) but no Rust runtime is available.',
+              },
+            },
+          };
+          store.executions.insert(record);
+          return record;
+        }
+        logger.warn('Rust runtime is offline, falling back to reconstructed JS engine (N8N_LEGO_RUST_REQUIRED=false)', {
+          executionId,
+          workflowId,
+        });
       }
 
       // Priority 2: Fallback to reconstructed JS engine when Rust is offline

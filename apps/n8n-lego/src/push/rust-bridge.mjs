@@ -2,8 +2,8 @@
  * Rust Realtime Bridge (Milestone R14, R15)
  *
  * Connects HTTP Upgrade requests (/rest/push and /push) from n8n-lego (port 5677)
- * directly to the Rust Axum realtime engine (port 5678) with transparent fallback
- * to the Node.js push server when Rust engine is unreachable.
+ * directly to the Rust Axum realtime engine (when explicitly configured) with transparent
+ * fallback to the Node.js push server when Rust engine is unreachable or unconfigured.
  */
 
 import net from 'node:net';
@@ -23,15 +23,17 @@ const DEFAULT_CONNECT_TIMEOUT_MS = 2000;
  * @returns {Promise<boolean>} True if Rust port accepts TCP connection
  */
 export async function isRustRealtimeAvailable(options = {}) {
+  const explicitPort = (typeof options === 'number' ? options : null) || options?.port || process.env.N8N_RUST_PORT;
+  if (!explicitPort) {
+    return false;
+  }
+
   let host = process.env.N8N_RUST_HOST || DEFAULT_RUST_HOST;
-  let port = parseInt(process.env.N8N_RUST_PORT || String(DEFAULT_RUST_PORT), 10);
+  let port = parseInt(String(explicitPort), 10);
   let timeoutMs = 1000;
 
-  if (typeof options === 'number') {
-    port = options;
-  } else if (typeof options === 'object' && options !== null) {
+  if (typeof options === 'object' && options !== null) {
     if (options.host) host = options.host;
-    if (options.port) port = Number(options.port);
     if (options.timeoutMs) timeoutMs = Number(options.timeoutMs);
   }
 
@@ -76,10 +78,17 @@ export function createRustPushBridge({ config = {}, logger, fallbackPush } = {})
     debug: (msg, meta) => logger?.debug?.(`[RustPushBridge] ${msg}`, meta),
   };
 
+  const hasExplicitRustPort = Boolean(config?.rustPort || process.env.N8N_RUST_PORT);
   const rawHost = config?.rustHost || process.env.N8N_RUST_HOST || DEFAULT_RUST_HOST;
   const rustHost = rawHost === 'localhost' ? '127.0.0.1' : rawHost;
   const rustPort = parseInt(String(config?.rustPort || process.env.N8N_RUST_PORT || DEFAULT_RUST_PORT), 10);
   const connectTimeoutMs = parseInt(String(config?.rustConnectTimeoutMs || DEFAULT_CONNECT_TIMEOUT_MS), 10);
+
+  // Circuit breaker state for Rust bridge connection
+  let isPortInactive = false;
+  let lastFailureTime = 0;
+  let hasWarnedInactive = false;
+  const INACTIVE_RETRY_INTERVAL_MS = 15_000;
 
   const basePath = config?.basePath ?? '/';
   const restEndpoint = config?.restEndpoint ?? 'rest';
@@ -179,6 +188,27 @@ export function createRustPushBridge({ config = {}, logger, fallbackPush } = {})
   function handleUpgrade(req, socket, head) {
     if (!socket || socket.destroyed) return;
 
+    // Fallback immediately if Rust port is not explicitly configured
+    if (!hasExplicitRustPort) {
+      if (fallbackPush && typeof fallbackPush.handleUpgrade === 'function') {
+        fallbackPush.handleUpgrade(req, socket, head);
+      } else {
+        socket.destroy();
+      }
+      return;
+    }
+
+    // If port was recently marked inactive, suppress connection retries and log spam
+    const now = Date.now();
+    if (isPortInactive && (now - lastFailureTime < INACTIVE_RETRY_INTERVAL_MS)) {
+      if (fallbackPush && typeof fallbackPush.handleUpgrade === 'function') {
+        fallbackPush.handleUpgrade(req, socket, head);
+      } else {
+        socket.destroy();
+      }
+      return;
+    }
+
     let isConnected = false;
     let isFailed = false;
     const earlyChunks = [];
@@ -195,6 +225,9 @@ export function createRustPushBridge({ config = {}, logger, fallbackPush } = {})
       if (isFailed || isConnected) return;
       isFailed = true;
 
+      isPortInactive = true;
+      lastFailureTime = Date.now();
+
       if (connectTimer) clearTimeout(connectTimer);
       if (rustSocket) {
         rustSocket.removeAllListeners();
@@ -209,9 +242,17 @@ export function createRustPushBridge({ config = {}, logger, fallbackPush } = {})
         socket.unshift(Buffer.concat(earlyChunks));
       }
 
-      log.warn(`Rust realtime bridge connection to ${rustHost}:${rustPort} failed, falling back to Node push`, {
-        error: err?.message || String(err),
-      });
+      // Avoid spamming ECONNREFUSED in logs: warn only once per outage window
+      if (!hasWarnedInactive) {
+        hasWarnedInactive = true;
+        log.warn(`Rust realtime bridge connection to ${rustHost}:${rustPort} failed, falling back to Node push`, {
+          error: err?.message || String(err),
+        });
+      } else {
+        log.debug(`Rust realtime bridge connection to ${rustHost}:${rustPort} unavailable, continuing fallback to Node push`, {
+          error: err?.message || String(err),
+        });
+      }
 
       if (fallbackPush && typeof fallbackPush.handleUpgrade === 'function') {
         fallbackPush.handleUpgrade(req, socket, head);
@@ -263,6 +304,12 @@ export function createRustPushBridge({ config = {}, logger, fallbackPush } = {})
       isConnected = true;
       if (connectTimer) clearTimeout(connectTimer);
       rustSocket.setTimeout(0);
+
+      if (isPortInactive) {
+        log.info(`Rust realtime bridge connection to ${rustHost}:${rustPort} restored`);
+      }
+      isPortInactive = false;
+      hasWarnedInactive = false;
 
       socket.removeListener('data', onEarlyData);
       socket.removeListener('error', onClientErrorBeforeConnect);
@@ -332,6 +379,10 @@ export function createRustPushBridge({ config = {}, logger, fallbackPush } = {})
       } catch (err) {
         log.debug('Fallback push broadcast failed', { error: err?.message });
       }
+    }
+
+    if (!hasExplicitRustPort || isPortInactive) {
+      return;
     }
 
     sendToRustBroadcast(payload).catch((err) => {
@@ -415,8 +466,9 @@ export function createRustPushBridge({ config = {}, logger, fallbackPush } = {})
     broadcast,
     closeAll,
     clientCount: () => activeConnections.size + (fallbackPush?.clientCount?.() || 0),
-    onMessage: (listener) => fallbackPush?.onMessage?.(listener),
-    isRustRealtimeAvailable: () => isRustRealtimeAvailable({ host: rustHost, port: rustPort }),
+    isRustRealtimeAvailable: () => (hasExplicitRustPort && !isPortInactive)
+      ? isRustRealtimeAvailable({ host: rustHost, port: rustPort })
+      : Promise.resolve(false),
     _activeBridgesCount: () => activeConnections.size,
   };
 }

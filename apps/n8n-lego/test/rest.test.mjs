@@ -481,4 +481,67 @@ test('POST /rest/workflows/run correctly propagates error when code execution fa
   );
 });
 
+test('deserializeRustExecutionResult extracts walPath into resultData.walPath', () => {
+  const mockResponseWithWal = {
+    status: 'success',
+    walPath: '/tmp/n8n-journal/execution-123.wal',
+    data: {
+      id: 'mock-exec-wal',
+      status: 'success',
+      resultData: {
+        runData: {
+          Manual: [{ executionIndex: 0, executionStatus: 'success', data: { main: [[]] } }],
+        },
+      },
+    },
+  };
+
+  const result = deserializeRustExecutionResult(mockResponseWithWal, {
+    workflowData: { id: 'test-wf-wal', name: 'Test WAL' },
+  });
+
+  assert.equal(result.data.resultData.walPath, '/tmp/n8n-journal/execution-123.wal');
+  assert.equal(result.walPath, '/tmp/n8n-journal/execution-123.wal');
+});
+
+test('engine enforces Rust requirement and blocks silent JS fallback when Rust is unavailable', async () => {
+  const { createEngine } = await import('../src/engine.mjs');
+  const mockStore = {
+    executions: { insert: (r) => r },
+    workflows: { get: () => null },
+  };
+  const mockLogger = { info: () => {}, warn: () => {}, error: () => {} };
+
+  // Engine configured with Rust disabled (offline), but rustRequired=true
+  const strictEngine = createEngine({ rustEngine: false, rustRequired: true }, mockLogger);
+  const strictRecord = await strictEngine.execute({
+    definition: {
+      nodes: [{ id: '1', name: 'Manual', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0], parameters: {} }],
+      connections: {},
+    },
+    store: mockStore,
+  });
+
+  assert.equal(strictRecord.status, 'error');
+  assert.equal(strictRecord.finished, true);
+  assert.ok(strictRecord.data.resultData.error);
+  assert.equal(strictRecord.data.resultData.error.name, 'RustUnavailableError');
+  assert.ok(strictRecord.data.resultData.error.message.includes('Rust engine is required'));
+
+  // Engine configured with rustRequired=false allows fallback to JS engine
+  const fallbackEngine = createEngine({ rustEngine: false, rustRequired: false }, mockLogger);
+  const fallbackRecord = await fallbackEngine.execute({
+    definition: {
+      nodes: [{ id: '1', name: 'Manual', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0], parameters: {} }],
+      connections: {},
+    },
+    store: mockStore,
+  });
+
+  assert.equal(fallbackRecord.status, 'success');
+  assert.equal(fallbackRecord.finished, true);
+  assert.ok(fallbackRecord.data.resultData.runData['Manual']);
+});
+
+
 

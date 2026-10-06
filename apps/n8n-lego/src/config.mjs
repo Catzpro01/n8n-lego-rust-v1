@@ -133,7 +133,13 @@ export function loadConfig(env = process.env) {
   const identity = instanceIdentity(dataDir);
   const protocol = oneOf(env, 'PROTOCOL', 'http', ['http', 'https']);
   const host = str(env, 'HOST', '0.0.0.0');
-  const port = int(env, 'PORT', 5678, { min: 0, max: 65535 });
+  const port = parseInt(
+    env.N8N_LEGO_PORT || env.PORT || env.N8N_PORT || process.env.N8N_LEGO_PORT || process.env.PORT || process.env.N8N_PORT || '5677',
+    10,
+  );
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    throw new ConfigError(`PORT must be an integer between 0 and 65535 (got ${port})`);
+  }
   // Resolved from the package, not the repo: the same code must work when the
   // app is installed globally with `npm install -g n8n-lego`.
   const editorDist = dir(str(env, 'EDITOR_DIST', join(APP_ROOT, 'node_modules', 'n8n-editor-ui', 'dist')));
