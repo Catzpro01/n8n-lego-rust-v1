@@ -2330,6 +2330,56 @@ Report: ./report.md
 5. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
 6. Isolasi Fisik: **52 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
 
+---
+
+## EXECUTION MILESTONE: L07.S03 QUEUE/LEASE MODEL
+
+**Timestamp**: 2026-10-07T03:00:00Z  
+**Branch**: `main`  
+**Base Commit HEAD**: `a572d566a014909772da3e4beee1396a5bb1d655`  
+**Status**: **L07.S03 IMPLEMENTED & PROMOTED TO TESTED; CI ARCHITECTURE & PORT CONTRACT FULLY VERIFIED**  
+
+### 1. Ekstraksi Fungsionalitas & Implementasi Kanonikal L07.S03
+- **Sub-LEGO**: `L07.S03` — `Queue/lease model`
+- **Canonical Root**: `lego/L07-scale-worker-fabric/S03-queue-lease-model/`
+- **Runtime Host**: `H05` (Data Host)
+- **State Ownership Domain**: `job-queue-leases`
+- **Provided Ports**:
+  - `port.scale.queue.enqueue.v1`: Enqueue job dengan prioritas (High, Normal, Low), metadata alur kerja/eksekusi, batas retry, dan isolasi tenant.
+  - `port.scale.queue.dequeue.v1`: Dequeue job berprioritas tinggi terlebih dahulu dengan pembuatan lease eksklusif bertenggat waktu (lease duration & expiry).
+  - `port.scale.queue.ack.v1`: Acknowledgment penyelesaian (`complete`, `fail`, `retry`) dengan verifikasi lease token dan reclaim lease kedaluwarsa.
+- **Required Ports**:
+  - `port.runtime.contract.envelope.v1` (Provider: `L00.S01`)
+- **Struktur Artefak Kanonikal**:
+  - `CONTRACT.md`: Kontrak publik formal spesifikasi 3 port dan invarian L07.S03.
+  - `ports/provided.json` & `ports/required.json`: Metadata antarmuka port typed versioned.
+  - `implementation/mod.rs`: `QueueLeaseService`, partisi antrean per tenant `TenantQueuePartition`, priority queues (`VecDeque`), pelacakan lease aktif, reclaim lease kedaluwarsa, dan dispatcher port contract.
+  - `tests/queue_lease_test.rs`: 7 unit tests (roundtrip enqueue/dequeue, prioritas High/Normal/Low, ack sukses, retry & batas percobaan dead-letter, isolasi multi-tenant, penolakan token tidak valid, dan roundtrip 3 port handler).
+  - `evidence/S03-EVIDENCE.md`: Catatan audit pembuktian invarian arsitektur L07.S03.
+
+### 2. Integrasi Port Contract (`crates/n8n-port-contract`)
+- Dibuat test integrasi transport-neutral: `crates/n8n-port-contract/tests/queue_lease_port_test.rs`.
+- Menguji `InProcessAdapter` roundtrip siklus hidup lengkap (enqueue -> dequeue dengan penerbitan token lease -> ack complete) melintasi 3 port publik bertipe, serta penolakan caller tanpa scope izin (`PortStatus::SecurityDenied`).
+
+### 3. Promosi Taksonomi Sub-LEGO
+- `L07.S03` resmi dipromosikan ke status **`TESTED`**.
+- Distribusi status 83 Sub-LEGO:
+  - **CERTIFIED**: **0** (0.0%) — Sesuai quality floor, nol overclaim.
+  - **TESTED**: **27** (32.5%) — Bertambah 1 (`L07.S03`).
+  - **IMPLEMENTED (Debt)**: **5** (6.0%)
+  - **CONTRACTED**: **43** (51.8%)
+  - **DESIGNED**: **8** (9.6%)
+  - **TOTAL**: **83 Sub-LEGO** (100.0%).
+
+### 4. Rekapitulasi Verifikasi Pengujian
+1. `rustc --test --edition=2021 lego/L07-scale-worker-fabric/S03-queue-lease-model/implementation/mod.rs -L target/debug/deps --extern serde=... --extern serde_json=...`: **7/7 unit tests PASS** (Exit Code 0).
+2. `cargo test -p n8n-port-contract --test queue_lease_port_test`: **2/2 passed** (Exit Code 0).
+3. `cargo test -p n8n-port-contract`: **48 passed; 0 failed** (Exit Code 0).
+4. `python scripts/ci_architecture_check.py`: **11/11 checks PASS** (Exit Code 0).
+5. `python -m unittest discover tests/governance`: **18 passed; 0 failed** (Exit Code 0).
+6. Isolasi Fisik: **54 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated)**.
+
 Report: ./report.md
+
 
 

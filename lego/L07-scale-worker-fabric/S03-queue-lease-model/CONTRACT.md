@@ -10,7 +10,7 @@
 - **State Ownership**: `job-queue-leases`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `rolling-dual-version`
-- **Status**: `IMPLEMENTED`
+- **Status**: `TESTED`
 
 ---
 
@@ -19,16 +19,19 @@
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Enqueues jobs with tenant isolation, priority scheduling, and retry budget.
 
 ### `port.scale.queue.dequeue.v1`
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Dequeues eligible jobs for workers under exclusive leases with expiration timeouts.
 
 ### `port.scale.queue.ack.v1`
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
+- **Capability**: Acknowledges job completion, failure, or retry with lease token validation.
 
 ---
 
@@ -42,3 +45,4 @@
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
 3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`job-queue-leases`).
 4. Model eksekusi mematuhi batasan runtime host `H05` (Data Host).
+5. Multi-tenant isolation: Antrean dan lease terisolasi penuh per tenant; worker tidak dapat mengambil antrean lintas tenant tanpa izin.

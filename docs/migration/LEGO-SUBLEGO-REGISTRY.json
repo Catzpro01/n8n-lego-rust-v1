@@ -1214,7 +1214,7 @@
           "state_ownership": "job-queue-leases",
           "contract_version": "1.0.0",
           "compatibility_policy": "rolling-dual-version",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L07-scale-worker-fabric/S03-queue-lease-model/CONTRACT.md",
           "ports": {
             "provided": [
