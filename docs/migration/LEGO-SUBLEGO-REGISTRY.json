@@ -1031,7 +1031,7 @@
           "state_ownership": "telemetry-metrics-ring",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "IMPLEMENTED",
+          "status": "TESTED",
           "contract_path": "lego/L06-realtime-observability/S02-execution-telemetry/CONTRACT.md",
           "ports": {
             "provided": [
