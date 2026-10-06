@@ -3,9 +3,10 @@
 **Repository**: `Catzpro01/n8n-lego-rust-v1`  
 **Milestone**: Issue #4 — Staged LEGO Architecture Delivery (D0 → D7)  
 **Status Milestone**: **OPEN / IN PROGRESS** (Quality Floor Aktif, Delivery Gate Bertahap)  
-**Ruang Lingkup Sertifikasi D7**: **Architecture Framework & Port Registry Core** (BUKAN untuk seluruh 83 Sub-LEGO capability)  
+**Status Delivery Gate D7**: **Architecture Framework Integrity = PASS** (BUKAN 83 Sub-LEGO certified)  
+**Ruang Lingkup D7**: **Architecture Framework & Port Registry Core** (Standar port contract, DAG tanpa siklus, isolasi host, durable WAL fail-closed)  
 **Tanggal Audit & Pembaruan**: 2026-10-06  
-**Otoritas Verifikasi**: LEGO Architecture & Audit Committee  
+**Otoritas Verifikasi**: LEGO Architecture & Audit Committee (Auditor 2)  
 **Git Provenance**:  
 - **Base Remote Commit**: `e83b94ed9bb7f56c20ca631e6c58b73a3361c2d9` (`docs(migration): add staged LEGO architecture delivery plan`)  
 - **Worktree State**: Perubahan aktif di local worktree (uncommitted/staged changeset)  
@@ -15,6 +16,11 @@
 ## 1. Deklarasi Quality Floor Non-Negotiable
 
 Untuk mencegah ilusi progres dan klaim kepatuhan prematur, monorepo `n8n-lego-rust-v1` memberlakukan standar **Quality Floor Non-Negotiable** yang mengikat setiap artefak, crate, dan Sub-LEGO tanpa kompromi.
+
+> [!IMPORTANT]
+> **Prinsip Fundamental Tata Kelola:**  
+> *"Partial implementation yang jujur lebih diterima daripada certification palsu."*  
+> Pelaporan kemajuan proyek dilarang keras melompati tahapan kematangan atau mengklaim status sertifikasi penuh pada kapabilitas yang belum teruji secara menyeluruh di lingkungan produksi.
 
 ### A. Rantai Siklus Hidup Sub-LEGO (The 5-Stage Maturity Pipeline)
 Setiap kapabilitas Sub-LEGO wajib melewati lima gerbang kematangan berurutan:
@@ -35,11 +41,12 @@ $$\mathbf{DESIGNED} \longrightarrow \mathbf{CONTRACTED} \longrightarrow \mathbf{
 
 ## 2. Ringkasan Eksekutif & Status Milestone Issue #4
 
-Issue #4 menetapkan target pengiriman arsitektur terstruktur (D0 s.d. D7). Status terkini Issue #4 ditegaskan sebagai **OPEN / IN PROGRESS**.
+Issue #4 menetapkan target pengiriman arsitektur terstruktur (D0 s.d. D7). Status terkini Issue #4 ditegaskan sebagai **OPEN / IN PROGRESS** (Quality Floor Active).
 
-### A. Batasan Klaim D7 CERTIFIED
+### A. Batasan Klaim D7: Architecture Framework Integrity = PASS
 > [!IMPORTANT]
-> **Klaim D7 CERTIFIED hanya dan secara eksklusif berlaku untuk Architecture Framework & Port Registry Core.**  
+> **Status D7: Architecture Framework Integrity = PASS.**  
+> Sertifikasi D7 hanya dan secara eksklusif membuktikan integritas kerangka kerja arsitektur monorepo (**Architecture Framework & Port Registry Core**), BUKAN 83 Sub-LEGO certified:  
 > Klaim ini mencakup:
 > - Standardisasi crate kontrak antarmuka `n8n-port-contract`.
 > - Validasi keutuhan graf dependensi Directed Acyclic Graph (DAG) 83 Sub-LEGO (0 siklus, 0 orphan port).
