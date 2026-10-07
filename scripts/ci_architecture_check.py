@@ -815,32 +815,37 @@ class CIArchitectureEnforcer:
             res.log(f"Report/Evidence Commit Citations verified in report.md: {len(found_report_citations)} matches (e.g. {found_report_citations[:5]}).")
 
             # Check if report.md explicitly cites REMOTE MAIN and verify that claim
-            remote_main_citations = re.findall(r"REMOTE MAIN[*:\s=]*[`\s]*([0-9a-f]{7,40})", report_text, re.IGNORECASE)
-            if not remote_main_citations:
+            # Distinguish strictly between HISTORICAL REMOTE MAIN vs active REMOTE MAIN citations.
+            historical_remote_main_citations = []
+            active_remote_main_citations = []
+
+            for line in report_text.splitlines():
+                if "REMOTE MAIN" in line.upper():
+                    m_hist = re.search(r"HISTORICAL[_\s*]*REMOTE\s*MAIN[*:\s=]*[`\s]*([0-9a-f]{7,40})", line, re.IGNORECASE)
+                    if m_hist:
+                        historical_remote_main_citations.append(m_hist.group(1))
+                    else:
+                        m_active = re.search(r"REMOTE\s*MAIN[*:\s=]*[`\s]*([0-9a-f]{7,40})", line, re.IGNORECASE)
+                        if m_active:
+                            active_remote_main_citations.append(m_active.group(1))
+
+            if not active_remote_main_citations:
                 res.error("report.md does not contain explicit 'REMOTE MAIN' citation required for remote provenance verification.")
             else:
-                latest_cited_sha = remote_main_citations[-1]
-                is_exact_match = bool(remote_main and (remote_main.startswith(latest_cited_sha.lower()) or latest_cited_sha.lower().startswith(remote_main_short)))
-                is_ancestor = False
-                if not is_exact_match and remote_main:
-                    try:
-                        subprocess.check_call(["git", "merge-base", "--is-ancestor", latest_cited_sha, remote_main], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        is_ancestor = True
-                    except Exception:
-                        is_ancestor = False
+                for cited_sha in active_remote_main_citations:
+                    is_exact_match = bool(remote_main and (cited_sha.lower() == remote_main.lower() or (len(cited_sha) >= 7 and remote_main.lower().startswith(cited_sha.lower()))))
+                    if not is_exact_match:
+                        res.error(f"Remote provenance mismatch: Report cited active REMOTE MAIN '{cited_sha}' does not match actual origin/main SHA '{remote_main}'!")
+                    else:
+                        res.log(f"Active report cited REMOTE MAIN '{cited_sha}' verified exactly on actual origin/main ref ({remote_main_short}).")
 
-                if not (is_exact_match or is_ancestor):
-                    res.error(f"Latest report cited REMOTE MAIN '{latest_cited_sha}' does not match actual origin/main SHA or history '{remote_main}'!")
-                else:
-                    res.log(f"Latest report cited REMOTE MAIN '{latest_cited_sha}' verified on origin/main ref and history.")
-
-                # Verify historical remote main citations exist in git ledger
-                for hist_sha in remote_main_citations[:-1]:
-                    try:
-                        subprocess.check_call(["git", "cat-file", "-e", hist_sha], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        res.log(f"Historical cited REMOTE MAIN '{hist_sha}' verified in git ledger.")
-                    except subprocess.CalledProcessError:
-                        res.error(f"Historical cited REMOTE MAIN '{hist_sha}' not found in git ledger!")
+            # Verify historical remote main citations exist in git ledger
+            for hist_sha in historical_remote_main_citations:
+                try:
+                    subprocess.check_call(["git", "cat-file", "-e", hist_sha], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    res.log(f"Historical cited REMOTE MAIN '{hist_sha}' verified in git ledger.")
+                except subprocess.CalledProcessError:
+                    res.error(f"Historical cited REMOTE MAIN '{hist_sha}' not found in git ledger!")
 
         except Exception as e:
             res.error(f"Failed to verify git provenance for report.md: {e}")

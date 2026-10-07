@@ -2607,7 +2607,7 @@ Report: ./report.md
 ### 1. Provenance Commit Pemisahan Ledger
 - **Implementation Commit SHA**: `1fec0f30b` (`feat(sublego-batch): implement and promote 8 contracted sublegos across ingress, nodes, scale, and observability with hardened CI checks 10 and 11`)
 - **Report / Evidence Commit SHA**: `c062a7ceb` (`docs(report): update ledger with 8 newly tested sublegos, hardened CI checks 10 and 11, and scoped local UI status`)
-- **REMOTE MAIN**: `c062a7ceb3fd2a6fcd1d3fe8f66fedf8e4406ab8`
+- **HISTORICAL REMOTE MAIN**: `c062a7ceb3fd2a6fcd1d3fe8f66fedf8e4406ab8`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi melalui `git rev-parse origin/main`.
 
 ### 2. Penguatan Mekanis CI Architecture Enforcer (Check 10 & Check 11)
@@ -2689,7 +2689,7 @@ Delapan Sub-LEGO dari 43 Sub-LEGO berstatus `CONTRACTED` telah diimplementasikan
 - **Prior Implementation Commit SHA**: `1fec0f30b` (`feat(sublego-batch): implement and promote 8 contracted sublegos across ingress, nodes, scale, and observability with hardened CI checks 10 and 11`)
 - **Prior Evidence Commit SHA**: `c062a7ceb` (`docs(report): update ledger with 8 newly tested sublegos, hardened CI checks 10 and 11, and scoped local UI status`)
 - **Report / Evidence Commit SHA**: `99e3cb91c` (`docs(report): record adversarial review, remediation of sublego defects, and strengthened CI checks 10 and 11`)
-- **REMOTE MAIN**: `99e3cb91ca33ba568c60572f855bb47bb79f5d85`
+- **HISTORICAL REMOTE MAIN**: `99e3cb91ca33ba568c60572f855bb47bb79f5d85`
 
 ### 2. Temuan Audit Adversarial & Remediasi Defek Nyata
 1. **Defek L03.S04 (Admission & Backpressure)**:
@@ -2729,6 +2729,42 @@ Delapan Sub-LEGO dari 43 Sub-LEGO berstatus `CONTRACTED` telah diimplementasikan
 ### 3. Rekapitulasi Verifikasi Akhir
 - `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
 - `python -m unittest discover tests/governance`: 23/23 tests PASS (Exit code 0).
+- `cargo test -p n8n-port-contract`: 70/70 tests PASS (Exit code 0).
+- `cargo test --workspace`: Seluruh workspace tests PASS (Exit code 0).
+- UI Web Inspection: Port 5677 (Lego UI Vue 3) HTTP 200 OK, Port 5678 (Axum DAG Engine) HTTP 200 OK (`LOCAL RUNTIME VERIFIED — SCOPED`).
+
+Report: ./report.md
+
+---
+
+## Sesi Eksekusi: Pengetatan Mutlak Check 11 & Rekonsiliasi Remote Provenance Exact Equality
+
+### 1. Provenance Commit Pemisahan Ledger
+- **Prior Implementation Commit SHA**: `546c3c890` (`fix(sublego-hardening): remediate token bucket capacity bypass, causal graph infinite loops, manifest validation, priority normalization, and harden CI checks 10 and 11`)
+- **Prior Report / Evidence Commit SHA**: `99e3cb91c` (`docs(report): record adversarial review, remediation of sublego defects, and strengthened CI checks 10 and 11`)
+- **HISTORICAL REMOTE MAIN**: `c062a7ceb3fd2a6fcd1d3fe8f66fedf8e4406ab8`
+- **HISTORICAL REMOTE MAIN**: `99e3cb91ca33ba568c60572f855bb47bb79f5d85`
+- **HISTORICAL REMOTE MAIN**: `069f208eb0de52979672f11447bb41bec9e22445`
+- **REMOTE MAIN**: `0fa9188e5f864e37feeba4fcce0fb2cf951c2d3c`
+- **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
+
+### 2. Remediasi Celah Check 11 & Pengetatan Provenance Gate
+1. **Penghapusan Toleransi Ancestor Chain**:
+   - Klausul toleransi `merge-base --is-ancestor` pada Check 11 di `scripts/ci_architecture_check.py` telah dihapus secara menyeluruh.
+   - Menggantikan toleransi permisif dengan penegakan **exact equality murni**: `reported_remote_main == actual_origin_main_sha`.
+   - Mengklasifikasikan sitasi secara mekanis: sitasi masa lalu wajib diberi label `HISTORICAL REMOTE MAIN` (diverifikasi keberadaannya via `git cat-file -e`), dan sitasi aktif wajib tepat merujuk pada `origin/main` saat ini.
+   - Jika terdapat sitasi aktif `REMOTE MAIN` yang berbeda dari `origin/main`, Check 11 fail-closed dengan exit code 1 dan pesan `Remote provenance mismatch`.
+2. **Pembaruan Unit Test Tata Kelola (`tests/governance/test_ci_architecture_check.py`)**:
+   - `test_negative_check_11_ancestor_remote_main_citation_rejected`: Membuktikan bahwa sitasi commit ancestor yang sebelumnya lolos kini secara mutlak ditolak (FAIL).
+   - `test_check_11_historical_remote_main_citation_passes`: Membuktikan bahwa kombinasi `HISTORICAL REMOTE MAIN` valid dan exact active `REMOTE MAIN` lolos dengan sukses (PASS).
+   - `test_negative_check_11_nonexistent_historical_citation_fails`: Membuktikan bahwa sitasi historis fiktif/tidak ada di git ledger ditolak fail-closed (FAIL).
+3. **Rekonsiliasi Status Provenance**:
+   - Mengubah seluruh sitasi lama di `report.md` menjadi `HISTORICAL REMOTE MAIN`.
+   - Menetapkan sitasi aktif `REMOTE MAIN` secara eksak ke `0fa9188e5f864e37feeba4fcce0fb2cf951c2d3c`.
+
+### 3. Rekapitulasi Verifikasi Pengujian
+- `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
+- `python -m unittest discover tests/governance`: 26/26 tests PASS (Exit code 0).
 - `cargo test -p n8n-port-contract`: 70/70 tests PASS (Exit code 0).
 - `cargo test --workspace`: Seluruh workspace tests PASS (Exit code 0).
 - UI Web Inspection: Port 5677 (Lego UI Vue 3) HTTP 200 OK, Port 5678 (Axum DAG Engine) HTTP 200 OK (`LOCAL RUNTIME VERIFIED — SCOPED`).

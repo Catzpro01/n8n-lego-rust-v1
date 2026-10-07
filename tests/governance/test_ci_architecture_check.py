@@ -186,6 +186,67 @@ LOCAL != REMOTE
             if os.path.isfile(backup):
                 shutil.move(backup, real_report)
 
+    def test_negative_check_11_ancestor_remote_main_citation_rejected(self):
+        """Simulate report.md citing an ancestor commit instead of current origin/main.
+        Must strictly fail Check 11 (merge-base --is-ancestor tolerance eliminated)."""
+        import subprocess
+        origin_main = subprocess.check_output(["git", "rev-parse", "origin/main"], cwd=self.workspace, text=True).strip()
+        ancestor = subprocess.check_output(["git", "rev-parse", "origin/main~1"], cwd=self.workspace, text=True).strip()
+        self.assertNotEqual(origin_main, ancestor)
+
+        real_report = os.path.join(self.workspace, "report.md")
+        backup = real_report + ".test_bak"
+        try:
+            shutil.copyfile(real_report, backup)
+            with open(real_report, "w", encoding="utf-8") as f:
+                f.write(f"# Report citing ancestor\n- **REMOTE MAIN**: {ancestor}\n")
+            res = ArchitectureCheckResult("Negative Test Ancestor Remote Main Citation")
+            self.enforcer.check_report_provenance_and_git_ledger(res)
+            self.assertFalse(res.passed, "Ancestor citation as active REMOTE MAIN must be strictly rejected")
+            self.assertTrue(any("remote provenance mismatch" in e.lower() for e in res.errors))
+            self.assertTrue(any("does not match actual origin/main sha" in e.lower() for e in res.errors))
+        finally:
+            if os.path.isfile(backup):
+                shutil.move(backup, real_report)
+
+    def test_check_11_historical_remote_main_citation_passes(self):
+        """Verify that historical remote main citations with valid git ledger presence pass when accompanied by exact active REMOTE MAIN."""
+        import subprocess
+        origin_main = subprocess.check_output(["git", "rev-parse", "origin/main"], cwd=self.workspace, text=True).strip()
+        ancestor = subprocess.check_output(["git", "rev-parse", "origin/main~1"], cwd=self.workspace, text=True).strip()
+
+        real_report = os.path.join(self.workspace, "report.md")
+        backup = real_report + ".test_bak"
+        try:
+            shutil.copyfile(real_report, backup)
+            with open(real_report, "w", encoding="utf-8") as f:
+                f.write(f"# Report\n- **HISTORICAL REMOTE MAIN**: {ancestor}\n- **REMOTE MAIN**: {origin_main}\n")
+            res = ArchitectureCheckResult("Test Historical And Active Remote Main")
+            self.enforcer.check_report_provenance_and_git_ledger(res)
+            self.assertTrue(res.passed, f"Expected PASS with valid historical and exact active citations, errors: {res.errors}")
+        finally:
+            if os.path.isfile(backup):
+                shutil.move(backup, real_report)
+
+    def test_negative_check_11_nonexistent_historical_citation_fails(self):
+        """Simulate report.md citing a non-existent commit as HISTORICAL REMOTE MAIN."""
+        import subprocess
+        origin_main = subprocess.check_output(["git", "rev-parse", "origin/main"], cwd=self.workspace, text=True).strip()
+
+        real_report = os.path.join(self.workspace, "report.md")
+        backup = real_report + ".test_bak"
+        try:
+            shutil.copyfile(real_report, backup)
+            with open(real_report, "w", encoding="utf-8") as f:
+                f.write(f"# Report\n- **HISTORICAL REMOTE MAIN**: 1111111111111111111111111111111111111111\n- **REMOTE MAIN**: {origin_main}\n")
+            res = ArchitectureCheckResult("Negative Test Nonexistent Historical Remote Main")
+            self.enforcer.check_report_provenance_and_git_ledger(res)
+            self.assertFalse(res.passed)
+            self.assertTrue(any("not found in git ledger" in e.lower() for e in res.errors))
+        finally:
+            if os.path.isfile(backup):
+                shutil.move(backup, real_report)
+
 
 if __name__ == "__main__":
     unittest.main()
