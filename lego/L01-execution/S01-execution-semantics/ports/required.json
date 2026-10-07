@@ -19,7 +19,7 @@
     {
       "port_id": "port.node.execute.invoke.v1",
       "acceptable_versions": ["1.0.0"],
-      "provider_sublego": "L04.S02",
+      "provider_sublego": "L04.S03",
       "timeout_ms": 60000,
       "fail_behavior": "fail-closed"
     },

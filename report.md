@@ -2860,8 +2860,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `c0f27899180b03afd002ae3ce624271480816254`
 - **HISTORICAL REMOTE MAIN**: `12e55ca9c05f0f548bd203fc0f6ac5eb0d7d42f7`
 - **HISTORICAL REMOTE MAIN**: `9a6bf28e5f2decdc8c033c183d0059e04e9089ee`
-- **HISTORICAL REMOTE MAIN**: `c72f0c7be0c98a2c865b678ac4958a5fc3c4525c`
-- **REMOTE MAIN**: `b9400aa0bc48d24bb01bf1bd3c33527f4b041dd7`
+- **HISTORICAL REMOTE MAIN**: `b9400aa0bc48d24bb01bf1bd3c33527f4b041dd7`
+- **REMOTE MAIN**: `a53959fd12b57620566c5462fce07f33ef19ab32`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -3448,6 +3448,55 @@ Semua 8 Sub-LEGO L11 Future Platform yang sebelumnya berstatus `DESIGNED` telah 
    - Mempersempit path trigger dari `scripts/**` menjadi script runtime shell spesifik (`scripts/install.sh`, `scripts/start.sh`, `scripts/stop.sh`, `scripts/upgrade.sh`, `scripts/rollback.sh`, `scripts/doctor.sh`, `scripts/lib/common.sh`), mencegah modifikasi script Rust/Python CI memicu TypeScript gate secara keliru.
 4. `report.md`:
    - Melakukan rekonsiliasi provenance atomik Check 11 untuk `REMOTE MAIN` dan mencatat snapshot historis secara eksplisit.
+
+
+### 8. Audit & Hardening Sub-LEGO L01.S01 — Execution Semantics
+
+#### 1. Identitas & Ruang Lingkup
+- **Sub-LEGO**: `L01.S01` (Execution Semantics)
+- **Owning LEGO**: `L01-execution`
+- **State Ownership Domain**: `workflow-execution-frames`
+- **Runtime Host**: `H03` (Execution Host)
+- **Status Target**: `TESTED`
+- **Provided Ports**:
+  - `port.execution.run.workflow.v1`
+  - `port.execution.cancel.workflow.v1`
+- **Required Ports**:
+  - `port.runtime.contract.envelope.v1` (Provider: `L00.S01`)
+  - `port.runtime.budget.allocate.v1` (Provider: `L00.S03`)
+  - `port.node.execute.invoke.v1` (Provider: `L04.S03`)
+  - `port.storage.wal.append.v1` (Provider: `L05.S02`)
+
+#### 2. Diagnosis & Temuan Defek
+- **FSM Incomplete Lifecycle**: FSM sebelumnya tidak memiliki status eksplisit `Created` dan `Waiting` (hanya `Running`, `Completed`, `Cancelled`, `Failed`), sehingga tidak mendukung alur pause/resume wait node atau inisialisasi pra-start.
+- **Absence of WAL Durability Boundary**: Walaupun `port.storage.wal.append.v1` dideklarasikan sebagai required port, engine sebelumnya hanya menyimpan frame di memory tanpa mekanisme pencatatan WAL journal, tanpa sequencing LSN, dan tanpa verifikasi fail-closed jika WAL append gagal.
+- **Missing Budget Enforcement**: Engine tidak memvalidasi alokasi budget (`max_steps` dan `timeout_ms`) dari `port.runtime.budget.allocate.v1`, sehingga frame dapat berputar tanpa batas.
+- **Node Invocation Boundary Gap**: Tidak tersedianya interface terpadu untuk mengeksekusi node step dengan propagasi context, propagasi error node fail-closed, dan pencatatan output.
+
+#### 3. Tindakan Remediasi & Hardening
+1. **FSM Full Lifecycle Implementation**:
+   - Menambahkan status `Created` dan `Waiting` ke dalam `ExecutionFrameStatus`.
+   - Mengimplementasikan transisi valid: `Created -> Running`, `Running -> Waiting`, `Waiting -> Running`, `Running -> Completed`, `Running/Waiting/Created -> Cancelled`, `Running/Waiting/Created -> Failed`.
+   - Menegakkan imutabilitas terminal state (`Completed`, `Cancelled`, `Failed`).
+   - Menjamin idempotensi pembatalan berulang pada frame yang sudah `Cancelled`.
+2. **Fail-Closed Durable WAL Journal (`port.storage.wal.append.v1`)**:
+   - Mengimplementasikan `ExecutionWalRecord` dan `WalJournal` dengan LSN generator monotonik.
+   - Setiap mutasi status dan step wajib menulis WAL sebelum commit in-memory; jika WAL gagal, mutasi state dibatalkan (rollback) tanpa dirty write atau silent fallback.
+3. **Resource Budget Enforcement (`port.runtime.budget.allocate.v1`)**:
+   - Menambahkan struct `ExecutionBudget` (`max_steps`, `timeout_ms`, `max_memory_bytes`).
+   - Pada setiap `advance_step`, budget diverifikasi; jika batas langkah atau durasi terlampaui, frame ditransisikan ke `Failed` secara fail-closed.
+4. **Node Execution Boundary (`port.node.execute.invoke.v1`)**:
+   - Mengimplementasikan `execute_node_step` dengan runner closure, penegakan status frame `Running`, pencatatan output step, dan propagasi kegagalan node tanpa swallowing.
+5. **Contract Envelope & Multi-Tenant Tracing (`port.runtime.contract.envelope.v1`)**:
+   - Mendukung `ContractEnvelope` dengan propagasi `correlation_id` dan `tenant_id` pada seluruh dispatcher port contract (`handle_port_run_workflow`, `handle_port_cancel_workflow`).
+6. **Port Contract Integration Tests**:
+   - Menambahkan `crates/n8n-port-contract/tests/execution_semantics_port_test.rs` memverifikasi transport-neutral port invocation, security scope denial, and correlation tracing.
+
+#### 4. Hasil Verifikasi
+- `lego/L01-execution/S01-execution-semantics/tests/execution_semantics_test.rs`: 23/23 tests PASS (Exit code 0).
+- `crates/n8n-port-contract/tests/execution_semantics_port_test.rs`: 3/3 tests PASS (Exit code 0).
+- `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
+- `cargo check --workspace --locked`: PASS (Exit code 0).
 
 Report: ./report.md
 
