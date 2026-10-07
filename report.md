@@ -2842,7 +2842,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `73a73f99e5b8de225b2c84dfd255aaac3b40b102`
 - **HISTORICAL REMOTE MAIN**: `c36a67d8aa8db3513da6fddbab98385d3e3c4242`
 - **HISTORICAL REMOTE MAIN**: `a1bef71632e96def579f2b5e7a757680b5a25e1f`
-- **REMOTE MAIN**: `0452764ff7d8b8724aff9a2861a213cc0a4715ad`
+- **HISTORICAL REMOTE MAIN**: `0452764ff7d8b8724aff9a2861a213cc0a4715ad`
+- **REMOTE MAIN**: `3b68ef0a22a6da5733db01b7edcc063ea40adc39`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -2929,6 +2930,47 @@ Report: ./report.md
 - `python -m unittest discover tests/governance`: 27/27 governance tests PASS (Exit code 0).
 - Isolasi Fisik: 106 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated).
 - Zero Overclaim Floor: Tepat 0 Sub-LEGO berstatus `CERTIFIED`.
+
+### 6. Maraton Implementasi Sub-LEGO L03.S05, L03.S06 & L03.S07 Menuju Status TESTED
+1. **Sub-LEGO L03.S05 (Idempotency and deduplication)**:
+   - Physical Root: `lego/L03-ingress/S05-idempotency-deduplication/`
+   - Authoritative State Domain: `dedup-hash-cache` (alias: `idempotency-keys`)
+   - Provided Ports: `port.ingress.dedup.check.v1`, `port.ingress.idempotency.dedupe.v1`
+   - Required Ports: `port.runtime.contract.envelope.v1`
+   - Implementasi: `implementation/mod.rs` (`IdempotencyService`, in-flight concurrency lock, response payload & status code caching, deterministic replay, fail-closed empty key rejection, configurable expiration TTL, dan automated cache sweep).
+   - Unit Tests: `tests/idempotency_test.rs` (7 tests PASS via `rustc --test`).
+   - Evidence: `evidence/L03.S05-EVIDENCE.md` (>200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/idempotency_port_test.rs` (2 tests PASS).
+
+2. **Sub-LEGO L03.S06 (Response plans and streaming payloads)**:
+   - Physical Root: `lego/L03-ingress/S06-response-plans-streaming/`
+   - Authoritative State Domain: `pending-response-waiters` (alias: `response-plan-registry`)
+   - Provided Ports: `port.ingress.response.stream.v1`, `port.ingress.response.plan.v1`
+   - Required Ports: `port.storage.binary.stream.v1`
+   - Implementasi: `implementation/mod.rs` (`ResponsePlanService`, decoupled immediate ack dispatch, stateful synchronous completion waiters, progressive chunked/SSE payload streaming with sequence ordering, fail-closed 504 timeout sweeping).
+   - Unit Tests: `tests/response_plan_test.rs` (6 tests PASS via `rustc --test`).
+   - Evidence: `evidence/L03.S06-EVIDENCE.md` (>200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/response_plan_port_test.rs` (2 tests PASS).
+
+3. **Sub-LEGO L03.S07 (Startup reconciliation and recovery)**:
+   - Physical Root: `lego/L03-ingress/S07-startup-reconciliation/`
+   - Authoritative State Domain: `reconciliation-markers` (alias: `ingress-recovery-ledger`)
+   - Provided Ports: `port.ingress.reconcile.execute.v1`, `port.ingress.reconciliation.sync.v1`
+   - Required Ports: `port.ingress.activation.list.v1`, `port.storage.persistence.load.v1`
+   - Implementasi: `implementation/mod.rs` (`StartupReconciliationService`, durable persistence vs live gateway route table comparison, orphaned trigger detection with `RegisterMissingEndpoint`, zombie route detection with `EvictZombieEndpoint`, startup recovery audit ledger).
+   - Unit Tests: `tests/startup_reconciliation_test.rs` (5 tests PASS via `rustc --test`).
+   - Evidence: `evidence/L03.S07-EVIDENCE.md` (>200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/reconciliation_port_test.rs` (2 tests PASS).
+
+### 7. Rekapitulasi Verifikasi Mekanis L03 Marathon & Quality Floor
+- `rustc --test` Sub-LEGO L03 Unit Tests: 18/18 unit tests PASS (L03.S05: 7/7, L03.S06: 6/6, L03.S07: 5/5).
+- `cargo test -p n8n-port-contract`: 76/76 tests PASS (semua port contract integration tests valid).
+- `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
+- `python scripts/build_registry.py`: Sukses membangun registry YAML/JSON (Exit code 0).
+- `python -m unittest discover tests/governance`: 27/27 governance tests PASS (Exit code 0).
+- Isolasi Fisik: 106 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated).
+- Zero Overclaim Floor: Tepat 0 Sub-LEGO berstatus `CERTIFIED`.
+- Status Promosi: L03.S05, L03.S06, dan L03.S07 resmi dipromosikan ke status TESTED (Total TESTED: 53 Sub-LEGO).
 
 Report: ./report.md
 
