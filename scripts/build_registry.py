@@ -403,7 +403,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Realtime and Observability", "lego_slug": "L06-realtime-observability", "sub_slug": "S03-node-worker-diagnostics",
         "ownership": "observability", "execution_model": "in-process", "runtime_host": "H04",
         "state_ownership": "diagnostics-ring-buffer", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.observability.diagnostics.capture.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -421,7 +421,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Realtime and Observability", "lego_slug": "L06-realtime-observability", "sub_slug": "S05-replay-causal-diagnostics",
         "ownership": "observability", "execution_model": "stateful-component", "runtime_host": "H03",
         "state_ownership": "causal-trace-index", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.observability.replay.trace.v1"],
         "required_ports": ["port.storage.wal.read.v1"]
     },
@@ -450,7 +450,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Scale and Worker Fabric", "lego_slug": "L07-scale-worker-fabric", "sub_slug": "S01-scheduler-resource-intelligence",
         "ownership": "fabric-scale", "execution_model": "control-component", "runtime_host": "H02",
         "state_ownership": "worker-capacity-table", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.scale.scheduler.dispatch.v1"],
         "required_ports": ["port.scale.queue.dequeue.v1"]
     },
@@ -459,7 +459,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Scale and Worker Fabric", "lego_slug": "L07-scale-worker-fabric", "sub_slug": "S02-burst-admission-degradation",
         "ownership": "fabric-scale", "execution_model": "in-process", "runtime_host": "H01",
         "state_ownership": "degradation-thresholds", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.scale.admission.throttle.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -792,20 +792,22 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 32, f"Expected 32 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["TESTED"] == 45, f"Expected 45 TESTED, got {status_counts['TESTED']}"
     assert status_counts["IMPLEMENTED"] == 0, f"Expected 0 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
-    assert status_counts["CONTRACTED"] == 43, f"Expected 43 CONTRACTED, got {status_counts['CONTRACTED']}"
+    assert status_counts["CONTRACTED"] == 30, f"Expected 30 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
     priority_tested = {
         'L00.S01', 'L00.S02', 'L00.S03', 'L00.S04',
-        'L01.S01', 'L01.S02', 'L01.S03', 'L01.S04',
-        'L02.S01', 'L02.S03', 'L02.S04', 'L02.S05',
-        'L03.S01', 'L03.S02', 'L03.S03', 'L04.S01',
-        'L04.S03', 'L04.S04', 'L04.S08', 'L05.S01',
-        'L05.S02', 'L05.S03', 'L05.S04', 'L06.S01',
-        'L06.S02', 'L06.S04', 'L07.S03', 'L09.S01',
-        'L09.S02', 'L09.S03', 'L09.S05', 'L10.S02'
+        'L01.S01', 'L01.S02', 'L01.S03', 'L01.S04', 'L01.S05', 'L01.S06',
+        'L02.S01', 'L02.S02', 'L02.S03', 'L02.S04', 'L02.S05', 'L02.S06', 'L02.S07',
+        'L03.S01', 'L03.S02', 'L03.S03', 'L03.S04',
+        'L04.S01', 'L04.S02', 'L04.S03', 'L04.S04', 'L04.S05', 'L04.S06', 'L04.S08',
+        'L05.S01', 'L05.S02', 'L05.S03', 'L05.S04',
+        'L06.S01', 'L06.S02', 'L06.S03', 'L06.S04', 'L06.S05',
+        'L07.S01', 'L07.S02', 'L07.S03',
+        'L09.S01', 'L09.S02', 'L09.S03', 'L09.S05',
+        'L10.S02'
     }
     actual_tested = {item['id'] for item in SUBLEGOS_DATA if item['status'] == 'TESTED'}
     assert actual_tested == priority_tested, f"TESTED Sub-LEGOs do not match priority list: {actual_tested ^ priority_tested}"
