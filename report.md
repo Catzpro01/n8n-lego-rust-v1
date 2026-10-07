@@ -2845,7 +2845,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `0452764ff7d8b8724aff9a2861a213cc0a4715ad`
 - **HISTORICAL REMOTE MAIN**: `d1c750f2c3a5626d04aad39c63f94fd03e19e765`
 - **HISTORICAL REMOTE MAIN**: `eafb15af956d2fd220da2e9ef98e7f8fc1a83109`
-- **REMOTE MAIN**: `8b860ab6e70f8479e160985fd3e109fce75e1aca`
+- **HISTORICAL REMOTE MAIN**: `8b860ab6e70f8479e160985fd3e109fce75e1aca`
+- **REMOTE MAIN**: `edeae971d3bfe0cb86678a25e73a2b9f7ea4324f`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -3116,5 +3117,79 @@ Total suite pengujian port contract kini: 52 suites (89 individual tests), 100% 
 - `cargo test -p n8n-port-contract`: 52 suites, 89 tests PASS (exit code 0).
 - `python scripts/ci_architecture_check.py`: 11/11 check PASS (exit code 0).
 - `python -m unittest discover tests/governance`: 27 tests PASS (exit code 0).
+
+---
+
+## Marathon Implementation Report: Sub-LEGO L08.S01 s/d L08.S05 (AI & Polyglot Agent Infrastructure) menuju status TESTED
+
+### 1. Cakupan Implementasi Sub-LEGO L08
+1. **L08.S01 — Agent state machine**:
+   - Direktori: `lego/L08-agent-mcp/S01-agent-state-machine/`
+   - State Ownership: `agent-session-state-machine`
+   - Provided Ports: `port.agent.session.execute.v1`, `port.agent.engine.run.v1`
+   - Required Ports: `port.agent.tool.invoke.v1` (L08.S02), `port.agent.provider.chat.v1` (L08.S05), `port.agent.memory.retrieve.v1` (L08.S06)
+   - Runtime Host: `H06` (Agent Host)
+   - Invariants: Session lifecycle (`Idle` -> `Thinking` -> `ToolExecution` | `HumanApprovalWait` -> `Completed` | `Failed` | `Terminated`), fail-closed transition matrix, bounded max step count, dan akumulasi token prompt/completion.
+   - Files: `implementation/mod.rs`, `tests/agent_state_machine_test.rs` (7/7 PASS), `evidence/L08-S01-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+2. **L08.S02 — Tool registry**:
+   - Direktori: `lego/L08-agent-mcp/S02-tool-registry/`
+   - State Ownership: `mcp-tool-catalog`
+   - Provided Ports: `port.agent.tool.register.v1`, `port.agent.tool.invoke.v1`
+   - Required Ports: `port.security.authz.authorize.v1` (L02.S03)
+   - Runtime Host: `H06` (Agent Host)
+   - Invariants: Central tool catalog (Native, Workflow, MCP), strict JSON argument type & presence validation fail-closed, missing/disabled tool rejection, dan permission boundaries.
+   - Files: `implementation/mod.rs`, `tests/tool_registry_test.rs` (7/7 PASS), `evidence/L08-S02-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+3. **L08.S03 — Workflow-as-tool**:
+   - Direktori: `lego/L08-agent-mcp/S03-workflow-as-tool/`
+   - State Ownership: `workflow-tool-manifests`
+   - Provided Ports: `port.agent.workflow.tool.v1`, `port.agent.wf_tool.bridge.v1`
+   - Required Ports: `port.execution.run.workflow.v1` (L01.S01), `port.agent.tool.register.v1` (L08.S02)
+   - Runtime Host: `H06` (Agent Host)
+   - Invariants: Subworkflow-to-agent-tool manifest registry, automatic tool function schema generator, execution bridge, dan strict recursion depth limit boundary enforcement fail-closed.
+   - Files: `implementation/mod.rs`, `tests/workflow_as_tool_test.rs` (6/6 PASS), `evidence/L08-S03-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+4. **L08.S04 — Human approval and policy boundary**:
+   - Direktori: `lego/L08-agent-mcp/S04-human-approval-policy/`
+   - State Ownership: `human-approval-inbox`
+   - Provided Ports: `port.agent.policy.approve.v1`, `port.agent.approval.request.v1`, `port.agent.approval.submit.v1`
+   - Required Ports: `port.security.authz.authorize.v1` (L02.S03)
+   - Runtime Host: `H06` (Agent Host)
+   - Invariants: Risk-tiered policy evaluation (`Low`, `Medium`, `High`, `Critical`), human approval inbox workflow, automatic low-risk pass-through, timeout expiration fail-closed, dan double-decision prevention.
+   - Files: `implementation/mod.rs`, `tests/human_approval_test.rs` (7/7 PASS), `evidence/L08-S04-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+5. **L08.S05 — AI provider routing**:
+   - Direktori: `lego/L08-agent-mcp/S05-ai-provider-routing/`
+   - State Ownership: `provider-routing-table`
+   - Provided Ports: `port.agent.provider.route.v1`, `port.agent.provider.chat.v1`
+   - Required Ports: `port.security.credential.release.v1` (L02.S04), `port.agent.budget.enforce.v1` (L08.S07)
+   - Runtime Host: `H06` (Agent Host)
+   - Invariants: Dynamic routing table, multi-tier provider fallback upon primary outage/degradation, unknown model fail-closed rejection, strict token budget limit enforcement, dan cost accounting.
+   - Files: `implementation/mod.rs`, `tests/ai_provider_routing_test.rs` (7/7 PASS), `evidence/L08-S05-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+### 2. Pengujian Port Contract Integration (`crates/n8n-port-contract`)
+- Suite pengujian integrasi port: `crates/n8n-port-contract/tests/agent_mcp_port_test.rs`
+- Invocations diuji:
+  - `port.agent.session.execute.v1` & `port.agent.engine.run.v1`: roundtrip & lifecycle PASS.
+  - `port.agent.tool.invoke.v1`: argument pass & execution result PASS.
+  - `port.agent.workflow.tool.v1`: workflow bridge dispatch PASS.
+  - `port.agent.policy.approve.v1`: risk evaluation & decision submission PASS.
+  - `port.agent.provider.route.v1`: model route lookup & provider selection PASS.
+  - Security boundary rejection: unauthorized invoker denied fail-closed with `PortStatus::SecurityDenied`.
+- Hasil: 7/7 tests PASS (`cargo test -p n8n-port-contract --test agent_mcp_port_test`).
+
+### 3. Registry & Verifikasi CI
+- Diperbarui: `scripts/build_registry.py`, `docs/migration/LEGO-SUBLEGO-REGISTRY.yaml`, `docs/migration/LEGO-SUBLEGO-REGISTRY.json`, `scripts/ci_architecture_check.py`.
+- Distribusi Ladder:
+  - `TESTED`: 64 Sub-LEGOs (termasuk L08.S01 s/d L08.S05)
+  - `CONTRACTED`: 11 Sub-LEGOs
+  - `DESIGNED`: 8 Sub-LEGOs
+  - `IMPLEMENTED`: 0
+  - `CERTIFIED`: 0 (zero overclaim, quality floor strictly preserved)
+- Hasil Verifikasi Mekanis:
+  - `cargo test -p n8n-port-contract`: ALL PASS (exit code 0).
+  - `python scripts/ci_architecture_check.py`: 11/11 PASS (exit code 0).
+  - Isolasi Sub-LEGO: 0 private cross-Sub-LEGO imports (100% isolated).
 
 Report: ./report.md
