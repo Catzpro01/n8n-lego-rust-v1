@@ -2856,7 +2856,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `9ad74d476ff35e003393d5729e89cfaddd7333d2`
 - **HISTORICAL REMOTE MAIN**: `3e5e2adafba2e2c91b89d6dda4e565af15c56ea8`
 - **HISTORICAL REMOTE MAIN**: `1763eecbe5b925c470747828b3fe0b255cc471b0`
-- **REMOTE MAIN**: `c8252d0f66d0e805d6c92bd48ebc07d45b6ab1ac`
+- **HISTORICAL REMOTE MAIN**: `8df6a3dcbe3f7b53c33878d988ed2d124c201ba5`
+- **REMOTE MAIN**: `c0f27899180b03afd002ae3ce624271480816254`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -3299,8 +3300,8 @@ Semua port provided L08.S01 s/d L08.S05 terintegrasi dan terverifikasi penuh di 
   - `L10.S05`: Release Certification Gates (TESTED) - `lego/L10-release-upgrade/S05-release-certification`
   - `L10.S06`: Security & Performance Certification (TESTED) - `lego/L10-release-upgrade/S06-security-perf-certification`
 
-### 2. Invariant & Artifact Verifications
-- Seluruh 75 Sub-LEGO memiliki:
+### 2. Invariant & Artifact Verifications (Historical Snapshot: Pre-L11 Promotion)
+- Seluruh 75 Sub-LEGO pra-L11 memiliki:
   - `CONTRACT.md` (>=100 bytes)
   - `ports/provided.json` & `ports/required.json`
   - `implementation/mod.rs` (>0 bytes)
@@ -3310,8 +3311,8 @@ Semua port provided L08.S01 s/d L08.S05 terintegrasi dan terverifikasi penuh di 
   - `tests/agent_mcp_port_test.rs` (16 tests PASS)
   - `tests/lifecycle_upgrade_test.rs` (8 tests PASS)
   - `tests/vue_surface_port_test.rs` (4 tests PASS)
-- Registry & Checks:
-  - `scripts/build_registry.py` sinkron (TESTED: 75, CONTRACTED: 0, DESIGNED: 8, CERTIFIED: 0).
+- Registry & Checks (Snapshot Historis Tahap 75):
+  - `scripts/build_registry.py` sinkron (Snapshot historis sebelum L11: TESTED: 75, CONTRACTED: 0, DESIGNED: 8, CERTIFIED: 0; kini final di Bagian 6 menjadi TESTED: 83, DESIGNED: 0).
   - `scripts/ci_architecture_check.py` 11/11 invariant checks PASS.
   - `cargo test -p n8n-port-contract` 100% PASS.
   - `cargo test --workspace` 100% PASS.
@@ -3419,12 +3420,29 @@ Semua 8 Sub-LEGO L11 Future Platform yang sebelumnya berstatus `DESIGNED` telah 
   - `CERTIFIED`: 0 (zero overclaim quality floor dijaga ketat tanpa sertifikasi mandiri)
 
 #### 3. Verification Commands & Results
-- `python scripts/test_l11_sublegos.py`: 51/51 tests PASS (Exit code 0)
+- `python scripts/test_l11_sublegos.py`: 55/55 tests PASS (Exit code 0)
 - `cargo test -p n8n-port-contract --test future_platform_port_test`: 8/8 tests PASS (Exit code 0)
 - `cargo test -p n8n-port-contract`: 54 test suites, 97 individual tests PASS (Exit code 0)
 - `cargo test --workspace`: Ratusan tests PASS (Exit code 0)
 - `python -m unittest discover -s tests/governance`: 27/27 tests PASS (Exit code 0)
 - `python scripts/ci_architecture_check.py`: 11/11 Invariant checks PASS (Exit code 0)
+
+### 7. Remediasi CI Routing GitHub Actions & Transisi Penuh Rust Mainline
+
+#### 1. Masalah yang Diselesaikan
+- Mismatch routing GitHub Actions di mana commit Rust diarahkan ke `TypeScript Runtime Gate` (`typescript-runtime.yml`) karena pola path `scripts/**` menangkap script Python / Rust CI.
+- Pada saat bersamaan, `validation.yml` dan `integration.yml` sebelumnya tidak berjalan pada commit `push` ke branch `main`, melainkan hanya pada branch PR atau prefix `runtime-kernel/*`, sehingga verifikasi Rust remote tidak terpicu saat push ke `main`.
+- Inkonsistensi historis taksonomi Sub-LEGO (75 TESTED vs 83 TESTED) di dokumen audit telah diperjelas status dan konteks snapshot-nya sehingga tidak kontradiktif dengan status final.
+
+#### 2. Tindakan yang Diimplementasikan
+1. `.github/workflows/validation.yml`:
+   - Menambahkan branch `main` pada trigger `push: branches: ['main', ...]` sehingga Level 0 & Level 1 Validation (fmt, check) berjalan otomatis di `push` ke `main`.
+2. `.github/workflows/integration.yml`:
+   - Menambahkan event `push: branches: [ main ]` dengan `paths-ignore` (`.md`, `docs/**`, `.gitignore`) dan memperbarui kondisi job `if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'`, sehingga Level 2 full Rust workspace tests dijalankan di remote Linux Docker runner pada setiap push ke `main`.
+3. `.github/workflows/typescript-runtime.yml`:
+   - Mempersempit path trigger dari `scripts/**` menjadi script runtime shell spesifik (`scripts/install.sh`, `scripts/start.sh`, `scripts/stop.sh`, `scripts/upgrade.sh`, `scripts/rollback.sh`, `scripts/doctor.sh`, `scripts/lib/common.sh`), mencegah modifikasi script Rust/Python CI memicu TypeScript gate secara keliru.
+4. `report.md`:
+   - Melakukan rekonsiliasi provenance atomik Check 11 untuk `REMOTE MAIN` dan mencatat snapshot historis secara eksplisit.
 
 Report: ./report.md
 
