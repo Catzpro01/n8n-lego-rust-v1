@@ -252,3 +252,281 @@ fn test_port_binding_lifecycle_state_machine_and_drain() {
     assert_eq!(binding.active_version, ContractVersion::V2);
     assert_eq!(binding.state, PortLifecycleState::Negotiate);
 }
+
+// ============================================================================
+// L10.S01 Installation and Packaging Port Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_release_packaging_build_port_lifecycle() {
+    let adapter = InProcessAdapter::new();
+    let port_id = PortId::new("port.release.packaging.build.v1");
+
+    let handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            PortResponse::success(
+                inv.invocation_id,
+                PortPayload::Json(serde_json::json!({
+                    "release_version": "1.0.0",
+                    "package_status": "Built",
+                    "artifacts_count": 4
+                })),
+                PortTelemetry::new(trace_id),
+            )
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(port_id.clone(), handler).await;
+
+    let sec_ctx = SecurityContext::builder("release-bot", "tenant-alpha")
+        .authority_scope(vec!["port.release.packaging.build.v1".to_string()])
+        .build();
+
+    let inv = PortInvocation::new(
+        SubLegoId::new("L10.S05"),
+        SubLegoId::new("L10.S01"),
+        port_id,
+        ContractVersion::V1,
+        RuntimeHostId::H01GatewayHost,
+        sec_ctx,
+        PortPayload::Json(serde_json::json!({ "release_version": "1.0.0" })),
+    );
+
+    let res = adapter.invoke(inv).await;
+    assert_eq!(res.status, PortStatus::Success);
+    if let PortPayload::Json(data) = res.payload {
+        assert_eq!(data["package_status"], "Built");
+    } else {
+        panic!("Expected Json payload");
+    }
+}
+
+// ============================================================================
+// L10.S03 Runtime/Node Compat Matrix Port Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_release_compat_matrix_evaluate_port_lifecycle() {
+    let adapter = InProcessAdapter::new();
+    let port_id = PortId::new("port.release.compat_matrix.evaluate.v1");
+
+    let handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            PortResponse::success(
+                inv.invocation_id,
+                PortPayload::Json(serde_json::json!({
+                    "node_type": "n8n-nodes-base.httpRequest",
+                    "compatible": true,
+                    "verdict": "FullyCompatible"
+                })),
+                PortTelemetry::new(trace_id),
+            )
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(port_id.clone(), handler).await;
+
+    let sec_ctx = SecurityContext::builder("control-host", "tenant-alpha")
+        .authority_scope(vec!["port.release.compat_matrix.evaluate.v1".to_string()])
+        .build();
+
+    let inv = PortInvocation::new(
+        SubLegoId::new("L04.S01"),
+        SubLegoId::new("L10.S03"),
+        port_id,
+        ContractVersion::V1,
+        RuntimeHostId::H07CompatibilityHost,
+        sec_ctx,
+        PortPayload::Json(serde_json::json!({
+            "node_type": "n8n-nodes-base.httpRequest",
+            "node_version": 2
+        })),
+    );
+
+    let res = adapter.invoke(inv).await;
+    assert_eq!(res.status, PortStatus::Success);
+    if let PortPayload::Json(data) = res.payload {
+        assert_eq!(data["verdict"], "FullyCompatible");
+    } else {
+        panic!("Expected Json payload");
+    }
+}
+
+// ============================================================================
+// L10.S04 Upgrade/Rollback Lifecycle Port Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_release_upgrade_and_rollback_step_ports_lifecycle() {
+    let adapter = InProcessAdapter::new();
+    let upgrade_port = PortId::new("port.release.lifecycle.upgrade_step.v1");
+    let rollback_port = PortId::new("port.release.lifecycle.rollback_step.v1");
+
+    let upg_handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            PortResponse::success(
+                inv.invocation_id,
+                PortPayload::Json(serde_json::json!({
+                    "upgrade_id": "upg-100",
+                    "step": "WorkerDrain",
+                    "status": "Success"
+                })),
+                PortTelemetry::new(trace_id),
+            )
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    let rb_handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            PortResponse::success(
+                inv.invocation_id,
+                PortPayload::Json(serde_json::json!({
+                    "upgrade_id": "upg-100",
+                    "rollback_executed": true,
+                    "reverted_to_stage": 0
+                })),
+                PortTelemetry::new(trace_id),
+            )
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(upgrade_port.clone(), upg_handler).await;
+    adapter.register_handler(rollback_port.clone(), rb_handler).await;
+
+    let sec_ctx = SecurityContext::builder("control-host", "tenant-alpha")
+        .authority_scope(vec![
+            "port.release.lifecycle.upgrade_step.v1".to_string(),
+            "port.release.lifecycle.rollback_step.v1".to_string(),
+        ])
+        .build();
+
+    let inv_upg = PortInvocation::new(
+        SubLegoId::new("L10.S05"),
+        SubLegoId::new("L10.S04"),
+        upgrade_port,
+        ContractVersion::V1,
+        RuntimeHostId::H02ControlHost,
+        sec_ctx.clone(),
+        PortPayload::Json(serde_json::json!({ "upgrade_id": "upg-100", "step": "WorkerDrain" })),
+    );
+
+    let res_upg = adapter.invoke(inv_upg).await;
+    assert_eq!(res_upg.status, PortStatus::Success);
+
+    let inv_rb = PortInvocation::new(
+        SubLegoId::new("L10.S05"),
+        SubLegoId::new("L10.S04"),
+        rollback_port,
+        ContractVersion::V1,
+        RuntimeHostId::H02ControlHost,
+        sec_ctx,
+        PortPayload::Json(serde_json::json!({ "upgrade_id": "upg-100", "reason": "Verification failed" })),
+    );
+
+    let res_rb = adapter.invoke(inv_rb).await;
+    assert_eq!(res_rb.status, PortStatus::Success);
+}
+
+// ============================================================================
+// L10.S05 Release Certification Port Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_release_certify_run_gates_port_lifecycle() {
+    let adapter = InProcessAdapter::new();
+    let port_id = PortId::new("port.release.certify.run_gates.v1");
+
+    let handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            PortResponse::success(
+                inv.invocation_id,
+                PortPayload::Json(serde_json::json!({
+                    "candidate_version": "1.0.0-rc1",
+                    "all_gates_passed": true,
+                    "gates_executed": 5
+                })),
+                PortTelemetry::new(trace_id),
+            )
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(port_id.clone(), handler).await;
+
+    let sec_ctx = SecurityContext::builder("control-host", "tenant-alpha")
+        .authority_scope(vec!["port.release.certify.run_gates.v1".to_string()])
+        .build();
+
+    let inv = PortInvocation::new(
+        SubLegoId::new("L00.S04"),
+        SubLegoId::new("L10.S05"),
+        port_id,
+        ContractVersion::V1,
+        RuntimeHostId::H02ControlHost,
+        sec_ctx,
+        PortPayload::Json(serde_json::json!({ "candidate_version": "1.0.0-rc1" })),
+    );
+
+    let res = adapter.invoke(inv).await;
+    assert_eq!(res.status, PortStatus::Success);
+    if let PortPayload::Json(data) = res.payload {
+        assert_eq!(data["all_gates_passed"], true);
+    } else {
+        panic!("Expected Json payload");
+    }
+}
+
+// ============================================================================
+// L10.S06 Security/Perf Certification Port Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_release_security_audit_scan_port_lifecycle() {
+    let adapter = InProcessAdapter::new();
+    let port_id = PortId::new("port.release.security_audit.scan.v1");
+
+    let handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            PortResponse::success(
+                inv.invocation_id,
+                PortPayload::Json(serde_json::json!({
+                    "audit_id": "audit-perf-1",
+                    "passed": true,
+                    "critical_vulnerabilities": 0,
+                    "p99_latency_ms": 14.5
+                })),
+                PortTelemetry::new(trace_id),
+            )
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(port_id.clone(), handler).await;
+
+    let sec_ctx = SecurityContext::builder("control-host", "tenant-alpha")
+        .authority_scope(vec!["port.release.security_audit.scan.v1".to_string()])
+        .build();
+
+    let inv = PortInvocation::new(
+        SubLegoId::new("L02.S03"),
+        SubLegoId::new("L10.S06"),
+        port_id,
+        ContractVersion::V1,
+        RuntimeHostId::H02ControlHost,
+        sec_ctx,
+        PortPayload::Json(serde_json::json!({ "release_version": "1.0.0" })),
+    );
+
+    let res = adapter.invoke(inv).await;
+    assert_eq!(res.status, PortStatus::Success);
+    if let PortPayload::Json(data) = res.payload {
+        assert_eq!(data["passed"], true);
+    } else {
+        panic!("Expected Json payload");
+    }
+}
+

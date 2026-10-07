@@ -1469,7 +1469,7 @@
           "state_ownership": "conversation-history-chunks",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L08-agent-mcp/S06-agent-memory/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1492,7 +1492,7 @@
           "state_ownership": "token-consumption-counters",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L08-agent-mcp/S07-token-execution-budgets/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1514,7 +1514,7 @@
           "state_ownership": "mcp-server-processes",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L08-agent-mcp/S08-mcp-interoperability/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1537,7 +1537,7 @@
           "state_ownership": "token-audit-records",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L08-agent-mcp/S09-usage-accounting-audit/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1633,7 +1633,7 @@
           "state_ownership": "ui-banner-notifs",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L09-ui-compatibility/S04-notifications-accessibility/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1677,7 +1677,7 @@
           "state_ownership": "decommission-milestones",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L09-ui-compatibility/S06-frontend-migration-decommission/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1703,7 +1703,7 @@
           "state_ownership": "package-artifacts",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L10-release-upgrade/S01-installation-packaging/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1745,7 +1745,7 @@
           "state_ownership": "compat-matrix-rules",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L10-release-upgrade/S03-node-compat-matrix/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1767,7 +1767,7 @@
           "state_ownership": "upgrade-stage-offsets",
           "contract_version": "1.0.0",
           "compatibility_policy": "rolling-dual-version",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L10-release-upgrade/S04-upgrade-rollback/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1791,7 +1791,7 @@
           "state_ownership": "certification-test-results",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L10-release-upgrade/S05-release-certification/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1813,7 +1813,7 @@
           "state_ownership": "benchmark-audit-traces",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L10-release-upgrade/S06-security-perf-certification/CONTRACT.md",
           "ports": {
             "provided": [

@@ -170,3 +170,120 @@ async fn test_vue_surface_port_security_denied_for_unauthorized_invoker() {
     let resp = adapter.invoke(inv).await;
     assert_eq!(resp.status, PortStatus::SecurityDenied);
 }
+
+// ============================================================================
+// L09.S04 Notifications & Accessibility Port Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_ui_notifications_publish_port_lifecycle() {
+    let adapter = InProcessAdapter::new();
+    let port_id = PortId::new("port.ui.notifications.publish.v1");
+
+    let handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            if let PortPayload::Json(val) = inv.payload {
+                let notif_id = val.get("notification_id").and_then(|v| v.as_str()).unwrap_or("notif-1");
+                PortResponse::success(
+                    inv.invocation_id,
+                    PortPayload::Json(json!({
+                        "notification_id": notif_id,
+                        "published": true,
+                        "aria_live": "polite",
+                        "aria_role": "status"
+                    })),
+                    PortTelemetry::new(trace_id),
+                )
+            } else {
+                PortResponse::error(
+                    inv.invocation_id,
+                    PortStatus::ClientError,
+                    n8n_port_contract::PortErrorDetail::new(PortErrorCode::BadRequest, "Payload error", false),
+                    PortTelemetry::new(trace_id),
+                )
+            }
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(port_id.clone(), handler).await;
+
+    let sec_ctx = SecurityContext::builder("gateway-host", "tenant-alpha")
+        .authority_scope(vec!["port.ui.notifications.publish.v1".to_string()])
+        .build();
+
+    let inv = PortInvocation::new(
+        SubLegoId::new("L01.S01"),
+        SubLegoId::new("L09.S04"),
+        port_id,
+        ContractVersion::V1,
+        RuntimeHostId::H01GatewayHost,
+        sec_ctx,
+        PortPayload::Json(json!({
+            "notification_id": "notif-test-1",
+            "title": "Build Finished",
+            "message": "Workflow run succeeded"
+        })),
+    );
+
+    let res = adapter.invoke(inv).await;
+    assert_eq!(res.status, PortStatus::Success);
+    if let PortPayload::Json(data) = res.payload {
+        assert_eq!(data["published"], true);
+        assert_eq!(data["aria_role"], "status");
+    } else {
+        panic!("Expected Json payload");
+    }
+}
+
+// ============================================================================
+// L09.S06 Frontend Migration / Decommission Port Tests
+// ============================================================================
+
+#[tokio::test]
+async fn test_ui_decommission_audit_port_lifecycle() {
+    let adapter = InProcessAdapter::new();
+    let port_id = PortId::new("port.ui.decommission.audit.v1");
+
+    let handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            PortResponse::success(
+                inv.invocation_id,
+                PortPayload::Json(json!({
+                    "audit_status": "Complete",
+                    "total_surfaces": 5,
+                    "decommissioned_surfaces": 3,
+                    "overall_parity_percent": 80.0
+                })),
+                PortTelemetry::new(trace_id),
+            )
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(port_id.clone(), handler).await;
+
+    let sec_ctx = SecurityContext::builder("gateway-host", "tenant-alpha")
+        .authority_scope(vec!["port.ui.decommission.audit.v1".to_string()])
+        .build();
+
+    let inv = PortInvocation::new(
+        SubLegoId::new("L09.S01"),
+        SubLegoId::new("L09.S06"),
+        port_id,
+        ContractVersion::V1,
+        RuntimeHostId::H07CompatibilityHost,
+        sec_ctx,
+        PortPayload::Json(json!({ "action": "audit" })),
+    );
+
+    let res = adapter.invoke(inv).await;
+    assert_eq!(res.status, PortStatus::Success);
+    if let PortPayload::Json(data) = res.payload {
+        assert_eq!(data["audit_status"], "Complete");
+        assert_eq!(data["overall_parity_percent"], 80.0);
+    } else {
+        panic!("Expected Json payload");
+    }
+}
+

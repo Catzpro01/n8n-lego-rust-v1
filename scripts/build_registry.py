@@ -560,7 +560,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S06-agent-memory",
         "ownership": "agent-runtime", "execution_model": "stateful-component", "runtime_host": "H06",
         "state_ownership": "conversation-history-chunks", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.agent.memory.store.v1", "port.agent.memory.retrieve.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -569,7 +569,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S07-token-execution-budgets",
         "ownership": "agent-runtime", "execution_model": "in-process", "runtime_host": "H06",
         "state_ownership": "token-consumption-counters", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.agent.budget.enforce.v1"],
         "required_ports": ["port.runtime.budget.allocate.v1"]
     },
@@ -578,7 +578,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S08-mcp-interoperability",
         "ownership": "agent-runtime", "execution_model": "remote-adapter", "runtime_host": "H06",
         "state_ownership": "mcp-server-processes", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.agent.mcp.connect.v1", "port.agent.mcp.call_tool.v1"],
         "required_ports": ["port.agent.tool.register.v1"]
     },
@@ -587,7 +587,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S09-usage-accounting-audit",
         "ownership": "agent-runtime", "execution_model": "stateful-component", "runtime_host": "H06",
         "state_ownership": "token-audit-records", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.agent.usage.record.v1"],
         "required_ports": ["port.observability.audit.record.v1"]
     },
@@ -625,7 +625,7 @@ SUBLEGOS_DATA = [
         "lego_name": "UI and Compatibility", "lego_slug": "L09-ui-compatibility", "sub_slug": "S04-notifications-accessibility",
         "ownership": "ui-compat", "execution_model": "in-process", "runtime_host": "H01",
         "state_ownership": "ui-banner-notifs", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.ui.notifications.publish.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -643,7 +643,7 @@ SUBLEGOS_DATA = [
         "lego_name": "UI and Compatibility", "lego_slug": "L09-ui-compatibility", "sub_slug": "S06-frontend-migration-decommission",
         "ownership": "ui-compat", "execution_model": "contract-only", "runtime_host": "H07",
         "state_ownership": "decommission-milestones", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.ui.decommission.audit.v1"],
         "required_ports": []
     },
@@ -654,7 +654,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Release and Upgrade", "lego_slug": "L10-release-upgrade", "sub_slug": "S01-installation-packaging",
         "ownership": "release-lifecycle", "execution_model": "tooling", "runtime_host": "H01",
         "state_ownership": "package-artifacts", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.release.packaging.build.v1"],
         "required_ports": []
     },
@@ -672,7 +672,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Release and Upgrade", "lego_slug": "L10-release-upgrade", "sub_slug": "S03-node-compat-matrix",
         "ownership": "release-lifecycle", "execution_model": "tooling", "runtime_host": "H07",
         "state_ownership": "compat-matrix-rules", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.release.compat_matrix.evaluate.v1"],
         "required_ports": ["port.node.registry.query.v1"]
     },
@@ -681,7 +681,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Release and Upgrade", "lego_slug": "L10-release-upgrade", "sub_slug": "S04-upgrade-rollback",
         "ownership": "release-lifecycle", "execution_model": "control-component", "runtime_host": "H02",
         "state_ownership": "upgrade-stage-offsets", "contract_version": "1.0.0", "compatibility_policy": "rolling-dual-version",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.release.lifecycle.upgrade_step.v1", "port.release.lifecycle.rollback_step.v1"],
         "required_ports": ["port.release.migration.apply.v1", "port.scale.worker.drain.v1"]
     },
@@ -690,7 +690,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Release and Upgrade", "lego_slug": "L10-release-upgrade", "sub_slug": "S05-release-certification",
         "ownership": "release-lifecycle", "execution_model": "tooling", "runtime_host": "H02",
         "state_ownership": "certification-test-results", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.release.certify.run_gates.v1"],
         "required_ports": ["port.observability.health.check.v1"]
     },
@@ -699,7 +699,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Release and Upgrade", "lego_slug": "L10-release-upgrade", "sub_slug": "S06-security-perf-certification",
         "ownership": "release-lifecycle", "execution_model": "tooling", "runtime_host": "H02",
         "state_ownership": "benchmark-audit-traces", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.release.security_audit.scan.v1"],
         "required_ports": ["port.security.authz.authorize.v1"]
     },
@@ -792,9 +792,9 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 64, f"Expected 64 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["TESTED"] == 75, f"Expected 75 TESTED, got {status_counts['TESTED']}"
     assert status_counts["IMPLEMENTED"] == 0, f"Expected 0 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
-    assert status_counts["CONTRACTED"] == 11, f"Expected 11 CONTRACTED, got {status_counts['CONTRACTED']}"
+    assert status_counts["CONTRACTED"] == 0, f"Expected 0 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
     priority_tested = {
@@ -806,9 +806,9 @@ def main():
         'L05.S01', 'L05.S02', 'L05.S03', 'L05.S04', 'L05.S05', 'L05.S06', 'L05.S07', 'L05.S08',
         'L06.S01', 'L06.S02', 'L06.S03', 'L06.S04', 'L06.S05', 'L06.S06', 'L06.S07',
         'L07.S01', 'L07.S02', 'L07.S03', 'L07.S04', 'L07.S05', 'L07.S06', 'L07.S07',
-        'L08.S01', 'L08.S02', 'L08.S03', 'L08.S04', 'L08.S05',
-        'L09.S01', 'L09.S02', 'L09.S03', 'L09.S05',
-        'L10.S02'
+        'L08.S01', 'L08.S02', 'L08.S03', 'L08.S04', 'L08.S05', 'L08.S06', 'L08.S07', 'L08.S08', 'L08.S09',
+        'L09.S01', 'L09.S02', 'L09.S03', 'L09.S04', 'L09.S05', 'L09.S06',
+        'L10.S01', 'L10.S02', 'L10.S03', 'L10.S04', 'L10.S05', 'L10.S06'
     }
     actual_tested = {item['id'] for item in SUBLEGOS_DATA if item['status'] == 'TESTED'}
     assert actual_tested == priority_tested, f"TESTED Sub-LEGOs do not match priority list: {actual_tested ^ priority_tested}"
