@@ -134,11 +134,39 @@ impl WorkflowToolBridgeService {
             return Err(WorkflowToolError::ManifestDisabled(tool_name.to_string()));
         }
 
+        if current_depth == 0 {
+            return Err(WorkflowToolError::InvalidPayload("Call depth must be at least 1".to_string()));
+        }
+
         if current_depth > manifest.max_call_depth {
             return Err(WorkflowToolError::RecursionDepthExceeded {
                 current: current_depth,
                 max: manifest.max_call_depth,
             });
+        }
+
+        if !arguments.is_object() {
+            return Err(WorkflowToolError::InvalidPayload("Arguments must be a JSON object".to_string()));
+        }
+
+        let obj = arguments.as_object().unwrap();
+        for (name, expected_type) in &manifest.input_parameters {
+            if let Some(val) = obj.get(name) {
+                let type_matches = match expected_type.as_str() {
+                    "string" => val.is_string(),
+                    "number" => val.is_number(),
+                    "boolean" => val.is_boolean(),
+                    "object" => val.is_object(),
+                    "array" => val.is_array(),
+                    _ => true,
+                };
+                if !type_matches && !val.is_null() {
+                    return Err(WorkflowToolError::InvalidPayload(format!(
+                        "Parameter '{}' expected type '{}', got '{:?}'",
+                        name, expected_type, val
+                    )));
+                }
+            }
         }
 
         // Bridge to simulated workflow execution (which connects via port.execution.run.workflow.v1)

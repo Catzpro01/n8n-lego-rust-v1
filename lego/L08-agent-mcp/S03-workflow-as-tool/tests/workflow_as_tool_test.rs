@@ -104,4 +104,34 @@ mod tests {
         assert_eq!(res["tool_name"], "port_wf_tool");
         assert_eq!(res["status"], "Success");
     }
+
+    #[test]
+    fn test_invalid_arguments_payload_fails_closed() {
+        let service = WorkflowToolBridgeService::new();
+        let manifest = sample_manifest("type_test_wf", "wf-type-1", true, 3);
+        service.register_manifest(manifest).unwrap();
+
+        // Non-object arguments fails
+        let err_non_object = service.bridge_invoke("type_test_wf", &json!("not-an-object"), 1);
+        assert!(matches!(err_non_object, Err(WorkflowToolError::InvalidPayload(_))));
+
+        // Wrong argument type fails (order_id expects string)
+        let err_type = service.bridge_invoke(
+            "type_test_wf",
+            &json!({ "order_id": 99999 }),
+            1,
+        );
+        assert!(matches!(err_type, Err(WorkflowToolError::InvalidPayload(_))));
+    }
+
+    #[test]
+    fn test_depth_zero_fails_closed() {
+        let service = WorkflowToolBridgeService::new();
+        let manifest = sample_manifest("depth_zero_wf", "wf-dz-1", true, 3);
+        service.register_manifest(manifest).unwrap();
+
+        let err = service.bridge_invoke("depth_zero_wf", &json!({}), 0);
+        assert!(matches!(err, Err(WorkflowToolError::InvalidPayload(_))));
+    }
 }
+

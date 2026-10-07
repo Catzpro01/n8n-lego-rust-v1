@@ -7,7 +7,7 @@ mod tests {
     #[test]
     fn test_register_stale_lease() {
         let service = WorkerFailoverService::new();
-        let rec = service.register_stale_lease("lease-101", "job-55", "worker-crashed-1", 1000);
+        let rec = service.register_stale_lease("lease-101", "job-55", "worker-crashed-1", 1000).unwrap();
 
         assert_eq!(rec.lease_id, "lease-101");
         assert_eq!(rec.job_id, "job-55");
@@ -17,9 +17,17 @@ mod tests {
     }
 
     #[test]
+    fn test_empty_payload_rejected() {
+        let service = WorkerFailoverService::new();
+        assert!(service.register_stale_lease("", "job-1", "worker-1", 1000).is_err());
+        assert!(service.register_stale_lease("lease-1", "", "worker-1", 1000).is_err());
+        assert!(service.register_stale_lease("lease-1", "job-1", "  ", 1000).is_err());
+    }
+
+    #[test]
     fn test_reclaim_and_reassign_flow() {
         let service = WorkerFailoverService::new();
-        service.register_stale_lease("lease-102", "job-56", "worker-crashed-2", 1000);
+        service.register_stale_lease("lease-102", "job-56", "worker-crashed-2", 1000).unwrap();
 
         let reassigned = service.reclaim_and_reassign("lease-102", "worker-healthy-3", 1500).unwrap();
         assert_eq!(reassigned.status, RecoveryStatus::Reassigned);
@@ -40,7 +48,7 @@ mod tests {
     #[test]
     fn test_reassign_already_completed_fails() {
         let service = WorkerFailoverService::new();
-        service.register_stale_lease("lease-done", "job-done", "worker-dead", 1000);
+        service.register_stale_lease("lease-done", "job-done", "worker-dead", 1000).unwrap();
         service.reclaim_and_reassign("lease-done", "worker-new", 1200).unwrap();
         service.mark_completed("lease-done", 1300).unwrap();
 

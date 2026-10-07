@@ -85,6 +85,13 @@ impl WorkerLifecycleService {
         total_slots: usize,
         now_ms: u64,
     ) -> Result<WorkerRecord, WorkerLifecycleError> {
+        if worker_id.trim().is_empty() {
+            return Err(WorkerLifecycleError::InvalidPayload("Worker ID cannot be empty".to_string()));
+        }
+        if total_slots == 0 {
+            return Err(WorkerLifecycleError::InvalidPayload("Total slots must be greater than 0".to_string()));
+        }
+
         let mut map = self.workers.write().unwrap();
         if map.contains_key(worker_id) {
             return Err(WorkerLifecycleError::WorkerAlreadyRegistered(worker_id.to_string()));
@@ -119,6 +126,8 @@ impl WorkerLifecycleService {
         record.active_slots = active_slots;
         if record.status == WorkerStatus::Dead {
             record.status = WorkerStatus::Active;
+        } else if record.status == WorkerStatus::Draining && active_slots == 0 {
+            record.status = WorkerStatus::Drained;
         }
 
         Ok(record.clone())
@@ -172,6 +181,9 @@ impl WorkerLifecycleService {
         match action {
             "register" => {
                 let id = payload.get("worker_id").and_then(|v| v.as_str()).unwrap_or("");
+                if id.trim().is_empty() {
+                    return Err(WorkerLifecycleError::InvalidPayload("Missing worker_id".to_string()));
+                }
                 let host = payload.get("host_address").and_then(|v| v.as_str()).unwrap_or("127.0.0.1:9000");
                 let slots = payload.get("total_slots").and_then(|v| v.as_u64()).unwrap_or(8) as usize;
                 let now = payload.get("now_ms").and_then(|v| v.as_u64()).unwrap_or(1000);
@@ -184,6 +196,9 @@ impl WorkerLifecycleService {
             }
             "heartbeat" => {
                 let id = payload.get("worker_id").and_then(|v| v.as_str()).unwrap_or("");
+                if id.trim().is_empty() {
+                    return Err(WorkerLifecycleError::InvalidPayload("Missing worker_id".to_string()));
+                }
                 let slots = payload.get("active_slots").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
                 let now = payload.get("now_ms").and_then(|v| v.as_u64()).unwrap_or(2000);
 
@@ -197,6 +212,9 @@ impl WorkerLifecycleService {
             }
             "drain" => {
                 let id = payload.get("worker_id").and_then(|v| v.as_str()).unwrap_or("");
+                if id.trim().is_empty() {
+                    return Err(WorkerLifecycleError::InvalidPayload("Missing worker_id".to_string()));
+                }
                 let record = self.drain_worker(id)?;
                 Ok(serde_json::json!({
                     "success": true,

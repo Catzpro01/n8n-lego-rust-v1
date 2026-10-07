@@ -71,7 +71,11 @@ impl WorkerFailoverService {
         job_id: &str,
         dead_worker_id: &str,
         now_ms: u64,
-    ) -> LeaseRecoveryRecord {
+    ) -> Result<LeaseRecoveryRecord, FailoverError> {
+        if lease_id.trim().is_empty() || job_id.trim().is_empty() || dead_worker_id.trim().is_empty() {
+            return Err(FailoverError::InvalidPayload("lease_id, job_id, and dead_worker_id cannot be empty".to_string()));
+        }
+
         let record = LeaseRecoveryRecord {
             lease_id: lease_id.to_string(),
             job_id: job_id.to_string(),
@@ -84,7 +88,7 @@ impl WorkerFailoverService {
 
         let mut map = self.recoveries.write().unwrap();
         map.insert(lease_id.to_string(), record.clone());
-        record
+        Ok(record)
     }
 
     pub fn reclaim_and_reassign(
@@ -93,6 +97,10 @@ impl WorkerFailoverService {
         target_worker_id: &str,
         now_ms: u64,
     ) -> Result<LeaseRecoveryRecord, FailoverError> {
+        if target_worker_id.trim().is_empty() {
+            return Err(FailoverError::InvalidPayload("target_worker_id cannot be empty".to_string()));
+        }
+
         let mut map = self.recoveries.write().unwrap();
         let record = map
             .get_mut(lease_id)
@@ -100,6 +108,9 @@ impl WorkerFailoverService {
 
         if record.status == RecoveryStatus::Completed {
             return Err(FailoverError::AlreadyCompleted(lease_id.to_string()));
+        }
+        if record.status == RecoveryStatus::Aborted {
+            return Err(FailoverError::InvalidPayload(format!("Lease {lease_id} is aborted and cannot be reassigned")));
         }
 
         record.reassigned_worker_id = Some(target_worker_id.to_string());
@@ -143,7 +154,7 @@ impl WorkerFailoverService {
                 let dead_worker = payload.get("dead_worker_id").and_then(|v| v.as_str()).unwrap_or("");
                 let now = payload.get("now_ms").and_then(|v| v.as_u64()).unwrap_or(1000);
 
-                let record = self.register_stale_lease(lease_id, job_id, dead_worker, now);
+                let record = self.register_stale_lease(lease_id, job_id, dead_worker, now)?;
                 Ok(serde_json::json!({
                     "success": true,
                     "record": record

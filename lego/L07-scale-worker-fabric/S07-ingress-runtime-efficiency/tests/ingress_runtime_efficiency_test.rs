@@ -10,12 +10,21 @@ mod tests {
         let initial_available = service.get_tuning_state().buffer_pool_available;
         assert_eq!(initial_available, 16);
 
-        let buf = service.acquire_buffer();
+        let mut buf = service.acquire_buffer();
         assert_eq!(buf.len(), 64 * 1024);
         assert_eq!(service.get_tuning_state().buffer_pool_available, 15);
 
+        // Mutate buffer before release
+        buf[0] = 0xFF;
+        buf[100] = 0xAA;
         service.release_buffer(buf);
         assert_eq!(service.get_tuning_state().buffer_pool_available, 16);
+
+        // Reacquire buffer from pool: verify recycled buffer is clean and 64KB
+        let recycled = service.acquire_buffer();
+        assert_eq!(recycled.len(), 64 * 1024);
+        assert_eq!(recycled[0], 0x00);
+        assert_eq!(recycled[100], 0x00);
     }
 
     #[test]

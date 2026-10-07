@@ -15,7 +15,7 @@ mod tests {
             "cred:aws-prod",
             AuditOutcome::Success,
             serde_json::json!({"provider": "aws"}),
-        );
+        ).unwrap();
 
         let rec2 = ledger.record_event(
             1002,
@@ -25,7 +25,7 @@ mod tests {
             "wf:workflow-99",
             AuditOutcome::Success,
             serde_json::json!({"nodes": 4}),
-        );
+        ).unwrap();
 
         assert!(rec2.sequence_id > rec1.sequence_id);
         assert_eq!(rec1.principal, "admin-1");
@@ -33,10 +33,26 @@ mod tests {
     }
 
     #[test]
+    fn test_empty_tenant_or_principal_rejected() {
+        let ledger = AuditRetentionLedger::new();
+        assert!(ledger.record_event(10, "", "tenant-1", "act", "res", AuditOutcome::Success, serde_json::json!({})).is_err());
+        assert!(ledger.record_event(10, "admin", "   ", "act", "res", AuditOutcome::Success, serde_json::json!({})).is_err());
+
+        let empty_query = ledger.query_records("", None, None, 10);
+        assert!(empty_query.is_empty());
+
+        let bad_req = serde_json::json!({
+            "action": "query",
+            "tenant_id": ""
+        });
+        assert!(ledger.handle_port_audit(&bad_req).is_err());
+    }
+
+    #[test]
     fn test_tenant_boundary_isolation_in_query() {
         let ledger = AuditRetentionLedger::new();
-        ledger.record_event(2000, "user-a", "tenant-1", "wf.run", "wf-1", AuditOutcome::Success, serde_json::json!({}));
-        ledger.record_event(2001, "user-b", "tenant-2", "wf.run", "wf-2", AuditOutcome::Success, serde_json::json!({}));
+        ledger.record_event(2000, "user-a", "tenant-1", "wf.run", "wf-1", AuditOutcome::Success, serde_json::json!({})).unwrap();
+        ledger.record_event(2001, "user-b", "tenant-2", "wf.run", "wf-2", AuditOutcome::Success, serde_json::json!({})).unwrap();
 
         let t1_records = ledger.query_records("tenant-1", None, None, 10);
         let t2_records = ledger.query_records("tenant-2", None, None, 10);
@@ -50,10 +66,10 @@ mod tests {
     #[test]
     fn test_bounded_capacity_eviction() {
         let ledger = AuditRetentionLedger::with_bounds(3, 100_000);
-        ledger.record_event(1, "p1", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({}));
-        ledger.record_event(2, "p2", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({}));
-        ledger.record_event(3, "p3", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({}));
-        ledger.record_event(4, "p4", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({}));
+        ledger.record_event(1, "p1", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({})).unwrap();
+        ledger.record_event(2, "p2", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({})).unwrap();
+        ledger.record_event(3, "p3", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({})).unwrap();
+        ledger.record_event(4, "p4", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({})).unwrap();
 
         assert_eq!(ledger.total_records_count(), 3);
         let records = ledger.query_records("t1", None, None, 10);
@@ -64,9 +80,9 @@ mod tests {
     #[test]
     fn test_time_bounded_retention_prune() {
         let ledger = AuditRetentionLedger::with_bounds(100, 5000); // 5 sec retention
-        ledger.record_event(1000, "p1", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({}));
-        ledger.record_event(2000, "p2", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({}));
-        ledger.record_event(8000, "p3", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({}));
+        ledger.record_event(1000, "p1", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({})).unwrap();
+        ledger.record_event(2000, "p2", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({})).unwrap();
+        ledger.record_event(8000, "p3", "t1", "act", "res", AuditOutcome::Success, serde_json::json!({})).unwrap();
 
         // Current time 8000: cutoff is 8000 - 5000 = 3000. Events at 1000 and 2000 should be pruned
         let pruned = ledger.prune_retention(8000);

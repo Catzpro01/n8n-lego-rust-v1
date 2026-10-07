@@ -159,6 +159,17 @@ impl ProviderRoutingTableService {
         Ok(())
     }
 
+    pub fn set_route_health(&self, model: &str, healthy: bool) -> Result<(), ProviderRoutingError> {
+        let mut map = self.routes.write().map_err(|_| {
+            ProviderRoutingError::LockError("Failed to acquire write lock".to_string())
+        })?;
+        let route = map
+            .get_mut(model)
+            .ok_or_else(|| ProviderRoutingError::ModelNotRegistered(model.to_string()))?;
+        route.is_healthy = healthy;
+        Ok(())
+    }
+
     pub fn resolve_route(&self, model: &str) -> Result<(AiProvider, RouteConfig), ProviderRoutingError> {
         let map = self.routes.read().map_err(|_| {
             ProviderRoutingError::LockError("Failed to acquire read lock".to_string())
@@ -167,6 +178,14 @@ impl ProviderRoutingTableService {
         let route = map
             .get(model)
             .ok_or_else(|| ProviderRoutingError::ModelNotRegistered(model.to_string()))?;
+
+        // Fail-closed if the specific route configuration itself is disabled/unhealthy
+        if !route.is_healthy {
+            return Err(ProviderRoutingError::AllProvidersUnavailable(format!(
+                "Route for model '{}' is disabled or marked unhealthy",
+                model
+            )));
+        }
 
         // 1. Try primary provider if healthy
         if self.is_provider_healthy(route.primary_provider) {
@@ -265,6 +284,12 @@ impl ProviderRoutingTableService {
                 };
                 self.set_provider_health(prov, healthy)?;
                 Ok(serde_json::json!({ "provider": prov_str, "healthy": healthy }))
+            }
+            "set_route_health" => {
+                let model = payload.get("model").and_then(|v| v.as_str()).unwrap_or("");
+                let healthy = payload.get("healthy").and_then(|v| v.as_bool()).unwrap_or(true);
+                self.set_route_health(model, healthy)?;
+                Ok(serde_json::json!({ "model": model, "healthy": healthy }))
             }
             "chat" | "dispatch" => {
                 let model = payload.get("model").and_then(|v| v.as_str()).unwrap_or("gpt-4o");

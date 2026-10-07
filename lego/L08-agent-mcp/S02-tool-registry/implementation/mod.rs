@@ -40,6 +40,30 @@ pub struct ToolInvocationPayload {
     pub tenant_id: String,
     pub caller_id: String,
     pub arguments: serde_json::Value,
+    #[serde(default)]
+    pub caller_permissions: Option<Vec<String>>,
+}
+
+impl ToolInvocationPayload {
+    pub fn new(
+        tool_name: impl Into<String>,
+        tenant_id: impl Into<String>,
+        caller_id: impl Into<String>,
+        arguments: serde_json::Value,
+    ) -> Self {
+        Self {
+            tool_name: tool_name.into(),
+            tenant_id: tenant_id.into(),
+            caller_id: caller_id.into(),
+            arguments,
+            caller_permissions: None,
+        }
+    }
+
+    pub fn with_permissions(mut self, permissions: Vec<String>) -> Self {
+        self.caller_permissions = Some(permissions);
+        self
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -176,6 +200,17 @@ impl McpToolCatalogService {
             }
 
             if let Some(val) = obj.get(&param.name) {
+                if !param.required && val.is_null() {
+                    continue;
+                }
+
+                if param.required && val.is_null() {
+                    return Err(ToolRegistryError::ValidationError(format!(
+                        "Required parameter '{}' cannot be null for tool '{}'",
+                        param.name, tool.name
+                    )));
+                }
+
                 let valid_type = match param.param_type.as_str() {
                     "string" => val.is_string(),
                     "number" => val.is_number(),
@@ -202,6 +237,18 @@ impl McpToolCatalogService {
 
         if !tool.is_enabled {
             return Err(ToolRegistryError::ToolDisabled(payload.tool_name));
+        }
+
+        // Validate permissions if supplied
+        if let Some(ref perms) = payload.caller_permissions {
+            for req in &tool.required_permissions {
+                if !perms.contains(req) && !perms.contains(&"*".to_string()) {
+                    return Err(ToolRegistryError::PermissionDenied(format!(
+                        "Caller '{}' lacks required permission '{}' for tool '{}'",
+                        payload.caller_id, req, tool.name
+                    )));
+                }
+            }
         }
 
         self.validate_arguments(&tool, &payload.arguments)?;
@@ -277,11 +324,16 @@ impl McpToolCatalogService {
                 let caller_id = payload.get("caller_id").and_then(|v| v.as_str()).unwrap_or("agent-1");
                 let arguments = payload.get("arguments").cloned().unwrap_or(serde_json::json!({}));
 
+                let caller_permissions = payload
+                    .get("caller_permissions")
+                    .and_then(|v| serde_json::from_value::<Vec<String>>(v.clone()).ok());
+
                 let invocation = ToolInvocationPayload {
                     tool_name: tool_name.to_string(),
                     tenant_id: tenant_id.to_string(),
                     caller_id: caller_id.to_string(),
                     arguments,
+                    caller_permissions,
                 };
                 let result = self.invoke_tool(invocation)?;
                 Ok(serde_json::to_value(&result).map_err(|e| ToolRegistryError::InvalidPayload(e.to_string()))?)

@@ -89,14 +89,17 @@ impl PressureTelemetrySampler {
     }
 
     pub fn calculate_score(cpu_pct: f32, mem_pct: f32, queue_depth: usize) -> (f32, PressureLevel) {
-        let cpu_weight = (cpu_pct / 100.0).clamp(0.0, 1.0) * 0.4;
-        let mem_weight = (mem_pct / 100.0).clamp(0.0, 1.0) * 0.3;
+        let cpu_safe = if cpu_pct.is_finite() && cpu_pct >= 0.0 { cpu_pct } else { 0.0 };
+        let mem_safe = if mem_pct.is_finite() && mem_pct >= 0.0 { mem_pct } else { 0.0 };
+
+        let cpu_weight = (cpu_safe / 100.0).clamp(0.0, 1.0) * 0.4;
+        let mem_weight = (mem_safe / 100.0).clamp(0.0, 1.0) * 0.3;
         let queue_norm = ((queue_depth as f32) / 100.0).clamp(0.0, 1.0) * 0.3;
         let score = (cpu_weight + mem_weight + queue_norm).clamp(0.0, 1.0);
 
-        let level = if score >= 0.8 || cpu_pct >= 90.0 || mem_pct >= 90.0 || queue_depth >= 150 {
+        let level = if score >= 0.8 || cpu_safe >= 90.0 || mem_safe >= 90.0 || queue_depth >= 150 {
             PressureLevel::Critical
-        } else if score >= 0.5 || cpu_pct >= 70.0 || mem_pct >= 75.0 || queue_depth >= 50 {
+        } else if score >= 0.5 || cpu_safe >= 70.0 || mem_safe >= 75.0 || queue_depth >= 50 {
             PressureLevel::Warning
         } else {
             PressureLevel::Normal
@@ -114,11 +117,13 @@ impl PressureTelemetrySampler {
         active_jobs: usize,
         avg_latency_ms: u64,
     ) -> PressureSample {
-        let (score, level) = Self::calculate_score(cpu_pct, mem_pct, queue_depth);
+        let cpu_safe = if cpu_pct.is_finite() && cpu_pct >= 0.0 { cpu_pct } else { 0.0 };
+        let mem_safe = if mem_pct.is_finite() && mem_pct >= 0.0 { mem_pct } else { 0.0 };
+        let (score, level) = Self::calculate_score(cpu_safe, mem_safe, queue_depth);
         let sample = PressureSample {
             timestamp_ms,
-            cpu_pct,
-            mem_pct,
+            cpu_pct: cpu_safe,
+            mem_pct: mem_safe,
             queue_depth,
             active_jobs,
             avg_latency_ms,

@@ -84,4 +84,13 @@ mod tests {
         assert_eq!(r_res["success"], true);
         assert_eq!(r_res["leader_id"], "controller-node-0");
     }
+
+    #[test]
+    fn test_empty_candidate_or_zero_ttl_rejected() {
+        let service = HaControlPlaneService::new();
+        assert!(service.acquire_or_renew_lease("", 1000, 5000).is_err());
+        assert!(service.acquire_or_renew_lease("   ", 1000, 5000).is_err());
+        assert!(service.acquire_or_renew_lease("valid-node", 1000, 0).is_err());
+        assert!(service.step_down("", 1).is_err());
+    }
 }

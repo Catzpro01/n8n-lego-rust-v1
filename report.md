@@ -2848,7 +2848,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `8b860ab6e70f8479e160985fd3e109fce75e1aca`
 - **HISTORICAL REMOTE MAIN**: `edeae971d3bfe0cb86678a25e73a2b9f7ea4324f`
 - **HISTORICAL REMOTE MAIN**: `0987113cf40ff71cdc7de12a57a4895dd67763e2`
-- **REMOTE MAIN**: `dec90dec37da577f9dd9b330e932a0bde232d92b`
+- **HISTORICAL REMOTE MAIN**: `dec90dec37da577f9dd9b330e932a0bde232d92b`
+- **REMOTE MAIN**: `d993fd5c3`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -3193,5 +3194,49 @@ Total suite pengujian port contract kini: 52 suites (89 individual tests), 100% 
   - `cargo test -p n8n-port-contract`: ALL PASS (exit code 0).
   - `python scripts/ci_architecture_check.py`: 11/11 PASS (exit code 0).
   - Isolasi Sub-LEGO: 0 private cross-Sub-LEGO imports (100% isolated).
+
+Report: ./report.md
+
+---
+
+## Review & Hardening Audit: Sub-LEGO L06.S06, L06.S07, L07.S04, L07.S05, L07.S06, L07.S07
+
+### 1. Temuan Cacat & Perbaikan (What was wrong & what was fixed)
+1. **L07.S07 (Ingress/runtime efficiency) — Buffer Recycling Length Discrepancy**:
+   - *Issue*: `release_buffer` menjalankan `buf.clear()` yang memotong panjang vektor menjadi 0 byte. Pemanggilan kedua `acquire_buffer` mengambil vektor dari pool dan mengembalikannya dengan panjang 0 byte alih-alih 64KB (berbeda dari alokasi awal).
+   - *Fix*: `acquire_buffer` dan `release_buffer` kini menjamin ukuran buffer selalu ter-resize tepat 64KB (`buffer_capacity`) dengan konten yang ter-zeroisasi secara deterministik.
+   - *Test*: Menambahkan pengujian re-akuisisi buffer setelah release dan verifikasi panjang 64KB serta integritas byte zeroed.
+
+2. **L07.S04 (Worker lifecycle) — Incomplete Graceful Drain State Transition**:
+   - *Issue*: Saat worker berstatus `Draining` melaporkan heartbeat dengan `active_slots == 0`, statusnya tidak pernah ditransisikan ke `Drained`, sehingga worker tertahan di `Draining` selamanya.
+   - *Fix*: `heartbeat` kini mengevaluasi transisi `if status == Draining && active_slots == 0 => Drained`. Menambahkan validasi `worker_id` kosong/whitespace dan `total_slots == 0`.
+   - *Test*: Memperbarui `test_graceful_drain_lifecycle` dan menambahkan `test_empty_worker_id_rejected`.
+
+3. **L07.S05 (Worker recovery and failover) — Missing Empty ID Validation & Aborted Lease Guarding**:
+   - *Issue*: `register_stale_lease` menerima identifier string kosong (`lease_id`, `job_id`, `dead_worker_id`), dan `reclaim_and_reassign` mengizinkan reassignment pada lease yang berstatus `Aborted`.
+   - *Fix*: `register_stale_lease` mengembalikan `Result` dengan validasi fail-closed. `reclaim_and_reassign` menolak reassignment pada lease `Aborted`.
+   - *Test*: Menambahkan `test_empty_payload_rejected` dan adaptasi pengujian ke `Result`.
+
+4. **L06.S06 (Resource pressure metrics) — Non-finite Float / NaN Resilience**:
+   - *Issue*: Nilai `cpu_pct` atau `mem_pct` bernilai `NaN` atau negatif merusak perhitungan weighted composite score dan gagal saat serialisasi JSON di serde_json.
+   - *Fix*: `calculate_score` dan `record_sample` menyaring dan mengamankan nilai float non-finite menjadi 0.0 sebelum evaluasi level dan komposit.
+   - *Test*: Menambahkan `test_nan_and_negative_metrics_resilience`.
+
+5. **L06.S07 (Audit and bounded retention) — Multi-tenant Boundary Fail-Closed Validation**:
+   - *Issue*: Payload dengan `tenant_id` atau `principal` kosong diterima tanpa validasi fail-closed, membuka celah pencampuran log audit antar-tenant.
+   - *Fix*: `record_event` memvalidasi `tenant_id` dan `principal` tidak kosong; `query_records` mengembalikan set kosong jika tenant_id kosong; `handle_port_audit` menolak payload kosong fail-closed.
+   - *Test*: Menambahkan `test_empty_tenant_or_principal_rejected`.
+
+6. **L07.S06 (HA control plane) — Empty Candidate & Zero TTL Guarding**:
+   - *Issue*: `acquire_or_renew_lease` menerima kandidat kosong `""` dan lease TTL 0 ms.
+   - *Fix*: `acquire_or_renew_lease` dan `step_down` memvalidasi candidate ID, node ID, serta memastikan `ttl_ms > 0`.
+   - *Test*: Menambahkan `test_empty_candidate_or_zero_ttl_rejected`.
+
+### 2. Hasil Verifikasi Mekanis
+- `rustc --test` kompilasi dan eksekusi langsung untuk seluruh 6 Sub-LEGO unit tests: 100% PASS.
+- `cargo test -p n8n-port-contract`: 52 suite test, 89 individual tests PASS (exit code 0).
+- `python scripts/ci_architecture_check.py`: 11/11 invariant architecture & governance checks PASS (exit code 0).
+- `python -m unittest discover tests/governance`: 27 unit tests PASS (exit code 0).
+- Kualitas tata kelola: 0 private cross-Sub-LEGO imports, CERTIFIED=0 strictly preserved.
 
 Report: ./report.md

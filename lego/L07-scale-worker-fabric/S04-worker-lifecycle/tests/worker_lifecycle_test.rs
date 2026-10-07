@@ -45,10 +45,20 @@ mod tests {
         let draining = service.drain_worker("worker-drain").unwrap();
         assert_eq!(draining.status, WorkerStatus::Draining);
 
-        // After jobs complete: active_slots = 0
-        service.heartbeat("worker-drain", 0, 3000).unwrap();
+        // After jobs complete: active_slots = 0, heartbeat transitions to Drained automatically
+        let hb_drained = service.heartbeat("worker-drain", 0, 3000).unwrap();
+        assert_eq!(hb_drained.status, WorkerStatus::Drained);
+
         let drained = service.drain_worker("worker-drain").unwrap();
         assert_eq!(drained.status, WorkerStatus::Drained);
+    }
+
+    #[test]
+    fn test_empty_worker_id_rejected() {
+        let service = WorkerLifecycleService::new();
+        assert!(service.register_worker("", "10.0.0.1:8080", 4, 1000).is_err());
+        assert!(service.register_worker("   ", "10.0.0.1:8080", 4, 1000).is_err());
+        assert!(service.register_worker("valid", "10.0.0.1:8080", 0, 1000).is_err());
     }
 
     #[test]

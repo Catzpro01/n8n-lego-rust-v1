@@ -38,14 +38,12 @@ mod tests {
     #[test]
     fn test_invoke_tool_success_with_schema_validation() {
         let service = McpToolCatalogService::new();
-        let payload = ToolInvocationPayload {
-            tool_name: "calculator".to_string(),
-            tenant_id: "tenant-demo".to_string(),
-            caller_id: "agent-eval".to_string(),
-            arguments: json!({
-                "expression": "10 * 5"
-            }),
-        };
+        let payload = ToolInvocationPayload::new(
+            "calculator",
+            "tenant-demo",
+            "agent-eval",
+            json!({ "expression": "10 * 5" }),
+        );
 
         let res = service.invoke_tool(payload).unwrap();
         assert!(res.success);
@@ -57,14 +55,12 @@ mod tests {
     #[test]
     fn test_missing_required_parameter_validation_failure() {
         let service = McpToolCatalogService::new();
-        let payload = ToolInvocationPayload {
-            tool_name: "calculator".to_string(),
-            tenant_id: "tenant-demo".to_string(),
-            caller_id: "agent-eval".to_string(),
-            arguments: json!({
-                "other_param": 123
-            }),
-        };
+        let payload = ToolInvocationPayload::new(
+            "calculator",
+            "tenant-demo",
+            "agent-eval",
+            json!({ "other_param": 123 }),
+        );
 
         let err = service.invoke_tool(payload);
         assert!(matches!(err, Err(ToolRegistryError::ValidationError(_))));
@@ -73,14 +69,12 @@ mod tests {
     #[test]
     fn test_wrong_parameter_type_validation_failure() {
         let service = McpToolCatalogService::new();
-        let payload = ToolInvocationPayload {
-            tool_name: "calculator".to_string(),
-            tenant_id: "tenant-demo".to_string(),
-            caller_id: "agent-eval".to_string(),
-            arguments: json!({
-                "expression": 12345 // expected string
-            }),
-        };
+        let payload = ToolInvocationPayload::new(
+            "calculator",
+            "tenant-demo",
+            "agent-eval",
+            json!({ "expression": 12345 }),
+        );
 
         let err = service.invoke_tool(payload);
         assert!(matches!(err, Err(ToolRegistryError::ValidationError(_))));
@@ -101,12 +95,12 @@ mod tests {
         };
         service.register_tool(tool).unwrap();
 
-        let payload = ToolInvocationPayload {
-            tool_name: "disabled_tool".to_string(),
-            tenant_id: "tenant-demo".to_string(),
-            caller_id: "agent-eval".to_string(),
-            arguments: json!({}),
-        };
+        let payload = ToolInvocationPayload::new(
+            "disabled_tool",
+            "tenant-demo",
+            "agent-eval",
+            json!({}),
+        );
 
         let err = service.invoke_tool(payload);
         assert!(matches!(err, Err(ToolRegistryError::ToolDisabled(_))));
@@ -115,12 +109,12 @@ mod tests {
     #[test]
     fn test_missing_tool_not_found_fail_closed() {
         let service = McpToolCatalogService::new();
-        let payload = ToolInvocationPayload {
-            tool_name: "non_existent_tool".to_string(),
-            tenant_id: "tenant-demo".to_string(),
-            caller_id: "agent-eval".to_string(),
-            arguments: json!({}),
-        };
+        let payload = ToolInvocationPayload::new(
+            "non_existent_tool",
+            "tenant-demo",
+            "agent-eval",
+            json!({}),
+        );
 
         let err = service.invoke_tool(payload);
         assert!(matches!(err, Err(ToolRegistryError::ToolNotFound(_))));
@@ -167,4 +161,87 @@ mod tests {
         assert_eq!(inv_res["tool_name"], "port_test_tool");
         assert_eq!(inv_res["success"], true);
     }
+
+    #[test]
+    fn test_optional_null_argument_accepted() {
+        let service = McpToolCatalogService::new();
+        let tool = ToolDefinition {
+            name: "search_tool".to_string(),
+            description: "Search documents".to_string(),
+            kind: ToolKind::Native,
+            category: "search".to_string(),
+            parameters: vec![
+                ToolParameterSchema {
+                    name: "query".to_string(),
+                    param_type: "string".to_string(),
+                    required: true,
+                    description: "Search query".to_string(),
+                },
+                ToolParameterSchema {
+                    name: "filter".to_string(),
+                    param_type: "string".to_string(),
+                    required: false,
+                    description: "Optional filter".to_string(),
+                },
+            ],
+            required_permissions: vec![],
+            is_enabled: true,
+            timeout_ms: 3000,
+        };
+        service.register_tool(tool).unwrap();
+
+        // Optional filter passed as explicit JSON null
+        let payload = ToolInvocationPayload {
+            tool_name: "search_tool".to_string(),
+            tenant_id: "tenant-demo".to_string(),
+            caller_id: "agent-eval".to_string(),
+            arguments: json!({
+                "query": "hello world",
+                "filter": null
+            }),
+            caller_permissions: None,
+        };
+
+        let res = service.invoke_tool(payload);
+        assert!(res.is_ok(), "Optional null parameter should be accepted");
+    }
+
+    #[test]
+    fn test_permission_denied_fails_closed() {
+        let service = McpToolCatalogService::new();
+        let tool = ToolDefinition {
+            name: "admin_cleanup".to_string(),
+            description: "Admin cleanup tool".to_string(),
+            kind: ToolKind::Native,
+            category: "admin".to_string(),
+            parameters: vec![],
+            required_permissions: vec!["admin:delete".to_string()],
+            is_enabled: true,
+            timeout_ms: 1000,
+        };
+        service.register_tool(tool).unwrap();
+
+        // Caller lacks "admin:delete"
+        let payload_unauth = ToolInvocationPayload {
+            tool_name: "admin_cleanup".to_string(),
+            tenant_id: "tenant-demo".to_string(),
+            caller_id: "agent-user".to_string(),
+            arguments: json!({}),
+            caller_permissions: Some(vec!["user:read".to_string()]),
+        };
+        let err = service.invoke_tool(payload_unauth);
+        assert!(matches!(err, Err(ToolRegistryError::PermissionDenied(_))));
+
+        // Caller has "admin:delete"
+        let payload_auth = ToolInvocationPayload {
+            tool_name: "admin_cleanup".to_string(),
+            tenant_id: "tenant-demo".to_string(),
+            caller_id: "agent-admin".to_string(),
+            arguments: json!({}),
+            caller_permissions: Some(vec!["admin:delete".to_string()]),
+        };
+        let ok = service.invoke_tool(payload_auth);
+        assert!(ok.is_ok());
+    }
 }
+

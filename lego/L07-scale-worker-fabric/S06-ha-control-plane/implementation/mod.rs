@@ -71,6 +71,13 @@ impl HaControlPlaneService {
         now_ms: u64,
         ttl_ms: u64,
     ) -> Result<LeaderLease, HaError> {
+        if candidate_id.trim().is_empty() {
+            return Err(HaError::InvalidPayload("candidate_id cannot be empty".to_string()));
+        }
+        if ttl_ms == 0 {
+            return Err(HaError::InvalidPayload("ttl_ms must be greater than 0".to_string()));
+        }
+
         let mut lease_lock = self.lease.write().unwrap();
         let mut epoch_lock = self.current_epoch.write().unwrap();
 
@@ -117,6 +124,10 @@ impl HaControlPlaneService {
     }
 
     pub fn step_down(&self, node_id: &str, epoch: u64) -> Result<(), HaError> {
+        if node_id.trim().is_empty() {
+            return Err(HaError::InvalidPayload("node_id cannot be empty".to_string()));
+        }
+
         let mut lease_lock = self.lease.write().unwrap();
         let current_epoch = *self.current_epoch.read().unwrap();
 
@@ -156,6 +167,9 @@ impl HaControlPlaneService {
             }
             "acquire_lease" | "renew_lease" => {
                 let candidate = payload.get("candidate_id").and_then(|v| v.as_str()).unwrap_or("");
+                if candidate.trim().is_empty() {
+                    return Err(HaError::InvalidPayload("Missing candidate_id".to_string()));
+                }
                 let now = payload.get("now_ms").and_then(|v| v.as_u64()).unwrap_or(2000);
                 let ttl = payload.get("ttl_ms").and_then(|v| v.as_u64()).unwrap_or(15_000);
 
@@ -169,6 +183,9 @@ impl HaControlPlaneService {
             }
             "step_down" => {
                 let node = payload.get("node_id").and_then(|v| v.as_str()).unwrap_or("");
+                if node.trim().is_empty() {
+                    return Err(HaError::InvalidPayload("Missing node_id".to_string()));
+                }
                 let epoch = payload.get("epoch").and_then(|v| v.as_u64()).unwrap_or(1);
 
                 self.step_down(node, epoch)?;

@@ -137,4 +137,53 @@ mod tests {
         assert_eq!(res["current_state"], "Completed");
         assert_eq!(res["current_step"], 2);
     }
+
+    #[test]
+    fn test_terminate_records_step_history() {
+        let service = AgentStateMachineService::new();
+        service.create_session("sess-term-1", "agent-test", "tenant-alpha", 10, 1000).unwrap();
+        service.transition("sess-term-1", AgentSessionState::Thinking, "think", None, 1050).unwrap();
+
+        let term = service.terminate("sess-term-1", 1200).unwrap();
+        assert_eq!(term.current_state, AgentSessionState::Terminated);
+        assert_eq!(term.current_step, 2);
+        assert_eq!(term.step_history.len(), 2);
+        let last_step = term.step_history.last().unwrap();
+        assert_eq!(last_step.from_state, AgentSessionState::Thinking);
+        assert_eq!(last_step.to_state, AgentSessionState::Terminated);
+        assert_eq!(last_step.action, "terminate");
+    }
+
+    #[test]
+    fn test_approval_to_tool_execution_transition() {
+        let service = AgentStateMachineService::new();
+        service.create_session("sess-appr-1", "agent-test", "tenant-alpha", 10, 1000).unwrap();
+        service.transition("sess-appr-1", AgentSessionState::Thinking, "plan", None, 1010).unwrap();
+        service.transition("sess-appr-1", AgentSessionState::HumanApprovalWait, "wait", None, 1020).unwrap();
+
+        // Direct transition from HumanApprovalWait to ToolExecution upon approval
+        let tool_exec = service
+            .transition("sess-appr-1", AgentSessionState::ToolExecution, "approved_run", None, 1030)
+            .unwrap();
+        assert_eq!(tool_exec.current_state, AgentSessionState::ToolExecution);
+    }
+
+    #[test]
+    fn test_port_handler_add_tokens() {
+        let service = AgentStateMachineService::new();
+        service.create_session("sess-token-port", "agent-test", "tenant-alpha", 10, 1000).unwrap();
+
+        let payload = json!({
+            "action": "add_tokens",
+            "session_id": "sess-token-port",
+            "prompt_tokens": 150,
+            "completion_tokens": 50
+        });
+
+        let res = service.handle_port_invocation(&payload).unwrap();
+        assert_eq!(res["prompt_tokens"], 150);
+        assert_eq!(res["completion_tokens"], 50);
+        assert_eq!(res["total_tokens"], 200);
+    }
 }
+

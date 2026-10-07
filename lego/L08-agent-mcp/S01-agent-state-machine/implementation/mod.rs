@@ -137,8 +137,9 @@ impl AgentStateMachineService {
             (AgentSessionState::ToolExecution, AgentSessionState::Failed) => true,
             (AgentSessionState::ToolExecution, AgentSessionState::Terminated) => true,
 
-            // HumanApprovalWait transitions back to thinking once approved/rejected, fails, or terminates
+            // HumanApprovalWait transitions to thinking or tool execution once approved, fails, or terminates
             (AgentSessionState::HumanApprovalWait, AgentSessionState::Thinking) => true,
+            (AgentSessionState::HumanApprovalWait, AgentSessionState::ToolExecution) => true,
             (AgentSessionState::HumanApprovalWait, AgentSessionState::Failed) => true,
             (AgentSessionState::HumanApprovalWait, AgentSessionState::Terminated) => true,
 
@@ -278,6 +279,20 @@ impl AgentStateMachineService {
             .get_mut(session_id)
             .ok_or_else(|| StateMachineError::SessionNotFound(session_id.to_string()))?;
 
+        if session.current_state == AgentSessionState::Terminated {
+            return Ok(session.clone());
+        }
+
+        session.current_step += 1;
+        let record = AgentStepRecord {
+            step_index: session.current_step,
+            from_state: session.current_state,
+            to_state: AgentSessionState::Terminated,
+            action: "terminate".to_string(),
+            payload: None,
+            timestamp_ms,
+        };
+        session.step_history.push(record);
         session.current_state = AgentSessionState::Terminated;
         session.updated_at_ms = timestamp_ms;
         Ok(session.clone())
@@ -326,6 +341,13 @@ impl AgentStateMachineService {
                 let session_id = payload.get("session_id").and_then(|v| v.as_str()).unwrap_or("");
                 let session = self.terminate(session_id, 3000)?;
                 Ok(serde_json::to_value(&session).map_err(|e| StateMachineError::InvalidPayload(e.to_string()))?)
+            }
+            "add_tokens" => {
+                let session_id = payload.get("session_id").and_then(|v| v.as_str()).unwrap_or("");
+                let prompt = payload.get("prompt_tokens").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+                let completion = payload.get("completion_tokens").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+                let usage = self.add_token_usage(session_id, prompt, completion)?;
+                Ok(serde_json::to_value(&usage).map_err(|e| StateMachineError::InvalidPayload(e.to_string()))?)
             }
             "execute" | "run" => {
                 let session_id = payload.get("session_id").and_then(|v| v.as_str()).unwrap_or("sess-run-1");

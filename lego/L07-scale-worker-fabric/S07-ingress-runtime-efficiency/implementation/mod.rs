@@ -75,8 +75,11 @@ impl RuntimeEfficiencyService {
         let mut pool = self.buffer_pool.write().unwrap();
         let mut state = self.state.write().unwrap();
 
-        if let Some(buf) = pool.pop() {
+        if let Some(mut buf) = pool.pop() {
             state.buffer_pool_available = pool.len();
+            if buf.len() != self.buffer_capacity {
+                buf.resize(self.buffer_capacity, 0);
+            }
             buf
         } else {
             state.total_allocated_buffers += 1;
@@ -85,7 +88,10 @@ impl RuntimeEfficiencyService {
     }
 
     pub fn release_buffer(&self, mut buf: Vec<u8>) {
-        buf.clear();
+        buf.fill(0);
+        if buf.len() != self.buffer_capacity {
+            buf.resize(self.buffer_capacity, 0);
+        }
         let mut pool = self.buffer_pool.write().unwrap();
         let mut state = self.state.write().unwrap();
 

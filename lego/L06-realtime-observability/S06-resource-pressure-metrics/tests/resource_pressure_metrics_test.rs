@@ -81,10 +81,15 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_action_returns_error() {
+    fn test_nan_and_negative_metrics_resilience() {
+        let (score_nan, level_nan) = PressureTelemetrySampler::calculate_score(f32::NAN, f32::NAN, 10);
+        assert!(!score_nan.is_nan());
+        assert_eq!(level_nan, PressureLevel::Normal);
+
         let sampler = PressureTelemetrySampler::new();
-        let bad_req = serde_json::json!({ "action": "unknown_action_xyz" });
-        let res = sampler.handle_port_metrics_pressure(&bad_req);
-        assert!(res.is_err());
+        let sample = sampler.record_sample(100, f32::NAN, -5.0, 5, 1, 10);
+        assert!(!sample.cpu_pct.is_nan());
+        assert_eq!(sample.cpu_pct, 0.0);
+        assert_eq!(sample.mem_pct, 0.0);
     }
 }

@@ -102,7 +102,11 @@ impl AuditRetentionLedger {
         target_resource: &str,
         outcome: AuditOutcome,
         details: serde_json::Value,
-    ) -> AuditRecord {
+    ) -> Result<AuditRecord, AuditError> {
+        if principal.trim().is_empty() || tenant_id.trim().is_empty() {
+            return Err(AuditError::InvalidPayload("principal and tenant_id cannot be empty".to_string()));
+        }
+
         let mut seq_lock = self.next_sequence.write().unwrap();
         let seq = *seq_lock;
         *seq_lock += 1;
@@ -124,7 +128,7 @@ impl AuditRetentionLedger {
         }
         rec_lock.push_back(record.clone());
 
-        record
+        Ok(record)
     }
 
     pub fn query_records(
@@ -134,6 +138,10 @@ impl AuditRetentionLedger {
         filter_action: Option<&str>,
         limit: usize,
     ) -> Vec<AuditRecord> {
+        if tenant_id.trim().is_empty() {
+            return Vec::new();
+        }
+
         let rec_lock = self.records.read().unwrap();
         rec_lock
             .iter()
@@ -180,7 +188,7 @@ impl AuditRetentionLedger {
                 };
                 let details = payload.get("details").cloned().unwrap_or(serde_json::json!({}));
 
-                let record = self.record_event(ts, principal, tenant, act, res, outcome, details);
+                let record = self.record_event(ts, principal, tenant, act, res, outcome, details)?;
                 Ok(serde_json::json!({
                     "success": true,
                     "sequence_id": record.sequence_id,
@@ -189,6 +197,9 @@ impl AuditRetentionLedger {
             }
             "query" => {
                 let tenant = payload.get("tenant_id").and_then(|v| v.as_str()).unwrap_or("system-default");
+                if tenant.trim().is_empty() {
+                    return Err(AuditError::InvalidPayload("tenant_id cannot be empty".to_string()));
+                }
                 let principal = payload.get("principal").and_then(|v| v.as_str());
                 let act = payload.get("audit_action").and_then(|v| v.as_str());
                 let limit = payload.get("limit").and_then(|v| v.as_u64()).unwrap_or(50) as usize;

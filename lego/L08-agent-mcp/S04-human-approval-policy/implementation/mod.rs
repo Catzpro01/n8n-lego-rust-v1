@@ -128,23 +128,36 @@ impl HumanApprovalService {
         Ok(())
     }
 
-    /// Evaluates tool name against registered policy rules
+    /// Evaluates tool name against registered policy rules with specificity ordering:
+    /// 1. Exact match (highest precedence)
+    /// 2. Prefix pattern match (e.g. "delete_*")
+    /// 3. Wildcard catch-all match ("*")
+    /// 4. Default fail-closed fallback: High risk requiring approval
     pub fn evaluate_policy(&self, tool_name: &str) -> Result<(RiskTier, bool), ApprovalError> {
         let rules = self.policy_rules.read().map_err(|_| {
             ApprovalError::LockError("Failed to acquire read lock".to_string())
         })?;
 
+        // 1. Exact match
         for rule in rules.iter() {
-            if rule.tool_pattern == "*" {
+            if rule.tool_pattern == tool_name {
                 return Ok((rule.risk_tier, rule.requires_human_approval));
             }
+        }
 
-            if rule.tool_pattern.ends_with('*') {
+        // 2. Prefix wildcard match
+        for rule in rules.iter() {
+            if rule.tool_pattern.ends_with('*') && rule.tool_pattern != "*" {
                 let prefix = &rule.tool_pattern[..rule.tool_pattern.len() - 1];
                 if tool_name.starts_with(prefix) {
                     return Ok((rule.risk_tier, rule.requires_human_approval));
                 }
-            } else if rule.tool_pattern == tool_name {
+            }
+        }
+
+        // 3. Catch-all wildcard match
+        for rule in rules.iter() {
+            if rule.tool_pattern == "*" {
                 return Ok((rule.risk_tier, rule.requires_human_approval));
             }
         }
@@ -317,6 +330,14 @@ impl HumanApprovalService {
                 let now = payload.get("now_ms").and_then(|v| v.as_u64()).unwrap_or(1000);
                 let req = self.get_request(req_id, now)?;
                 Ok(serde_json::to_value(&req).map_err(|e| ApprovalError::InvalidPayload(e.to_string()))?)
+            }
+            "add_rule" => {
+                let rule_val = payload.get("rule").cloned().unwrap_or(serde_json::Value::Null);
+                let rule: PolicyRule = serde_json::from_value(rule_val)
+                    .map_err(|e| ApprovalError::InvalidPayload(e.to_string()))?;
+                let pat = rule.tool_pattern.clone();
+                self.add_policy_rule(rule)?;
+                Ok(serde_json::json!({ "added_rule": pat, "success": true }))
             }
             "list_pending" => {
                 let sess_id = payload.get("session_id").and_then(|v| v.as_str());

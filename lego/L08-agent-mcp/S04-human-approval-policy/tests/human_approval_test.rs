@@ -130,4 +130,49 @@ mod tests {
         let submit_res = service.handle_port_invocation(&submit_payload).unwrap();
         assert_eq!(submit_res["status"], "Approved");
     }
+
+    #[test]
+    fn test_custom_rule_precedence_over_wildcard() {
+        let service = HumanApprovalService::new();
+        // Initially, "custom_sensitive_action" would fall through to "*" -> Low, false
+        let (initial_tier, initial_req) = service.evaluate_policy("custom_sensitive_action").unwrap();
+        assert_eq!(initial_tier, RiskTier::Low);
+        assert!(!initial_req);
+
+        // Register custom rule after service initialization
+        service
+            .add_policy_rule(PolicyRule {
+                tool_pattern: "custom_sensitive_action".to_string(),
+                risk_tier: RiskTier::Critical,
+                requires_human_approval: true,
+            })
+            .unwrap();
+
+        // Exact match must take precedence over wildcard catch-all
+        let (updated_tier, updated_req) = service.evaluate_policy("custom_sensitive_action").unwrap();
+        assert_eq!(updated_tier, RiskTier::Critical);
+        assert!(updated_req);
+    }
+
+    #[test]
+    fn test_port_handler_add_rule() {
+        let service = HumanApprovalService::new();
+        let payload = json!({
+            "action": "add_rule",
+            "rule": {
+                "tool_pattern": "privileged_restart*",
+                "risk_tier": "Critical",
+                "requires_human_approval": true
+            }
+        });
+
+        let res = service.handle_port_invocation(&payload).unwrap();
+        assert_eq!(res["added_rule"], "privileged_restart*");
+        assert_eq!(res["success"], true);
+
+        let (tier, requires_approval) = service.evaluate_policy("privileged_restart_server").unwrap();
+        assert_eq!(tier, RiskTier::Critical);
+        assert!(requires_approval);
+    }
 }
+

@@ -115,4 +115,39 @@ mod tests {
         assert_eq!(chat_res["model"], "gpt-4o");
         assert_eq!(chat_res["provider_used"], "OpenAi");
     }
+
+    #[test]
+    fn test_disabled_route_fails_closed() {
+        let service = ProviderRoutingTableService::new();
+        // Route is initially healthy
+        assert!(service.resolve_route("gpt-4o").is_ok());
+
+        // Mark the specific route configuration itself as unhealthy/disabled
+        service.set_route_health("gpt-4o", false).unwrap();
+
+        let err = service.resolve_route("gpt-4o");
+        assert!(matches!(err, Err(ProviderRoutingError::AllProvidersUnavailable(_))));
+
+        // Re-enabling restores functionality
+        service.set_route_health("gpt-4o", true).unwrap();
+        assert!(service.resolve_route("gpt-4o").is_ok());
+    }
+
+    #[test]
+    fn test_port_handler_set_route_health() {
+        let service = ProviderRoutingTableService::new();
+        let payload = json!({
+            "action": "set_route_health",
+            "model": "claude-3-5-sonnet",
+            "healthy": false
+        });
+
+        let res = service.handle_port_invocation(&payload).unwrap();
+        assert_eq!(res["model"], "claude-3-5-sonnet");
+        assert_eq!(res["healthy"], false);
+
+        let err = service.resolve_route("claude-3-5-sonnet");
+        assert!(matches!(err, Err(ProviderRoutingError::AllProvidersUnavailable(_))));
+    }
 }
+
