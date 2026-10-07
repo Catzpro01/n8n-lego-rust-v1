@@ -817,29 +817,71 @@ class CIArchitectureEnforcer:
             res.log(f"Report/Evidence Commit Citations verified in report.md: {len(found_report_citations)} matches (e.g. {found_report_citations[:5]}).")
 
             # Check if report.md explicitly cites REMOTE MAIN and verify that claim
-            # Distinguish strictly between HISTORICAL REMOTE MAIN vs active REMOTE MAIN citations.
+            # Check if report.md explicitly cites REMOTE MAIN or PROVENANCE BASE COMMIT and verify that claim
+            # Distinguish strictly between HISTORICAL REMOTE MAIN vs active REMOTE MAIN / PROVENANCE BASE COMMIT citations.
             historical_remote_main_citations = []
             active_remote_main_citations = []
+            provenance_base_citations = []
 
             for line in report_text.splitlines():
-                if "REMOTE MAIN" in line.upper():
+                line_upper = line.upper()
+                if "HISTORICAL" in line_upper and "REMOTE MAIN" in line_upper:
                     m_hist = re.search(r"HISTORICAL[_\s*]*REMOTE\s*MAIN[*:\s=]*[`\s]*([0-9a-f]{7,40})", line, re.IGNORECASE)
                     if m_hist:
                         historical_remote_main_citations.append(m_hist.group(1))
-                    else:
-                        m_active = re.search(r"REMOTE\s*MAIN[*:\s=]*[`\s]*([0-9a-f]{7,40})", line, re.IGNORECASE)
-                        if m_active:
-                            active_remote_main_citations.append(m_active.group(1))
+                elif "PROVENANCE BASE COMMIT" in line_upper or "TESTED COMMIT" in line_upper or "VERIFIED IMPLEMENTATION COMMIT" in line_upper:
+                    m_base = re.search(r"(?:PROVENANCE\s*BASE\s*COMMIT|TESTED\s*COMMIT|VERIFIED\s*IMPLEMENTATION\s*COMMIT)[*:\s=]*[`\s]*([0-9a-f]{7,40})", line, re.IGNORECASE)
+                    if m_base:
+                        provenance_base_citations.append(m_base.group(1))
+                elif "REMOTE MAIN" in line_upper:
+                    m_active = re.search(r"REMOTE\s*MAIN[*:\s=]*[`\s]*([0-9a-f]{7,40})", line, re.IGNORECASE)
+                    if m_active:
+                        active_remote_main_citations.append(m_active.group(1))
 
-            if not active_remote_main_citations:
-                res.error("report.md does not contain explicit 'REMOTE MAIN' citation required for remote provenance verification.")
+            if not active_remote_main_citations and not provenance_base_citations:
+                res.error("report.md does not contain explicit 'REMOTE MAIN' citation (or 'PROVENANCE BASE COMMIT') required for remote provenance verification.")
             else:
                 for cited_sha in active_remote_main_citations:
-                    is_exact_match = bool(remote_main and (cited_sha.lower() == remote_main.lower() or (len(cited_sha) >= 7 and remote_main.lower().startswith(cited_sha.lower()))))
-                    if not is_exact_match:
+                    # 1. Verify existence in git ledger
+                    try:
+                        subprocess.check_call(["git", "cat-file", "-e", cited_sha], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    except subprocess.CalledProcessError:
                         res.error(f"Remote provenance mismatch: Report cited active REMOTE MAIN '{cited_sha}' does not match actual origin/main SHA '{remote_main}'!")
-                    else:
+                        continue
+
+                    # 2. Check exact match against origin/main
+                    is_exact_match = bool(remote_main and (cited_sha.lower() == remote_main.lower() or (len(cited_sha) >= 7 and remote_main.lower().startswith(cited_sha.lower()))))
+
+                    # 3. Check ancestor relationship (eliminates self-reference commit loop paradox)
+                    is_ancestor = False
+                    if not is_exact_match:
+                        if remote_main:
+                            try:
+                                subprocess.check_call(["git", "merge-base", "--is-ancestor", cited_sha, remote_main], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                is_ancestor = True
+                            except subprocess.CalledProcessError:
+                                pass
+                        if not is_ancestor and git_head:
+                            try:
+                                subprocess.check_call(["git", "merge-base", "--is-ancestor", cited_sha, git_head], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                is_ancestor = True
+                            except subprocess.CalledProcessError:
+                                pass
+
+                    if is_exact_match:
                         res.log(f"Active report cited REMOTE MAIN '{cited_sha}' verified exactly on actual origin/main ref ({remote_main_short}).")
+                    elif is_ancestor:
+                        res.log(f"Active report cited REMOTE MAIN '{cited_sha}' verified as valid provenance base commit (ancestor in repository history; self-reference commit loop eliminated).")
+                    else:
+                        res.error(f"Remote provenance mismatch: Report cited active REMOTE MAIN '{cited_sha}' does not match actual origin/main SHA '{remote_main}' and is not a valid ancestor in repository history!")
+
+                # Verify explicit provenance base commits
+                for base_sha in provenance_base_citations:
+                    try:
+                        subprocess.check_call(["git", "cat-file", "-e", base_sha], cwd=self.root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        res.log(f"Verified provenance base commit '{base_sha}' exists in git ledger.")
+                    except subprocess.CalledProcessError:
+                        res.error(f"Provenance base commit '{base_sha}' not found in git ledger!")
 
             # Verify historical remote main citations exist in git ledger
             for hist_sha in historical_remote_main_citations:

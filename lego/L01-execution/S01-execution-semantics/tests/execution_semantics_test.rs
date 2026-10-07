@@ -936,4 +936,176 @@ mod tests {
         assert_eq!(budget.timeout_ms, 10000);
         assert_eq!(budget.max_memory_bytes, 2048);
     }
+
+    #[test]
+    fn test_wal_replay_rejects_non_monotonic_lsn() {
+        let engine = WorkflowExecutionEngine::new();
+        let exec_id = "exec_bad_lsn";
+
+        // Append initial record with LSN 10
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 10,
+                record_type: "ExecutionCreated".to_string(),
+                payload: serde_json::json!({"workflow_id": "wf_test"}),
+                timestamp_ms: 1000,
+            })
+            .unwrap();
+
+        // Append second record with duplicate or decreasing LSN 10
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 10,
+                record_type: "ExecutionStarted".to_string(),
+                payload: serde_json::json!({"workflow_id": "wf_test"}),
+                timestamp_ms: 1001,
+            })
+            .unwrap();
+
+        let res = engine.recover_frame_from_wal(exec_id);
+        assert!(matches!(res, Err(ExecutionError::InvalidPayload(_))));
+        assert!(res.unwrap_err().to_string().contains("Non-monotonic or duplicate LSN"));
+    }
+
+    #[test]
+    fn test_wal_replay_rejects_impossible_transition_after_terminal() {
+        let engine = WorkflowExecutionEngine::new();
+        let exec_id = "exec_impossible_replay";
+
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 10,
+                record_type: "ExecutionStarted".to_string(),
+                payload: serde_json::json!({"workflow_id": "wf_test"}),
+                timestamp_ms: 1000,
+            })
+            .unwrap();
+
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 20,
+                record_type: "ExecutionCompleted".to_string(),
+                payload: serde_json::json!({"steps_executed": 0}),
+                timestamp_ms: 1001,
+            })
+            .unwrap();
+
+        // Impossible subsequent transition: StepAdvanced after Completed
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 30,
+                record_type: "StepAdvanced".to_string(),
+                payload: serde_json::json!({"step": 1}),
+                timestamp_ms: 1002,
+            })
+            .unwrap();
+
+        let res = engine.recover_frame_from_wal(exec_id);
+        assert!(matches!(res, Err(ExecutionError::InvalidStateTransition { .. })));
+    }
+
+    #[test]
+    fn test_cancel_dispatcher_conflict_on_terminal_frame() {
+        let engine = WorkflowExecutionEngine::new();
+        let frame = engine
+            .start_execution("wf_cancel_conflict", serde_json::json!({}))
+            .unwrap();
+
+        // Complete the frame
+        engine.complete_execution(&frame.execution_id).unwrap();
+
+        // Attempting to cancel completed frame via port cancel dispatcher must fail closed with conflict
+        let cancel_payload = serde_json::json!({
+            "execution_id": frame.execution_id,
+            "reason": "Abort completed"
+        });
+        let res = engine.handle_port_cancel_workflow(&cancel_payload);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("Invalid state transition"));
+
+        // Frame must remain Completed
+        let q = engine.get_frame(&frame.execution_id).unwrap();
+        assert_eq!(q.status, ExecutionFrameStatus::Completed);
+    }
+
+    #[test]
+    fn test_port_run_workflow_tenant_omitted_for_tenant_scoped_frame_rejected() {
+        let engine = WorkflowExecutionEngine::new();
+        let env = ContractEnvelope {
+            tenant_id: Some("tenant_isolated".to_string()),
+            correlation_id: Some("corr_iso".to_string()),
+            caller_sublego: None,
+            contract_version: Some("1.0.0".to_string()),
+        };
+
+        let frame = engine
+            .start_execution_with_options(
+                "exec_iso_tenant",
+                "wf_iso",
+                serde_json::json!({}),
+                None,
+                Some(env),
+            )
+            .unwrap();
+        assert_eq!(frame.tenant_id.as_deref(), Some("tenant_isolated"));
+
+        // Attempting to advance without supplying tenant_id must fail closed
+        let payload_no_tenant = serde_json::json!({
+            "workflow_id": "wf_iso",
+            "execution_id": frame.execution_id,
+            "action": "advance"
+        });
+        let res = engine.handle_port_run_workflow(&payload_no_tenant);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("Tenant mismatch"));
+    }
+
+    #[test]
+    fn test_port_cancel_workflow_tenant_isolation() {
+        let engine = WorkflowExecutionEngine::new();
+        let env = ContractEnvelope {
+            tenant_id: Some("tenant_protected".to_string()),
+            ..Default::default()
+        };
+
+        let frame = engine
+            .start_execution_with_options(
+                "exec_cancel_prot",
+                "wf_cancel_sec",
+                serde_json::json!({}),
+                None,
+                Some(env),
+            )
+            .unwrap();
+
+        // Rogue cancel from tenant_intruder must be rejected fail closed
+        let cancel_intruder = serde_json::json!({
+            "execution_id": frame.execution_id,
+            "tenant_id": "tenant_intruder",
+            "reason": "Malicious cancel"
+        });
+        let res = engine.handle_port_cancel_workflow(&cancel_intruder);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("Tenant mismatch for cancel"));
+
+        // Frame must still be Running
+        let q = engine.get_frame(&frame.execution_id).unwrap();
+        assert_eq!(q.status, ExecutionFrameStatus::Running);
+
+        // Authorized cancel from tenant_protected must succeed
+        let cancel_auth = serde_json::json!({
+            "execution_id": frame.execution_id,
+            "tenant_id": "tenant_protected",
+            "reason": "Authorized cancel"
+        });
+        let ok_res = engine.handle_port_cancel_workflow(&cancel_auth);
+        assert!(ok_res.is_ok());
+        let q2 = engine.get_frame(&frame.execution_id).unwrap();
+        assert_eq!(q2.status, ExecutionFrameStatus::Cancelled);
+    }
 }

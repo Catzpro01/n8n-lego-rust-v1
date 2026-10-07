@@ -3492,23 +3492,23 @@ Semua 8 Sub-LEGO L11 Future Platform yang sebelumnya berstatus `DESIGNED` telah 
 6. **Port Contract Integration Tests**:
    - Menambahkan `crates/n8n-port-contract/tests/execution_semantics_port_test.rs` memverifikasi transport-neutral port invocation, security scope denial, and correlation tracing.
 
-#### 4. Hasil Verifikasi & Review Hardening (Round 2)
-- **Review Findings (Prior Attempt Defect Remediation)**:
-  1. *Dirty in-memory state on node WAL failure*: `execute_node_step` memutasi `current_step` dan `step_outputs` sebelum WAL ditulis; diperbaiki dengan memprioritaskan penulisan WAL sebelum mutasi in-memory (zero dirty commits).
-  2. *Swallowed errors & missing `ExecutionCancelled`*: Pola `let _ =` dihilangkan pada penanganan kegagalan WAL saat budget terlampaui dan kegagalan node; varian error `ExecutionCancelled` kini dikembalikan saat frame dibatalkan sebelum/selama eksekusi node.
-  3. *Unenforced memory budget*: Penegakan batas alokasi memori payload (`max_memory_bytes`) kini diimplementasikan secara aktif dalam `check_budget`.
-  4. *Workflow & Tenant boundary leak*: `handle_port_run_workflow` dan `handle_port_cancel_workflow` kini memvalidasi kepemilikan `workflow_id` dan `tenant_id` secara fail-closed, mencegah kontaminasi dan pembajakan frame antar alur kerja / tenant.
-  5. *TOCTOU race*: Menambahkan `start_or_transition_created` untuk transisi atomik di bawah write-lock tunggal.
-  6. *Replay semantics & recovery consistency*: Mengimplementasikan `recover_frame_from_wal` dan `verify_recovery_consistency` untuk pembuktian matematis konsistensi rekonsiliasi state dari WAL log.
-  7. *Wait token validation*: Memvalidasi token tidak kosong pada `suspend_execution` dan verifikasi kecocokan token pada `resume_execution_with_token`.
+#### 4. Hasil Verifikasi & Review Hardening (Round 3 Deep Hardening)
+- **Review Findings & Deep Hardening Remediation**:
+  1. *Authoritative `tenant_id` Multi-Tenant Isolation*: Menambahkan `pub tenant_id: Option<String>` langsung pada `ExecutionFrame` dan mencatatnya ke dalam WAL records (`ExecutionCreated`, `ExecutionStarted`). Dispatcher port contract (`handle_port_run_workflow`, `handle_port_cancel_workflow`) memvalidasi kepemilikan tenant secara fail-closed (mencegah akses tanpa tenant pada frame ber-tenant atau mismatch antar tenant). Rekonsiliasi `verify_recovery_consistency` membuktikan integritas tenant_id.
+  2. *Atomic WAL Writes & Raw Journal Injection*: Menambahkan method `append_raw_wal_record` pada `WorkflowExecutionEngine` untuk memungkinkan pengujian journal WAL sintetis dan verifikasi fail-closed pada log rusak.
+  3. *Monotonic LSN & Strict FSM Replay in WAL Recovery*: `recover_frame_from_wal` diperkuat untuk menolak urutan LSN tidak monotonik (`rec.lsn <= prev_lsn`), menolak mutasi setelah status terminal (`Completed`, `Failed`, `Cancelled`), serta menolak loncatan state ilegal saat merekonstruksi frame dari log.
+  4. *Deterministic Cancellation Semantics*: Operasi pembatalan menjamin idempotensi pada status `Cancelled`, namun menolak dan mengembalikan konflik (`InvalidStateTransition`) secara fail-closed pada status terminal `Completed` atau `Failed`.
+  5. *Resolution of Check 11 Provenance Paradox*: Memperbaiki `scripts/ci_architecture_check.py` agar verifikasi `REMOTE MAIN` memverifikasi commit yang ada di git ledger serta relasi ancestor (`git merge-base --is-ancestor`) terhadap remote/HEAD, menghilangkan paradoks commit loop tak berujung saat commit di-push ke remote, sembari mempertahankan penolakan fail-closed terhadap commit fiktif atau divergen. Menambahkan dukungan untuk `PROVENANCE BASE COMMIT`, `TESTED COMMIT`, dan `VERIFIED IMPLEMENTATION COMMIT`.
 - **Test Results**:
-  - `lego/L01-execution/S01-execution-semantics/tests/execution_semantics_test.rs`: 32/32 tests PASS (Exit code 0).
-  - `crates/n8n-port-contract/tests/execution_semantics_port_test.rs`: 3/3 tests PASS (Exit code 0).
-  - `crates/n8n-port-contract` full test suite: 55 suites, 100 tests PASS (Exit code 0).
-  - `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
+  - `lego/L01-execution/S01-execution-semantics/tests/execution_semantics_test.rs`: 37/37 unit tests PASS (Exit code 0).
+  - `crates/n8n-port-contract/tests/execution_semantics_port_test.rs`: 8/8 comprehensive scenarios PASS (Exit code 0).
+  - `crates/n8n-port-contract` full test suite: 55 suites, 105 individual tests PASS (Exit code 0).
+  - `tests/governance/test_ci_architecture_check.py`: 28/28 governance tests PASS (Exit code 0).
+  - `python scripts/ci_architecture_check.py`: 11/11 invariant checks PASS (Exit code 0).
   - `cargo check --workspace --locked`: PASS (Exit code 0).
 
 Report: ./report.md
+
 
 
 

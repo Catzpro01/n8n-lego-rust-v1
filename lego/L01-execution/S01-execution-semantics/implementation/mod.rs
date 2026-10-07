@@ -93,6 +93,7 @@ pub struct ContractEnvelope {
 pub struct ExecutionFrame {
     pub execution_id: String,
     pub workflow_id: String,
+    pub tenant_id: Option<String>,
     pub current_step: usize,
     pub status: ExecutionFrameStatus,
     pub trigger_payload: serde_json::Value,
@@ -228,6 +229,11 @@ impl WorkflowExecutionEngine {
         self.wal.get_records(execution_id)
     }
 
+    /// Appends a raw WAL record directly (used for replay/recovery testing and journal simulation)
+    pub fn append_raw_wal_record(&self, record: ExecutionWalRecord) -> Result<u64, String> {
+        self.wal.append(record)
+    }
+
     /// Helper to record WAL event with fail-closed guarantee
     fn record_wal_event(
         &self,
@@ -311,10 +317,13 @@ impl WorkflowExecutionEngine {
     ) -> Result<ExecutionFrame, ExecutionError> {
         Self::validate_ids(execution_id, workflow_id)?;
 
+        let env = envelope.unwrap_or_default();
+        let tenant_id = env.tenant_id.clone();
         let ts = now_ms();
         let frame = ExecutionFrame {
             execution_id: execution_id.to_string(),
             workflow_id: workflow_id.to_string(),
+            tenant_id: tenant_id.clone(),
             current_step: 0,
             status: ExecutionFrameStatus::Created,
             trigger_payload: trigger.clone(),
@@ -323,7 +332,7 @@ impl WorkflowExecutionEngine {
             wait_token: None,
             budget,
             step_outputs: Vec::new(),
-            envelope: envelope.unwrap_or_default(),
+            envelope: env,
             created_at_ms: ts,
             updated_at_ms: ts,
         };
@@ -342,6 +351,7 @@ impl WorkflowExecutionEngine {
             "ExecutionCreated",
             serde_json::json!({
                 "workflow_id": workflow_id,
+                "tenant_id": tenant_id,
                 "trigger_payload": trigger
             }),
         )?;
@@ -418,10 +428,13 @@ impl WorkflowExecutionEngine {
     ) -> Result<ExecutionFrame, ExecutionError> {
         Self::validate_ids(execution_id, workflow_id)?;
 
+        let env = envelope.unwrap_or_default();
+        let tenant_id = env.tenant_id.clone();
         let ts = now_ms();
         let frame = ExecutionFrame {
             execution_id: execution_id.to_string(),
             workflow_id: workflow_id.to_string(),
+            tenant_id: tenant_id.clone(),
             current_step: 0,
             status: ExecutionFrameStatus::Running,
             trigger_payload: trigger.clone(),
@@ -430,7 +443,7 @@ impl WorkflowExecutionEngine {
             wait_token: None,
             budget,
             step_outputs: Vec::new(),
-            envelope: envelope.unwrap_or_default(),
+            envelope: env,
             created_at_ms: ts,
             updated_at_ms: ts,
         };
@@ -449,6 +462,7 @@ impl WorkflowExecutionEngine {
             "ExecutionStarted",
             serde_json::json!({
                 "workflow_id": workflow_id,
+                "tenant_id": tenant_id,
                 "trigger_payload": trigger
             }),
         )?;
@@ -468,6 +482,9 @@ impl WorkflowExecutionEngine {
         envelope: Option<ContractEnvelope>,
     ) -> Result<ExecutionFrame, ExecutionError> {
         Self::validate_ids(execution_id, workflow_id)?;
+        let env = envelope.unwrap_or_default();
+        let tenant_id = env.tenant_id.clone();
+
         let mut frames = self
             .frames
             .write()
@@ -479,14 +496,11 @@ impl WorkflowExecutionEngine {
                     frame.workflow_id
                 )));
             }
-            if let Some(ref env) = envelope {
-                if frame.envelope.tenant_id.is_some()
-                    && env.tenant_id.is_some()
-                    && frame.envelope.tenant_id != env.tenant_id
-                {
+            if frame.tenant_id.is_some() || tenant_id.is_some() {
+                if frame.tenant_id != tenant_id {
                     return Err(ExecutionError::InvalidPayload(format!(
                         "Tenant mismatch: frame belongs to tenant '{:?}', but request provided '{:?}'",
-                        frame.envelope.tenant_id, env.tenant_id
+                        frame.tenant_id, tenant_id
                     )));
                 }
             }
@@ -494,7 +508,7 @@ impl WorkflowExecutionEngine {
                 self.record_wal_event(
                     execution_id,
                     "ExecutionStarted",
-                    serde_json::json!({ "workflow_id": workflow_id }),
+                    serde_json::json!({ "workflow_id": workflow_id, "tenant_id": frame.tenant_id }),
                 )?;
                 frame.status = ExecutionFrameStatus::Running;
                 frame.updated_at_ms = now_ms();
@@ -511,6 +525,7 @@ impl WorkflowExecutionEngine {
         let frame = ExecutionFrame {
             execution_id: execution_id.to_string(),
             workflow_id: workflow_id.to_string(),
+            tenant_id: tenant_id.clone(),
             current_step: 0,
             status: ExecutionFrameStatus::Running,
             trigger_payload: trigger.clone(),
@@ -519,7 +534,7 @@ impl WorkflowExecutionEngine {
             wait_token: None,
             budget,
             step_outputs: Vec::new(),
-            envelope: envelope.unwrap_or_default(),
+            envelope: env,
             created_at_ms: ts,
             updated_at_ms: ts,
         };
@@ -529,6 +544,7 @@ impl WorkflowExecutionEngine {
             "ExecutionStarted",
             serde_json::json!({
                 "workflow_id": workflow_id,
+                "tenant_id": tenant_id,
                 "trigger_payload": trigger
             }),
         )?;
@@ -942,6 +958,16 @@ impl WorkflowExecutionEngine {
         // Sort records strictly by monotonic LSN
         records.sort_by_key(|r| r.lsn);
 
+        // Verify LSN strict monotonicity (detect duplicate/decreasing LSN)
+        for i in 1..records.len() {
+            if records[i].lsn <= records[i - 1].lsn {
+                return Err(ExecutionError::InvalidPayload(format!(
+                    "Non-monotonic or duplicate LSN in WAL sequence for frame '{execution_id}': {} <= {}",
+                    records[i].lsn, records[i - 1].lsn
+                )));
+            }
+        }
+
         let first = &records[0];
         let mut frame = match first.record_type.as_str() {
             "ExecutionCreated" => {
@@ -950,6 +976,11 @@ impl WorkflowExecutionEngine {
                     .get("workflow_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("");
+                let tenant_id = first
+                    .payload
+                    .get("tenant_id")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
                 let trigger = first
                     .payload
                     .get("trigger_payload")
@@ -958,6 +989,7 @@ impl WorkflowExecutionEngine {
                 ExecutionFrame {
                     execution_id: execution_id.to_string(),
                     workflow_id: wf_id.to_string(),
+                    tenant_id: tenant_id.clone(),
                     current_step: 0,
                     status: ExecutionFrameStatus::Created,
                     trigger_payload: trigger,
@@ -966,7 +998,10 @@ impl WorkflowExecutionEngine {
                     wait_token: None,
                     budget: None,
                     step_outputs: Vec::new(),
-                    envelope: ContractEnvelope::default(),
+                    envelope: ContractEnvelope {
+                        tenant_id,
+                        ..Default::default()
+                    },
                     created_at_ms: first.timestamp_ms,
                     updated_at_ms: first.timestamp_ms,
                 }
@@ -977,6 +1012,11 @@ impl WorkflowExecutionEngine {
                     .get("workflow_id")
                     .and_then(|v| v.as_str())
                     .unwrap_or("");
+                let tenant_id = first
+                    .payload
+                    .get("tenant_id")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
                 let trigger = first
                     .payload
                     .get("trigger_payload")
@@ -985,6 +1025,7 @@ impl WorkflowExecutionEngine {
                 ExecutionFrame {
                     execution_id: execution_id.to_string(),
                     workflow_id: wf_id.to_string(),
+                    tenant_id: tenant_id.clone(),
                     current_step: 0,
                     status: ExecutionFrameStatus::Running,
                     trigger_payload: trigger,
@@ -993,7 +1034,10 @@ impl WorkflowExecutionEngine {
                     wait_token: None,
                     budget: None,
                     step_outputs: Vec::new(),
-                    envelope: ContractEnvelope::default(),
+                    envelope: ContractEnvelope {
+                        tenant_id,
+                        ..Default::default()
+                    },
                     created_at_ms: first.timestamp_ms,
                     updated_at_ms: first.timestamp_ms,
                 }
@@ -1005,14 +1049,48 @@ impl WorkflowExecutionEngine {
             }
         };
 
-        // Replay subsequent records
+        // Replay subsequent records with strict FSM transition and sequence validation
         for rec in records.iter().skip(1) {
+            // If already in terminal status, only idempotent cancellation replay is permitted
+            if frame.status.is_terminal() {
+                if rec.record_type == "ExecutionCancelled" && frame.status == ExecutionFrameStatus::Cancelled {
+                    // Idempotent cancel in WAL log: valid no-op
+                    continue;
+                }
+                return Err(ExecutionError::InvalidStateTransition {
+                    execution_id: execution_id.to_string(),
+                    from: frame.status,
+                    to: match rec.record_type.as_str() {
+                        "StepAdvanced" | "NodeInvoked" => ExecutionFrameStatus::Running,
+                        "ExecutionStarted" => ExecutionFrameStatus::Running,
+                        "ExecutionSuspended" => ExecutionFrameStatus::Waiting,
+                        "ExecutionResumed" => ExecutionFrameStatus::Running,
+                        "ExecutionCompleted" => ExecutionFrameStatus::Completed,
+                        "ExecutionFailed" => ExecutionFrameStatus::Failed,
+                        "ExecutionCancelled" => ExecutionFrameStatus::Cancelled,
+                        _ => ExecutionFrameStatus::Failed,
+                    },
+                });
+            }
+
             match rec.record_type.as_str() {
                 "ExecutionStarted" => {
+                    if frame.status != ExecutionFrameStatus::Created {
+                        return Err(ExecutionError::InvalidStateTransition {
+                            execution_id: execution_id.to_string(),
+                            from: frame.status,
+                            to: ExecutionFrameStatus::Running,
+                        });
+                    }
                     frame.status = ExecutionFrameStatus::Running;
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
                 "StepAdvanced" => {
+                    if frame.status != ExecutionFrameStatus::Running {
+                        return Err(ExecutionError::FrameNotRunning {
+                            current_status: frame.status,
+                        });
+                    }
                     let step = rec
                         .payload
                         .get("step")
@@ -1023,6 +1101,11 @@ impl WorkflowExecutionEngine {
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
                 "NodeInvoked" => {
+                    if frame.status != ExecutionFrameStatus::Running {
+                        return Err(ExecutionError::FrameNotRunning {
+                            current_status: frame.status,
+                        });
+                    }
                     let step = rec
                         .payload
                         .get("step")
@@ -1036,6 +1119,13 @@ impl WorkflowExecutionEngine {
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
                 "ExecutionSuspended" => {
+                    if frame.status != ExecutionFrameStatus::Running {
+                        return Err(ExecutionError::InvalidStateTransition {
+                            execution_id: execution_id.to_string(),
+                            from: frame.status,
+                            to: ExecutionFrameStatus::Waiting,
+                        });
+                    }
                     frame.status = ExecutionFrameStatus::Waiting;
                     frame.wait_token = rec
                         .payload
@@ -1045,15 +1135,36 @@ impl WorkflowExecutionEngine {
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
                 "ExecutionResumed" => {
+                    if frame.status != ExecutionFrameStatus::Waiting {
+                        return Err(ExecutionError::InvalidStateTransition {
+                            execution_id: execution_id.to_string(),
+                            from: frame.status,
+                            to: ExecutionFrameStatus::Running,
+                        });
+                    }
                     frame.status = ExecutionFrameStatus::Running;
                     frame.wait_token = None;
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
                 "ExecutionCompleted" => {
+                    if frame.status != ExecutionFrameStatus::Running {
+                        return Err(ExecutionError::InvalidStateTransition {
+                            execution_id: execution_id.to_string(),
+                            from: frame.status,
+                            to: ExecutionFrameStatus::Completed,
+                        });
+                    }
                     frame.status = ExecutionFrameStatus::Completed;
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
                 "ExecutionFailed" => {
+                    if frame.status.is_terminal() {
+                        return Err(ExecutionError::InvalidStateTransition {
+                            execution_id: execution_id.to_string(),
+                            from: frame.status,
+                            to: ExecutionFrameStatus::Failed,
+                        });
+                    }
                     frame.status = ExecutionFrameStatus::Failed;
                     frame.error_message = rec
                         .payload
@@ -1064,6 +1175,13 @@ impl WorkflowExecutionEngine {
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
                 "ExecutionCancelled" => {
+                    if frame.status == ExecutionFrameStatus::Completed || frame.status == ExecutionFrameStatus::Failed {
+                        return Err(ExecutionError::InvalidStateTransition {
+                            execution_id: execution_id.to_string(),
+                            from: frame.status,
+                            to: ExecutionFrameStatus::Cancelled,
+                        });
+                    }
                     frame.status = ExecutionFrameStatus::Cancelled;
                     frame.cancellation_reason = rec
                         .payload
@@ -1072,7 +1190,11 @@ impl WorkflowExecutionEngine {
                         .map(|s| s.to_string());
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
-                _ => {}
+                other => {
+                    return Err(ExecutionError::InvalidPayload(format!(
+                        "Unknown or unsupported WAL record type '{other}' during recovery"
+                    )));
+                }
             }
         }
 
@@ -1089,6 +1211,7 @@ impl WorkflowExecutionEngine {
         let consistent = auth_frame.status == replayed.status
             && auth_frame.current_step == replayed.current_step
             && auth_frame.workflow_id == replayed.workflow_id
+            && auth_frame.tenant_id == replayed.tenant_id
             && auth_frame.step_outputs.len() == replayed.step_outputs.len();
 
         Ok(consistent)
@@ -1112,13 +1235,12 @@ impl WorkflowExecutionEngine {
             ));
         }
 
-        if let Some(tenant) = expected_tenant_id {
-            if let Some(ref frame_tenant) = frame.envelope.tenant_id {
-                if frame_tenant != tenant {
-                    return Err(format!(
-                        "Tenant mismatch: frame '{execution_id}' belongs to tenant '{frame_tenant}', but request specified '{tenant}'"
-                    ));
-                }
+        if frame.tenant_id.is_some() || expected_tenant_id.is_some() {
+            if frame.tenant_id.as_deref() != expected_tenant_id {
+                return Err(format!(
+                    "Tenant mismatch: frame '{execution_id}' belongs to tenant '{:?}', but request specified '{:?}'",
+                    frame.tenant_id, expected_tenant_id
+                ));
             }
         }
 
@@ -1402,9 +1524,9 @@ impl WorkflowExecutionEngine {
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
 
-        // Validate workflow_id or tenant_id if provided
-        if let Some(req_wf) = payload.get("workflow_id").and_then(|v| v.as_str()) {
-            if let Some(frame) = self.get_frame(execution_id) {
+        // Validate workflow_id or tenant_id if provided or if frame is tenant-scoped
+        if let Some(frame) = self.get_frame(execution_id) {
+            if let Some(req_wf) = payload.get("workflow_id").and_then(|v| v.as_str()) {
                 if frame.workflow_id != req_wf {
                     return Err(format!(
                         "Workflow mismatch for cancel: frame '{execution_id}' belongs to workflow '{}', not '{req_wf}'",
@@ -1412,15 +1534,13 @@ impl WorkflowExecutionEngine {
                     ));
                 }
             }
-        }
-        if let Some(req_tenant) = payload.get("tenant_id").and_then(|v| v.as_str()) {
-            if let Some(frame) = self.get_frame(execution_id) {
-                if let Some(ref frame_tenant) = frame.envelope.tenant_id {
-                    if frame_tenant != req_tenant {
-                        return Err(format!(
-                            "Tenant mismatch for cancel: frame '{execution_id}' belongs to tenant '{frame_tenant}', but request specified '{req_tenant}'"
-                        ));
-                    }
+            if frame.tenant_id.is_some() || payload.get("tenant_id").is_some() {
+                let req_tenant = payload.get("tenant_id").and_then(|v| v.as_str());
+                if frame.tenant_id.as_deref() != req_tenant {
+                    return Err(format!(
+                        "Tenant mismatch for cancel: frame '{execution_id}' belongs to tenant '{:?}', but request specified '{:?}'",
+                        frame.tenant_id, req_tenant
+                    ));
                 }
             }
         }

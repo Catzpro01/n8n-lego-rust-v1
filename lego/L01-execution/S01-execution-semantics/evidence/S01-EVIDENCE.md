@@ -43,7 +43,7 @@
    - `handle_port_cancel_workflow`: Mendukung pembatalan dengan alasan asli dan preservasi trace correlation.
 
 ## Unit Test Coverage
-Suite pengujian pada `tests/execution_semantics_test.rs` memverifikasi 32 skenario kritis:
+Suite pengujian pada `tests/execution_semantics_test.rs` memverifikasi 37 skenario kritis:
 - `test_workflow_execution_frame_lifecycle`: Alur dasar start -> advance -> complete.
 - `test_extended_fsm_created_waiting_resumed_lifecycle`: Transisi FSM lengkap Created -> Running -> Waiting -> Running -> Completed.
 - `test_cancel_waiting_and_created_frames`: Pembatalan frame berstatus Created dan Waiting.
@@ -76,11 +76,21 @@ Suite pengujian pada `tests/execution_semantics_test.rs` memverifikasi 32 skenar
 - `test_suspend_with_empty_wait_token_rejected`: Penolakan token penangguhan kosong atau whitespace.
 - `test_resume_with_matching_and_mismatched_token`: Penegakan kecocokan token pada saat resume frame.
 - `test_port_run_workflow_payload_budget_applied`: Preservasi dan penegakan budget dari payload pemanggilan port.
+- `test_wal_replay_rejects_non_monotonic_lsn`: Replay WAL menolak urutan LSN tidak monotonik atau duplikat.
+- `test_wal_replay_rejects_impossible_transition_after_terminal`: Replay WAL menolak transisi ilegal atau mutasi setelah mencapai state terminal.
+- `test_cancel_dispatcher_conflict_on_terminal_frame`: Dispatcher pembatalan mengembalikan penolakan conflict pada frame terminal (Completed / Failed).
+- `test_port_run_workflow_tenant_omitted_for_tenant_scoped_frame_rejected`: Penolakan fail-closed terhadap permintaan tanpa tenant jika frame terikat tenant spesifik.
+- `test_port_cancel_workflow_tenant_isolation`: Dispatcher pembatalan menegakkan isolasi tenant secara fail-closed pada pembatalan alur kerja.
 
 ## Port Contract Verification
 - Verified via `crates/n8n-port-contract/tests/execution_semantics_port_test.rs`:
   - `test_execution_semantics_run_port_roundtrip`: PASS
-  - `test_execution_semantics_cancel_port_roundtrip`: PASS
+  - `test_execution_semantics_wrong_workflow_rejected`: PASS
+  - `test_execution_semantics_wrong_tenant_rejected`: PASS
+  - `test_execution_semantics_invalid_execution_id_rejected`: PASS
+  - `test_execution_semantics_wal_failure_rejected_fail_closed`: PASS
+  - `test_execution_semantics_terminal_replay_rejected`: PASS
+  - `test_execution_semantics_cancel_replay_and_conflict_semantics`: PASS
   - `test_execution_semantics_ports_security_denied_for_unauthorized_invoker`: PASS
 
 ## Residual Risk
