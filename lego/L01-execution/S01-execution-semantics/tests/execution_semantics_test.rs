@@ -1108,4 +1108,187 @@ mod tests {
         let q2 = engine.get_frame(&frame.execution_id).unwrap();
         assert_eq!(q2.status, ExecutionFrameStatus::Cancelled);
     }
+
+    #[test]
+    fn test_engine_with_injected_wal() {
+        let wal = WalJournal::new();
+        let engine = WorkflowExecutionEngine::with_wal(wal);
+        let frame = engine
+            .start_execution("wf_injected_wal", serde_json::json!({"x": 1}))
+            .expect("Start execution with injected WAL");
+        assert_eq!(frame.status, ExecutionFrameStatus::Running);
+
+        let records = engine.get_wal_records(&frame.execution_id);
+        assert!(!records.is_empty());
+        assert_eq!(records[0].record_type, "ExecutionStarted");
+    }
+
+    #[test]
+    fn test_wal_replay_preserves_budget_and_envelope() {
+        let engine = WorkflowExecutionEngine::new();
+        let custom_budget = ExecutionBudget {
+            max_steps: 10,
+            timeout_ms: 15_000,
+            max_memory_bytes: 4096,
+        };
+        let custom_envelope = ContractEnvelope {
+            correlation_id: Some("corr_replay_budget".to_string()),
+            tenant_id: Some("tenant_corp_1".to_string()),
+            caller_sublego: Some("L00.S01".to_string()),
+            contract_version: Some("1.0.0".to_string()),
+        };
+
+        let frame = engine
+            .start_execution_with_options(
+                "exec_replay_budget_1",
+                "wf_replay_budget",
+                serde_json::json!({"payload": "test"}),
+                Some(custom_budget.clone()),
+                Some(custom_envelope.clone()),
+            )
+            .expect("Start execution with budget and envelope");
+
+        engine.advance_step(&frame.execution_id).expect("Advance step");
+        engine.complete_execution(&frame.execution_id).expect("Complete");
+
+        // 1. Recover frame from WAL
+        let recovered = engine
+            .recover_frame_from_wal(&frame.execution_id)
+            .expect("Recovery must succeed");
+        assert_eq!(recovered.status, ExecutionFrameStatus::Completed);
+        assert_eq!(recovered.current_step, 1);
+        assert_eq!(recovered.budget, Some(custom_budget));
+        assert_eq!(recovered.envelope, custom_envelope);
+        assert_eq!(recovered.tenant_id, Some("tenant_corp_1".to_string()));
+
+        // 2. Mathematical consistency verification
+        let consistent = engine
+            .verify_recovery_consistency(&frame.execution_id)
+            .expect("Verification check");
+        assert!(consistent, "Authoritative frame and replayed frame must be 100% consistent");
+    }
+
+    #[test]
+    fn test_wal_replay_rejects_non_monotonic_step_progression() {
+        let engine = WorkflowExecutionEngine::new();
+        let exec_id = "exec_step_non_monotonic";
+
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 10,
+                record_type: "ExecutionStarted".to_string(),
+                payload: serde_json::json!({"workflow_id": "wf_step_test"}),
+                timestamp_ms: 1000,
+            })
+            .unwrap();
+
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 20,
+                record_type: "StepAdvanced".to_string(),
+                payload: serde_json::json!({"step": 2}),
+                timestamp_ms: 1001,
+            })
+            .unwrap();
+
+        // Second StepAdvanced has step 1 (regressing backward)
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 30,
+                record_type: "StepAdvanced".to_string(),
+                payload: serde_json::json!({"step": 1}),
+                timestamp_ms: 1002,
+            })
+            .unwrap();
+
+        let res = engine.recover_frame_from_wal(exec_id);
+        assert!(matches!(res, Err(ExecutionError::InvalidPayload(_))));
+        assert!(res.unwrap_err().to_string().contains("Non-monotonic step progression"));
+    }
+
+    #[test]
+    fn test_wal_replay_rejects_empty_wait_token_in_suspended_record() {
+        let engine = WorkflowExecutionEngine::new();
+        let exec_id = "exec_empty_wait_token";
+
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 10,
+                record_type: "ExecutionStarted".to_string(),
+                payload: serde_json::json!({"workflow_id": "wf_wait_test"}),
+                timestamp_ms: 1000,
+            })
+            .unwrap();
+
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 20,
+                record_type: "ExecutionSuspended".to_string(),
+                payload: serde_json::json!({"wait_token": "   "}),
+                timestamp_ms: 1001,
+            })
+            .unwrap();
+
+        let res = engine.recover_frame_from_wal(exec_id);
+        assert!(matches!(res, Err(ExecutionError::InvalidPayload(_))));
+        assert!(res.unwrap_err().to_string().contains("Empty wait_token"));
+    }
+
+    #[test]
+    fn test_cancel_dispatcher_conflict_on_failed_frame() {
+        let engine = WorkflowExecutionEngine::new();
+        let frame = engine
+            .start_execution("wf_cancel_fail_conflict", serde_json::json!({}))
+            .unwrap();
+
+        // Fail the frame
+        engine.fail_execution(&frame.execution_id, "Fatal engine fault").unwrap();
+
+        // Attempting to cancel failed frame via port cancel dispatcher must fail closed with conflict
+        let cancel_payload = serde_json::json!({
+            "execution_id": frame.execution_id,
+            "reason": "Abort failed"
+        });
+        let res = engine.handle_port_cancel_workflow(&cancel_payload);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("Invalid state transition"));
+
+        // Frame must remain Failed
+        let q = engine.get_frame(&frame.execution_id).unwrap();
+        assert_eq!(q.status, ExecutionFrameStatus::Failed);
+    }
+
+    #[test]
+    fn test_wal_replay_rejects_duplicate_execution_created() {
+        let engine = WorkflowExecutionEngine::new();
+        let exec_id = "exec_dup_created";
+
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 10,
+                record_type: "ExecutionCreated".to_string(),
+                payload: serde_json::json!({"workflow_id": "wf_dup"}),
+                timestamp_ms: 1000,
+            })
+            .unwrap();
+
+        engine
+            .append_raw_wal_record(ExecutionWalRecord {
+                execution_id: exec_id.to_string(),
+                lsn: 20,
+                record_type: "ExecutionCreated".to_string(),
+                payload: serde_json::json!({"workflow_id": "wf_dup"}),
+                timestamp_ms: 1001,
+            })
+            .unwrap();
+
+        let res = engine.recover_frame_from_wal(exec_id);
+        assert!(matches!(res, Err(ExecutionError::InvalidStateTransition { .. })));
+    }
 }

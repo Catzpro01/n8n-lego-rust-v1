@@ -219,6 +219,14 @@ impl WorkflowExecutionEngine {
         }
     }
 
+    /// Initializes engine with an injected WAL journal (durable storage dependency injection)
+    pub fn with_wal(wal: WalJournal) -> Self {
+        Self {
+            frames: RwLock::new(HashMap::new()),
+            wal,
+        }
+    }
+
     /// Configures whether WAL appends should simulate disk/I/O failure for testing fail-closed semantics
     pub fn set_simulate_wal_failure(&self, fail: bool) {
         self.wal.set_simulate_failure(fail);
@@ -330,9 +338,9 @@ impl WorkflowExecutionEngine {
             cancellation_reason: None,
             error_message: None,
             wait_token: None,
-            budget,
+            budget: budget.clone(),
             step_outputs: Vec::new(),
-            envelope: env,
+            envelope: env.clone(),
             created_at_ms: ts,
             updated_at_ms: ts,
         };
@@ -352,7 +360,9 @@ impl WorkflowExecutionEngine {
             serde_json::json!({
                 "workflow_id": workflow_id,
                 "tenant_id": tenant_id,
-                "trigger_payload": trigger
+                "trigger_payload": trigger,
+                "budget": budget,
+                "envelope": env,
             }),
         )?;
 
@@ -382,7 +392,12 @@ impl WorkflowExecutionEngine {
         self.record_wal_event(
             execution_id,
             "ExecutionStarted",
-            serde_json::json!({ "workflow_id": frame.workflow_id }),
+            serde_json::json!({
+                "workflow_id": frame.workflow_id,
+                "tenant_id": frame.tenant_id,
+                "budget": frame.budget,
+                "envelope": frame.envelope,
+            }),
         )?;
 
         frame.status = ExecutionFrameStatus::Running;
@@ -441,9 +456,9 @@ impl WorkflowExecutionEngine {
             cancellation_reason: None,
             error_message: None,
             wait_token: None,
-            budget,
+            budget: budget.clone(),
             step_outputs: Vec::new(),
-            envelope: env,
+            envelope: env.clone(),
             created_at_ms: ts,
             updated_at_ms: ts,
         };
@@ -463,7 +478,9 @@ impl WorkflowExecutionEngine {
             serde_json::json!({
                 "workflow_id": workflow_id,
                 "tenant_id": tenant_id,
-                "trigger_payload": trigger
+                "trigger_payload": trigger,
+                "budget": budget,
+                "envelope": env,
             }),
         )?;
 
@@ -508,7 +525,12 @@ impl WorkflowExecutionEngine {
                 self.record_wal_event(
                     execution_id,
                     "ExecutionStarted",
-                    serde_json::json!({ "workflow_id": workflow_id, "tenant_id": frame.tenant_id }),
+                    serde_json::json!({
+                        "workflow_id": workflow_id,
+                        "tenant_id": frame.tenant_id,
+                        "budget": frame.budget,
+                        "envelope": frame.envelope,
+                    }),
                 )?;
                 frame.status = ExecutionFrameStatus::Running;
                 frame.updated_at_ms = now_ms();
@@ -532,9 +554,9 @@ impl WorkflowExecutionEngine {
             cancellation_reason: None,
             error_message: None,
             wait_token: None,
-            budget,
+            budget: budget.clone(),
             step_outputs: Vec::new(),
-            envelope: env,
+            envelope: env.clone(),
             created_at_ms: ts,
             updated_at_ms: ts,
         };
@@ -545,7 +567,9 @@ impl WorkflowExecutionEngine {
             serde_json::json!({
                 "workflow_id": workflow_id,
                 "tenant_id": tenant_id,
-                "trigger_payload": trigger
+                "trigger_payload": trigger,
+                "budget": budget,
+                "envelope": env,
             }),
         )?;
 
@@ -986,6 +1010,18 @@ impl WorkflowExecutionEngine {
                     .get("trigger_payload")
                     .cloned()
                     .unwrap_or(serde_json::json!({}));
+                let budget: Option<ExecutionBudget> = first
+                    .payload
+                    .get("budget")
+                    .and_then(|b| serde_json::from_value(b.clone()).ok());
+                let envelope: ContractEnvelope = first
+                    .payload
+                    .get("envelope")
+                    .and_then(|e| serde_json::from_value(e.clone()).ok())
+                    .unwrap_or_else(|| ContractEnvelope {
+                        tenant_id: tenant_id.clone(),
+                        ..Default::default()
+                    });
                 ExecutionFrame {
                     execution_id: execution_id.to_string(),
                     workflow_id: wf_id.to_string(),
@@ -996,12 +1032,9 @@ impl WorkflowExecutionEngine {
                     cancellation_reason: None,
                     error_message: None,
                     wait_token: None,
-                    budget: None,
+                    budget,
                     step_outputs: Vec::new(),
-                    envelope: ContractEnvelope {
-                        tenant_id,
-                        ..Default::default()
-                    },
+                    envelope,
                     created_at_ms: first.timestamp_ms,
                     updated_at_ms: first.timestamp_ms,
                 }
@@ -1022,6 +1055,18 @@ impl WorkflowExecutionEngine {
                     .get("trigger_payload")
                     .cloned()
                     .unwrap_or(serde_json::json!({}));
+                let budget: Option<ExecutionBudget> = first
+                    .payload
+                    .get("budget")
+                    .and_then(|b| serde_json::from_value(b.clone()).ok());
+                let envelope: ContractEnvelope = first
+                    .payload
+                    .get("envelope")
+                    .and_then(|e| serde_json::from_value(e.clone()).ok())
+                    .unwrap_or_else(|| ContractEnvelope {
+                        tenant_id: tenant_id.clone(),
+                        ..Default::default()
+                    });
                 ExecutionFrame {
                     execution_id: execution_id.to_string(),
                     workflow_id: wf_id.to_string(),
@@ -1032,12 +1077,9 @@ impl WorkflowExecutionEngine {
                     cancellation_reason: None,
                     error_message: None,
                     wait_token: None,
-                    budget: None,
+                    budget,
                     step_outputs: Vec::new(),
-                    envelope: ContractEnvelope {
-                        tenant_id,
-                        ..Default::default()
-                    },
+                    envelope,
                     created_at_ms: first.timestamp_ms,
                     updated_at_ms: first.timestamp_ms,
                 }
@@ -1074,6 +1116,13 @@ impl WorkflowExecutionEngine {
             }
 
             match rec.record_type.as_str() {
+                "ExecutionCreated" => {
+                    return Err(ExecutionError::InvalidStateTransition {
+                        execution_id: execution_id.to_string(),
+                        from: frame.status,
+                        to: ExecutionFrameStatus::Created,
+                    });
+                }
                 "ExecutionStarted" => {
                     if frame.status != ExecutionFrameStatus::Created {
                         return Err(ExecutionError::InvalidStateTransition {
@@ -1081,6 +1130,12 @@ impl WorkflowExecutionEngine {
                             from: frame.status,
                             to: ExecutionFrameStatus::Running,
                         });
+                    }
+                    if let Some(b) = rec.payload.get("budget").and_then(|b| serde_json::from_value(b.clone()).ok()) {
+                        frame.budget = Some(b);
+                    }
+                    if let Some(e) = rec.payload.get("envelope").and_then(|e| serde_json::from_value(e.clone()).ok()) {
+                        frame.envelope = e;
                     }
                     frame.status = ExecutionFrameStatus::Running;
                     frame.updated_at_ms = rec.timestamp_ms;
@@ -1097,6 +1152,12 @@ impl WorkflowExecutionEngine {
                         .and_then(|v| v.as_u64())
                         .unwrap_or((frame.current_step + 1) as u64)
                         as usize;
+                    if step <= frame.current_step {
+                        return Err(ExecutionError::InvalidPayload(format!(
+                            "Non-monotonic step progression in WAL for frame '{execution_id}': step {step} <= current step {}",
+                            frame.current_step
+                        )));
+                    }
                     frame.current_step = step;
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
@@ -1112,6 +1173,12 @@ impl WorkflowExecutionEngine {
                         .and_then(|v| v.as_u64())
                         .unwrap_or((frame.current_step + 1) as u64)
                         as usize;
+                    if step <= frame.current_step {
+                        return Err(ExecutionError::InvalidPayload(format!(
+                            "Non-monotonic step progression in WAL for frame '{execution_id}': step {step} <= current step {}",
+                            frame.current_step
+                        )));
+                    }
                     frame.current_step = step;
                     if let Some(out) = rec.payload.get("output") {
                         frame.step_outputs.push(out.clone());
@@ -1126,12 +1193,22 @@ impl WorkflowExecutionEngine {
                             to: ExecutionFrameStatus::Waiting,
                         });
                     }
-                    frame.status = ExecutionFrameStatus::Waiting;
-                    frame.wait_token = rec
+                    let token = rec
                         .payload
                         .get("wait_token")
                         .and_then(|v| v.as_str())
-                        .map(|s| s.to_string());
+                        .ok_or_else(|| {
+                            ExecutionError::InvalidPayload(format!(
+                                "Missing wait_token in ExecutionSuspended WAL record for frame '{execution_id}'"
+                            ))
+                        })?;
+                    if token.trim().is_empty() {
+                        return Err(ExecutionError::InvalidPayload(format!(
+                            "Empty wait_token in ExecutionSuspended WAL record for frame '{execution_id}'"
+                        )));
+                    }
+                    frame.status = ExecutionFrameStatus::Waiting;
+                    frame.wait_token = Some(token.to_string());
                     frame.updated_at_ms = rec.timestamp_ms;
                 }
                 "ExecutionResumed" => {
@@ -1212,6 +1289,8 @@ impl WorkflowExecutionEngine {
             && auth_frame.current_step == replayed.current_step
             && auth_frame.workflow_id == replayed.workflow_id
             && auth_frame.tenant_id == replayed.tenant_id
+            && auth_frame.budget == replayed.budget
+            && auth_frame.envelope == replayed.envelope
             && auth_frame.step_outputs.len() == replayed.step_outputs.len();
 
         Ok(consistent)

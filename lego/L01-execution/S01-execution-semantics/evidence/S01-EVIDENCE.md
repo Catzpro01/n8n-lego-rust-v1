@@ -43,7 +43,7 @@
    - `handle_port_cancel_workflow`: Mendukung pembatalan dengan alasan asli dan preservasi trace correlation.
 
 ## Unit Test Coverage
-Suite pengujian pada `tests/execution_semantics_test.rs` memverifikasi 37 skenario kritis:
+Suite pengujian pada `tests/execution_semantics_test.rs` memverifikasi 43 skenario kritis:
 - `test_workflow_execution_frame_lifecycle`: Alur dasar start -> advance -> complete.
 - `test_extended_fsm_created_waiting_resumed_lifecycle`: Transisi FSM lengkap Created -> Running -> Waiting -> Running -> Completed.
 - `test_cancel_waiting_and_created_frames`: Pembatalan frame berstatus Created dan Waiting.
@@ -78,9 +78,15 @@ Suite pengujian pada `tests/execution_semantics_test.rs` memverifikasi 37 skenar
 - `test_port_run_workflow_payload_budget_applied`: Preservasi dan penegakan budget dari payload pemanggilan port.
 - `test_wal_replay_rejects_non_monotonic_lsn`: Replay WAL menolak urutan LSN tidak monotonik atau duplikat.
 - `test_wal_replay_rejects_impossible_transition_after_terminal`: Replay WAL menolak transisi ilegal atau mutasi setelah mencapai state terminal.
-- `test_cancel_dispatcher_conflict_on_terminal_frame`: Dispatcher pembatalan mengembalikan penolakan conflict pada frame terminal (Completed / Failed).
+- `test_cancel_dispatcher_conflict_on_terminal_frame`: Dispatcher pembatalan mengembalikan penolakan conflict pada frame terminal Completed.
 - `test_port_run_workflow_tenant_omitted_for_tenant_scoped_frame_rejected`: Penolakan fail-closed terhadap permintaan tanpa tenant jika frame terikat tenant spesifik.
 - `test_port_cancel_workflow_tenant_isolation`: Dispatcher pembatalan menegakkan isolasi tenant secara fail-closed pada pembatalan alur kerja.
+- `test_engine_with_injected_wal`: Dependency injection WAL journal pada WorkflowExecutionEngine.
+- `test_wal_replay_preserves_budget_and_envelope`: Preservasi parameter budget dan envelope pada replay WAL serta verifikasi konsistensi pemulihan matematis.
+- `test_wal_replay_rejects_non_monotonic_step_progression`: Replay WAL menolak deret langkah step tidak monotonik atau mundur.
+- `test_wal_replay_rejects_empty_wait_token_in_suspended_record`: Replay WAL menolak record penangguhan dengan wait token kosong.
+- `test_cancel_dispatcher_conflict_on_failed_frame`: Dispatcher pembatalan mengembalikan penolakan conflict pada frame berstatus Failed.
+- `test_wal_replay_rejects_duplicate_execution_created`: Replay WAL menolak record duplikat ExecutionCreated.
 
 ## Port Contract Verification
 - Verified via `crates/n8n-port-contract/tests/execution_semantics_port_test.rs`:

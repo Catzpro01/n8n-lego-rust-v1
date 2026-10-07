@@ -268,6 +268,72 @@ fn create_test_handlers(state: Arc<Mutex<EngineState>>) -> (PortHandlerFn, PortH
                             PortTelemetry::new(trace_id),
                         )
                     }
+                    "fail" => {
+                        let exec_id = match val.get("execution_id").and_then(|v| v.as_str()) {
+                            Some(id) if !id.trim().is_empty() => id,
+                            _ => {
+                                return PortResponse::error(
+                                    inv.invocation_id,
+                                    PortStatus::ClientError,
+                                    PortErrorDetail::new(PortErrorCode::BadRequest, "Missing execution_id", false),
+                                    PortTelemetry::new(trace_id),
+                                );
+                            }
+                        };
+
+                        let frame = match st.frames.get_mut(exec_id) {
+                            Some(f) => f,
+                            None => {
+                                return PortResponse::error(
+                                    inv.invocation_id,
+                                    PortStatus::ClientError,
+                                    PortErrorDetail::new(PortErrorCode::NotFound, "Frame not found", false),
+                                    PortTelemetry::new(trace_id),
+                                );
+                            }
+                        };
+
+                        if frame.workflow_id != workflow_id {
+                            return PortResponse::error(
+                                inv.invocation_id,
+                                PortStatus::ClientError,
+                                PortErrorDetail::new(PortErrorCode::Conflict, "Workflow mismatch", false),
+                                PortTelemetry::new(trace_id),
+                            );
+                        }
+
+                        if frame.tenant_id != invoker_tenant {
+                            return PortResponse::error(
+                                inv.invocation_id,
+                                PortStatus::ClientError,
+                                PortErrorDetail::new(PortErrorCode::Forbidden, "Tenant mismatch", false),
+                                PortTelemetry::new(trace_id),
+                            );
+                        }
+
+                        if frame.status == "Completed" || frame.status == "Failed" || frame.status == "Cancelled" {
+                            return PortResponse::error(
+                                inv.invocation_id,
+                                PortStatus::ClientError,
+                                PortErrorDetail::new(PortErrorCode::Conflict, "Frame already terminal", false),
+                                PortTelemetry::new(trace_id),
+                            );
+                        }
+
+                        frame.status = "Failed".to_string();
+
+                        PortResponse::success(
+                            inv.invocation_id,
+                            PortPayload::Json(json!({
+                                "execution_id": exec_id,
+                                "workflow_id": workflow_id,
+                                "status": "Failed",
+                                "current_step": frame.steps,
+                                "steps_executed": frame.steps
+                            })),
+                            PortTelemetry::new(trace_id),
+                        )
+                    }
                     other => PortResponse::error(
                         inv.invocation_id,
                         PortStatus::ClientError,
@@ -898,6 +964,56 @@ async fn test_execution_semantics_cancel_replay_and_conflict_semantics() {
     let err = cancel_resp_completed.error.as_ref().expect("Expected error detail");
     assert_eq!(err.code, PortErrorCode::Conflict);
     assert!(err.message.contains("Cannot cancel frame in terminal status"));
+
+    // 4. Start frame C and fail it -> then cancelling must also return Conflict
+    let start_inv_c = PortInvocation::new(
+        SubLegoId::new("H01"),
+        SubLegoId::new("L01.S01"),
+        run_port.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H03ExecutionHost,
+        auth_ctx.clone(),
+        PortPayload::Json(json!({
+            "workflow_id": "wf_cancel",
+            "execution_id": "exec_cancel_c",
+            "action": "start"
+        })),
+    );
+    assert!(adapter.invoke(start_inv_c).await.is_success());
+
+    let fail_inv_c = PortInvocation::new(
+        SubLegoId::new("H01"),
+        SubLegoId::new("L01.S01"),
+        run_port.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H03ExecutionHost,
+        auth_ctx.clone(),
+        PortPayload::Json(json!({
+            "workflow_id": "wf_cancel",
+            "execution_id": "exec_cancel_c",
+            "action": "fail"
+        })),
+    );
+    assert!(adapter.invoke(fail_inv_c).await.is_success());
+
+    let cancel_failed_inv = PortInvocation::new(
+        SubLegoId::new("H01"),
+        SubLegoId::new("L01.S01"),
+        cancel_port.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H03ExecutionHost,
+        auth_ctx.clone(),
+        PortPayload::Json(json!({
+            "execution_id": "exec_cancel_c",
+            "reason": "Cancel failed frame"
+        })),
+    );
+    let cancel_resp_failed = adapter.invoke(cancel_failed_inv).await;
+    assert!(!cancel_resp_failed.is_success());
+    assert_eq!(cancel_resp_failed.status, PortStatus::ClientError);
+    let err_f = cancel_resp_failed.error.as_ref().expect("Expected error detail");
+    assert_eq!(err_f.code, PortErrorCode::Conflict);
+    assert!(err_f.message.contains("Cannot cancel frame in terminal status"));
 }
 
 #[tokio::test]
