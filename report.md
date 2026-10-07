@@ -3492,11 +3492,21 @@ Semua 8 Sub-LEGO L11 Future Platform yang sebelumnya berstatus `DESIGNED` telah 
 6. **Port Contract Integration Tests**:
    - Menambahkan `crates/n8n-port-contract/tests/execution_semantics_port_test.rs` memverifikasi transport-neutral port invocation, security scope denial, and correlation tracing.
 
-#### 4. Hasil Verifikasi
-- `lego/L01-execution/S01-execution-semantics/tests/execution_semantics_test.rs`: 23/23 tests PASS (Exit code 0).
-- `crates/n8n-port-contract/tests/execution_semantics_port_test.rs`: 3/3 tests PASS (Exit code 0).
-- `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
-- `cargo check --workspace --locked`: PASS (Exit code 0).
+#### 4. Hasil Verifikasi & Review Hardening (Round 2)
+- **Review Findings (Prior Attempt Defect Remediation)**:
+  1. *Dirty in-memory state on node WAL failure*: `execute_node_step` memutasi `current_step` dan `step_outputs` sebelum WAL ditulis; diperbaiki dengan memprioritaskan penulisan WAL sebelum mutasi in-memory (zero dirty commits).
+  2. *Swallowed errors & missing `ExecutionCancelled`*: Pola `let _ =` dihilangkan pada penanganan kegagalan WAL saat budget terlampaui dan kegagalan node; varian error `ExecutionCancelled` kini dikembalikan saat frame dibatalkan sebelum/selama eksekusi node.
+  3. *Unenforced memory budget*: Penegakan batas alokasi memori payload (`max_memory_bytes`) kini diimplementasikan secara aktif dalam `check_budget`.
+  4. *Workflow & Tenant boundary leak*: `handle_port_run_workflow` dan `handle_port_cancel_workflow` kini memvalidasi kepemilikan `workflow_id` dan `tenant_id` secara fail-closed, mencegah kontaminasi dan pembajakan frame antar alur kerja / tenant.
+  5. *TOCTOU race*: Menambahkan `start_or_transition_created` untuk transisi atomik di bawah write-lock tunggal.
+  6. *Replay semantics & recovery consistency*: Mengimplementasikan `recover_frame_from_wal` dan `verify_recovery_consistency` untuk pembuktian matematis konsistensi rekonsiliasi state dari WAL log.
+  7. *Wait token validation*: Memvalidasi token tidak kosong pada `suspend_execution` dan verifikasi kecocokan token pada `resume_execution_with_token`.
+- **Test Results**:
+  - `lego/L01-execution/S01-execution-semantics/tests/execution_semantics_test.rs`: 32/32 tests PASS (Exit code 0).
+  - `crates/n8n-port-contract/tests/execution_semantics_port_test.rs`: 3/3 tests PASS (Exit code 0).
+  - `crates/n8n-port-contract` full test suite: 55 suites, 100 tests PASS (Exit code 0).
+  - `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
+  - `cargo check --workspace --locked`: PASS (Exit code 0).
 
 Report: ./report.md
 

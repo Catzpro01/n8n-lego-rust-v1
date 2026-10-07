@@ -122,7 +122,9 @@ pub enum ExecutionError {
     FrameNotFound(String),
 
     #[error("Execution frame is not running (current status: {current_status:?})")]
-    FrameNotRunning { current_status: ExecutionFrameStatus },
+    FrameNotRunning {
+        current_status: ExecutionFrameStatus,
+    },
 
     #[error("Invalid state transition from {from:?} to {to:?} for frame '{execution_id}'")]
     InvalidStateTransition {
@@ -147,10 +149,7 @@ pub enum ExecutionError {
     WalAppendFailed(String),
 
     #[error("Node '{node_name}' execution failed: {message}")]
-    NodeExecutionFailed {
-        node_name: String,
-        message: String,
-    },
+    NodeExecutionFailed { node_name: String, message: String },
 
     #[error("Execution frame '{execution_id}' was cancelled: {reason}")]
     ExecutionCancelled {
@@ -180,12 +179,17 @@ impl WalJournal {
 
     pub fn append(&self, record: ExecutionWalRecord) -> Result<u64, String> {
         if self.fail_all_appends.load(Ordering::SeqCst) {
-            return Err("Simulated WAL disk I/O failure (fail-closed durability violation)".to_string());
+            return Err(
+                "Simulated WAL disk I/O failure (fail-closed durability violation)".to_string(),
+            );
         }
 
         let lsn = record.lsn;
         let exec_id = record.execution_id.clone();
-        let mut map = self.records.write().map_err(|_| "WAL journal lock poisoned".to_string())?;
+        let mut map = self
+            .records
+            .write()
+            .map_err(|_| "WAL journal lock poisoned".to_string())?;
         map.entry(exec_id).or_default().push(record);
         Ok(lsn)
     }
@@ -239,21 +243,27 @@ impl WorkflowExecutionEngine {
             payload,
             timestamp_ms: now_ms(),
         };
-        self.wal.append(record).map_err(ExecutionError::WalAppendFailed)
+        self.wal
+            .append(record)
+            .map_err(ExecutionError::WalAppendFailed)
     }
 
     /// Validates identifiers
     fn validate_ids(execution_id: &str, workflow_id: &str) -> Result<(), ExecutionError> {
         if workflow_id.trim().is_empty() {
-            return Err(ExecutionError::InvalidPayload("workflow_id cannot be empty".to_string()));
+            return Err(ExecutionError::InvalidPayload(
+                "workflow_id cannot be empty".to_string(),
+            ));
         }
         if execution_id.trim().is_empty() {
-            return Err(ExecutionError::InvalidPayload("execution_id cannot be empty".to_string()));
+            return Err(ExecutionError::InvalidPayload(
+                "execution_id cannot be empty".to_string(),
+            ));
         }
         Ok(())
     }
 
-    /// Checks if frame exceeded timeout or step budget
+    /// Checks if frame exceeded timeout, step budget, or memory limit
     fn check_budget(frame: &ExecutionFrame) -> Result<(), ExecutionError> {
         if let Some(ref budget) = frame.budget {
             let elapsed = now_ms().saturating_sub(frame.created_at_ms);
@@ -268,6 +278,23 @@ impl WorkflowExecutionEngine {
                     "Current step ({}) reached maximum step budget ({})",
                     frame.current_step, budget.max_steps
                 )));
+            }
+            if budget.max_memory_bytes > 0 {
+                let trigger_bytes = serde_json::to_vec(&frame.trigger_payload)
+                    .map(|v| v.len())
+                    .unwrap_or(0);
+                let outputs_bytes: usize = frame
+                    .step_outputs
+                    .iter()
+                    .map(|v| serde_json::to_vec(v).map(|b| b.len()).unwrap_or(0))
+                    .sum();
+                let total_bytes = (trigger_bytes + outputs_bytes) as u64;
+                if total_bytes >= budget.max_memory_bytes {
+                    return Err(ExecutionError::BudgetExhausted(format!(
+                        "Payload memory usage ({} bytes) reached or exceeded maximum memory budget ({} bytes)",
+                        total_bytes, budget.max_memory_bytes
+                    )));
+                }
             }
         }
         Ok(())
@@ -301,7 +328,10 @@ impl WorkflowExecutionEngine {
             updated_at_ms: ts,
         };
 
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         if frames.contains_key(execution_id) {
             return Err(ExecutionError::FrameAlreadyExists(execution_id.to_string()));
         }
@@ -322,7 +352,10 @@ impl WorkflowExecutionEngine {
 
     /// Transitions a frame from `Created` to `Running`
     pub fn start_run(&self, execution_id: &str) -> Result<ExecutionFrame, ExecutionError> {
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         let frame = frames
             .get_mut(execution_id)
             .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
@@ -354,7 +387,9 @@ impl WorkflowExecutionEngine {
         trigger: serde_json::Value,
     ) -> Result<ExecutionFrame, ExecutionError> {
         if workflow_id.trim().is_empty() {
-            return Err(ExecutionError::InvalidPayload("workflow_id cannot be empty".to_string()));
+            return Err(ExecutionError::InvalidPayload(
+                "workflow_id cannot be empty".to_string(),
+            ));
         }
         let timestamp = now_ms();
         let counter = EXEC_COUNTER.fetch_add(1, Ordering::SeqCst);
@@ -400,7 +435,10 @@ impl WorkflowExecutionEngine {
             updated_at_ms: ts,
         };
 
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         if frames.contains_key(execution_id) {
             return Err(ExecutionError::FrameAlreadyExists(execution_id.to_string()));
         }
@@ -419,9 +457,92 @@ impl WorkflowExecutionEngine {
         Ok(frame)
     }
 
+    /// Atomically starts an execution frame: if it already exists in `Created` status, transitions to `Running`;
+    /// if it does not exist, creates and starts it directly. Avoids TOCTOU race condition.
+    pub fn start_or_transition_created(
+        &self,
+        execution_id: &str,
+        workflow_id: &str,
+        trigger: serde_json::Value,
+        budget: Option<ExecutionBudget>,
+        envelope: Option<ContractEnvelope>,
+    ) -> Result<ExecutionFrame, ExecutionError> {
+        Self::validate_ids(execution_id, workflow_id)?;
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
+        if let Some(frame) = frames.get_mut(execution_id) {
+            if frame.workflow_id != workflow_id {
+                return Err(ExecutionError::InvalidPayload(format!(
+                    "Execution frame '{execution_id}' belongs to workflow '{}', not '{workflow_id}'",
+                    frame.workflow_id
+                )));
+            }
+            if let Some(ref env) = envelope {
+                if frame.envelope.tenant_id.is_some()
+                    && env.tenant_id.is_some()
+                    && frame.envelope.tenant_id != env.tenant_id
+                {
+                    return Err(ExecutionError::InvalidPayload(format!(
+                        "Tenant mismatch: frame belongs to tenant '{:?}', but request provided '{:?}'",
+                        frame.envelope.tenant_id, env.tenant_id
+                    )));
+                }
+            }
+            if frame.status == ExecutionFrameStatus::Created {
+                self.record_wal_event(
+                    execution_id,
+                    "ExecutionStarted",
+                    serde_json::json!({ "workflow_id": workflow_id }),
+                )?;
+                frame.status = ExecutionFrameStatus::Running;
+                frame.updated_at_ms = now_ms();
+                return Ok(frame.clone());
+            } else {
+                return Err(ExecutionError::FrameAlreadyExists(format!(
+                    "Execution frame '{execution_id}' already exists with status {:?}",
+                    frame.status
+                )));
+            }
+        }
+
+        let ts = now_ms();
+        let frame = ExecutionFrame {
+            execution_id: execution_id.to_string(),
+            workflow_id: workflow_id.to_string(),
+            current_step: 0,
+            status: ExecutionFrameStatus::Running,
+            trigger_payload: trigger.clone(),
+            cancellation_reason: None,
+            error_message: None,
+            wait_token: None,
+            budget,
+            step_outputs: Vec::new(),
+            envelope: envelope.unwrap_or_default(),
+            created_at_ms: ts,
+            updated_at_ms: ts,
+        };
+
+        self.record_wal_event(
+            execution_id,
+            "ExecutionStarted",
+            serde_json::json!({
+                "workflow_id": workflow_id,
+                "trigger_payload": trigger
+            }),
+        )?;
+
+        frames.insert(execution_id.to_string(), frame.clone());
+        Ok(frame)
+    }
+
     /// Advances the execution frame by one step if currently running
     pub fn advance_step(&self, execution_id: &str) -> Result<usize, ExecutionError> {
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         let frame = frames
             .get_mut(execution_id)
             .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
@@ -434,12 +555,12 @@ impl WorkflowExecutionEngine {
 
         // Check budget constraints
         if let Err(budget_err) = Self::check_budget(frame) {
-            // Transition frame to failed if budget exceeded
-            let _ = self.record_wal_event(
+            // Must write WAL first before mutating frame to Failed (fail-closed durability)
+            self.record_wal_event(
                 execution_id,
                 "ExecutionFailed",
                 serde_json::json!({ "reason": budget_err.to_string() }),
-            );
+            )?;
             frame.status = ExecutionFrameStatus::Failed;
             frame.error_message = Some(budget_err.to_string());
             frame.updated_at_ms = now_ms();
@@ -461,8 +582,21 @@ impl WorkflowExecutionEngine {
     }
 
     /// Suspends a running execution frame waiting for an external event/token (Running -> Waiting)
-    pub fn suspend_execution(&self, execution_id: &str, wait_token: &str) -> Result<(), ExecutionError> {
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+    pub fn suspend_execution(
+        &self,
+        execution_id: &str,
+        wait_token: &str,
+    ) -> Result<(), ExecutionError> {
+        if wait_token.trim().is_empty() {
+            return Err(ExecutionError::InvalidPayload(
+                "wait_token cannot be empty".to_string(),
+            ));
+        }
+
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         let frame = frames
             .get_mut(execution_id)
             .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
@@ -488,8 +622,25 @@ impl WorkflowExecutionEngine {
     }
 
     /// Resumes a suspended waiting frame back into active execution (Waiting -> Running)
-    pub fn resume_execution(&self, execution_id: &str, resume_payload: serde_json::Value) -> Result<(), ExecutionError> {
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+    pub fn resume_execution(
+        &self,
+        execution_id: &str,
+        resume_payload: serde_json::Value,
+    ) -> Result<(), ExecutionError> {
+        self.resume_execution_with_token(execution_id, None, resume_payload)
+    }
+
+    /// Resumes a suspended waiting frame back into active execution verifying wait_token if provided
+    pub fn resume_execution_with_token(
+        &self,
+        execution_id: &str,
+        expected_token: Option<&str>,
+        resume_payload: serde_json::Value,
+    ) -> Result<(), ExecutionError> {
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         let frame = frames
             .get_mut(execution_id)
             .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
@@ -500,6 +651,15 @@ impl WorkflowExecutionEngine {
                 from: frame.status,
                 to: ExecutionFrameStatus::Running,
             });
+        }
+
+        if let Some(token) = expected_token {
+            if frame.wait_token.as_deref() != Some(token) {
+                return Err(ExecutionError::InvalidPayload(format!(
+                    "Wait token mismatch for frame '{execution_id}': expected '{token}', found '{:?}'",
+                    frame.wait_token
+                )));
+            }
         }
 
         self.record_wal_event(
@@ -516,7 +676,10 @@ impl WorkflowExecutionEngine {
 
     /// Marks an execution frame as completed (Running -> Completed)
     pub fn complete_execution(&self, execution_id: &str) -> Result<(), ExecutionError> {
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         let frame = frames
             .get_mut(execution_id)
             .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
@@ -542,7 +705,10 @@ impl WorkflowExecutionEngine {
 
     /// Marks an execution frame as failed
     pub fn fail_execution(&self, execution_id: &str, error: &str) -> Result<(), ExecutionError> {
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         let frame = frames
             .get_mut(execution_id)
             .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
@@ -569,7 +735,10 @@ impl WorkflowExecutionEngine {
 
     /// Cancels an execution frame immediately (idempotent if already cancelled)
     pub fn cancel_execution(&self, execution_id: &str, reason: &str) -> Result<(), ExecutionError> {
-        let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+        let mut frames = self
+            .frames
+            .write()
+            .map_err(|_| ExecutionError::LockPoisoned)?;
         let frame = frames
             .get_mut(execution_id)
             .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
@@ -579,7 +748,9 @@ impl WorkflowExecutionEngine {
             return Ok(());
         }
 
-        if frame.status == ExecutionFrameStatus::Completed || frame.status == ExecutionFrameStatus::Failed {
+        if frame.status == ExecutionFrameStatus::Completed
+            || frame.status == ExecutionFrameStatus::Failed
+        {
             return Err(ExecutionError::InvalidStateTransition {
                 execution_id: execution_id.to_string(),
                 from: frame.status,
@@ -611,29 +782,60 @@ impl WorkflowExecutionEngine {
     where
         F: FnOnce(&str, &str, &serde_json::Value) -> Result<serde_json::Value, String>,
     {
-        // 1. Verify frame status and check budget
+        // 1. Verify frame status and check budget before invoking node
         {
-            let frames = self.frames.read().map_err(|_| ExecutionError::LockPoisoned)?;
+            let mut frames = self
+                .frames
+                .write()
+                .map_err(|_| ExecutionError::LockPoisoned)?;
             let frame = frames
-                .get(execution_id)
+                .get_mut(execution_id)
                 .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
+
+            if frame.status == ExecutionFrameStatus::Cancelled {
+                return Err(ExecutionError::ExecutionCancelled {
+                    execution_id: execution_id.to_string(),
+                    reason: frame.cancellation_reason.clone().unwrap_or_default(),
+                });
+            }
 
             if frame.status != ExecutionFrameStatus::Running {
                 return Err(ExecutionError::FrameNotRunning {
                     current_status: frame.status,
                 });
             }
-            Self::check_budget(frame)?;
+
+            if let Err(budget_err) = Self::check_budget(frame) {
+                self.record_wal_event(
+                    execution_id,
+                    "ExecutionFailed",
+                    serde_json::json!({ "reason": budget_err.to_string() }),
+                )?;
+                frame.status = ExecutionFrameStatus::Failed;
+                frame.error_message = Some(budget_err.to_string());
+                frame.updated_at_ms = now_ms();
+                return Err(budget_err);
+            }
         }
 
         // 2. Invoke node closure
         match invoke_fn(node_name, node_type, &input) {
             Ok(output) => {
-                // 3. Atomically advance step and record output
-                let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+                // 3. Atomically advance step and record output with fail-closed WAL
+                let mut frames = self
+                    .frames
+                    .write()
+                    .map_err(|_| ExecutionError::LockPoisoned)?;
                 let frame = frames
                     .get_mut(execution_id)
                     .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
+
+                if frame.status == ExecutionFrameStatus::Cancelled {
+                    return Err(ExecutionError::ExecutionCancelled {
+                        execution_id: execution_id.to_string(),
+                        reason: frame.cancellation_reason.clone().unwrap_or_default(),
+                    });
+                }
 
                 if frame.status != ExecutionFrameStatus::Running {
                     return Err(ExecutionError::FrameNotRunning {
@@ -641,26 +843,60 @@ impl WorkflowExecutionEngine {
                     });
                 }
 
-                frame.current_step += 1;
-                frame.step_outputs.push(output.clone());
-                frame.updated_at_ms = now_ms();
+                // Check budget constraints after node execution
+                if let Err(budget_err) = Self::check_budget(frame) {
+                    self.record_wal_event(
+                        execution_id,
+                        "ExecutionFailed",
+                        serde_json::json!({ "reason": budget_err.to_string() }),
+                    )?;
+                    frame.status = ExecutionFrameStatus::Failed;
+                    frame.error_message = Some(budget_err.to_string());
+                    frame.updated_at_ms = now_ms();
+                    return Err(budget_err);
+                }
 
+                let next_step = frame.current_step + 1;
+
+                // Durable WAL append BEFORE mutating in-memory state
                 self.record_wal_event(
                     execution_id,
                     "NodeInvoked",
                     serde_json::json!({
                         "node_name": node_name,
                         "node_type": node_type,
-                        "step": frame.current_step,
+                        "step": next_step,
                         "output": output
                     }),
                 )?;
 
+                frame.current_step = next_step;
+                frame.step_outputs.push(output.clone());
+                frame.updated_at_ms = now_ms();
+
                 Ok(output)
             }
             Err(node_err) => {
-                // Fail closed: record failure in WAL and mark frame as Failed
-                let _ = self.fail_execution(execution_id, &format!("Node '{node_name}' error: {node_err}"));
+                // Check if frame was cancelled during invocation
+                {
+                    let frames = self
+                        .frames
+                        .read()
+                        .map_err(|_| ExecutionError::LockPoisoned)?;
+                    if let Some(f) = frames.get(execution_id) {
+                        if f.status == ExecutionFrameStatus::Cancelled {
+                            return Err(ExecutionError::ExecutionCancelled {
+                                execution_id: execution_id.to_string(),
+                                reason: f.cancellation_reason.clone().unwrap_or_default(),
+                            });
+                        }
+                    }
+                }
+                // Fail closed: record failure in WAL and mark frame as Failed without swallowing
+                self.fail_execution(
+                    execution_id,
+                    &format!("Node '{node_name}' error: {node_err}"),
+                )?;
                 Err(ExecutionError::NodeExecutionFailed {
                     node_name: node_name.to_string(),
                     message: node_err,
@@ -683,9 +919,210 @@ impl WorkflowExecutionEngine {
         };
         frames
             .values()
-            .filter(|f| f.status == ExecutionFrameStatus::Running || f.status == ExecutionFrameStatus::Waiting)
+            .filter(|f| {
+                f.status == ExecutionFrameStatus::Running
+                    || f.status == ExecutionFrameStatus::Waiting
+            })
             .cloned()
             .collect()
+    }
+
+    /// Reconstructs and recovers an execution frame from durable WAL records (replay semantics)
+    pub fn recover_frame_from_wal(
+        &self,
+        execution_id: &str,
+    ) -> Result<ExecutionFrame, ExecutionError> {
+        let mut records = self.get_wal_records(execution_id);
+        if records.is_empty() {
+            return Err(ExecutionError::FrameNotFound(format!(
+                "No WAL records found for frame '{execution_id}'"
+            )));
+        }
+
+        // Sort records strictly by monotonic LSN
+        records.sort_by_key(|r| r.lsn);
+
+        let first = &records[0];
+        let mut frame = match first.record_type.as_str() {
+            "ExecutionCreated" => {
+                let wf_id = first
+                    .payload
+                    .get("workflow_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                let trigger = first
+                    .payload
+                    .get("trigger_payload")
+                    .cloned()
+                    .unwrap_or(serde_json::json!({}));
+                ExecutionFrame {
+                    execution_id: execution_id.to_string(),
+                    workflow_id: wf_id.to_string(),
+                    current_step: 0,
+                    status: ExecutionFrameStatus::Created,
+                    trigger_payload: trigger,
+                    cancellation_reason: None,
+                    error_message: None,
+                    wait_token: None,
+                    budget: None,
+                    step_outputs: Vec::new(),
+                    envelope: ContractEnvelope::default(),
+                    created_at_ms: first.timestamp_ms,
+                    updated_at_ms: first.timestamp_ms,
+                }
+            }
+            "ExecutionStarted" => {
+                let wf_id = first
+                    .payload
+                    .get("workflow_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                let trigger = first
+                    .payload
+                    .get("trigger_payload")
+                    .cloned()
+                    .unwrap_or(serde_json::json!({}));
+                ExecutionFrame {
+                    execution_id: execution_id.to_string(),
+                    workflow_id: wf_id.to_string(),
+                    current_step: 0,
+                    status: ExecutionFrameStatus::Running,
+                    trigger_payload: trigger,
+                    cancellation_reason: None,
+                    error_message: None,
+                    wait_token: None,
+                    budget: None,
+                    step_outputs: Vec::new(),
+                    envelope: ContractEnvelope::default(),
+                    created_at_ms: first.timestamp_ms,
+                    updated_at_ms: first.timestamp_ms,
+                }
+            }
+            other => {
+                return Err(ExecutionError::InvalidPayload(format!(
+                    "Invalid initial WAL record type '{other}' for frame '{execution_id}'"
+                )));
+            }
+        };
+
+        // Replay subsequent records
+        for rec in records.iter().skip(1) {
+            match rec.record_type.as_str() {
+                "ExecutionStarted" => {
+                    frame.status = ExecutionFrameStatus::Running;
+                    frame.updated_at_ms = rec.timestamp_ms;
+                }
+                "StepAdvanced" => {
+                    let step = rec
+                        .payload
+                        .get("step")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or((frame.current_step + 1) as u64)
+                        as usize;
+                    frame.current_step = step;
+                    frame.updated_at_ms = rec.timestamp_ms;
+                }
+                "NodeInvoked" => {
+                    let step = rec
+                        .payload
+                        .get("step")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or((frame.current_step + 1) as u64)
+                        as usize;
+                    frame.current_step = step;
+                    if let Some(out) = rec.payload.get("output") {
+                        frame.step_outputs.push(out.clone());
+                    }
+                    frame.updated_at_ms = rec.timestamp_ms;
+                }
+                "ExecutionSuspended" => {
+                    frame.status = ExecutionFrameStatus::Waiting;
+                    frame.wait_token = rec
+                        .payload
+                        .get("wait_token")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string());
+                    frame.updated_at_ms = rec.timestamp_ms;
+                }
+                "ExecutionResumed" => {
+                    frame.status = ExecutionFrameStatus::Running;
+                    frame.wait_token = None;
+                    frame.updated_at_ms = rec.timestamp_ms;
+                }
+                "ExecutionCompleted" => {
+                    frame.status = ExecutionFrameStatus::Completed;
+                    frame.updated_at_ms = rec.timestamp_ms;
+                }
+                "ExecutionFailed" => {
+                    frame.status = ExecutionFrameStatus::Failed;
+                    frame.error_message = rec
+                        .payload
+                        .get("error")
+                        .or_else(|| rec.payload.get("reason"))
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string());
+                    frame.updated_at_ms = rec.timestamp_ms;
+                }
+                "ExecutionCancelled" => {
+                    frame.status = ExecutionFrameStatus::Cancelled;
+                    frame.cancellation_reason = rec
+                        .payload
+                        .get("reason")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string());
+                    frame.updated_at_ms = rec.timestamp_ms;
+                }
+                _ => {}
+            }
+        }
+
+        Ok(frame)
+    }
+
+    /// Verifies that the authoritative in-memory state matches the WAL replay reconstruction exactly (recovery consistency)
+    pub fn verify_recovery_consistency(&self, execution_id: &str) -> Result<bool, ExecutionError> {
+        let auth_frame = self
+            .get_frame(execution_id)
+            .ok_or_else(|| ExecutionError::FrameNotFound(execution_id.to_string()))?;
+        let replayed = self.recover_frame_from_wal(execution_id)?;
+
+        let consistent = auth_frame.status == replayed.status
+            && auth_frame.current_step == replayed.current_step
+            && auth_frame.workflow_id == replayed.workflow_id
+            && auth_frame.step_outputs.len() == replayed.step_outputs.len();
+
+        Ok(consistent)
+    }
+
+    /// Validates frame workflow and tenant boundary ownership
+    fn validate_frame_ownership(
+        &self,
+        execution_id: &str,
+        expected_workflow_id: &str,
+        expected_tenant_id: Option<&str>,
+    ) -> Result<ExecutionFrame, String> {
+        let frame = self
+            .get_frame(execution_id)
+            .ok_or_else(|| format!("Execution frame '{execution_id}' not found"))?;
+
+        if frame.workflow_id != expected_workflow_id {
+            return Err(format!(
+                "Workflow mismatch: frame '{execution_id}' belongs to workflow '{}', not '{expected_workflow_id}'",
+                frame.workflow_id
+            ));
+        }
+
+        if let Some(tenant) = expected_tenant_id {
+            if let Some(ref frame_tenant) = frame.envelope.tenant_id {
+                if frame_tenant != tenant {
+                    return Err(format!(
+                        "Tenant mismatch: frame '{execution_id}' belongs to tenant '{frame_tenant}', but request specified '{tenant}'"
+                    ));
+                }
+            }
+        }
+
+        Ok(frame)
     }
 
     // -----------------------------------------------------------------------
@@ -693,7 +1130,10 @@ impl WorkflowExecutionEngine {
     // -----------------------------------------------------------------------
 
     /// Dispatcher for `port.execution.run.workflow.v1`
-    pub fn handle_port_run_workflow(&self, payload: &serde_json::Value) -> Result<serde_json::Value, String> {
+    pub fn handle_port_run_workflow(
+        &self,
+        payload: &serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
         let workflow_id = payload
             .get("workflow_id")
             .and_then(|v| v.as_str())
@@ -714,10 +1154,17 @@ impl WorkflowExecutionEngine {
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
 
+        let budget: Option<ExecutionBudget> = payload
+            .get("budget")
+            .and_then(|b| serde_json::from_value(b.clone()).ok());
+
         let envelope = ContractEnvelope {
             correlation_id: correlation_id.clone(),
-            tenant_id,
-            caller_sublego: payload.get("caller_sublego").and_then(|v| v.as_str()).map(|s| s.to_string()),
+            tenant_id: tenant_id.clone(),
+            caller_sublego: payload
+                .get("caller_sublego")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string()),
             contract_version: Some("1.0.0".to_string()),
         };
 
@@ -726,7 +1173,9 @@ impl WorkflowExecutionEngine {
                 let execution_id = payload
                     .get("execution_id")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| "Missing required field 'execution_id' for action 'create'".to_string())?;
+                    .ok_or_else(|| {
+                        "Missing required field 'execution_id' for action 'create'".to_string()
+                    })?;
 
                 let trigger_data = payload
                     .get("trigger_data")
@@ -734,7 +1183,14 @@ impl WorkflowExecutionEngine {
                     .cloned()
                     .unwrap_or(serde_json::json!({}));
 
-                let frame = self.create_frame(execution_id, workflow_id, trigger_data, None, Some(envelope))
+                let frame = self
+                    .create_frame(
+                        execution_id,
+                        workflow_id,
+                        trigger_data,
+                        budget,
+                        Some(envelope),
+                    )
                     .map_err(|e| e.to_string())?;
 
                 Ok(serde_json::json!({
@@ -754,22 +1210,29 @@ impl WorkflowExecutionEngine {
                     .cloned()
                     .unwrap_or(serde_json::json!({}));
 
-                let frame = if let Some(custom_id) = payload.get("execution_id").and_then(|v| v.as_str()) {
-                    // If frame already exists in Created status, transition it to Running
-                    if let Some(existing) = self.get_frame(custom_id) {
-                        if existing.status == ExecutionFrameStatus::Created {
-                            self.start_run(custom_id).map_err(|e| e.to_string())?
-                        } else {
-                            return Err(format!("Execution frame '{custom_id}' already exists with status {:?}", existing.status));
-                        }
-                    } else {
-                        self.start_execution_with_options(custom_id, workflow_id, trigger_data, None, Some(envelope))
-                            .map_err(|e| e.to_string())?
-                    }
-                } else {
-                    self.start_execution(workflow_id, trigger_data)
+                let frame =
+                    if let Some(custom_id) = payload.get("execution_id").and_then(|v| v.as_str()) {
+                        self.start_or_transition_created(
+                            custom_id,
+                            workflow_id,
+                            trigger_data,
+                            budget,
+                            Some(envelope),
+                        )
                         .map_err(|e| e.to_string())?
-                };
+                    } else {
+                        let ts = now_ms();
+                        let counter = EXEC_COUNTER.fetch_add(1, Ordering::SeqCst);
+                        let generated_id = format!("exec_{}_{}_{}", workflow_id, ts, counter);
+                        self.start_execution_with_options(
+                            &generated_id,
+                            workflow_id,
+                            trigger_data,
+                            budget,
+                            Some(envelope),
+                        )
+                        .map_err(|e| e.to_string())?
+                    };
 
                 Ok(serde_json::json!({
                     "execution_id": frame.execution_id,
@@ -785,8 +1248,11 @@ impl WorkflowExecutionEngine {
                 let execution_id = payload
                     .get("execution_id")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| "Missing required field 'execution_id' for action 'advance'".to_string())?;
+                    .ok_or_else(|| {
+                        "Missing required field 'execution_id' for action 'advance'".to_string()
+                    })?;
 
+                self.validate_frame_ownership(execution_id, workflow_id, tenant_id.as_deref())?;
                 let next_step = self.advance_step(execution_id).map_err(|e| e.to_string())?;
                 Ok(serde_json::json!({
                     "execution_id": execution_id,
@@ -801,15 +1267,20 @@ impl WorkflowExecutionEngine {
                 let execution_id = payload
                     .get("execution_id")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| "Missing required field 'execution_id' for action 'suspend'".to_string())?;
+                    .ok_or_else(|| {
+                        "Missing required field 'execution_id' for action 'suspend'".to_string()
+                    })?;
 
+                self.validate_frame_ownership(execution_id, workflow_id, tenant_id.as_deref())?;
                 let wait_token = payload
                     .get("wait_token")
                     .and_then(|v| v.as_str())
                     .unwrap_or("default_wait");
 
-                self.suspend_execution(execution_id, wait_token).map_err(|e| e.to_string())?;
-                let frame = self.get_frame(execution_id)
+                self.suspend_execution(execution_id, wait_token)
+                    .map_err(|e| e.to_string())?;
+                let frame = self
+                    .get_frame(execution_id)
                     .ok_or_else(|| format!("Frame '{execution_id}' not found"))?;
 
                 Ok(serde_json::json!({
@@ -826,11 +1297,20 @@ impl WorkflowExecutionEngine {
                 let execution_id = payload
                     .get("execution_id")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| "Missing required field 'execution_id' for action 'resume'".to_string())?;
+                    .ok_or_else(|| {
+                        "Missing required field 'execution_id' for action 'resume'".to_string()
+                    })?;
 
-                let resume_data = payload.get("resume_data").cloned().unwrap_or(serde_json::json!({}));
-                self.resume_execution(execution_id, resume_data).map_err(|e| e.to_string())?;
-                let frame = self.get_frame(execution_id)
+                self.validate_frame_ownership(execution_id, workflow_id, tenant_id.as_deref())?;
+                let wait_token = payload.get("wait_token").and_then(|v| v.as_str());
+                let resume_data = payload
+                    .get("resume_data")
+                    .cloned()
+                    .unwrap_or(serde_json::json!({}));
+                self.resume_execution_with_token(execution_id, wait_token, resume_data)
+                    .map_err(|e| e.to_string())?;
+                let frame = self
+                    .get_frame(execution_id)
                     .ok_or_else(|| format!("Frame '{execution_id}' not found"))?;
 
                 Ok(serde_json::json!({
@@ -846,10 +1326,15 @@ impl WorkflowExecutionEngine {
                 let execution_id = payload
                     .get("execution_id")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| "Missing required field 'execution_id' for action 'complete'".to_string())?;
+                    .ok_or_else(|| {
+                        "Missing required field 'execution_id' for action 'complete'".to_string()
+                    })?;
 
-                self.complete_execution(execution_id).map_err(|e| e.to_string())?;
-                let frame = self.get_frame(execution_id)
+                self.validate_frame_ownership(execution_id, workflow_id, tenant_id.as_deref())?;
+                self.complete_execution(execution_id)
+                    .map_err(|e| e.to_string())?;
+                let frame = self
+                    .get_frame(execution_id)
                     .ok_or_else(|| format!("Frame '{execution_id}' not found"))?;
 
                 Ok(serde_json::json!({
@@ -865,15 +1350,20 @@ impl WorkflowExecutionEngine {
                 let execution_id = payload
                     .get("execution_id")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| "Missing required field 'execution_id' for action 'fail'".to_string())?;
+                    .ok_or_else(|| {
+                        "Missing required field 'execution_id' for action 'fail'".to_string()
+                    })?;
 
+                self.validate_frame_ownership(execution_id, workflow_id, tenant_id.as_deref())?;
                 let error = payload
                     .get("error")
                     .and_then(|v| v.as_str())
                     .unwrap_or("Execution encountered an unrecoverable error");
 
-                self.fail_execution(execution_id, error).map_err(|e| e.to_string())?;
-                let frame = self.get_frame(execution_id)
+                self.fail_execution(execution_id, error)
+                    .map_err(|e| e.to_string())?;
+                let frame = self
+                    .get_frame(execution_id)
                     .ok_or_else(|| format!("Frame '{execution_id}' not found"))?;
 
                 Ok(serde_json::json!({
@@ -881,16 +1371,22 @@ impl WorkflowExecutionEngine {
                     "workflow_id": workflow_id,
                     "status": "Failed",
                     "current_step": frame.current_step,
+                    "steps_executed": frame.current_step,
                     "error_message": error,
                     "correlation_id": correlation_id
                 }))
             }
-            other => Err(format!("Unsupported action '{other}' for port.execution.run.workflow.v1")),
+            other => Err(format!(
+                "Unsupported action '{other}' for port.execution.run.workflow.v1"
+            )),
         }
     }
 
     /// Dispatcher for `port.execution.cancel.workflow.v1`
-    pub fn handle_port_cancel_workflow(&self, payload: &serde_json::Value) -> Result<serde_json::Value, String> {
+    pub fn handle_port_cancel_workflow(
+        &self,
+        payload: &serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
         let execution_id = payload
             .get("execution_id")
             .and_then(|v| v.as_str())
@@ -906,13 +1402,42 @@ impl WorkflowExecutionEngine {
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
 
-        self.cancel_execution(execution_id, reason).map_err(|e| e.to_string())?;
+        // Validate workflow_id or tenant_id if provided
+        if let Some(req_wf) = payload.get("workflow_id").and_then(|v| v.as_str()) {
+            if let Some(frame) = self.get_frame(execution_id) {
+                if frame.workflow_id != req_wf {
+                    return Err(format!(
+                        "Workflow mismatch for cancel: frame '{execution_id}' belongs to workflow '{}', not '{req_wf}'",
+                        frame.workflow_id
+                    ));
+                }
+            }
+        }
+        if let Some(req_tenant) = payload.get("tenant_id").and_then(|v| v.as_str()) {
+            if let Some(frame) = self.get_frame(execution_id) {
+                if let Some(ref frame_tenant) = frame.envelope.tenant_id {
+                    if frame_tenant != req_tenant {
+                        return Err(format!(
+                            "Tenant mismatch for cancel: frame '{execution_id}' belongs to tenant '{frame_tenant}', but request specified '{req_tenant}'"
+                        ));
+                    }
+                }
+            }
+        }
+
+        self.cancel_execution(execution_id, reason)
+            .map_err(|e| e.to_string())?;
+
+        let actual_reason = self
+            .get_frame(execution_id)
+            .and_then(|f| f.cancellation_reason)
+            .unwrap_or_else(|| reason.to_string());
 
         Ok(serde_json::json!({
             "execution_id": execution_id,
             "cancelled": true,
             "status": "Cancelled",
-            "reason": reason,
+            "reason": actual_reason,
             "correlation_id": correlation_id
         }))
     }
