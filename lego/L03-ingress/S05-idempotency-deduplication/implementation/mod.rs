@@ -157,8 +157,22 @@ impl IdempotencyService {
         now_ms: u64,
         ttl_override_ms: Option<u64>,
     ) -> Result<(), String> {
+        if key.trim().is_empty() {
+            return Err("Idempotency key cannot be empty".to_string());
+        }
+        if tenant_id.trim().is_empty() {
+            return Err("Tenant ID cannot be empty".to_string());
+        }
+
         let full_key = Self::composite_key(tenant_id, key);
         let mut map = self.records.write().map_err(|_| "Lock poisoned".to_string())?;
+
+        // If already completed and unexpired, preserve deterministic replay record
+        if let Some(existing) = map.get(&full_key) {
+            if existing.state == IdempotencyState::Completed && now_ms < existing.expires_at_ms {
+                return Ok(());
+            }
+        }
 
         let ttl = ttl_override_ms.unwrap_or(self.default_ttl_ms);
         let record = IdempotencyRecord {
@@ -176,6 +190,13 @@ impl IdempotencyService {
 
     /// Releases an in-flight key if an execution failed, allowing retry
     pub fn record_failure(&self, tenant_id: &str, key: &str) -> Result<(), String> {
+        if key.trim().is_empty() {
+            return Err("Idempotency key cannot be empty".to_string());
+        }
+        if tenant_id.trim().is_empty() {
+            return Err("Tenant ID cannot be empty".to_string());
+        }
+
         let full_key = Self::composite_key(tenant_id, key);
         let mut map = self.records.write().map_err(|_| "Lock poisoned".to_string())?;
 
@@ -217,6 +238,7 @@ impl IdempotencyService {
                 let key = payload
                     .get("key")
                     .and_then(|v| v.as_str())
+                    .filter(|s| !s.trim().is_empty())
                     .ok_or_else(|| "Missing required 'key' field".to_string())?;
                 let now_ms = payload
                     .get("now_ms")
@@ -235,6 +257,7 @@ impl IdempotencyService {
                 let key = payload
                     .get("key")
                     .and_then(|v| v.as_str())
+                    .filter(|s| !s.trim().is_empty())
                     .ok_or_else(|| "Missing required 'key' field".to_string())?;
                 let response = payload
                     .get("response")
@@ -261,6 +284,7 @@ impl IdempotencyService {
                 let key = payload
                     .get("key")
                     .and_then(|v| v.as_str())
+                    .filter(|s| !s.trim().is_empty())
                     .ok_or_else(|| "Missing required 'key' field".to_string())?;
 
                 self.record_failure(tenant_id, key)?;

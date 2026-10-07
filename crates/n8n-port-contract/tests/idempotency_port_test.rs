@@ -220,3 +220,144 @@ async fn test_idempotency_port_security_denied_for_unauthorized_invoker() {
     let resp = adapter.invoke(inv).await;
     assert_eq!(resp.status, PortStatus::SecurityDenied);
 }
+
+#[tokio::test]
+async fn test_idempotency_dedupe_v1_port_roundtrip_evaluate_and_release() {
+    let adapter = InProcessAdapter::new();
+    let port_id = PortId::new("port.ingress.idempotency.dedupe.v1");
+    let store = Arc::new(Mutex::new(MockDedupStore::default()));
+
+    let store_clone = store.clone();
+    let handler = Arc::new(move |inv: PortInvocation| {
+        let store = store_clone.clone();
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            if let PortPayload::Json(val) = inv.payload {
+                let action = val.get("action").and_then(|v| v.as_str()).unwrap_or("evaluate");
+                let key = val.get("key").and_then(|v| v.as_str()).unwrap_or("");
+                if key.is_empty() {
+                    return PortResponse::error(
+                        inv.invocation_id,
+                        PortStatus::ClientError,
+                        PortErrorDetail::new(PortErrorCode::BadRequest, "Key cannot be empty", false),
+                        PortTelemetry::new(trace_id),
+                    );
+                }
+
+                let mut st = store.lock().unwrap();
+                match action {
+                    "evaluate" | "check" => {
+                        if let Some((status, resp, code)) = st.entries.get(key) {
+                            if status == "completed" {
+                                PortResponse::success(
+                                    inv.invocation_id,
+                                    PortPayload::Json(json!({
+                                        "type": "cached_replay",
+                                        "key": key,
+                                        "status_code": code,
+                                        "response_payload": resp.clone()
+                                    })),
+                                    PortTelemetry::new(trace_id),
+                                )
+                            } else {
+                                PortResponse::success(
+                                    inv.invocation_id,
+                                    PortPayload::Json(json!({ "type": "in_flight_duplicate", "key": key })),
+                                    PortTelemetry::new(trace_id),
+                                )
+                            }
+                        } else {
+                            st.entries.insert(key.to_string(), ("in_flight".to_string(), None, 0));
+                            PortResponse::success(
+                                inv.invocation_id,
+                                PortPayload::Json(json!({ "type": "new", "key": key })),
+                                PortTelemetry::new(trace_id),
+                            )
+                        }
+                    }
+                    "release" | "fail" => {
+                        st.entries.remove(key);
+                        PortResponse::success(
+                            inv.invocation_id,
+                            PortPayload::Json(json!({ "success": true, "released": key })),
+                            PortTelemetry::new(trace_id),
+                        )
+                    }
+                    _ => PortResponse::error(
+                        inv.invocation_id,
+                        PortStatus::ClientError,
+                        PortErrorDetail::new(PortErrorCode::BadRequest, "Unsupported action", false),
+                        PortTelemetry::new(trace_id),
+                    ),
+                }
+            } else {
+                PortResponse::error(
+                    inv.invocation_id,
+                    PortStatus::ClientError,
+                    PortErrorDetail::new(PortErrorCode::BadRequest, "Invalid payload", false),
+                    PortTelemetry::new(trace_id),
+                )
+            }
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(port_id.clone(), handler).await;
+
+    let sec_ctx = SecurityContext::builder("gateway-service", "tenant-beta")
+        .authority_scope(vec!["port.ingress.idempotency.dedupe.v1".to_string()])
+        .build();
+
+    // 1. Evaluate key
+    let inv1 = PortInvocation::new(
+        SubLegoId::new("L03.S01"),
+        SubLegoId::new("L03.S05"),
+        port_id.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H01GatewayHost,
+        sec_ctx.clone(),
+        PortPayload::Json(json!({ "action": "evaluate", "key": "req-retryable-1" })),
+    );
+    let res1 = adapter.invoke(inv1).await;
+    assert_eq!(res1.status, PortStatus::Success);
+    if let PortPayload::Json(v) = res1.payload {
+        assert_eq!(v["type"], "new");
+    } else {
+        panic!("Expected Json payload");
+    }
+
+    // 2. Release key on upstream failure
+    let inv2 = PortInvocation::new(
+        SubLegoId::new("L03.S01"),
+        SubLegoId::new("L03.S05"),
+        port_id.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H01GatewayHost,
+        sec_ctx.clone(),
+        PortPayload::Json(json!({ "action": "release", "key": "req-retryable-1" })),
+    );
+    let res2 = adapter.invoke(inv2).await;
+    assert_eq!(res2.status, PortStatus::Success);
+    if let PortPayload::Json(v) = res2.payload {
+        assert_eq!(v["success"], true);
+    } else {
+        panic!("Expected Json payload");
+    }
+
+    // 3. Re-evaluate key should be new again
+    let inv3 = PortInvocation::new(
+        SubLegoId::new("L03.S01"),
+        SubLegoId::new("L03.S05"),
+        port_id,
+        ContractVersion::V1,
+        RuntimeHostId::H01GatewayHost,
+        sec_ctx,
+        PortPayload::Json(json!({ "action": "evaluate", "key": "req-retryable-1" })),
+    );
+    let res3 = adapter.invoke(inv3).await;
+    assert_eq!(res3.status, PortStatus::Success);
+    if let PortPayload::Json(v) = res3.payload {
+        assert_eq!(v["type"], "new");
+    } else {
+        panic!("Expected Json payload");
+    }
+}

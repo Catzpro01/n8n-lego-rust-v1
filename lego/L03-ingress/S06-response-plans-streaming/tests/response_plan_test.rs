@@ -184,4 +184,76 @@ mod tests {
         assert_eq!(poll_res["status"], "fulfilled");
         assert_eq!(poll_res["final_response"]["answer"], 42);
     }
+
+    #[test]
+    fn test_duplicate_active_waiter_registration_fails() {
+        let service = ResponsePlanService::new(30_000);
+        service
+            .register_waiter(
+                "waiter_dup",
+                "wf_dup",
+                "tenant_dup",
+                ResponsePlanType::WaitForCompletion { timeout_ms: 10_000 },
+                1000,
+            )
+            .unwrap();
+
+        let dup = service.register_waiter(
+            "waiter_dup",
+            "wf_dup",
+            "tenant_dup",
+            ResponsePlanType::WaitForCompletion { timeout_ms: 10_000 },
+            1005,
+        );
+        assert!(dup.is_err());
+        assert!(dup.unwrap_err().contains("already registered"));
+    }
+
+    #[test]
+    fn test_double_fulfillment_fails_closed() {
+        let service = ResponsePlanService::new(30_000);
+        service
+            .register_waiter(
+                "waiter_df",
+                "wf_df",
+                "tenant_df",
+                ResponsePlanType::WaitForCompletion { timeout_ms: 10_000 },
+                1000,
+            )
+            .unwrap();
+
+        // First fulfillment succeeds
+        service.fulfill_waiter("waiter_df", json!({ "msg": "first" }), 200, 1100).unwrap();
+
+        // Second fulfillment fails
+        let second = service.fulfill_waiter("waiter_df", json!({ "msg": "second" }), 200, 1200);
+        assert!(second.is_err());
+        assert!(second.unwrap_err().contains("already fulfilled"));
+    }
+
+    #[test]
+    fn test_stream_chunk_after_completion_fails_closed() {
+        let service = ResponsePlanService::new(30_000);
+        service
+            .register_waiter(
+                "waiter_stream_done",
+                "wf_stream",
+                "tenant_stream",
+                ResponsePlanType::Streaming {
+                    content_type: "text/plain".to_string(),
+                    timeout_ms: 10_000,
+                },
+                1000,
+            )
+            .unwrap();
+
+        // Push final chunk
+        let fin = service.push_stream_chunk("waiter_stream_done", 0, "final data", true, 1100).unwrap();
+        assert!(fin);
+
+        // Attempting to push another chunk must fail
+        let extra = service.push_stream_chunk("waiter_stream_done", 1, "extra data", false, 1200);
+        assert!(extra.is_err());
+        assert!(extra.unwrap_err().contains("already completed"));
+    }
 }

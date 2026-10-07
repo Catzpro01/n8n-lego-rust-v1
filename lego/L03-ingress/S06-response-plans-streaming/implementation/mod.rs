@@ -115,6 +115,16 @@ impl ResponsePlanService {
             timeout_ms
         };
 
+        // Check if waiter already exists and is active
+        {
+            let map = self.waiters.read().map_err(|_| "Lock poisoned".to_string())?;
+            if let Some(existing) = map.get(waiter_id) {
+                if existing.status == WaiterStatus::Pending || existing.status == WaiterStatus::StreamingActive {
+                    return Err(format!("Waiter '{waiter_id}' is already registered and active"));
+                }
+            }
+        }
+
         // If ImmediateAck, we can fulfill immediately
         if let ResponsePlanType::ImmediateAck { status_code, ref ack_payload } = plan_type {
             let waiter = ResponseWaiter {
@@ -184,6 +194,10 @@ impl ResponsePlanService {
             return Err("Cannot fulfill waiter: already timed out".to_string());
         }
 
+        if waiter.status == WaiterStatus::Fulfilled {
+            return Err("Cannot fulfill waiter: already fulfilled".to_string());
+        }
+
         // Check if timed out at now_ms
         if waiter.timeout_ms > 0 && now_ms > waiter.created_at_ms + waiter.timeout_ms {
             waiter.status = WaiterStatus::TimedOut;
@@ -210,6 +224,10 @@ impl ResponsePlanService {
 
         if waiter.status == WaiterStatus::TimedOut {
             return Err("Streaming waiter has timed out".to_string());
+        }
+
+        if waiter.status == WaiterStatus::StreamCompleted {
+            return Err("Streaming waiter has already completed".to_string());
         }
 
         if waiter.timeout_ms > 0 && now_ms > waiter.created_at_ms + waiter.timeout_ms {

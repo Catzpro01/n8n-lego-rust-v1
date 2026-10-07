@@ -145,17 +145,41 @@ impl StartupReconciliationService {
                     });
                 } else {
                     // Mismatched workflow owning route -> evict zombie then register correct
-                    actions.push(ReconciliationAction::EvictZombieEndpoint {
+                    let evict_action = ReconciliationAction::EvictZombieEndpoint {
                         endpoint_id: live_ep.endpoint_id.clone(),
                         workflow_id: live_ep.workflow_id.clone(),
                         tenant_id: live_ep.tenant_id.clone(),
+                    };
+                    let evict_marker_id = format!("rec-zomb-mismatch-{}", live_ep.endpoint_id);
+                    new_markers.push(ReconciliationMarker {
+                        marker_id: evict_marker_id,
+                        tenant_id: live_ep.tenant_id.clone(),
+                        workflow_id: live_ep.workflow_id.clone(),
+                        action: evict_action.clone(),
+                        status: MarkerStatus::Pending,
+                        timestamp_ms: now_ms,
+                        error_detail: None,
                     });
-                    actions.push(ReconciliationAction::RegisterMissingEndpoint {
+                    actions.push(evict_action);
+
+                    let reg_action = ReconciliationAction::RegisterMissingEndpoint {
                         trigger_id: pt.trigger_id.clone(),
                         workflow_id: pt.workflow_id.clone(),
                         tenant_id: pt.tenant_id.clone(),
                         path: pt.path_or_pattern.clone(),
+                    };
+                    let reg_marker_id = format!("rec-orph-mismatch-{}-{}", pt.workflow_id, pt.trigger_id);
+                    new_markers.push(ReconciliationMarker {
+                        marker_id: reg_marker_id,
+                        tenant_id: pt.tenant_id.clone(),
+                        workflow_id: pt.workflow_id.clone(),
+                        action: reg_action.clone(),
+                        status: MarkerStatus::Pending,
+                        timestamp_ms: now_ms,
+                        error_detail: None,
                     });
+                    actions.push(reg_action);
+
                     matched_live_keys.insert(key);
                 }
             } else {

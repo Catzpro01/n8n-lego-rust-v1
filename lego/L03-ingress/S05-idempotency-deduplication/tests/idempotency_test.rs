@@ -130,4 +130,58 @@ mod tests {
         assert!(res.is_err());
         assert!(res.unwrap_err().contains("cannot be empty"));
     }
+
+    #[test]
+    fn test_idempotency_empty_key_in_completion_and_failure_fails_closed() {
+        let service = IdempotencyService::new(60_000);
+        assert!(service.record_completion("t1", "  ", json!({}), 200, 1000, None).is_err());
+        assert!(service.record_completion("  ", "k1", json!({}), 200, 1000, None).is_err());
+        assert!(service.record_failure("t1", "  ").is_err());
+        assert!(service.record_failure("  ", "k1").is_err());
+    }
+
+    #[test]
+    fn test_idempotency_completed_record_is_immutable() {
+        let service = IdempotencyService::new(60_000);
+        let _ = service.evaluate_key("t1", "immutable_k", 1000, None).unwrap();
+
+        let initial_resp = json!({ "original": true });
+        service.record_completion("t1", "immutable_k", initial_resp.clone(), 200, 1050, None).unwrap();
+
+        // Repeated completion attempt with different response does not mutate authoritative replay
+        let second_resp = json!({ "original": false, "corrupted": true });
+        service.record_completion("t1", "immutable_k", second_resp, 500, 1060, None).unwrap();
+
+        let eval = service.evaluate_key("t1", "immutable_k", 1100, None).unwrap();
+        if let IdempotencyEvaluation::CachedReplay { response_payload, status_code, .. } = eval {
+            assert_eq!(response_payload, initial_resp);
+            assert_eq!(status_code, 200);
+        } else {
+            panic!("Expected CachedReplay");
+        }
+    }
+
+    #[test]
+    fn test_idempotency_concurrent_evaluations() {
+        use std::sync::Arc;
+        use std::thread;
+
+        let service = Arc::new(IdempotencyService::new(60_000));
+        let mut handles = Vec::new();
+
+        for _ in 0..10 {
+            let s = service.clone();
+            handles.push(thread::spawn(move || {
+                s.evaluate_key("tenant_conc", "shared_concurrent_key", 1000, None).unwrap()
+            }));
+        }
+
+        let results: Vec<IdempotencyEvaluation> = handles.into_iter().map(|h| h.join().unwrap()).collect();
+        let new_count = results.iter().filter(|r| matches!(r, IdempotencyEvaluation::New { .. })).count();
+        let inflight_count = results.iter().filter(|r| matches!(r, IdempotencyEvaluation::InFlightDuplicate { .. })).count();
+
+        // Exactly one thread wins the race as New; all other 9 are InFlightDuplicate
+        assert_eq!(new_count, 1);
+        assert_eq!(inflight_count, 9);
+    }
 }

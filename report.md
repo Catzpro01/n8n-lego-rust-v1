@@ -2843,7 +2843,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `c36a67d8aa8db3513da6fddbab98385d3e3c4242`
 - **HISTORICAL REMOTE MAIN**: `a1bef71632e96def579f2b5e7a757680b5a25e1f`
 - **HISTORICAL REMOTE MAIN**: `0452764ff7d8b8724aff9a2861a213cc0a4715ad`
-- **REMOTE MAIN**: `3b68ef0a22a6da5733db01b7edcc063ea40adc39`
+- **HISTORICAL REMOTE MAIN**: `d1c750f2c3a5626d04aad39c63f94fd03e19e765`
+- **REMOTE MAIN**: `eafb15af956d2fd220da2e9ef98e7f8fc1a83109`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -2963,8 +2964,8 @@ Report: ./report.md
    - Port Contract Test: `crates/n8n-port-contract/tests/reconciliation_port_test.rs` (2 tests PASS).
 
 ### 7. Rekapitulasi Verifikasi Mekanis L03 Marathon & Quality Floor
-- `rustc --test` Sub-LEGO L03 Unit Tests: 18/18 unit tests PASS (L03.S05: 7/7, L03.S06: 6/6, L03.S07: 5/5).
-- `cargo test -p n8n-port-contract`: 76/76 tests PASS (semua port contract integration tests valid).
+- `rustc --test` Sub-LEGO L03 Unit Tests: 25/25 unit tests PASS (L03.S05: 10/10, L03.S06: 9/9, L03.S07: 6/6).
+- `cargo test -p n8n-port-contract`: 77/77 tests PASS (semua port contract integration tests valid termasuk dedupe v1 roundtrip).
 - `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
 - `python scripts/build_registry.py`: Sukses membangun registry YAML/JSON (Exit code 0).
 - `python -m unittest discover tests/governance`: 27/27 governance tests PASS (Exit code 0).
@@ -2972,13 +2973,67 @@ Report: ./report.md
 - Zero Overclaim Floor: Tepat 0 Sub-LEGO berstatus `CERTIFIED`.
 - Status Promosi: L03.S05, L03.S06, dan L03.S07 resmi dipromosikan ke status TESTED (Total TESTED: 53 Sub-LEGO).
 
+### 8. Review Mandiri Skeptis & Penguatan (Hardening) L03.S05, L03.S06 & L03.S07
+1. **Temuan & Perbaikan L03.S07 (Startup Reconciliation)**:
+   - Root Cause: Percabangan route ownership conflict (mismatch persisted trigger vs live endpoint owner) mengeksekusi rencana `EvictZombieEndpoint` dan `RegisterMissingEndpoint` namun tidak memasukkan marker ke `new_markers`. Akibatnya, `report.zombie_count`, `report.orphaned_count`, dan ledger audit `reconciliation-markers` kosong (0 marker tersimpan).
+   - Solusi: Menambahkan pembuatan `ReconciliationMarker` ganda untuk kedua aksi dan menyimpannya ke ledger audit, diverifikasi dengan unit test baru `test_reconciliation_mismatched_workflow_route_conflict`.
+2. **Temuan & Perbaikan L03.S06 (Response Plans & Streaming)**:
+   - Root Cause: (a) Pengiriman stream chunk tambahan setelah status `StreamCompleted` diterima kembali merestart status menjadi `StreamingActive`. (b) Pemanggilan `fulfill_waiter` berulang kali menimpa respons final tanpa fail-closed rejection. (c) Registrasi ulang waiter ID yang sedang aktif menimpa waiter yang berjalan.
+   - Solusi: Menambahkan penolakan terminal terhadap late chunk, duplicate fulfillment rejection fail-closed, dan validasi duplicate active registration, diverifikasi dengan 3 unit tests baru.
+3. **Temuan & Perbaikan L03.S05 (Idempotency/Deduplication)**:
+   - Root Cause: (a) Parameter key/tenant_id kosong tidak divalidasi pada `record_completion` dan `record_failure`. (b) Penyelesaian berulang menimpa data replay yang semestinya deterministik/immutable.
+   - Solusi: Fail-closed validation pada parameter string kosong dan preservasi respons cached awal yang immutable, ditambah verifikasi multithreading race condition (10 thread konkurensi: tepat 1 pemenang, 9 in-flight duplicate terdeteksi).
+4. **Penguatan Port Contract Integration (`crates/n8n-port-contract`)**:
+   - Menambahkan pengujian end-to-end roundtrip untuk `port.ingress.idempotency.dedupe.v1` (evaluate -> release -> re-evaluate new) sehingga total pengujian bertambah menjadi 77 tests (sebelumnya 76).
+5. **Verifikasi Komprehensif**:
+   - Unit tests L03.S05: 10/10 PASS.
+   - Unit tests L03.S06: 9/9 PASS.
+   - Unit tests L03.S07: 6/6 PASS.
+   - Port contracts: 77/77 PASS (`cargo test -p n8n-port-contract`).
+   - CI Architecture check: 11/11 PASS (`python scripts/ci_architecture_check.py`).
+   - Governance test suite: 27/27 PASS (`python -m unittest discover tests/governance`).
+
+
+---
+
+## Review & Hardening Report: Sub-LEGO L04.S07 & L05.S05 s/d L05.S08
+
+### 1. Temuan Cacat Kritis & Robustness pada Prior Attempt
+1. **L05.S07 (Disaster Recovery) — Outage Risiko Kehilangan Primary Cluster pada Rejection Failover**:
+   - *Problem*: Pada `initiate_failover`, pemanggilan demosi primary eksisting ke `ColdStandby` dieksekusi sebelum validasi apakah node target failover eksis dan dalam status sehat. Jika node target tidak ditemukan atau dalam status `Failed`, operasi mengembalikan `Err`, tetapi primary sebelumnya sudah terlanjur didemosi. Akibatnya, cluster ditinggalkan dengan 0 primary node aktif.
+   - *Fix*: Validasi eksistensi dan kesehatan node target dijalankan pertama kali secara fail-closed sebelum memutasi role node eksisting. Jika target tidak valid, node primary eksisting tetap aman 100%. Diverifikasi dengan test `test_failover_rejection_preserves_existing_primary`.
+2. **L04.S07 (Browser/Scraper Hybrid) — Error Suppression pada Port Handler**:
+   - *Problem*: `handle_port_browser_render` dan `handle_port_browser_hybrid` menggunakan `let _ = self.acquire_session(...)` yang menelan `PoolCapacityExceeded` saat pool penuh. Panggilan berikutnya gagal dengan `SessionNotFound` alih-alih `PoolCapacityExceeded`.
+   - *Fix*: Menerapkan propagasi error penuh `self.acquire_session(...)?.` Diverifikasi dengan test `test_port_render_propagates_capacity_exceeded`.
+3. **L04.S07 (Browser/Scraper Hybrid) — Resurreksi Session Terminated via `release_session`**:
+   - *Problem*: Session yang telah di-terminate dapat diubah kembali menjadi `Idle` melalui `release_session`.
+   - *Fix*: Menambahkan penolakan fail-closed pada `release_session` jika status session `Terminated`. Diverifikasi dengan test `test_release_terminated_session_fails`.
+4. **L04.S07 (Browser/Scraper Hybrid) — Trimming Whitespace pada Validasi URL**:
+   - *Problem*: `url.starts_with` mengecek string URL tanpa pembersihan whitespace leading, menolak URL legal yang memiliki leading/trailing spaces.
+   - *Fix*: URL dibersihkan dengan `.trim()` sebelum evaluasi skema protokol dan parsing hostname. Diverifikasi dengan `test_render_url_with_whitespace_accepted`.
+5. **L05.S08 (Environment Promotion) — Credential Leakage Bypass pada Nested Workflows**:
+   - *Problem*: Sanitasi rahasia pada `export_bundle` hanya mengecek key flat tingkat atas (`item.as_object_mut()`), sehingga `api_key` atau `credentials` di dalam array/sub-object `nodes` dapat bocor tanpa sensor.
+   - *Fix*: Mengimplementasikan fungsi sanitasi rekursif menyeluruh `sanitize_recursive` yang memeriksa objek dan array secara bertingkat. Diverifikasi dengan test `test_nested_secret_leakage_detected`.
+6. **L05.S08 (Environment Promotion) — Rollback Tanpa Prasyarat Imported**:
+   - *Problem*: Manifest berstatus `Exported` atau `Draft` yang belum pernah di-import dapat di-rollback.
+   - *Fix*: Menambahkan validasi prasyarat status `Imported` sebelum rollback. Diverifikasi dengan test `test_rollback_unimported_manifest_fails`.
+7. **L05.S06 (Snapshot/Backup/Restore) — Fail-closed Validasi String Kosong**:
+   - *Problem*: `restore_snapshot` dan `verify_checksum` menerima string target lingkungan atau checksum kosong.
+   - *Fix*: Validasi ketat fail-closed terhadap input string kosong. Diverifikasi dengan test `test_restore_empty_target_env_fails` dan `test_verify_empty_checksum_fails`.
+8. **L05.S05 (Retention/Compaction) — Validasi Policy ID & Entity Type**:
+   - *Problem*: Registrasi policy dan penandaan tombstone mengizinkan string kosong tanpa pencegahan.
+   - *Fix*: Validasi ketat fail-closed pada `register_policy` dan `record_tombstone`.
+
+### 2. Rekapitulasi Verifikasi Mekanis
+- **Unit Tests Sub-LEGO**:
+  - `L04.S07`: 11/11 PASS (`rustc --edition 2021 --test`).
+  - `L05.S05`: 4/4 PASS.
+  - `L05.S06`: 8/8 PASS.
+  - `L05.S07`: 6/6 PASS.
+  - `L05.S08`: 7/7 PASS.
+  - Total: 36 unit tests pass secara deterministik.
+- **Port Contract Tests**: 77 integration tests PASS (`cargo test -p n8n-port-contract`).
+- **Architecture & Governance Audit**: 11/11 PASS (`python scripts/ci_architecture_check.py`).
+- **Governance Unit Tests**: 27/27 PASS (`python -m unittest discover -s tests/governance`).
+
 Report: ./report.md
-
-
-
-
-
-
-
-
-
