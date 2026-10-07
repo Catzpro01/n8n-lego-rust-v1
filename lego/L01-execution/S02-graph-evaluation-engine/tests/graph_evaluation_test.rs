@@ -439,4 +439,28 @@ mod tests {
         let err2 = engine.transition_node_status(exec_id, "node_skip", NodeExecutionStatus::Running);
         assert!(matches!(err2, Err(StateTransitionError::TerminalImmutable { .. })));
     }
+
+    #[test]
+    fn test_empty_graph_evaluation() {
+        let engine = GraphEvaluationEngine::new();
+        let graph = GraphDefinition {
+            workflow_id: "wf_empty".to_string(),
+            nodes: vec![],
+            edges: vec![],
+        };
+
+        let result = engine.evaluate(&graph).expect("Empty graph should evaluate cleanly");
+        assert!(result.is_dag);
+        assert!(result.cycle_detected.is_none());
+        assert!(result.root_triggers.is_empty());
+        assert!(result.terminal_nodes.is_empty());
+        assert!(result.topological_order.is_empty());
+    }
+
+    #[test]
+    fn test_resume_non_existent_wait_returns_error() {
+        let engine = GraphEvaluationEngine::new();
+        let res = engine.resume_wait("exec_non_existent", "node_ghost");
+        assert!(matches!(res, Err(StateTransitionError::NodeNotFound(_))));
+    }
 }

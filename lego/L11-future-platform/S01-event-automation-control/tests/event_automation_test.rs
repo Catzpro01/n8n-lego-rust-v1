@@ -181,4 +181,18 @@ mod tests {
         assert_eq!(pub_res["event_id"], "ord-99");
         assert_eq!(pub_res["queued_subscribers"], 1);
     }
+
+    #[test]
+    fn test_topic_pattern_wildcard_boundary() {
+        assert!(EventControlBus::matches_pattern("workflow.started", "workflow.*"));
+        assert!(EventControlBus::matches_pattern("workflow.step.one", "workflow.*"));
+        assert!(!EventControlBus::matches_pattern("workflow", "workflow.*"));
+        assert!(!EventControlBus::matches_pattern("workflow_deleted", "workflow.*"));
+        assert!(!EventControlBus::matches_pattern("workflower", "workflow.*"));
+        assert!(!EventControlBus::matches_pattern("workflow.", "workflow.*"));
+        assert!(EventControlBus::matches_pattern("workflow", "*"));
+        assert!(EventControlBus::matches_pattern("workflow.started", "*"));
+        assert!(EventControlBus::matches_pattern("exact.match", "exact.match"));
+        assert!(!EventControlBus::matches_pattern("exact.other", "exact.match"));
+    }
 }

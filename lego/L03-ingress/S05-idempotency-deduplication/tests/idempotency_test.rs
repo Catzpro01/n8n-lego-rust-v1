@@ -184,4 +184,38 @@ mod tests {
         assert_eq!(new_count, 1);
         assert_eq!(inflight_count, 9);
     }
+
+    #[test]
+    fn test_idempotency_stale_inflight_lease_auto_recovery() {
+        // 5 seconds in-flight lease timeout
+        let service = IdempotencyService::with_options(60_000, 5_000, 100);
+
+        // 1. Initial invocation at t=1000
+        let eval1 = service.evaluate_key("tenant_crash", "key_stale", 1000, None).unwrap();
+        assert_eq!(eval1, IdempotencyEvaluation::New { key: "key_stale".to_string() });
+
+        // 2. Second invocation at t=3000 (within 5s lease) -> InFlightDuplicate
+        let eval2 = service.evaluate_key("tenant_crash", "key_stale", 3000, None).unwrap();
+        assert!(matches!(eval2, IdempotencyEvaluation::InFlightDuplicate { .. }));
+
+        // 3. Worker crashed and never completed. Third invocation at t=7000 (exceeded 5s lease) -> Auto-recovers as New!
+        let eval3 = service.evaluate_key("tenant_crash", "key_stale", 7000, None).unwrap();
+        assert_eq!(eval3, IdempotencyEvaluation::New { key: "key_stale".to_string() });
+    }
+
+    #[test]
+    fn test_idempotency_capacity_limit_auto_eviction() {
+        // Capacity limit of 3 entries, 1 second TTL
+        let service = IdempotencyService::with_options(1_000, 60_000, 3);
+
+        service.evaluate_key("t1", "k1", 1000, None).unwrap();
+        service.evaluate_key("t1", "k2", 1000, None).unwrap();
+        service.evaluate_key("t1", "k3", 1000, None).unwrap();
+        assert_eq!(service.entry_count(), 3);
+
+        // At t=2500, previous 3 entries are expired. Adding 4th triggers auto-eviction of expired items
+        service.evaluate_key("t1", "k4", 2500, None).unwrap();
+        assert!(service.entry_count() <= 3);
+    }
 }
+

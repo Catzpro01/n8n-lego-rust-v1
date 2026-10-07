@@ -128,6 +128,9 @@ impl SmartSchedulerService {
         if wid.is_empty() {
             return Err(SchedulerError::EmptyField("worker_id".to_string()));
         }
+        if node.total_slots == 0 || node.total_memory_mb == 0 || node.total_cpu_millicores == 0 {
+            return Err(SchedulerError::InvalidDemand);
+        }
         let mut map = self.workers.write().unwrap();
         map.insert(wid.to_string(), node);
         Ok(())

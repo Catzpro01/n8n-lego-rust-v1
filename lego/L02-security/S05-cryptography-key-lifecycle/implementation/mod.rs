@@ -48,6 +48,7 @@ pub enum CryptoError {
     DecryptionFailed(String),
     EncryptionFailed(String),
     EmptyPlaintext,
+    EmptyKeySpec(&'static str),
     ManifestLockPoisoned,
 }
 
@@ -60,6 +61,7 @@ impl fmt::Display for CryptoError {
             Self::DecryptionFailed(msg) => write!(f, "Cryptographic decryption failed: {msg}"),
             Self::EncryptionFailed(msg) => write!(f, "Cryptographic encryption failed: {msg}"),
             Self::EmptyPlaintext => write!(f, "Plaintext payload cannot be empty"),
+            Self::EmptyKeySpec(field) => write!(f, "Key parameter '{field}' cannot be empty (fail-closed)"),
             Self::ManifestLockPoisoned => write!(f, "Master key manifest lock poisoned"),
         }
     }
@@ -144,6 +146,14 @@ impl KeyLifecycleCryptoService {
 
     /// Rotates to a new active key, deprecating the previous active key
     pub fn rotate_key(&self, new_key_id: &str, new_secret: &[u8]) -> Result<(), CryptoError> {
+        let key_id_trimmed = new_key_id.trim();
+        if key_id_trimmed.is_empty() {
+            return Err(CryptoError::EmptyKeySpec("new_key_id"));
+        }
+        if new_secret.is_empty() {
+            return Err(CryptoError::EmptyKeySpec("new_secret"));
+        }
+
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
@@ -165,7 +175,7 @@ impl KeyLifecycleCryptoService {
         }
 
         let new_record = MasterKeyRecord {
-            key_id: new_key_id.to_string(),
+            key_id: key_id_trimmed.to_string(),
             version: (keys_lock.len() as u32) + 1,
             status: KeyLifecycleStatus::Active,
             algorithm: "XOR-HMAC-SHA256-STREAM".to_string(),
@@ -174,20 +184,25 @@ impl KeyLifecycleCryptoService {
             secret_material: new_secret.to_vec(),
         };
 
-        keys_lock.insert(new_key_id.to_string(), new_record);
-        *active_lock = new_key_id.to_string();
+        keys_lock.insert(key_id_trimmed.to_string(), new_record);
+        *active_lock = key_id_trimmed.to_string();
         Ok(())
     }
 
     /// Revokes an existing key by ID
     pub fn revoke_key(&self, key_id: &str) -> Result<(), CryptoError> {
+        let key_id_trimmed = key_id.trim();
+        if key_id_trimmed.is_empty() {
+            return Err(CryptoError::EmptyKeySpec("key_id"));
+        }
+
         let mut keys_lock = self
             .keys
             .write()
             .map_err(|_| CryptoError::ManifestLockPoisoned)?;
         let key = keys_lock
-            .get_mut(key_id)
-            .ok_or_else(|| CryptoError::KeyNotFound(key_id.to_string()))?;
+            .get_mut(key_id_trimmed)
+            .ok_or_else(|| CryptoError::KeyNotFound(key_id_trimmed.to_string()))?;
         key.status = KeyLifecycleStatus::Revoked;
         Ok(())
     }
@@ -210,7 +225,13 @@ impl KeyLifecycleCryptoService {
         }
 
         let key_id = match key_id_opt {
-            Some(id) => id.to_string(),
+            Some(id) => {
+                let id_trimmed = id.trim();
+                if id_trimmed.is_empty() {
+                    return Err(CryptoError::EmptyKeySpec("key_id"));
+                }
+                id_trimmed.to_string()
+            }
             None => self.active_key_id(),
         };
 

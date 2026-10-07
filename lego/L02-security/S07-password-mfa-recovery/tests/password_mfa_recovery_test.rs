@@ -178,4 +178,34 @@ mod tests {
         let cleaned = service.cleanup_expired_tokens(Some(future));
         assert_eq!(cleaned, 2); // tok1 (expired) and tok2 (consumed)
     }
+
+    #[test]
+    fn test_recovery_tenant_boundary_precedes_lockout() {
+        let service = CredentialRecoveryService::new(3, 1800_000, 900_000);
+        let (token_id, _code, _) = service
+            .initiate_recovery("user_victim", "tenant_corp", RecoveryChannel::Email, None)
+            .unwrap();
+
+        // Fail 3 times under legitimate tenant to trigger lockout
+        for _ in 0..3 {
+            let _ = service.verify_recovery_challenge(&token_id, "000000", "tenant_corp", None);
+        }
+
+        // Now user_victim in tenant_corp is locked out
+        assert!(service.is_locked_out("user_victim", "tenant_corp", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as u64));
+
+        // Attacker from tenant_evil attempts verification with token_id:
+        // MUST fail with "Tenant boundary violation" first, NOT leaking lockout state!
+        let evil_res = service.verify_recovery_challenge(&token_id, "123456", "tenant_evil", None);
+        assert!(evil_res.is_err());
+        let err_msg = evil_res.unwrap_err();
+        assert_eq!(err_msg, "Tenant boundary violation");
+        assert!(!err_msg.contains("locked out"));
+
+        // Legitimate tenant attempt fails with locked out message
+        let corp_res = service.verify_recovery_challenge(&token_id, "123456", "tenant_corp", None);
+        assert!(corp_res.is_err());
+        assert!(corp_res.unwrap_err().contains("locked out"));
+    }
 }
+

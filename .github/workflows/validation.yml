@@ -11,6 +11,7 @@ on:
       - '.gitignore'
   push:
     branches:
+      - 'main'
       - 'runtime-kernel/*'
       - 'execution-engine/*'
       - 'data-plane/*'

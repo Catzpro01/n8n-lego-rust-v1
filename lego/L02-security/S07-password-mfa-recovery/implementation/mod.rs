@@ -202,15 +202,15 @@ impl CredentialRecoveryService {
             .get_mut(token_id)
             .ok_or_else(|| "Recovery token not found".to_string())?;
 
-        // 1. Lockout check
+        // 1. Tenant boundary check (fail-closed first: absolute tenant isolation prevents cross-tenant lockout leaks)
+        if token.tenant_id != tenant {
+            return Err("Tenant boundary violation".to_string());
+        }
+
+        // 2. Lockout check
         let lock_key = Self::lockout_key(&token.principal_id, &token.tenant_id);
         if self.is_locked_out(&token.principal_id, &token.tenant_id, now) {
             return Err("Principal is locked out (fail-closed)".to_string());
-        }
-
-        // 2. Tenant boundary check
-        if token.tenant_id != tenant {
-            return Err("Tenant boundary violation".to_string());
         }
 
         // 3. Consumed check (single use)

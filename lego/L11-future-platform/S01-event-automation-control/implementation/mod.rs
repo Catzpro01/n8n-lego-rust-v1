@@ -318,13 +318,14 @@ impl EventControlBus {
         }
     }
 
-    fn matches_pattern(topic: &str, pattern: &str) -> bool {
+    pub fn matches_pattern(topic: &str, pattern: &str) -> bool {
         if pattern == "*" || pattern == topic {
             return true;
         }
-        if pattern.ends_with(".*") {
-            let prefix = &pattern[..pattern.len() - 2];
-            return topic.starts_with(prefix);
+        if let Some(prefix) = pattern.strip_suffix(".*") {
+            if let Some(rest) = topic.strip_prefix(prefix) {
+                return rest.starts_with('.') && rest.len() > 1;
+            }
         }
         false
     }

@@ -288,18 +288,31 @@ impl MachineIdentityKeystoreService {
         })
     }
 
-    /// Revoke an issued token by token ID
-    pub fn revoke_token(&self, token_id: &str) -> Result<(), String> {
+    /// Revoke an issued token by token ID with optional tenant scope
+    pub fn revoke_token_scoped(&self, token_id: &str, caller_tenant: Option<&str>) -> Result<(), String> {
+        if token_id.trim().is_empty() {
+            return Err("token_id cannot be empty (fail-closed)".to_string());
+        }
         let mut tokens = self.tokens.write().unwrap();
         let token = tokens
             .get_mut(token_id)
             .ok_or_else(|| "Token not found".to_string())?;
+        if let Some(c_tenant) = caller_tenant {
+            if !c_tenant.trim().is_empty() && token.tenant_id != c_tenant {
+                return Err("Tenant boundary mismatch (fail-closed)".to_string());
+            }
+        }
         token.is_revoked = true;
         Ok(())
     }
 
-    /// Revoke an issued token directly by raw bearer token value
-    pub fn revoke_token_by_raw(&self, token_raw: &str) -> Result<(), String> {
+    /// Revoke an issued token by token ID
+    pub fn revoke_token(&self, token_id: &str) -> Result<(), String> {
+        self.revoke_token_scoped(token_id, None)
+    }
+
+    /// Revoke an issued token directly by raw bearer token value with optional tenant scope
+    pub fn revoke_token_by_raw_scoped(&self, token_raw: &str, caller_tenant: Option<&str>) -> Result<(), String> {
         if token_raw.trim().is_empty() {
             return Err("token cannot be empty (fail-closed)".to_string());
         }
@@ -309,18 +322,41 @@ impl MachineIdentityKeystoreService {
             .values_mut()
             .find(|t| t.token_hash == token_hash)
             .ok_or_else(|| "Token not recognized".to_string())?;
+        if let Some(c_tenant) = caller_tenant {
+            if !c_tenant.trim().is_empty() && token.tenant_id != c_tenant {
+                return Err("Tenant boundary mismatch (fail-closed)".to_string());
+            }
+        }
         token.is_revoked = true;
+        Ok(())
+    }
+
+    /// Revoke an issued token directly by raw bearer token value
+    pub fn revoke_token_by_raw(&self, token_raw: &str) -> Result<(), String> {
+        self.revoke_token_by_raw_scoped(token_raw, None)
+    }
+
+    /// Deactivate machine identity (disabling all future authentications) with optional tenant scope
+    pub fn deactivate_machine_scoped(&self, machine_id: &str, caller_tenant: Option<&str>) -> Result<(), String> {
+        if machine_id.trim().is_empty() {
+            return Err("machine_id cannot be empty (fail-closed)".to_string());
+        }
+        let mut machines = self.machines.write().unwrap();
+        let machine = machines
+            .get_mut(machine_id)
+            .ok_or_else(|| "Machine identity not found".to_string())?;
+        if let Some(c_tenant) = caller_tenant {
+            if !c_tenant.trim().is_empty() && machine.tenant_id != c_tenant {
+                return Err("Tenant boundary mismatch (fail-closed)".to_string());
+            }
+        }
+        machine.is_active = false;
         Ok(())
     }
 
     /// Deactivate machine identity (disabling all future authentications)
     pub fn deactivate_machine(&self, machine_id: &str) -> Result<(), String> {
-        let mut machines = self.machines.write().unwrap();
-        let machine = machines
-            .get_mut(machine_id)
-            .ok_or_else(|| "Machine identity not found".to_string())?;
-        machine.is_active = false;
-        Ok(())
+        self.deactivate_machine_scoped(machine_id, None)
     }
 
     /// Prune revoked and expired tokens from authoritative `machine-identity-keystore`

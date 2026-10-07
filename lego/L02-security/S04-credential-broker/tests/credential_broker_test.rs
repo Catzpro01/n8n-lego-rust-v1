@@ -407,4 +407,43 @@ mod tests {
         assert!(!logs[1].success);
         assert!(logs[1].error.as_ref().unwrap().contains("Audience mismatch"));
     }
+
+    #[test]
+    fn test_credential_release_type_mismatch_denied() {
+        let vault = CredentialVault::new();
+        let data = json!({"token": "secret_data"});
+
+        let s_ref = vault
+            .store_full(
+                "sec_type_check",
+                "oauth2",
+                "tenant_corp",
+                "n8n_execution",
+                data,
+                false,
+                None,
+            )
+            .unwrap();
+
+        // Alter SecretRef to have a mismatched credential_type
+        let mut tampered_ref = s_ref.clone();
+        tampered_ref.credential_type = "basic_auth".to_string();
+
+        let err = vault
+            .release_verified_full(
+                &tampered_ref,
+                "n8n_execution",
+                "node",
+                Some("tenant_corp"),
+                None,
+            )
+            .unwrap_err();
+
+        match err {
+            CredentialBrokerError::InvalidPayload(msg) => {
+                assert!(msg.contains("Credential type mismatch"));
+            }
+            other => panic!("Expected InvalidPayload with type mismatch, got {other:?}"),
+        }
+    }
 }

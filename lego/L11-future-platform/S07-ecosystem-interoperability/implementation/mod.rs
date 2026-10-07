@@ -124,33 +124,37 @@ impl EcosystemInteroperabilityService {
         &self,
         req: &ConversionRequest,
     ) -> Result<ConversionResponse, InteropError> {
-        match req.source_protocol {
+        let payload_ref = match req.source_protocol {
             ExternalProtocol::ZapierWebhookV2 => {
-                // Zapier wraps items in a data array or top-level key
-                let raw_data = req.source_payload.get("data").unwrap_or(&req.source_payload);
-                let canonical_item = serde_json::json!({
-                    "json": raw_data,
-                    "pairedItem": { "item": 0 }
-                });
-                Ok(ConversionResponse {
-                    success: true,
-                    transformed_payload: serde_json::json!([canonical_item]),
-                    schema_version: "n8n-canonical-v1".to_string(),
-                })
+                req.source_payload.get("data").unwrap_or(&req.source_payload)
             }
             ExternalProtocol::OpenApiV3 | ExternalProtocol::GenericRestV1 => {
-                // Wrap plain JSON in canonical n8n [{ json: ... }]
-                let canonical_item = serde_json::json!({
-                    "json": req.source_payload,
-                    "pairedItem": { "item": 0 }
-                });
-                Ok(ConversionResponse {
-                    success: true,
-                    transformed_payload: serde_json::json!([canonical_item]),
-                    schema_version: "n8n-canonical-v1".to_string(),
-                })
+                &req.source_payload
             }
-        }
+        };
+
+        let items: Vec<serde_json::Value> = match payload_ref {
+            serde_json::Value::Array(arr) => arr
+                .iter()
+                .enumerate()
+                .map(|(idx, val)| {
+                    serde_json::json!({
+                        "json": val,
+                        "pairedItem": { "item": idx }
+                    })
+                })
+                .collect(),
+            single => vec![serde_json::json!({
+                "json": single,
+                "pairedItem": { "item": 0 }
+            })],
+        };
+
+        Ok(ConversionResponse {
+            success: true,
+            transformed_payload: serde_json::Value::Array(items),
+            schema_version: "n8n-canonical-v1".to_string(),
+        })
     }
 
     /// Maps external HTTP / connector status codes to canonical error codes

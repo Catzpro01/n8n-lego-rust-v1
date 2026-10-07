@@ -68,6 +68,9 @@ pub enum ExecutionError {
         to: ExecutionFrameStatus,
     },
 
+    #[error("Execution frame '{0}' already exists")]
+    FrameAlreadyExists(String),
+
     #[error("Authoritative state lock poisoned")]
     LockPoisoned,
 
@@ -93,6 +96,9 @@ impl WorkflowExecutionEngine {
         workflow_id: &str,
         trigger: serde_json::Value,
     ) -> Result<ExecutionFrame, ExecutionError> {
+        if workflow_id.trim().is_empty() {
+            return Err(ExecutionError::InvalidPayload("workflow_id cannot be empty".to_string()));
+        }
         let timestamp = now_ms();
         let counter = EXEC_COUNTER.fetch_add(1, Ordering::SeqCst);
         let execution_id = format!("exec_{}_{}_{}", workflow_id, timestamp, counter);
@@ -106,6 +112,13 @@ impl WorkflowExecutionEngine {
         workflow_id: &str,
         trigger: serde_json::Value,
     ) -> Result<ExecutionFrame, ExecutionError> {
+        if workflow_id.trim().is_empty() {
+            return Err(ExecutionError::InvalidPayload("workflow_id cannot be empty".to_string()));
+        }
+        if execution_id.trim().is_empty() {
+            return Err(ExecutionError::InvalidPayload("execution_id cannot be empty".to_string()));
+        }
+
         let ts = now_ms();
         let frame = ExecutionFrame {
             execution_id: execution_id.to_string(),
@@ -120,6 +133,9 @@ impl WorkflowExecutionEngine {
         };
 
         let mut frames = self.frames.write().map_err(|_| ExecutionError::LockPoisoned)?;
+        if frames.contains_key(execution_id) {
+            return Err(ExecutionError::FrameAlreadyExists(execution_id.to_string()));
+        }
         frames.insert(execution_id.to_string(), frame.clone());
         Ok(frame)
     }

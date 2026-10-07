@@ -18,7 +18,7 @@
   2. **Multi-Tenant Keystore Boundary**: Machine records and tokens are strictly partitioned by tenant ID; cross-tenant authentication fails (`test_machine_authenticate_token_tenant_mismatch`).
   3. **Zero Plaintext Secret Storage**: Raw secrets are transformed into deterministic 64-bit cryptographic hashes before persistence in `machine-identity-keystore` (`test_machine_register_and_issue_token`).
   4. **Granular Machine Kinds**: Supports Worker, ServiceAccount, ApiKey, Agent, and Mcp machine identities with attached scopes (`test_machine_register_and_issue_token`, `test_machine_authenticate_token_success`).
-  5. **Instant Invalidation & Deactivation**: Individual tokens can be revoked by ID or by raw bearer token, and parent machines deactivated to revoke all token usages (`test_machine_revoke_token`, `test_machine_revoke_token_by_raw`, `test_machine_deactivate_disables_tokens`).
+  5. **Instant Invalidation & Deactivation with Multi-Tenant Boundary**: Individual tokens can be revoked by ID or by raw bearer token, and parent machines deactivated with fail-closed tenant boundary checks preventing cross-tenant interference (`test_machine_revoke_token`, `test_machine_revoke_token_by_raw`, `test_machine_deactivate_disables_tokens`, `test_machine_scoped_token_revocation_tenant_isolation`, `test_machine_scoped_deactivation_tenant_isolation`).
   6. **State Pruning & Garbage Collection**: Prunes expired and revoked tokens from `machine-identity-keystore` (`test_machine_cleanup_expired_tokens`).
   7. **Transport-Neutral Port Dispatchers**: Both `port.security.machine.token.v1` and `port.security.machine.authenticate.v1` handle port roundtrips cleanly (`test_machine_ports_dispatchers`, `crates/n8n-port-contract/tests/machine_identity_port_test.rs`).
   8. **Physical & Import Isolation**: 0 private cross-Sub-LEGO imports detected by CI architecture check.
@@ -37,4 +37,6 @@
   - `test_machine_authenticate_api_key_fail_closed_empty`: PASSED
   - `test_machine_cleanup_expired_tokens`: PASSED
   - `test_machine_ports_dispatchers`: PASSED
+  - `test_machine_scoped_token_revocation_tenant_isolation`: PASSED
+  - `test_machine_scoped_deactivation_tenant_isolation`: PASSED
   - `crates/n8n-port-contract/tests/machine_identity_port_test.rs`: PASSED (Roundtrip, Auth, Denial)

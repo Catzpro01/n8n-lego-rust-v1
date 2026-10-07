@@ -29,4 +29,7 @@
   - `test_crypto_empty_plaintext_rejection`: PASSED
   - `test_crypto_envelope_format_parsing`: PASSED
   - `test_crypto_port_encrypt_and_decrypt_dispatchers`: PASSED
+  - `test_crypto_rotate_fail_closed_empty_inputs`: PASSED
+  - `test_crypto_active_key_revocation_fail_closed_encrypt`: PASSED
+  - `test_crypto_decrypt_missing_key_rejection`: PASSED
   - `crates/n8n-port-contract/tests/cryptography_port_test.rs`: PASSED (Roundtrip, Key Rotation, Security Boundary)

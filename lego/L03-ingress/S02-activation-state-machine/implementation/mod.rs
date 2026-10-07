@@ -37,6 +37,8 @@ impl ActivationState {
             (Self::Inactive, Self::Activating) => true,
             (Self::Inactive, Self::Active) => true, // direct transition shortcut
             (Self::Activating, Self::Active) => true,
+            (Self::Activating, Self::Deactivating) => true, // cancel activation
+            (Self::Activating, Self::Inactive) => true,     // abort activation shortcut
             (Self::Activating, Self::Failed) => true,
             (Self::Active, Self::Deactivating) => true,
             (Self::Active, Self::Inactive) => true, // direct deactivation shortcut
@@ -222,6 +224,16 @@ impl ActivationStateMachineService {
         trigger_id: &str,
         error_msg: &str,
     ) -> Result<(), String> {
+        if tenant_id.trim().is_empty() {
+            return Err("Missing tenant_id: cannot be empty".to_string());
+        }
+        if workflow_id.trim().is_empty() {
+            return Err("Missing workflow_id: cannot be empty".to_string());
+        }
+        if trigger_id.trim().is_empty() {
+            return Err("Missing trigger_id: cannot be empty".to_string());
+        }
+
         let key = Self::composite_key(tenant_id, workflow_id, trigger_id);
         let mut registry = self.triggers.write().map_err(|e| format!("Lock error: {e}"))?;
 
@@ -232,6 +244,11 @@ impl ActivationStateMachineService {
         } else {
             Err(format!("Trigger {key} not found to mark as failed"))
         }
+    }
+
+    /// Performs multiple toggle operations in batch
+    pub fn batch_toggle(&self, reqs: Vec<ActivationToggleRequest>) -> Vec<Result<ActivationToggleResponse, String>> {
+        reqs.into_iter().map(|req| self.toggle(req)).collect()
     }
 
     /// Query registered triggers matching filter criteria

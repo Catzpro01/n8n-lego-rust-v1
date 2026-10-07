@@ -419,4 +419,21 @@ mod tests {
         assert!(wrapped["records"].is_array());
         assert_eq!(wrapped["records"].as_array().unwrap().len(), 2);
     }
+
+    #[test]
+    fn test_empty_child_workflow_id_rejected() {
+        let engine = SubworkflowEngine::new(5);
+        let res = engine.invoke(
+            "exec_p",
+            "wf_p",
+            "WrapNode",
+            "   ",
+            vec![],
+            HashMap::new(),
+            InputMappingMode::PassThrough,
+            vec!["wf_p".to_string()],
+            false,
+        );
+        assert!(matches!(res, Err(SubworkflowError::ExecutionFailed(_))));
+    }
 }

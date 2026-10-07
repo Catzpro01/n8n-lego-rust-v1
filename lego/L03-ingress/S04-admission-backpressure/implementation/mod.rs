@@ -46,7 +46,12 @@ impl RateLimitBucket {
         }
         let elapsed_sec = (now_ms - self.last_refill_ms) as f64 / 1000.0;
         let added = elapsed_sec * (self.refill_tokens_per_sec as f64);
-        self.available_tokens = (self.available_tokens + added).min(self.capacity as f64);
+        let new_tokens = (self.available_tokens + added).min(self.capacity as f64);
+        self.available_tokens = if new_tokens.is_nan() || new_tokens < 0.0 {
+            0.0
+        } else {
+            new_tokens
+        };
         self.last_refill_ms = now_ms;
     }
 
@@ -140,6 +145,14 @@ impl AdmissionService {
             )));
         }
 
+        // Special zero-cost health probes / pings
+        if cost == 0 {
+            *inflight += 1;
+            return Ok(AdmissionDecision::Allowed {
+                remaining_tokens: cfg.max_capacity,
+            });
+        }
+
         let mut buckets = self.buckets.write().unwrap();
         let bucket = buckets
             .entry(key.to_string())
@@ -160,6 +173,24 @@ impl AdmissionService {
             Ok(AdmissionDecision::RateLimited {
                 retry_after_ms: (retry_after_sec * 1000).max(100),
             })
+        }
+    }
+
+    /// Inspects current available tokens and capacity for a given bucket key
+    pub fn get_bucket_status(&self, key: &str, now_ms: u64) -> Option<(f64, u64)> {
+        let mut buckets = self.buckets.write().ok()?;
+        let bucket = buckets.get_mut(key)?;
+        bucket.refill(now_ms);
+        Some((bucket.available_tokens, bucket.capacity))
+    }
+
+    /// Resets a tenant bucket back to maximum capacity
+    pub fn reset_bucket(&self, key: &str, now_ms: u64) {
+        if let Ok(mut buckets) = self.buckets.write() {
+            if let Some(bucket) = buckets.get_mut(key) {
+                bucket.available_tokens = bucket.capacity as f64;
+                bucket.last_refill_ms = now_ms;
+            }
         }
     }
 
@@ -212,6 +243,25 @@ impl AdmissionService {
                 Ok(serde_json::json!({
                     "success": true,
                     "key": key
+                }))
+            }
+            "status" => {
+                let key = payload.get("key").and_then(|v| v.as_str()).unwrap_or("default");
+                let now_ms = payload.get("now_ms").and_then(|v| v.as_u64()).unwrap_or(0);
+                let (available, cap) = self.get_bucket_status(key, now_ms).unwrap_or((0.0, 0));
+                Ok(serde_json::json!({
+                    "key": key,
+                    "available_tokens": available,
+                    "capacity": cap
+                }))
+            }
+            "reset" => {
+                let key = payload.get("key").and_then(|v| v.as_str()).unwrap_or("default");
+                let now_ms = payload.get("now_ms").and_then(|v| v.as_u64()).unwrap_or(0);
+                self.reset_bucket(key, now_ms);
+                Ok(serde_json::json!({
+                    "success": true,
+                    "reset_key": key
                 }))
             }
             other => Err(AdmissionError::InvalidPayload(format!("Unsupported action '{other}'"))),

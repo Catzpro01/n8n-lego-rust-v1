@@ -50,18 +50,38 @@ impl WebhookRouteTable {
             .as_millis() as u64
     }
 
-    /// Normalizes path by trimming whitespace, ensuring leading slash, and removing trailing slashes.
-    fn normalize_path(path: &str) -> String {
+    /// Normalizes path by trimming whitespace, stripping query parameters and fragments,
+    /// collapsing consecutive slashes, ensuring a leading slash, and removing trailing slashes.
+    pub fn normalize_path(path: &str) -> String {
         let trimmed = path.trim();
         if trimmed.is_empty() || trimmed == "/" {
             return "/".to_string();
         }
-        let with_leading = if trimmed.starts_with('/') {
-            trimmed.to_string()
-        } else {
-            format!("/{trimmed}")
-        };
-        let stripped = with_leading.trim_end_matches('/');
+
+        // Strip query string and URL fragments if present in ingress request
+        let path_without_query = trimmed.split('?').next().unwrap_or(trimmed);
+        let clean_path = path_without_query.split('#').next().unwrap_or(path_without_query);
+
+        let mut cleaned = String::with_capacity(clean_path.len() + 1);
+        let mut last_was_slash = false;
+        if !clean_path.starts_with('/') {
+            cleaned.push('/');
+            last_was_slash = true;
+        }
+
+        for ch in clean_path.chars() {
+            if ch == '/' {
+                if !last_was_slash {
+                    cleaned.push('/');
+                    last_was_slash = true;
+                }
+            } else {
+                cleaned.push(ch);
+                last_was_slash = false;
+            }
+        }
+
+        let stripped = cleaned.trim_end_matches('/');
         if stripped.is_empty() {
             "/".to_string()
         } else {
@@ -164,6 +184,20 @@ impl WebhookRouteTable {
     /// Returns count of registered routes
     pub fn count(&self) -> usize {
         self.routes.read().map(|r| r.len()).unwrap_or(0)
+    }
+
+    /// Lists registered route paths for a given tenant
+    pub fn list_routes_for_tenant(&self, tenant_id: &str) -> Vec<WebhookRouteKey> {
+        let t_id = tenant_id.trim();
+        self.routes
+            .read()
+            .map(|r| {
+                r.keys()
+                    .filter(|k| k.tenant_id == t_id)
+                    .cloned()
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 
     /// Clears all routes

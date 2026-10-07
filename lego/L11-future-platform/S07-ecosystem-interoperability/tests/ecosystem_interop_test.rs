@@ -73,4 +73,30 @@ mod tests {
         let err_res = service.handle_port_invocation(&err_payload).unwrap();
         assert_eq!(err_res["canonical_error"], "RateLimited");
     }
+
+    #[test]
+    fn test_array_batch_conversion_to_canonical_n8n() {
+        let service = EcosystemInteroperabilityService::new();
+
+        let req = ConversionRequest {
+            source_protocol: ExternalProtocol::GenericRestV1,
+            source_payload: serde_json::json!([
+                { "name": "Item 1", "score": 90 },
+                { "name": "Item 2", "score": 85 },
+                { "name": "Item 3", "score": 95 }
+            ]),
+            target_schema_version: "n8n-canonical-v1".to_string(),
+        };
+
+        let resp = service.convert_to_canonical(&req).unwrap();
+        assert!(resp.success);
+        let items = resp.transformed_payload.as_array().unwrap();
+        assert_eq!(items.len(), 3);
+        assert_eq!(items[0]["json"]["name"], "Item 1");
+        assert_eq!(items[0]["pairedItem"]["item"], 0);
+        assert_eq!(items[1]["json"]["name"], "Item 2");
+        assert_eq!(items[1]["pairedItem"]["item"], 1);
+        assert_eq!(items[2]["json"]["name"], "Item 3");
+        assert_eq!(items[2]["pairedItem"]["item"], 2);
+    }
 }

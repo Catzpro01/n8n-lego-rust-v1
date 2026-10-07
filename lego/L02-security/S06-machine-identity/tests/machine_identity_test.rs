@@ -252,4 +252,52 @@ mod tests {
         let cleaned = service.cleanup_expired_tokens(Some(future));
         assert_eq!(cleaned, 2);
     }
+
+    #[test]
+    fn test_machine_scoped_token_revocation_tenant_isolation() {
+        let service = MachineIdentityKeystoreService::new();
+        service
+            .register_machine("m-tenant-iso", "Machine", "tenant_alpha", MachineKind::Worker, "secret", vec![])
+            .unwrap();
+
+        let (token, meta) = service.issue_machine_token("m-tenant-iso", "secret", "tenant_alpha", None).unwrap();
+
+        // 1. Cross-tenant revocation attempt by token ID -> fails closed
+        let cross_err = service.revoke_token_scoped(&meta.token_id, Some("tenant_beta")).unwrap_err();
+        assert!(cross_err.contains("Tenant boundary mismatch"));
+
+        // Token is still valid for tenant_alpha
+        assert!(service.authenticate_token(&token, "tenant_alpha", None).is_ok());
+
+        // 2. Cross-tenant revocation attempt by raw bearer token -> fails closed
+        let raw_cross_err = service.revoke_token_by_raw_scoped(&token, Some("tenant_beta")).unwrap_err();
+        assert!(raw_cross_err.contains("Tenant boundary mismatch"));
+
+        // 3. Legitimate revocation by tenant_alpha -> succeeds
+        service.revoke_token_scoped(&meta.token_id, Some("tenant_alpha")).expect("Revocation by owner tenant should succeed");
+        assert!(service.authenticate_token(&token, "tenant_alpha", None).is_err());
+    }
+
+    #[test]
+    fn test_machine_scoped_deactivation_tenant_isolation() {
+        let service = MachineIdentityKeystoreService::new();
+        service
+            .register_machine("m-deact-iso", "Machine", "tenant_alpha", MachineKind::ServiceAccount, "secret", vec![])
+            .unwrap();
+
+        // 1. Cross-tenant deactivation attempt -> fails closed
+        let cross_err = service.deactivate_machine_scoped("m-deact-iso", Some("tenant_beta")).unwrap_err();
+        assert!(cross_err.contains("Tenant boundary mismatch"));
+
+        // Machine is still active; token issuance works
+        assert!(service.issue_machine_token("m-deact-iso", "secret", "tenant_alpha", None).is_ok());
+
+        // 2. Legitimate deactivation by tenant_alpha -> succeeds
+        service.deactivate_machine_scoped("m-deact-iso", Some("tenant_alpha")).expect("Deactivation by owner tenant should succeed");
+
+        // Subsequent token issuance fails because machine is inactive
+        let post_err = service.issue_machine_token("m-deact-iso", "secret", "tenant_alpha", None).unwrap_err();
+        assert!(post_err.contains("inactive"));
+    }
 }
+

@@ -157,4 +157,46 @@ mod tests {
         assert_eq!(total_allowed + total_shed, 16);
         assert_eq!(service.current_inflight(), total_allowed);
     }
+
+    #[test]
+    fn test_zero_cost_probe_and_bucket_status_and_reset() {
+        let service = AdmissionService::new(5);
+        service.set_tenant_config("t_probe", BucketConfig { max_capacity: 10, refill_tokens_per_sec: 2 });
+
+        // 1. Zero cost probe allowed
+        let d_zero = service.acquire_admission("t_probe", 0, 1000).unwrap();
+        assert!(matches!(d_zero, AdmissionDecision::Allowed { .. }));
+        service.release_admission();
+
+        // 2. Consume 8 tokens
+        let d_consume = service.acquire_admission("t_probe", 8, 1000).unwrap();
+        assert!(matches!(d_consume, AdmissionDecision::Allowed { .. }));
+        service.release_admission();
+
+        // Inspect status
+        let (avail, cap) = service.get_bucket_status("t_probe", 1000).unwrap();
+        assert_eq!(avail, 2.0);
+        assert_eq!(cap, 10);
+
+        // Reset bucket
+        service.reset_bucket("t_probe", 1000);
+        let (avail_after, _) = service.get_bucket_status("t_probe", 1000).unwrap();
+        assert_eq!(avail_after, 10.0);
+
+        // Test port handler status & reset
+        let stat_resp = service.handle_port_admission(&serde_json::json!({
+            "action": "status",
+            "key": "t_probe",
+            "now_ms": 1000
+        })).unwrap();
+        assert_eq!(stat_resp["capacity"], 10);
+
+        let reset_resp = service.handle_port_admission(&serde_json::json!({
+            "action": "reset",
+            "key": "t_probe",
+            "now_ms": 1000
+        })).unwrap();
+        assert_eq!(reset_resp["success"], true);
+    }
 }
+

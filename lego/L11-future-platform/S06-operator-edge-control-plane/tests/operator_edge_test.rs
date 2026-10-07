@@ -37,7 +37,18 @@ mod tests {
         assert_eq!(receipt_noop.resulting_status, EdgeNodeStatus::Quarantined);
         assert!(receipt_noop.is_idempotent_noop);
 
-        // 3. Authorized recovery returns node to Healthy
+        // 3. Attempting to direct-Start a quarantined node is rejected with InvalidStateTransition
+        let err_start = service.execute_operator_command(
+            "admin-bob",
+            "tenant-corp",
+            &admin_scopes,
+            "edge-1",
+            OperatorAction::Start,
+            1250,
+        ).unwrap_err();
+        assert!(matches!(err_start, EdgeControlError::InvalidStateTransition { action: OperatorAction::Start, status: EdgeNodeStatus::Quarantined }));
+
+        // 4. Authorized recovery returns node to Healthy
         let receipt_rec = service.execute_operator_command(
             "admin-bob",
             "tenant-corp",

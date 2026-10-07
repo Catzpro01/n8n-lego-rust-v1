@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::*;
 
     #[test]
     fn test_workflow_execution_frame_lifecycle() {
@@ -201,5 +201,45 @@ mod tests {
         // Missing execution_id for cancel
         let err3 = engine.handle_port_cancel_workflow(&serde_json::json!({ "reason": "none" }));
         assert!(err3.is_err());
+    }
+
+    #[test]
+    fn test_duplicate_execution_id_rejected() {
+        let engine = WorkflowExecutionEngine::new();
+        let res1 = engine.start_execution_with_id("exec_dup_1", "wf_test", serde_json::json!({}));
+        assert!(res1.is_ok());
+
+        let res2 = engine.start_execution_with_id("exec_dup_1", "wf_test", serde_json::json!({}));
+        assert!(matches!(res2, Err(ExecutionError::FrameAlreadyExists(id)) if id == "exec_dup_1"));
+    }
+
+    #[test]
+    fn test_empty_workflow_and_execution_id_rejected() {
+        let engine = WorkflowExecutionEngine::new();
+        let err_empty_wf = engine.start_execution("   ", serde_json::json!({}));
+        assert!(matches!(err_empty_wf, Err(ExecutionError::InvalidPayload(_))));
+
+        let err_empty_exec_id = engine.start_execution_with_id("  ", "wf_valid", serde_json::json!({}));
+        assert!(matches!(err_empty_exec_id, Err(ExecutionError::InvalidPayload(_))));
+    }
+
+    #[test]
+    fn test_terminal_state_immutability_fail_and_advance() {
+        let engine = WorkflowExecutionEngine::new();
+        let frame = engine.start_execution("wf_term", serde_json::json!({})).unwrap();
+
+        engine.fail_execution(&frame.execution_id, "disk error").unwrap();
+
+        // Advance must fail on terminal
+        let adv_err = engine.advance_step(&frame.execution_id);
+        assert!(matches!(adv_err, Err(ExecutionError::FrameNotRunning { current_status: ExecutionFrameStatus::Failed })));
+
+        // Complete must fail on failed
+        let comp_err = engine.complete_execution(&frame.execution_id);
+        assert!(matches!(comp_err, Err(ExecutionError::InvalidStateTransition { .. })));
+
+        // Re-failing must fail on already failed
+        let fail_err = engine.fail_execution(&frame.execution_id, "another error");
+        assert!(matches!(fail_err, Err(ExecutionError::InvalidStateTransition { .. })));
     }
 }

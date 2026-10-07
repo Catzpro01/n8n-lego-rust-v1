@@ -136,6 +136,9 @@ pub fn map_input_data(
         }
         InputMappingMode::WrapKey(key) => {
             let mut obj = serde_json::Map::new();
+            for (k, v) in parameters {
+                obj.insert(k.clone(), v.clone());
+            }
             obj.insert(key.clone(), serde_json::Value::Array(input.to_vec()));
             vec![serde_json::Value::Object(obj)]
         }
@@ -222,6 +225,13 @@ impl SubworkflowEngine {
         active_chain: Vec<String>,
         is_parent_cancelled: bool,
     ) -> Result<SubworkflowResult, SubworkflowError> {
+        // Invariant 0: Non-empty child workflow ID
+        if child_workflow_id.trim().is_empty() {
+            return Err(SubworkflowError::ExecutionFailed(
+                "child_workflow_id cannot be empty".to_string(),
+            ));
+        }
+
         // Invariant 1: Fail-closed on parent cancellation
         if is_parent_cancelled {
             return Err(SubworkflowError::ParentCancelled {

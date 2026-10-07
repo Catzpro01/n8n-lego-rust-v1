@@ -199,4 +199,42 @@ mod tests {
 
         assert!(table.count() >= 50);
     }
+
+    #[test]
+    fn test_webhook_hardening_query_fragment_and_collapse_slashes() {
+        let table = WebhookRouteTable::new();
+        table
+            .register_route("tenant_secure", "POST", "/webhook/payment", "wf_pay")
+            .unwrap();
+
+        // 1. Ingress request arriving with query parameters matches clean route
+        let with_query = table.match_route("tenant_secure", "POST", "/webhook/payment?token=secret123&env=prod");
+        assert_eq!(with_query.as_deref(), Some("wf_pay"));
+
+        // 2. Ingress request arriving with fragment matches clean route
+        let with_frag = table.match_route("tenant_secure", "POST", "/webhook/payment#section2");
+        assert_eq!(with_frag.as_deref(), Some("wf_pay"));
+
+        // 3. Consecutive slashes collapsed deterministically
+        let with_double_slashes = table.match_route("tenant_secure", "POST", "///webhook////payment///");
+        assert_eq!(with_double_slashes.as_deref(), Some("wf_pay"));
+    }
+
+    #[test]
+    fn test_webhook_list_routes_for_tenant() {
+        let table = WebhookRouteTable::new();
+        table.register_route("tenant_A", "POST", "/hook1", "wf1").unwrap();
+        table.register_route("tenant_A", "GET", "/hook2", "wf2").unwrap();
+        table.register_route("tenant_B", "POST", "/hook1", "wf3").unwrap();
+
+        let tenant_a_routes = table.list_routes_for_tenant("tenant_A");
+        assert_eq!(tenant_a_routes.len(), 2);
+
+        let tenant_b_routes = table.list_routes_for_tenant("tenant_B");
+        assert_eq!(tenant_b_routes.len(), 1);
+
+        let tenant_unknown = table.list_routes_for_tenant("tenant_unknown");
+        assert_eq!(tenant_unknown.len(), 0);
+    }
 }
+

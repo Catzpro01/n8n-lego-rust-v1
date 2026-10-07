@@ -154,4 +154,19 @@ mod tests {
         let limit_res = service.handle_port_invocation(&limit_payload).unwrap();
         assert_eq!(limit_res["within_limits"], true);
     }
+
+    #[test]
+    fn test_check_limits_rejects_negative_or_infinite_cost() {
+        let budget = standard_budget();
+        let mut usage = OptimizationUsage {
+            consumed_tokens: 100,
+            consumed_cost_usd: -0.05,
+            tool_calls_count: 1,
+            elapsed_ms: 100,
+        };
+        assert!(AdvancedAgentOptimizationService::check_limits(&budget, &usage).is_err());
+
+        usage.consumed_cost_usd = f64::INFINITY;
+        assert!(AdvancedAgentOptimizationService::check_limits(&budget, &usage).is_err());
+    }
 }

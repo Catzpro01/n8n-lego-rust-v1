@@ -62,6 +62,8 @@ pub enum IdempotencyEvaluation {
 pub struct IdempotencyService {
     records: Arc<RwLock<HashMap<String, IdempotencyRecord>>>,
     default_ttl_ms: u64,
+    in_flight_timeout_ms: u64,
+    max_entries: usize,
 }
 
 impl Default for IdempotencyService {
@@ -72,9 +74,15 @@ impl Default for IdempotencyService {
 
 impl IdempotencyService {
     pub fn new(default_ttl_ms: u64) -> Self {
+        Self::with_options(default_ttl_ms, 60_000, 50_000)
+    }
+
+    pub fn with_options(default_ttl_ms: u64, in_flight_timeout_ms: u64, max_entries: usize) -> Self {
         Self {
             records: Arc::new(RwLock::new(HashMap::new())),
             default_ttl_ms,
+            in_flight_timeout_ms,
+            max_entries,
         }
     }
 
@@ -101,6 +109,11 @@ impl IdempotencyService {
         let full_key = Self::composite_key(tenant_id, key);
         let mut map = self.records.write().map_err(|_| "Lock poisoned".to_string())?;
 
+        // Capacity protection: auto-sweep expired records if reaching capacity ceiling
+        if map.len() >= self.max_entries {
+            map.retain(|_, v| now_ms < v.expires_at_ms);
+        }
+
         // Check existing record
         if let Some(record) = map.get(&full_key) {
             // Check if expired
@@ -109,10 +122,15 @@ impl IdempotencyService {
             } else {
                 match record.state {
                     IdempotencyState::InFlight => {
-                        return Ok(IdempotencyEvaluation::InFlightDuplicate {
-                            key: key.to_string(),
-                            created_at_ms: record.created_at_ms,
-                        });
+                        // Check if in-flight lease is stale / abandoned by crash
+                        if now_ms > record.created_at_ms + self.in_flight_timeout_ms {
+                            // Lease expired, allow taking over as new invocation
+                        } else {
+                            return Ok(IdempotencyEvaluation::InFlightDuplicate {
+                                key: key.to_string(),
+                                created_at_ms: record.created_at_ms,
+                            });
+                        }
                     }
                     IdempotencyState::Completed => {
                         let payload = record.response_payload.clone().unwrap_or(serde_json::Value::Null);

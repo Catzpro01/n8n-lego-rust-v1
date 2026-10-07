@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::*;
     use serde_json::json;
 
     #[test]
@@ -155,6 +155,7 @@ mod tests {
         assert_eq!(ver_val["mismatch_count"], 0);
 
         // 3. Dispatch list
+        let list_payload = json!({ "action": "list" });
         let list_val = engine.handle_port_oracle_verify(&list_payload).expect("List dispatch");
         assert_eq!(list_val["fixtures"], json!(["port_corpus_1"]));
     }

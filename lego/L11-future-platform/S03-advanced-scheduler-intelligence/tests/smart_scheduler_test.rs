@@ -166,4 +166,21 @@ mod tests {
         let rel_res = scheduler.handle_port_invocation(&rel_payload).unwrap();
         assert_eq!(rel_res["released"], true);
     }
+
+    #[test]
+    fn test_register_worker_invalid_zero_capacity_fails() {
+        let scheduler = SmartSchedulerService::new(0.85, 0.5);
+        let bad_node = WorkerCapacityNode {
+            worker_id: "w-bad".to_string(),
+            total_cpu_millicores: 0,
+            used_cpu_millicores: 0,
+            total_memory_mb: 1024,
+            used_memory_mb: 0,
+            total_slots: 10,
+            used_slots: 0,
+            is_healthy: true,
+        };
+        let err = scheduler.register_worker(bad_node).unwrap_err();
+        assert_eq!(err, SchedulerError::InvalidDemand);
+    }
 }

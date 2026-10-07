@@ -294,4 +294,53 @@ mod tests {
         let all_triggers = service.list_triggers(ActivationListQuery::default()).unwrap();
         assert_eq!(all_triggers.len(), 160);
     }
+
+    #[test]
+    fn test_activation_mark_failed_empty_args_fail_closed() {
+        let service = ActivationStateMachineService::new();
+
+        assert!(service.mark_failed("", "wf_1", "trig_1", "err").is_err());
+        assert!(service.mark_failed("tenant_1", "", "trig_1", "err").is_err());
+        assert!(service.mark_failed("tenant_1", "wf_1", "", "err").is_err());
+    }
+
+    #[test]
+    fn test_activation_batch_toggle_and_abort_transitions() {
+        let service = ActivationStateMachineService::new();
+
+        let reqs = vec![
+            ActivationToggleRequest {
+                workflow_id: "wf_batch_1".to_string(),
+                trigger_id: "trig_b_1".to_string(),
+                tenant_id: "tenant_batch".to_string(),
+                trigger_type: "webhook".to_string(),
+                target_state: true,
+            },
+            ActivationToggleRequest {
+                workflow_id: "wf_batch_2".to_string(),
+                trigger_id: "trig_b_2".to_string(),
+                tenant_id: "tenant_batch".to_string(),
+                trigger_type: "schedule".to_string(),
+                target_state: true,
+            },
+            ActivationToggleRequest {
+                workflow_id: "".to_string(), // Invalid
+                trigger_id: "trig_b_3".to_string(),
+                tenant_id: "tenant_batch".to_string(),
+                trigger_type: "webhook".to_string(),
+                target_state: true,
+            },
+        ];
+
+        let results = service.batch_toggle(reqs);
+        assert_eq!(results.len(), 3);
+        assert!(results[0].is_ok());
+        assert!(results[1].is_ok());
+        assert!(results[2].is_err());
+
+        // Verify state machine can abort an activating trigger directly to inactive
+        assert!(ActivationState::Activating.can_transition_to(ActivationState::Inactive));
+        assert!(ActivationState::Activating.can_transition_to(ActivationState::Deactivating));
+    }
 }
+

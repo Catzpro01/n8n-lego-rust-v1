@@ -256,4 +256,70 @@ mod tests {
         assert!(extra.is_err());
         assert!(extra.unwrap_err().contains("already completed"));
     }
+
+    #[test]
+    fn test_streaming_backpressure_and_progressive_chunk_drain() {
+        // Buffer capacity of only 2 chunks to test backpressure
+        let service = ResponsePlanService::with_capacity(30_000, 2);
+
+        service
+            .register_waiter(
+                "waiter_bp",
+                "wf_llm",
+                "tenant_bp",
+                ResponsePlanType::Streaming {
+                    content_type: "text/event-stream".to_string(),
+                    timeout_ms: 10_000,
+                },
+                1000,
+            )
+            .unwrap();
+
+        // Push 2 chunks -> buffer full
+        service.push_stream_chunk("waiter_bp", 0, "chunk 0", false, 1050).unwrap();
+        service.push_stream_chunk("waiter_bp", 1, "chunk 1", false, 1100).unwrap();
+
+        // 3rd chunk exceeds capacity -> Backpressure error triggered!
+        let err = service.push_stream_chunk("waiter_bp", 2, "chunk 2", false, 1150);
+        assert!(err.is_err());
+        assert!(err.unwrap_err().contains("Streaming backpressure: chunk buffer capacity exceeded"));
+
+        // Consumer drains 1 chunk
+        let drained = service.drain_chunks("waiter_bp", 1).unwrap();
+        assert_eq!(drained.len(), 1);
+        assert_eq!(drained[0].chunk_index, 0);
+
+        // Now pushing next chunk succeeds because space was freed!
+        let ok = service.push_stream_chunk("waiter_bp", 2, "chunk 2", false, 1200);
+        assert!(ok.is_ok());
+
+        // Test port handler drain_chunks
+        let port_drain = service.handle_port_response_plan(&serde_json::json!({
+            "action": "drain_chunks",
+            "waiter_id": "waiter_bp",
+            "up_to": 10
+        })).unwrap();
+        assert_eq!(port_drain["success"], true);
+    }
+
+    #[test]
+    fn test_cancel_waiter_client_disconnect() {
+        let service = ResponsePlanService::new(30_000);
+        service
+            .register_waiter(
+                "waiter_cancel",
+                "wf_abort",
+                "tenant_c",
+                ResponsePlanType::WaitForCompletion { timeout_ms: 20_000 },
+                1000,
+            )
+            .unwrap();
+
+        service.cancel_waiter("waiter_cancel", "Client connection closed TCP FIN").unwrap();
+
+        let poll = service.poll_waiter("waiter_cancel", 1500).unwrap();
+        assert_eq!(poll["status"], "failed");
+        assert_eq!(poll["status_code"], 499);
+    }
 }
+

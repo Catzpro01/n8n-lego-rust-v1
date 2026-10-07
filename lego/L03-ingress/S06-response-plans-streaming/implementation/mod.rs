@@ -75,6 +75,7 @@ pub struct ResponseWaiter {
 pub struct ResponsePlanService {
     waiters: Arc<RwLock<HashMap<String, ResponseWaiter>>>,
     default_timeout_ms: u64,
+    max_buffered_chunks: usize,
 }
 
 impl Default for ResponsePlanService {
@@ -85,9 +86,14 @@ impl Default for ResponsePlanService {
 
 impl ResponsePlanService {
     pub fn new(default_timeout_ms: u64) -> Self {
+        Self::with_capacity(default_timeout_ms, 50)
+    }
+
+    pub fn with_capacity(default_timeout_ms: u64, max_buffered_chunks: usize) -> Self {
         Self {
             waiters: Arc::new(RwLock::new(HashMap::new())),
             default_timeout_ms,
+            max_buffered_chunks,
         }
     }
 
@@ -235,6 +241,11 @@ impl ResponsePlanService {
             return Err("Streaming waiter exceeded timeout budget".to_string());
         }
 
+        // Streaming backpressure control: verify chunk buffer capacity
+        if waiter.chunks.len() >= self.max_buffered_chunks {
+            return Err("Streaming backpressure: chunk buffer capacity exceeded".to_string());
+        }
+
         waiter.chunks.push(StreamChunk {
             chunk_index,
             data: data.to_string(),
@@ -248,6 +259,28 @@ impl ResponsePlanService {
         }
 
         Ok(is_final)
+    }
+
+    /// Drains up to `up_to` chunks from a streaming waiter to relieve backpressure
+    pub fn drain_chunks(&self, waiter_id: &str, up_to: usize) -> Result<Vec<StreamChunk>, String> {
+        let mut map = self.waiters.write().map_err(|_| "Lock poisoned".to_string())?;
+        let waiter = map.get_mut(waiter_id).ok_or_else(|| format!("Waiter '{waiter_id}' not found"))?;
+        let count = up_to.min(waiter.chunks.len());
+        let drained: Vec<StreamChunk> = waiter.chunks.drain(0..count).collect();
+        Ok(drained)
+    }
+
+    /// Cancels an active or pending waiter due to client disconnect or abort
+    pub fn cancel_waiter(&self, waiter_id: &str, reason: &str) -> Result<(), String> {
+        let mut map = self.waiters.write().map_err(|_| "Lock poisoned".to_string())?;
+        let waiter = map.get_mut(waiter_id).ok_or_else(|| format!("Waiter '{waiter_id}' not found"))?;
+        waiter.status = WaiterStatus::Failed;
+        waiter.status_code = 499; // Client Closed Request
+        waiter.final_response = Some(serde_json::json!({
+            "error": "Client disconnected or waiter cancelled",
+            "reason": reason
+        }));
+        Ok(())
     }
 
     /// Polls or inspects current status of a waiter
@@ -409,6 +442,31 @@ impl ResponsePlanService {
                     .unwrap_or(1_000_000);
                 let timed_out = self.sweep_timeouts(now_ms);
                 Ok(serde_json::json!({ "timed_out_count": timed_out.len(), "timed_out_ids": timed_out }))
+            }
+            "drain_chunks" => {
+                let waiter_id = payload
+                    .get("waiter_id")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| "Missing 'waiter_id'".to_string())?;
+                let up_to = payload
+                    .get("up_to")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(10) as usize;
+                let drained = self.drain_chunks(waiter_id, up_to)?;
+                let chunks_val = serde_json::to_value(drained).map_err(|e| e.to_string())?;
+                Ok(serde_json::json!({ "success": true, "drained_chunks": chunks_val }))
+            }
+            "cancel" => {
+                let waiter_id = payload
+                    .get("waiter_id")
+                    .and_then(|v| v.as_str())
+                    .ok_or_else(|| "Missing 'waiter_id'".to_string())?;
+                let reason = payload
+                    .get("reason")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Client disconnected");
+                self.cancel_waiter(waiter_id, reason)?;
+                Ok(serde_json::json!({ "success": true, "cancelled_waiter": waiter_id }))
             }
             other => Err(format!("Unsupported action '{other}' in response plan port")),
         }

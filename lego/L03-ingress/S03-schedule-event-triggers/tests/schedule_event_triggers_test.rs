@@ -330,4 +330,63 @@ mod tests {
         assert_eq!(slot.dispatch_count, 50);
         assert!(slot.last_dispatched_at_ms.is_some());
     }
+
+    #[test]
+    fn test_schedule_zero_interval_and_empty_cron_rejected() {
+        let service = TriggerSlotManagerService::new();
+
+        // 1. Zero interval rejected
+        let res_zero = service.register_slot(
+            "s_zero",
+            "t1",
+            "wf1",
+            TriggerType::Schedule,
+            None,
+            Some(0),
+            None,
+        );
+        assert!(res_zero.is_err());
+        assert!(matches!(res_zero.unwrap_err(), TriggerError::InvalidConfiguration(_)));
+
+        // 2. Whitespace cron expression rejected
+        let res_ws = service.register_slot(
+            "s_ws",
+            "t1",
+            "wf1",
+            TriggerType::Schedule,
+            Some("    "),
+            None,
+            None,
+        );
+        assert!(res_ws.is_err());
+        assert!(matches!(res_ws.unwrap_err(), TriggerError::InvalidConfiguration(_)));
+
+        // 3. Valid positive interval succeeds
+        let res_valid = service.register_slot(
+            "s_valid",
+            "t1",
+            "wf1",
+            TriggerType::Schedule,
+            None,
+            Some(60),
+            None,
+        );
+        assert!(res_valid.is_ok());
+        assert_eq!(service.slot_count(), 1);
+    }
+
+    #[test]
+    fn test_form_empty_object_rejected() {
+        let service = TriggerSlotManagerService::new();
+        service
+            .register_slot("s_form", "t1", "wf1", TriggerType::Form, None, None, None)
+            .unwrap();
+
+        // Empty object rejected
+        let err = service
+            .dispatch("s_form", "t1", serde_json::json!({}), Some("guest"))
+            .unwrap_err();
+        assert!(matches!(err, TriggerError::MissingPayload(_)));
+    }
 }
+

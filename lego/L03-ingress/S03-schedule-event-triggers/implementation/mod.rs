@@ -125,10 +125,29 @@ impl TriggerSlotManagerService {
         // Validate trigger configuration
         match trigger_type {
             TriggerType::Schedule => {
-                if cron_expression.is_none() && interval_seconds.is_none() {
+                let has_valid_cron = cron_expression.map(|c| !c.trim().is_empty()).unwrap_or(false);
+                let has_valid_interval = interval_seconds.map(|i| i > 0).unwrap_or(false);
+
+                if !has_valid_cron && !has_valid_interval {
                     return Err(TriggerError::InvalidConfiguration(
-                        "Schedule trigger requires either cron_expression or interval_seconds".to_string(),
+                        "Schedule trigger requires a non-empty cron_expression or interval_seconds > 0".to_string(),
                     ));
+                }
+
+                if let Some(interval) = interval_seconds {
+                    if interval == 0 {
+                        return Err(TriggerError::InvalidConfiguration(
+                            "interval_seconds must be greater than 0".to_string(),
+                        ));
+                    }
+                }
+
+                if let Some(cron) = cron_expression {
+                    if cron.trim().is_empty() {
+                        return Err(TriggerError::InvalidConfiguration(
+                            "cron_expression cannot be empty or whitespace".to_string(),
+                        ));
+                    }
                 }
             }
             TriggerType::Event | TriggerType::Manual | TriggerType::Form => {}
@@ -218,6 +237,11 @@ impl TriggerSlotManagerService {
             .collect()
     }
 
+    /// Returns total registered trigger slots count
+    pub fn slot_count(&self) -> usize {
+        self.slots.read().map(|s| s.len()).unwrap_or(0)
+    }
+
     /// Dispatches a trigger, verifying slot validity and preparing execution envelope
     pub fn dispatch(
         &self,
@@ -248,13 +272,20 @@ impl TriggerSlotManagerService {
         }
 
         // Validate type-specific constraints
-        if slot.trigger_type == TriggerType::Form && input_data.is_null() {
-            return Err(TriggerError::MissingPayload("Form trigger requires non-null submission payload".to_string()));
+        if slot.trigger_type == TriggerType::Form {
+            if input_data.is_null() {
+                return Err(TriggerError::MissingPayload("Form trigger requires non-null submission payload".to_string()));
+            }
+            if let Some(obj) = input_data.as_object() {
+                if obj.is_empty() {
+                    return Err(TriggerError::MissingPayload("Form trigger submission object cannot be empty".to_string()));
+                }
+            }
         }
 
         // Update slot dispatch telemetry
         slot.last_dispatched_at_ms = Some(now_ms);
-        slot.dispatch_count += 1;
+        slot.dispatch_count = slot.dispatch_count.saturating_add(1);
 
         let execution_trigger_id = format!("trig-{}-{}-{}", slot.slot_id, slot.dispatch_count, now_ms);
 

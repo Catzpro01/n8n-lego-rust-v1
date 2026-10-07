@@ -142,10 +142,14 @@ impl AdvancedAgentOptimizationService {
                 ),
             });
         }
-        if usage.consumed_cost_usd.is_nan() || usage.consumed_cost_usd > budget.max_cost_usd {
+        if usage.consumed_cost_usd.is_nan()
+            || usage.consumed_cost_usd.is_infinite()
+            || usage.consumed_cost_usd < 0.0
+            || usage.consumed_cost_usd > budget.max_cost_usd
+        {
             return Err(OptimizationError::BudgetExhausted {
                 reason: format!(
-                    "Cost limit exceeded: ${:.4} > ${:.4}",
+                    "Cost limit exceeded or invalid: ${:.4} > ${:.4}",
                     usage.consumed_cost_usd, budget.max_cost_usd
                 ),
             });

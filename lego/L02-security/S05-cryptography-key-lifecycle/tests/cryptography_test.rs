@@ -156,4 +156,57 @@ mod tests {
         assert_eq!(dec_resp["success"], true);
         assert_eq!(dec_resp["plaintext"], "my-api-token-xyz-987");
     }
+
+    #[test]
+    fn test_crypto_rotate_fail_closed_empty_inputs() {
+        let service = KeyLifecycleCryptoService::new("key-active", b"initial-secret-material-32-bytes!");
+
+        // Empty key id
+        let err1 = service.rotate_key("", b"valid-secret-material-bytes-32!").unwrap_err();
+        assert_eq!(err1, CryptoError::EmptyKeySpec("new_key_id"));
+
+        let err2 = service.rotate_key("   ", b"valid-secret-material-bytes-32!").unwrap_err();
+        assert_eq!(err2, CryptoError::EmptyKeySpec("new_key_id"));
+
+        // Empty secret material
+        let err3 = service.rotate_key("key-new", b"").unwrap_err();
+        assert_eq!(err3, CryptoError::EmptyKeySpec("new_secret"));
+
+        // Revoke with empty key id
+        let err4 = service.revoke_key("").unwrap_err();
+        assert_eq!(err4, CryptoError::EmptyKeySpec("key_id"));
+
+        // Encrypt with empty explicit key id
+        let err5 = service.encrypt(b"hello", Some("   ")).unwrap_err();
+        assert_eq!(err5, CryptoError::EmptyKeySpec("key_id"));
+    }
+
+    #[test]
+    fn test_crypto_active_key_revocation_fail_closed_encrypt() {
+        let service = KeyLifecycleCryptoService::new("key-single", b"initial-secret-material-32-bytes!");
+
+        // Revoke active key
+        service.revoke_key("key-single").expect("Revocation of key-single should succeed");
+
+        // Attempting to encrypt with revoked active key must fail closed
+        let err = service.encrypt(b"sensitive_data", None).unwrap_err();
+        match err {
+            CryptoError::KeyRevoked(k) => assert_eq!(k, "key-single"),
+            other => panic!("Expected KeyRevoked, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_crypto_decrypt_missing_key_rejection() {
+        let service = KeyLifecycleCryptoService::new("key-known", b"initial-secret-material-32-bytes!");
+
+        // Envelope pointing to non-existent key
+        let unknown_envelope = "enc:v1:key-non-existent:0102030405060708:deadbeef:1234567890abcdef";
+        let err = service.decrypt(unknown_envelope).unwrap_err();
+        match err {
+            CryptoError::KeyNotFound(k) => assert_eq!(k, "key-non-existent"),
+            other => panic!("Expected KeyNotFound, got {other:?}"),
+        }
+    }
 }
+

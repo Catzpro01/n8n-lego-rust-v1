@@ -209,7 +209,19 @@ impl EdgeControlPlaneService {
                 }
                 EdgeNodeStatus::Stopped
             }
-            OperatorAction::Recover | OperatorAction::Start => {
+            OperatorAction::Start => {
+                if prev_status == EdgeNodeStatus::Quarantined {
+                    return Err(EdgeControlError::InvalidStateTransition {
+                        action: OperatorAction::Start,
+                        status: EdgeNodeStatus::Quarantined,
+                    });
+                }
+                if prev_status == EdgeNodeStatus::Healthy {
+                    is_noop = true;
+                }
+                EdgeNodeStatus::Healthy
+            }
+            OperatorAction::Recover => {
                 if prev_status == EdgeNodeStatus::Healthy {
                     is_noop = true;
                 }

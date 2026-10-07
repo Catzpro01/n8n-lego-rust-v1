@@ -23,7 +23,7 @@
 ## Verification & Test Results
 - **Unit Test Suite**: `tests/credential_broker_test.rs`
 - **Command**: `rustc --test --edition=2021 lego/L02-security/S04-credential-broker/implementation/mod.rs`
-- **Result**: 11/11 PASS (Exit Code 0)
+- **Result**: 12/12 PASS (Exit Code 0)
   1. `test_secret_ref_release_security_boundary` (PASS)
   2. `test_credential_store_and_release_with_full_metadata` (PASS)
   3. `test_credential_release_tenant_boundary_isolation` (PASS)
@@ -35,3 +35,4 @@
   9. `test_credential_rotate_lifecycle` (PASS)
   10. `test_credential_port_dispatchers_store_and_release` (PASS)
   11. `test_credential_audit_trail_logging` (PASS)
+  12. `test_credential_release_type_mismatch_denied` (PASS)

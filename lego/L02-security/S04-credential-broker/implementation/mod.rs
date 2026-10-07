@@ -290,6 +290,16 @@ impl CredentialVault {
             return Err(err);
         }
 
+        // 4b. Verify stored credential_type matches SecretRef credential_type
+        if cred.credential_type != secret_ref.credential_type {
+            let err = CredentialBrokerError::InvalidPayload(format!(
+                "Credential type mismatch: expected '{}', found '{}'",
+                cred.credential_type, secret_ref.credential_type
+            ));
+            self.record_audit_log(&secret_ref.secret_id, &cred.tenant_id, audience, node_type, now, false, Some(err.to_string()));
+            return Err(err);
+        }
+
         // 5. Revocation check
         if cred.is_revoked {
             let err = CredentialBrokerError::CredentialRevoked(cred.secret_id.clone());
