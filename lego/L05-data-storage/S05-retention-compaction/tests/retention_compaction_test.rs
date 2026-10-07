@@ -26,6 +26,15 @@ fn test_register_policy_validation() {
     };
     assert!(service.register_policy(invalid).is_err());
 
+    let invalid_id = RetentionPolicy {
+        policy_id: "   ".to_string(),
+        entity_type: "logs".to_string(),
+        ttl_seconds: 3600,
+        max_retained_records: 100,
+        active: true,
+    };
+    assert!(service.register_policy(invalid_id).is_err());
+
     let valid = RetentionPolicy {
         policy_id: "pol-logs".to_string(),
         entity_type: "logs".to_string(),

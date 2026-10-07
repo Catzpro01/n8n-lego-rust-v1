@@ -142,6 +142,10 @@ impl BackupSnapshotMetadataService {
 
     /// Verify cryptographic integrity checksum
     pub fn verify_checksum(&self, snapshot_id: &str, expected_checksum: &str) -> Result<bool, BackupError> {
+        if expected_checksum.trim().is_empty() {
+            return Err(BackupError::InvalidPayload("expected_checksum cannot be empty".to_string()));
+        }
+
         let map = self.snapshots.read().unwrap();
         let snap = map.get(snapshot_id).ok_or_else(|| {
             BackupError::SnapshotNotFound(snapshot_id.to_string())
@@ -151,7 +155,7 @@ impl BackupSnapshotMetadataService {
             return Err(BackupError::SnapshotNotFound("Snapshot has been deleted".to_string()));
         }
 
-        Ok(snap.checksum_sha256 == expected_checksum)
+        Ok(snap.checksum_sha256 == expected_checksum.trim())
     }
 
     /// Restore snapshot into target environment
@@ -162,16 +166,24 @@ impl BackupSnapshotMetadataService {
         invoker_tenant: &str,
         now_ms: Option<u64>,
     ) -> Result<RestoreLog, BackupError> {
+        let tgt = target_env.trim();
+        let invoker = invoker_tenant.trim();
+        if tgt.is_empty() || invoker.is_empty() {
+            return Err(BackupError::InvalidPayload(
+                "target_env and invoker_tenant cannot be empty".to_string(),
+            ));
+        }
+
         let now = now_ms.unwrap_or_else(Self::now_ms);
         let mut map = self.snapshots.write().unwrap();
         let snap = map.get_mut(snapshot_id).ok_or_else(|| {
             BackupError::SnapshotNotFound(snapshot_id.to_string())
         })?;
 
-        if snap.tenant_id != invoker_tenant {
+        if snap.tenant_id != invoker {
             return Err(BackupError::TenantMismatch(format!(
                 "Tenant mismatch: Snapshot belongs to tenant '{}', cannot restore by '{}'",
-                snap.tenant_id, invoker_tenant
+                snap.tenant_id, invoker
             )));
         }
 
@@ -183,7 +195,7 @@ impl BackupSnapshotMetadataService {
         let log = RestoreLog {
             restore_id: restore_id.clone(),
             snapshot_id: snapshot_id.to_string(),
-            target_env: target_env.to_string(),
+            target_env: tgt.to_string(),
             started_at_ms: now,
             completed_at_ms: now + 250,
             status: "SUCCESS".to_string(),
@@ -265,7 +277,9 @@ impl BackupSnapshotMetadataService {
                 let snapshot_id = payload.get("snapshot_id").and_then(|v| v.as_str()).ok_or_else(|| {
                     BackupError::InvalidPayload("Missing 'snapshot_id'".to_string())
                 })?;
-                let checksum = payload.get("checksum").and_then(|v| v.as_str()).unwrap_or("");
+                let checksum = payload.get("checksum").and_then(|v| v.as_str()).ok_or_else(|| {
+                    BackupError::InvalidPayload("Missing 'checksum'".to_string())
+                })?;
                 let valid = self.verify_checksum(snapshot_id, checksum)?;
                 Ok(serde_json::json!({
                     "success": true,

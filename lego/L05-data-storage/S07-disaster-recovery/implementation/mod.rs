@@ -203,18 +203,15 @@ impl DisasterRecoveryService {
         initiated_by: &str,
         now_ms: Option<u64>,
     ) -> Result<FailoverPlan, DrError> {
+        if target_node_id.trim().is_empty() || initiated_by.trim().is_empty() {
+            return Err(DrError::InvalidPayload("target_node_id and initiated_by cannot be empty".to_string()));
+        }
+
         let now = now_ms.unwrap_or_else(Self::now_ms);
         let mut nodes = self.nodes.write().unwrap();
 
-        // 1. Demote existing primary to standby
-        for node in nodes.values_mut() {
-            if node.role == NodeRole::Primary && node.node_id != target_node_id {
-                node.role = NodeRole::ColdStandby;
-            }
-        }
-
-        // 2. Promote target node
-        let target = nodes.get_mut(target_node_id).ok_or_else(|| {
+        // 1. Validate target node exists and is eligible for promotion FIRST
+        let target = nodes.get(target_node_id).ok_or_else(|| {
             DrError::NodeNotFound(target_node_id.to_string())
         })?;
 
@@ -222,6 +219,15 @@ impl DisasterRecoveryService {
             return Err(DrError::NodeNotReady(format!("Node '{target_node_id}' is failed; cannot promote.")));
         }
 
+        // 2. Demote existing primary to standby safely
+        for node in nodes.values_mut() {
+            if node.role == NodeRole::Primary && node.node_id != target_node_id {
+                node.role = NodeRole::ColdStandby;
+            }
+        }
+
+        // 3. Promote target node
+        let target = nodes.get_mut(target_node_id).unwrap();
         target.role = NodeRole::Primary;
         target.replication_lag_ms = 0;
 

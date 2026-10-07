@@ -109,6 +109,9 @@ impl RetentionPolicyIndexService {
 
     /// Register or update a retention policy
     pub fn register_policy(&self, policy: RetentionPolicy) -> Result<(), RetentionError> {
+        if policy.policy_id.trim().is_empty() {
+            return Err(RetentionError::InvalidPolicy("policy_id cannot be empty".to_string()));
+        }
         if policy.entity_type.trim().is_empty() {
             return Err(RetentionError::InvalidPolicy("entity_type cannot be empty".to_string()));
         }
@@ -134,8 +137,8 @@ impl RetentionPolicyIndexService {
         entity_type: &str,
         now_ms: Option<u64>,
     ) -> Result<String, RetentionError> {
-        if entity_id.trim().is_empty() {
-            return Err(RetentionError::InvalidPayload("entity_id cannot be empty".to_string()));
+        if entity_id.trim().is_empty() || entity_type.trim().is_empty() {
+            return Err(RetentionError::InvalidPayload("entity_id and entity_type cannot be empty".to_string()));
         }
 
         let now = now_ms.unwrap_or_else(Self::now_ms);

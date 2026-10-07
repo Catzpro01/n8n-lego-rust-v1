@@ -103,3 +103,44 @@ fn test_port_promotion_handlers() {
     assert_eq!(prom_res["success"], true);
     assert_eq!(prom_res["status"], "promoted");
 }
+
+#[test]
+fn test_nested_secret_leakage_detected() {
+    let service = PromotionManifestStoreService::new();
+    let workflows = vec![
+        json!({
+            "id": "wf-nested",
+            "nodes": [
+                {
+                    "name": "HTTP Request",
+                    "parameters": {
+                        "api_key": "super-secret-api-key"
+                    }
+                }
+            ]
+        })
+    ];
+
+    let err = service.export_bundle("dev", "staging", workflows, true, "auditor", None);
+    assert!(err.is_err());
+    match err.unwrap_err() {
+        PromotionError::SecretLeakageDetected(msg) => assert!(msg.contains("api_key")),
+        other => panic!("Expected SecretLeakageDetected, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_rollback_unimported_manifest_fails() {
+    let service = PromotionManifestStoreService::new();
+    let workflows = vec![json!({ "id": "wf-draft" })];
+    let bundle = service.export_bundle("dev", "staging", workflows, true, "auditor", None).unwrap();
+
+    // Rollback without importing should fail
+    let err = service.rollback_promotion(&bundle.manifest.manifest_id);
+    assert!(err.is_err());
+    match err.unwrap_err() {
+        PromotionError::ValidationFailed(msg) => assert!(msg.contains("must be Imported")),
+        other => panic!("Expected ValidationFailed, got {:?}", other),
+    }
+}
+

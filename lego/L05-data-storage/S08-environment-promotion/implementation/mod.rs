@@ -105,38 +105,67 @@ impl PromotionManifestStoreService {
         creator: &str,
         now_ms: Option<u64>,
     ) -> Result<PromotionBundle, PromotionError> {
-        if source_env == target_env {
+        let src = source_env.trim();
+        let tgt = target_env.trim();
+        if src.is_empty() || tgt.is_empty() {
+            return Err(PromotionError::InvalidPayload(
+                "Source and target environment cannot be empty".to_string(),
+            ));
+        }
+        if src == tgt {
             return Err(PromotionError::IncompatibleEnvironment(
                 "Source and target environment cannot be identical".to_string(),
             ));
         }
+        if creator.trim().is_empty() {
+            return Err(PromotionError::InvalidPayload("creator cannot be empty".to_string()));
+        }
 
         let now = now_ms.unwrap_or_else(Self::now_ms);
-        let manifest_id = format!("promo-{source_env}-to-{target_env}-{now}");
-        let checksum = Self::compute_checksum(source_env, target_env, workflows.len(), now);
+        let manifest_id = format!("promo-{src}-to-{tgt}-{now}");
+        let checksum = Self::compute_checksum(src, tgt, workflows.len(), now);
 
-        // Fail-closed credential sanitization
+        // Fail-closed recursive credential sanitization and secret inspection
+        fn sanitize_recursive(val: &mut serde_json::Value) -> Result<(), PromotionError> {
+            match val {
+                serde_json::Value::Object(map) => {
+                    if map.contains_key("credentials") {
+                        map.insert("credentials".to_string(), serde_json::json!({ "redacted": true }));
+                    }
+                    for k in map.keys() {
+                        let k_lower = k.to_ascii_lowercase();
+                        if k_lower == "api_key" || k_lower == "secret" || k_lower == "private_key" {
+                            return Err(PromotionError::SecretLeakageDetected(
+                                format!("Secret leakage: Plaintext secret detected in key '{k}' during promotion export"),
+                            ));
+                        }
+                    }
+                    for (_, v) in map.iter_mut() {
+                        sanitize_recursive(v)?;
+                    }
+                }
+                serde_json::Value::Array(arr) => {
+                    for item in arr.iter_mut() {
+                        sanitize_recursive(item)?;
+                    }
+                }
+                _ => {}
+            }
+            Ok(())
+        }
+
         let mut sanitized_items = Vec::with_capacity(workflows.len());
         for mut item in workflows {
             if sanitize_credentials {
-                if let Some(obj) = item.as_object_mut() {
-                    if obj.contains_key("credentials") {
-                        obj.insert("credentials".to_string(), serde_json::json!({ "redacted": true }));
-                    }
-                    if obj.contains_key("api_key") || obj.contains_key("secret") {
-                        return Err(PromotionError::SecretLeakageDetected(
-                            "Secret leakage: Plaintext secrets detected during promotion export".to_string(),
-                        ));
-                    }
-                }
+                sanitize_recursive(&mut item)?;
             }
             sanitized_items.push(item);
         }
 
         let manifest = PromotionManifest {
             manifest_id: manifest_id.clone(),
-            source_env: source_env.to_string(),
-            target_env: target_env.to_string(),
+            source_env: src.to_string(),
+            target_env: tgt.to_string(),
             version: "1.0.0".to_string(),
             workflows_count: sanitized_items.len(),
             sanitize_credentials,
@@ -161,10 +190,11 @@ impl PromotionManifestStoreService {
 
     /// Validate bundle against target environment
     pub fn validate_bundle(&self, bundle: &PromotionBundle, target_env: &str) -> Result<bool, PromotionError> {
-        if bundle.manifest.target_env != target_env {
+        let tgt = target_env.trim();
+        if bundle.manifest.target_env != tgt {
             return Err(PromotionError::IncompatibleEnvironment(format!(
                 "Manifest targeted for '{}', but current target is '{}'",
-                bundle.manifest.target_env, target_env
+                bundle.manifest.target_env, tgt
             )));
         }
         if bundle.items.is_empty() && bundle.manifest.workflows_count > 0 {
@@ -180,16 +210,27 @@ impl PromotionManifestStoreService {
         target_env: &str,
         _now_ms: Option<u64>,
     ) -> Result<PromotionManifest, PromotionError> {
+        let tgt = target_env.trim();
+        if tgt.is_empty() {
+            return Err(PromotionError::InvalidPayload("target_env cannot be empty".to_string()));
+        }
+
         let mut manifests = self.manifests.write().unwrap();
         let manifest = manifests.get_mut(manifest_id).ok_or_else(|| {
             PromotionError::ManifestNotFound(manifest_id.to_string())
         })?;
 
-        if manifest.target_env != target_env {
+        if manifest.target_env != tgt {
             return Err(PromotionError::IncompatibleEnvironment(format!(
                 "Manifest target '{}' does not match importing environment '{}'",
-                manifest.target_env, target_env
+                manifest.target_env, tgt
             )));
+        }
+
+        if manifest.status == PromotionStatus::RolledBack {
+            return Err(PromotionError::ValidationFailed(
+                "Cannot import already rolled back manifest".to_string(),
+            ));
         }
 
         manifest.status = PromotionStatus::Imported;
@@ -202,6 +243,13 @@ impl PromotionManifestStoreService {
         let manifest = manifests.get_mut(manifest_id).ok_or_else(|| {
             PromotionError::ManifestNotFound(manifest_id.to_string())
         })?;
+
+        if manifest.status != PromotionStatus::Imported {
+            return Err(PromotionError::ValidationFailed(format!(
+                "Cannot rollback manifest with status '{:?}'; must be Imported",
+                manifest.status
+            )));
+        }
 
         manifest.status = PromotionStatus::RolledBack;
         Ok(manifest.clone())

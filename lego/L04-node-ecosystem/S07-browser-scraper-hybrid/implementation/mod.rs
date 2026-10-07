@@ -186,6 +186,10 @@ impl BrowserSessionPoolService {
             BrowserError::SessionNotFound(session_id.to_string())
         })?;
 
+        if session.status == SessionStatus::Terminated {
+            return Err(BrowserError::RenderFailed("Cannot release terminated session".to_string()));
+        }
+
         session.status = SessionStatus::Idle;
         session.last_used_at_ms = now;
         Ok(())
@@ -231,7 +235,8 @@ impl BrowserSessionPoolService {
         options: &RenderOptions,
         now_ms: Option<u64>,
     ) -> Result<RenderResult, BrowserError> {
-        if url.trim().is_empty() || (!url.starts_with("http://") && !url.starts_with("https://")) {
+        let trimmed_url = url.trim();
+        if trimmed_url.is_empty() || (!trimmed_url.starts_with("http://") && !trimmed_url.starts_with("https://")) {
             return Err(BrowserError::InvalidUrl("URL must start with http:// or https://".to_string()));
         }
 
@@ -245,14 +250,14 @@ impl BrowserSessionPoolService {
             return Err(BrowserError::RenderFailed("Session is terminated".to_string()));
         }
 
-        session.target_url = Some(url.to_string());
+        session.target_url = Some(trimmed_url.to_string());
         session.last_used_at_ms = now;
         session.memory_used_mb += 12;
 
-        let host = url.split("://").nth(1).unwrap_or("unknown").trim_end_matches('/');
+        let host = trimmed_url.split("://").nth(1).unwrap_or("unknown").trim_end_matches('/');
         let title = format!("Rendered Page - {host}");
         let html = if options.extract_html {
-            Some(format!("<!DOCTYPE html><html><head><title>{title}</title></head><body><div id=\"content\">Rendered from {url}</div></body></html>"))
+            Some(format!("<!DOCTYPE html><html><head><title>{title}</title></head><body><div id=\"content\">Rendered from {trimmed_url}</div></body></html>"))
         } else {
             None
         };
@@ -265,7 +270,7 @@ impl BrowserSessionPoolService {
 
         Ok(RenderResult {
             session_id: session_id.to_string(),
-            url: url.to_string(),
+            url: trimmed_url.to_string(),
             status_code: 200,
             title,
             html,
@@ -318,8 +323,8 @@ impl BrowserSessionPoolService {
                 let timeout_ms = payload.get("timeout_ms").and_then(|v| v.as_u64()).unwrap_or(30_000);
                 let capture_screenshot = payload.get("screenshot").and_then(|v| v.as_bool()).unwrap_or(false);
 
-                // Acquire session if not already in pool
-                let _ = self.acquire_session(session_id, None, None);
+                // Acquire session or ensure leased in pool
+                self.acquire_session(session_id, None, None)?;
 
                 let opts = RenderOptions {
                     wait_for_selector: payload.get("wait_for_selector").and_then(|v| v.as_str()).map(|s| s.to_string()),
@@ -374,7 +379,7 @@ impl BrowserSessionPoolService {
                     BrowserError::InvalidPayload("Missing 'url' field".to_string())
                 })?;
 
-                let _ = self.acquire_session(session_id, None, None);
+                self.acquire_session(session_id, None, None)?;
 
                 let mut rules = Vec::new();
                 if let Some(rules_arr) = payload.get("rules").and_then(|v| v.as_array()) {

@@ -133,3 +133,36 @@ fn test_port_dr_sync_and_replicate_handlers() {
     assert_eq!(rep_res["success"], true);
     assert_eq!(rep_res["end_lsn"], 90);
 }
+
+#[test]
+fn test_failover_rejection_preserves_existing_primary() {
+    let service = DisasterRecoveryService::new();
+
+    // 1. Target node does not exist: must fail AND preserve primary
+    let err1 = service.initiate_failover("non-existent-node", "orchestrator", None);
+    assert!(err1.is_err());
+    {
+        let nodes = service.nodes.read().unwrap();
+        assert_eq!(nodes["node-primary-us-east"].role, NodeRole::Primary);
+    }
+
+    // 2. Target node is failed: must fail AND preserve primary
+    let failed_replica = DrReplicaNode {
+        node_id: "replica-broken".to_string(),
+        region: "sa-east-1".to_string(),
+        role: NodeRole::ColdStandby,
+        replication_lag_ms: 999_999,
+        last_heartbeat_ms: 100,
+        last_applied_lsn: 10,
+        health: NodeHealth::Failed,
+    };
+    service.register_replica(failed_replica).unwrap();
+
+    let err2 = service.initiate_failover("replica-broken", "orchestrator", None);
+    assert!(err2.is_err());
+    {
+        let nodes = service.nodes.read().unwrap();
+        assert_eq!(nodes["node-primary-us-east"].role, NodeRole::Primary);
+    }
+}
+

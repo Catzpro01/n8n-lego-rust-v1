@@ -142,3 +142,51 @@ fn test_port_hybrid_handler() {
     assert_eq!(resp["success"], true);
     assert!(resp["extracted"]["top_story"].is_string());
 }
+
+#[test]
+fn test_release_terminated_session_fails() {
+    let pool = BrowserSessionPoolService::new(5, 60_000);
+    pool.acquire_session("sess-term", None, None).unwrap();
+    pool.terminate_session("sess-term").unwrap();
+
+    let res = pool.release_session("sess-term", None);
+    assert!(res.is_err());
+    match res.unwrap_err() {
+        BrowserError::RenderFailed(msg) => assert!(msg.contains("Cannot release terminated")),
+        other => panic!("Unexpected error: {:?}", other),
+    }
+}
+
+#[test]
+fn test_port_render_propagates_capacity_exceeded() {
+    let pool = BrowserSessionPoolService::new(1, 60_000);
+    let payload1 = json!({
+        "action": "render",
+        "session_id": "sess-cap-1",
+        "url": "https://example.com"
+    });
+    assert!(pool.handle_port_browser_render(&payload1).is_ok());
+
+    let payload2 = json!({
+        "action": "render",
+        "session_id": "sess-cap-2",
+        "url": "https://example.com"
+    });
+    let err = pool.handle_port_browser_render(&payload2);
+    assert!(err.is_err());
+    match err.unwrap_err() {
+        BrowserError::PoolCapacityExceeded { max_capacity } => assert_eq!(max_capacity, 1),
+        other => panic!("Expected PoolCapacityExceeded, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_render_url_with_whitespace_accepted() {
+    let pool = BrowserSessionPoolService::new(5, 60_000);
+    pool.acquire_session("sess-ws", None, None).unwrap();
+    let opts = RenderOptions::default();
+    let res = pool.render_page("sess-ws", "  https://example.org/path  ", &opts, None);
+    assert!(res.is_ok());
+    assert_eq!(res.unwrap().url, "https://example.org/path");
+}
+

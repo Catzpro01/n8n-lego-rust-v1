@@ -93,3 +93,28 @@ fn test_port_backup_handlers() {
     assert_eq!(restore_resp["success"], true);
     assert_eq!(restore_resp["status"], "SUCCESS");
 }
+
+#[test]
+fn test_restore_empty_target_env_fails() {
+    let service = BackupSnapshotMetadataService::new();
+    let snap = service.create_snapshot("corp_c", SnapshotKind::Full, 10, None).unwrap();
+    let res = service.restore_snapshot(&snap.snapshot_id, "   ", "corp_c", None);
+    assert!(res.is_err());
+    match res.unwrap_err() {
+        BackupError::InvalidPayload(msg) => assert!(msg.contains("target_env and invoker_tenant cannot be empty")),
+        other => panic!("Expected InvalidPayload, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_verify_empty_checksum_fails() {
+    let service = BackupSnapshotMetadataService::new();
+    let snap = service.create_snapshot("corp_c", SnapshotKind::Full, 10, None).unwrap();
+    let res = service.verify_checksum(&snap.snapshot_id, "   ");
+    assert!(res.is_err());
+    match res.unwrap_err() {
+        BackupError::InvalidPayload(msg) => assert!(msg.contains("expected_checksum cannot be empty")),
+        other => panic!("Expected InvalidPayload, got {:?}", other),
+    }
+}
+
