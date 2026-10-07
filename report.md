@@ -2745,7 +2745,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `c062a7ceb3fd2a6fcd1d3fe8f66fedf8e4406ab8`
 - **HISTORICAL REMOTE MAIN**: `99e3cb91ca33ba568c60572f855bb47bb79f5d85`
 - **HISTORICAL REMOTE MAIN**: `069f208eb0de52979672f11447bb41bec9e22445`
-- **REMOTE MAIN**: `0fa9188e5f864e37feeba4fcce0fb2cf951c2d3c`
+- **HISTORICAL REMOTE MAIN**: `0fa9188e5f864e37feeba4fcce0fb2cf951c2d3c`
+- **REMOTE MAIN**: `6718feff8a1da1fda51f2cb737f357b0e809cf89`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Remediasi Celah Check 11 & Pengetatan Provenance Gate
@@ -2760,7 +2761,7 @@ Report: ./report.md
    - `test_negative_check_11_nonexistent_historical_citation_fails`: Membuktikan bahwa sitasi historis fiktif/tidak ada di git ledger ditolak fail-closed (FAIL).
 3. **Rekonsiliasi Status Provenance**:
    - Mengubah seluruh sitasi lama di `report.md` menjadi `HISTORICAL REMOTE MAIN`.
-   - Menetapkan sitasi aktif `REMOTE MAIN` secara eksak ke `0fa9188e5f864e37feeba4fcce0fb2cf951c2d3c`.
+   - Menetapkan sitasi aktif `REMOTE MAIN` secara eksak ke `6718feff8a1da1fda51f2cb737f357b0e809cf89`.
 
 ### 3. Rekapitulasi Verifikasi Pengujian
 - `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).

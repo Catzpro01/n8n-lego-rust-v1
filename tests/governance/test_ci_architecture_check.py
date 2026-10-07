@@ -247,6 +247,26 @@ LOCAL != REMOTE
             if os.path.isfile(backup):
                 shutil.move(backup, real_report)
 
+    def test_negative_check_11_multiple_active_remote_main_with_stale_fails(self):
+        """Verify that if multiple active REMOTE MAIN citations exist and one is stale/ancestor, Check 11 strictly fails."""
+        import subprocess
+        origin_main = subprocess.check_output(["git", "rev-parse", "origin/main"], cwd=self.workspace, text=True).strip()
+        ancestor = subprocess.check_output(["git", "rev-parse", "origin/main~1"], cwd=self.workspace, text=True).strip()
+
+        real_report = os.path.join(self.workspace, "report.md")
+        backup = real_report + ".test_bak"
+        try:
+            shutil.copyfile(real_report, backup)
+            with open(real_report, "w", encoding="utf-8") as f:
+                f.write(f"# Report\n- **REMOTE MAIN**: {ancestor}\n- **REMOTE MAIN**: {origin_main}\n")
+            res = ArchitectureCheckResult("Negative Test Multiple Active Remote Main With Stale")
+            self.enforcer.check_report_provenance_and_git_ledger(res)
+            self.assertFalse(res.passed)
+            self.assertTrue(any("remote provenance mismatch" in e.lower() for e in res.errors))
+        finally:
+            if os.path.isfile(backup):
+                shutil.move(backup, real_report)
+
 
 if __name__ == "__main__":
     unittest.main()
