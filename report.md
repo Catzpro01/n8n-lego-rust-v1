@@ -2849,8 +2849,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `edeae971d3bfe0cb86678a25e73a2b9f7ea4324f`
 - **HISTORICAL REMOTE MAIN**: `0987113cf40ff71cdc7de12a57a4895dd67763e2`
 - **HISTORICAL REMOTE MAIN**: `dec90dec37da577f9dd9b330e932a0bde232d92b`
-- **HISTORICAL REMOTE MAIN**: `d993fd5c3`
-- **REMOTE MAIN**: `8f22f4188`
+- **HISTORICAL REMOTE MAIN**: `8f22f4188`
+- **REMOTE MAIN**: `26744ca6c`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -3240,4 +3240,33 @@ Report: ./report.md
 - `python -m unittest discover tests/governance`: 27 unit tests PASS (exit code 0).
 - Kualitas tata kelola: 0 private cross-Sub-LEGO imports, CERTIFIED=0 strictly preserved.
 
+---
+
+## Final Verification & Certification Report: Sub-LEGO L08.S01 s/d L08.S05 (AI & Polyglot Agent Infrastructure)
+
+### 1. Status Sub-LEGO L08.S01 s/d L08.S05
+- **L08.S01 (Agent state machine)**: Status `TESTED`. Implementasi di `lego/L08-agent-mcp/S01-agent-state-machine/implementation/mod.rs` (15.3 KB), pengujian di `tests/agent_state_machine_test.rs` (8.0 KB), evidence di `evidence/L08-S01-EVIDENCE.md` (2.0 KB).
+- **L08.S02 (Tool registry)**: Status `TESTED`. Implementasi di `lego/L08-agent-mcp/S02-tool-registry/implementation/mod.rs` (12.7 KB), pengujian di `tests/tool_registry_test.rs` (8.3 KB), evidence di `evidence/L08-S02-EVIDENCE.md` (1.8 KB).
+- **L08.S03 (Workflow-as-tool)**: Status `TESTED`. Implementasi di `lego/L08-agent-mcp/S03-workflow-as-tool/implementation/mod.rs` (9.1 KB), pengujian di `tests/workflow_as_tool_test.rs` (5.3 KB), evidence di `evidence/L08-S03-EVIDENCE.md` (1.9 KB).
+- **L08.S04 (Human approval policy)**: Status `TESTED`. Implementasi di `lego/L08-agent-mcp/S04-human-approval-policy/implementation/mod.rs` (13.5 KB), pengujian di `tests/human_approval_test.rs` (6.5 KB), evidence di `evidence/L08-S04-EVIDENCE.md` (2.0 KB).
+- **L08.S05 (AI provider routing)**: Status `TESTED`. Implementasi di `lego/L08-agent-mcp/S05-ai-provider-routing/implementation/mod.rs` (12.2 KB), pengujian di `tests/ai_provider_routing_test.rs` (5.6 KB), evidence di `evidence/L08-S05-EVIDENCE.md` (2.0 KB).
+
+### 2. Port Contract Integration Coverage (`crates/n8n-port-contract`)
+Semua port provided L08.S01 s/d L08.S05 terintegrasi dan terverifikasi penuh di `crates/n8n-port-contract/tests/agent_mcp_port_test.rs`:
+- `port.agent.session.execute.v1` & `port.agent.engine.run.v1` (L08.S01)
+- `port.agent.tool.register.v1` & `port.agent.tool.invoke.v1` (L08.S02)
+- `port.agent.workflow.tool.v1` & `port.agent.wf_tool.bridge.v1` (L08.S03)
+- `port.agent.policy.approve.v1`, `port.agent.approval.request.v1`, `port.agent.approval.submit.v1` (L08.S04)
+- `port.agent.provider.route.v1` & `port.agent.provider.chat.v1` (L08.S05)
+- Boundary isolation & Security denial (`PortStatus::SecurityDenied` untuk pemanggil tanpa otoritas)
+- Total 16 tests di `agent_mcp_port_test.rs`: PASS 100%.
+
+### 3. Registry & CI Verification
+- `scripts/build_registry.py`: Validasi 83 Sub-LEGO, 64 TESTED (termasuk L08.S01 s/d L08.S05), 11 CONTRACTED, 8 DESIGNED, 0 CERTIFIED.
+- `docs/migration/LEGO-SUBLEGO-REGISTRY.yaml` & `docs/migration/LEGO-SUBLEGO-REGISTRY.json`: 100% sinkron.
+- `cargo test --workspace`: PASS (seluruh crates dan integration tests lulus).
+- `python scripts/ci_architecture_check.py`: 11/11 PASS (Exit Code 0).
+- `python -m unittest discover -s tests/governance`: 27/27 PASS (Exit Code 0).
+
 Report: ./report.md
+
