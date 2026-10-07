@@ -2781,7 +2781,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `0fa9188e5f864e37feeba4fcce0fb2cf951c2d3c`
 - **HISTORICAL REMOTE MAIN**: `6718feff8a1da1fda51f2cb737f357b0e809cf89`
 - **HISTORICAL REMOTE MAIN**: `c9ac679faf10d8fd35fa7060508bef8cdd409e85`
-- **REMOTE MAIN**: `42ce74b10ed2f860ef2c62c40c0895aef1574fe1`
+- **HISTORICAL REMOTE MAIN**: `42ce74b10ed2f860ef2c62c40c0895aef1574fe1`
+- **HISTORICAL REMOTE MAIN**: `73a73f99e5b8de225b2c84dfd255aaac3b40b102`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L01.S05 & L01.S06
@@ -2806,6 +2807,77 @@ Report: ./report.md
 - `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
 - `python tests/governance/test_ci_architecture_check.py`: PASS (14/14 tests).
 - `python tests/governance/test_subagent_result_validator.py`: PASS (13/13 tests).
+
+### 4. Adversarial Review & Bug Fixes (L01.S05 & L01.S06)
+1. **L01.S05 - Inactive Node Completion Vulnerability**:
+   - *Problem*: `expand_frontier` tidak memvalidasi apakah `completed_node_id` ada di `active_frontier`, sehingga node phantom/pending dapat diekspansi secara ilegal.
+   - *Fix*: Menambahkan validasi `if !frontier.active_frontier.contains(completed_node_id) { return Err(LazyGraphError::InvalidRequest(...)); }` dan pengujian `test_lazy_frontier_rejects_inactive_node_completion`.
+2. **L01.S05 - Multi-Parent Convergence Cycle Detection Failure**:
+   - *Problem*: `ancestor_paths` menimpa path sebelumnya saat konvergensi diamond/multi-parent, menyebabkan siklus kembali ke cabang alternatif (e.g. Join -> BranchA) lolos tanpa terdeteksi.
+   - *Fix*: Menyimpan `ancestor_sets` (union dari seluruh ancestor dari seluruh jalur masuk) dan mendeteksi siklus jika target ada di `completed_ancestors`, `completed_nodes`, atau sama dengan `completed_node_id`. Ditambahkan `test_lazy_frontier_diamond_multi_parent_cycle_rejection`.
+3. **L01.S05 - Duplicate Successor Deduplication**:
+   - *Problem*: Successor duplikat menghitung ukuran frontier berlebih yang memicu false `FrontierCapacityExceeded`.
+   - *Fix*: Melakukan deduplikasi `newly_ready` dan memfilter node yang sudah aktif. Ditambahkan `test_lazy_frontier_duplicate_successors_deduplicated`.
+4. **L01.S06 - Port Dispatch Inline Verification Array Order Drop**:
+   - *Problem*: `handle_port_oracle_verify` tidak mengekstrak `ignore_array_order` pada inline verification.
+   - *Fix*: Mengekstrak `ignore_array_order` dari `tolerance` payload pada branch inline verify dan menambahkan `test_oracle_port_inline_verify_with_ignore_array_order`.
+5. **L01.S06 - 64-bit Integer Precision Loss False Match**:
+   - *Problem*: Saat `numeric_epsilon` adalah `None`, perbandingan numerik mengonversi angka ke `f64` sehingga integer 64-bit besar (seperti ID snowflake) kehilangan presisi.
+   - *Fix*: Memeriksa kesetaraan integer eksak `i64`/`u64` jika `numeric_epsilon` adalah `None`, ditambahkan `test_oracle_64bit_integer_precision_preserved`.
+
+---
+
+## Sesi Eksekusi: Maraton Implementasi Mandiri Sub-LEGO L02.S02, L02.S06 & L02.S07 Menuju TESTED
+
+### 1. Provenance Commit & Remote Ledger
+- **Prior Implementation Commit SHA**: `42ce74b10`
+- **Prior Report Commit SHA**: `73a73f99e`
+- **HISTORICAL REMOTE MAIN**: `c062a7ceb3fd2a6fcd1d3fe8f66fedf8e4406ab8`
+- **HISTORICAL REMOTE MAIN**: `99e3cb91ca33ba568c60572f855bb47bb79f5d85`
+- **HISTORICAL REMOTE MAIN**: `069f208eb0de52979672f11447bb41bec9e22445`
+- **HISTORICAL REMOTE MAIN**: `0fa9188e5f864e37feeba4fcce0fb2cf951c2d3c`
+- **HISTORICAL REMOTE MAIN**: `6718feff8a1da1fda51f2cb737f357b0e809cf89`
+- **HISTORICAL REMOTE MAIN**: `c9ac679faf10d8fd35fa7060508bef8cdd409e85`
+- **HISTORICAL REMOTE MAIN**: `42ce74b10ed2f860ef2c62c40c0895aef1574fe1`
+- **REMOTE MAIN**: `73a73f99e5b8de225b2c84dfd255aaac3b40b102`
+- **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
+
+### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
+1. **Sub-LEGO L02.S02 (Session lifecycle)**:
+   - Physical Root: `lego/L02-security/S02-session-lifecycle/`
+   - Authoritative State Domain: `session-state-cache`
+   - Provided Ports: `port.security.session.create.v1`, `port.security.session.validate.v1`, `port.security.session.revoke.v1`
+   - Implementasi: `implementation/mod.rs` (`SessionLifecycleService`, fail-closed expiration/revocation, multi-tenant boundary isolation, session fixation rotation protection, dan user security version / epoch invalidation).
+   - Unit Tests: `tests/session_lifecycle_test.rs` (10 tests PASS via `rustc --test`).
+   - Evidence: `evidence/S02-EVIDENCE.md` (2,611 bytes > 200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/session_lifecycle_port_test.rs` (2 tests PASS).
+2. **Sub-LEGO L02.S06 (Machine identity)**:
+   - Physical Root: `lego/L02-security/S06-machine-identity/`
+   - Authoritative State Domain: `machine-identity-keystore`
+   - Provided Ports: `port.security.machine.token.v1`, `port.security.machine.authenticate.v1`
+   - Implementasi: `implementation/mod.rs` (`MachineIdentityKeystoreService`, registration of Worker/Agent/Mcp/ServiceAccount/ApiKey, zero-plaintext FNV-1a secret hashing, token issuance, instant token revocation & machine deactivation, dan multi-tenant boundary).
+   - Unit Tests: `tests/machine_identity_test.rs` (9 tests PASS via `rustc --test`).
+   - Evidence: `evidence/S06-EVIDENCE.md` (2,742 bytes > 200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/machine_identity_port_test.rs` (2 tests PASS).
+3. **Sub-LEGO L02.S07 (Password/MFA recovery)**:
+   - Physical Root: `lego/L02-security/S07-password-mfa-recovery/`
+   - Authoritative State Domain: `credential-recovery-tokens`
+   - Provided Ports: `port.security.recovery.initiate.v1`, `port.security.mfa.verify.v1`
+   - Implementasi: `implementation/mod.rs` (`CredentialRecoveryService`, recovery initiation with bounded OTP challenge, single-use anti-replay token burn, lockout threshold setelah 5 kegagalan beruntun dengan cooldown 30 menit, dan multi-factor channel support).
+   - Unit Tests: `tests/password_mfa_recovery_test.rs` (8 tests PASS via `rustc --test`).
+   - Evidence: `evidence/S07-EVIDENCE.md` (2,745 bytes > 200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/password_mfa_recovery_port_test.rs` (2 tests PASS).
+4. **Pembaruan Registry & Taxonomy**:
+   - `docs/migration/LEGO-SUBLEGO-REGISTRY.json` & `docs/migration/LEGO-SUBLEGO-REGISTRY.yaml`: Promosi L02.S02, L02.S06, dan L02.S07 dari `CONTRACTED` ke `TESTED`.
+   - `scripts/build_registry.py` & `scripts/ci_architecture_check.py`: Penyesuaian distribusi taksonomi resmi (TESTED=45, CONTRACTED=30, DESIGNED=8, CERTIFIED=0).
+
+### 3. Rekapitulasi Verifikasi Mekanis
+- `rustc --test` Sub-LEGOs: 27/27 unit tests PASS (S02: 10/10, S06: 9/9, S07: 8/8).
+- `cargo test -p n8n-port-contract`: 76/76 tests PASS (termasuk 3 suite integrasi port baru).
+- `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
+- `python -m unittest discover tests/governance`: 27/27 governance tests PASS (Exit code 0).
+- Isolasi Fisik: 90 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated).
+- Zero Overclaim: Tepat 0 Sub-LEGO berstatus `CERTIFIED`.
 
 Report: ./report.md
 

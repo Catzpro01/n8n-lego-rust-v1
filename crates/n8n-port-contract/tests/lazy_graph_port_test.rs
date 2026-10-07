@@ -102,6 +102,18 @@ async fn test_lazy_graph_port_roundtrip_linear_and_diamond() {
                         };
 
                         let completed = val.get("completed_node_id").and_then(|v| v.as_str()).unwrap_or("");
+                        if !state.active_frontier.contains(completed) {
+                            return PortResponse::error(
+                                inv.invocation_id,
+                                PortStatus::ClientError,
+                                PortErrorDetail::new(
+                                    PortErrorCode::BadRequest,
+                                    format!("Node '{completed}' is not in active frontier"),
+                                    false,
+                                ),
+                                PortTelemetry::new(trace_id),
+                            );
+                        }
                         state.active_frontier.remove(completed);
                         state.completed_nodes.insert(completed.to_string());
 
@@ -267,6 +279,24 @@ async fn test_lazy_graph_port_roundtrip_linear_and_diamond() {
     } else {
         panic!("Expected JSON payload");
     }
+
+    // Try completing a node NOT in active frontier
+    let phantom_inv = PortInvocation::new(
+        SubLegoId::new("L01.S01"),
+        SubLegoId::new("L01.S05"),
+        port_id.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H03ExecutionHost,
+        sec_ctx.clone(),
+        PortPayload::Json(json!({
+            "action": "expand",
+            "frontier_id": frontier_id,
+            "completed_node_id": "GhostNode",
+            "successors": []
+        })),
+    );
+    let phantom_resp = adapter.invoke(phantom_inv).await;
+    assert_eq!(phantom_resp.status, PortStatus::ClientError);
 }
 
 #[tokio::test]

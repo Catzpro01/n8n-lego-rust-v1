@@ -224,15 +224,20 @@ impl CompatibilityOracleEngine {
                 }
             }
             (Value::Number(n1), Value::Number(n2)) => {
-                let match_num = match (n1.as_f64(), n2.as_f64()) {
-                    (Some(f1), Some(f2)) => {
-                        if let Some(eps) = tolerance.numeric_epsilon {
-                            (f1 - f2).abs() <= eps
-                        } else {
-                            f1 == f2
-                        }
+                let match_num = if let Some(eps) = tolerance.numeric_epsilon {
+                    match (n1.as_f64(), n2.as_f64()) {
+                        (Some(f1), Some(f2)) => (f1 - f2).abs() <= eps,
+                        _ => n1 == n2,
                     }
-                    _ => n1 == n2,
+                } else if let (Some(i1), Some(i2)) = (n1.as_i64(), n2.as_i64()) {
+                    i1 == i2
+                } else if let (Some(u1), Some(u2)) = (n1.as_u64(), n2.as_u64()) {
+                    u1 == u2
+                } else {
+                    match (n1.as_f64(), n2.as_f64()) {
+                        (Some(f1), Some(f2)) => f1 == f2,
+                        _ => n1 == n2,
+                    }
                 };
 
                 if !match_num {
@@ -463,6 +468,9 @@ impl CompatibilityOracleEngine {
                             if let Some(eps) = tol_obj.get("numeric_epsilon").and_then(|v| v.as_f64()) {
                                 tolerance.numeric_epsilon = Some(eps);
                             }
+                            if let Some(ord) = tol_obj.get("ignore_array_order").and_then(|v| v.as_bool()) {
+                                tolerance.ignore_array_order = ord;
+                            }
                         }
                         Self::compare_values(corpus_id, inline_expected, actual, &tolerance)
                     } else {
@@ -476,6 +484,9 @@ impl CompatibilityOracleEngine {
                         }
                         if let Some(eps) = tol_obj.get("numeric_epsilon").and_then(|v| v.as_f64()) {
                             tolerance.numeric_epsilon = Some(eps);
+                        }
+                        if let Some(ord) = tol_obj.get("ignore_array_order").and_then(|v| v.as_bool()) {
+                            tolerance.ignore_array_order = ord;
                         }
                     }
                     Self::compare_values("inline_verification", inline_expected, actual, &tolerance)

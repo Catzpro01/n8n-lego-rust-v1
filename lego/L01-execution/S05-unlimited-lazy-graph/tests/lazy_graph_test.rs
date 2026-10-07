@@ -267,4 +267,124 @@ mod tests {
         assert_eq!(status_val["step_count"], 1);
         assert_eq!(status_val["active_frontier"], json!(["N2"]));
     }
+
+    #[test]
+    fn test_lazy_frontier_rejects_inactive_node_completion() {
+        let engine = LazyGraphEngine::new(50);
+        let init = engine
+            .create_frontier("exec_inactive_1", vec!["NodeA".to_string()], None)
+            .unwrap();
+
+        // Attempting to complete a phantom node that was never activated
+        let err = engine
+            .expand_frontier(&init.frontier_id, "GhostNode", Vec::new())
+            .unwrap_err();
+
+        match err {
+            LazyGraphError::InvalidRequest(msg) => {
+                assert!(msg.contains("GhostNode"));
+                assert!(msg.contains("not in active frontier"));
+            }
+            other => panic!("Expected InvalidRequest for inactive node, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_lazy_frontier_diamond_multi_parent_cycle_rejection() {
+        let engine = LazyGraphEngine::new(50);
+        let init = engine
+            .create_frontier("exec_diamond_cycle", vec!["Root".to_string()], None)
+            .unwrap();
+
+        // Root -> BranchA, BranchB
+        engine
+            .expand_frontier(
+                &init.frontier_id,
+                "Root",
+                vec![
+                    SuccessorSpec {
+                        target_node_id: "BranchA".to_string(),
+                        required_dependencies: vec!["Root".to_string()],
+                    },
+                    SuccessorSpec {
+                        target_node_id: "BranchB".to_string(),
+                        required_dependencies: vec!["Root".to_string()],
+                    },
+                ],
+            )
+            .unwrap();
+
+        // Complete BranchA -> propose Join
+        engine
+            .expand_frontier(
+                &init.frontier_id,
+                "BranchA",
+                vec![SuccessorSpec {
+                    target_node_id: "Join".to_string(),
+                    required_dependencies: vec!["BranchA".to_string(), "BranchB".to_string()],
+                }],
+            )
+            .unwrap();
+
+        // Complete BranchB -> propose Join (now Join unblocks)
+        let join_active = engine
+            .expand_frontier(
+                &init.frontier_id,
+                "BranchB",
+                vec![SuccessorSpec {
+                    target_node_id: "Join".to_string(),
+                    required_dependencies: vec!["BranchB".to_string()],
+                }],
+            )
+            .unwrap();
+        assert_eq!(join_active.active_frontier, vec!["Join"]);
+
+        // Join attempts to expand back to BranchA (which already completed)!
+        let cycle_err = engine
+            .expand_frontier(
+                &init.frontier_id,
+                "Join",
+                vec![SuccessorSpec {
+                    target_node_id: "BranchA".to_string(),
+                    required_dependencies: vec!["Join".to_string()],
+                }],
+            )
+            .unwrap_err();
+
+        match cycle_err {
+            LazyGraphError::CycleDetected { node_id, .. } => {
+                assert_eq!(node_id, "BranchA");
+            }
+            other => panic!("Expected CycleDetected back to BranchA, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_lazy_frontier_duplicate_successors_deduplicated() {
+        let engine = LazyGraphEngine::new(2);
+        let init = engine
+            .create_frontier("exec_dup_1", vec!["Start".to_string()], Some(2))
+            .unwrap();
+
+        // Proposing duplicate targets should be deduplicated and not exceed limit 2
+        let res = engine
+            .expand_frontier(
+                &init.frontier_id,
+                "Start",
+                vec![
+                    SuccessorSpec {
+                        target_node_id: "Next".to_string(),
+                        required_dependencies: vec!["Start".to_string()],
+                    },
+                    SuccessorSpec {
+                        target_node_id: "Next".to_string(),
+                        required_dependencies: vec!["Start".to_string()],
+                    },
+                ],
+            )
+            .expect("Duplicate successor must be deduplicated within limit 2");
+
+        assert_eq!(res.active_frontier, vec!["Next"]);
+    }
 }
+

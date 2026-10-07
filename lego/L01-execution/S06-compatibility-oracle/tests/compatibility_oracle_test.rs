@@ -155,8 +155,47 @@ mod tests {
         assert_eq!(ver_val["mismatch_count"], 0);
 
         // 3. Dispatch list
-        let list_payload = json!({ "action": "list" });
         let list_val = engine.handle_port_oracle_verify(&list_payload).expect("List dispatch");
         assert_eq!(list_val["fixtures"], json!(["port_corpus_1"]));
     }
+
+    #[test]
+    fn test_oracle_port_inline_verify_with_ignore_array_order() {
+        let engine = CompatibilityOracleEngine::new();
+
+        let verify_payload = json!({
+            "action": "verify",
+            "expected_output": { "tags": ["alpha", "beta", "gamma"] },
+            "actual_output": { "tags": ["gamma", "alpha", "beta"] },
+            "tolerance": {
+                "ignore_array_order": true
+            }
+        });
+
+        let ver_val = engine.handle_port_oracle_verify(&verify_payload).expect("Verify inline dispatch");
+        assert_eq!(ver_val["is_match"], true, "Array order should be ignored when configured");
+        assert_eq!(ver_val["mismatch_count"], 0);
+    }
+
+    #[test]
+    fn test_oracle_64bit_integer_precision_preserved() {
+        // Values differing in the 54th bit that would be equal in f64
+        let n1 = 9007199254740993i64;
+        let n2 = 9007199254740992i64;
+
+        let expected = json!({ "id": n1 });
+        let actual = json!({ "id": n2 });
+
+        let report = CompatibilityOracleEngine::verify_inline(
+            "test_precision",
+            &expected,
+            &actual,
+            &ToleranceRules::default(),
+        );
+
+        assert!(!report.is_match, "64-bit integer mismatch must not be lost to f64 precision loss");
+        assert_eq!(report.mismatch_count, 1);
+        assert_eq!(report.mismatches[0].kind, MismatchKind::ValueMismatch);
+    }
 }
+

@@ -88,6 +88,7 @@ struct FrontierInternalState {
     completed_nodes: HashSet<String>,
     pending_dependencies: HashMap<String, HashSet<String>>,
     ancestor_paths: HashMap<String, Vec<String>>,
+    ancestor_sets: HashMap<String, HashSet<String>>,
     max_frontier_size: usize,
     step_count: u64,
     updated_at_ms: u64,
@@ -170,9 +171,13 @@ impl LazyGraphEngine {
 
         let mut active = HashSet::new();
         let mut ancestors = HashMap::new();
+        let mut ancestor_sets = HashMap::new();
 
         for node in initial_nodes {
             ancestors.insert(node.clone(), vec![node.clone()]);
+            let mut s = HashSet::new();
+            s.insert(node.clone());
+            ancestor_sets.insert(node.clone(), s);
             active.insert(node);
         }
 
@@ -183,6 +188,7 @@ impl LazyGraphEngine {
             completed_nodes: HashSet::new(),
             pending_dependencies: HashMap::new(),
             ancestor_paths: ancestors,
+            ancestor_sets,
             max_frontier_size: limit,
             step_count: 0,
             updated_at_ms: now,
@@ -218,6 +224,13 @@ impl LazyGraphEngine {
             return Err(LazyGraphError::NodeAlreadyCompleted(completed_node_id.to_string()));
         }
 
+        // Invariant: node must currently reside in the active frontier to be completed
+        if !frontier.active_frontier.contains(completed_node_id) {
+            return Err(LazyGraphError::InvalidRequest(format!(
+                "Node '{completed_node_id}' is not in active frontier"
+            )));
+        }
+
         // Remove completed node from active frontier
         frontier.active_frontier.remove(completed_node_id);
         frontier.completed_nodes.insert(completed_node_id.to_string());
@@ -230,13 +243,28 @@ impl LazyGraphEngine {
             .cloned()
             .unwrap_or_else(|| vec![completed_node_id.to_string()]);
 
+        let completed_ancestors = frontier
+            .ancestor_sets
+            .get(completed_node_id)
+            .cloned()
+            .unwrap_or_else(|| {
+                let mut s = HashSet::new();
+                s.insert(completed_node_id.to_string());
+                s
+            });
+
         let mut newly_ready = Vec::new();
 
         for succ in successors {
             let target = succ.target_node_id;
 
             // Invariant: Cycle Detection
-            if completed_path.contains(&target) {
+            // Checks if target is already an ancestor of completed node, or if target is completed_node_id,
+            // or if target was already completed in this DAG execution.
+            if target == completed_node_id
+                || completed_ancestors.contains(&target)
+                || frontier.completed_nodes.contains(&target)
+            {
                 let mut cycle_path = completed_path.clone();
                 cycle_path.push(target.clone());
                 return Err(LazyGraphError::CycleDetected {
@@ -245,10 +273,22 @@ impl LazyGraphEngine {
                 });
             }
 
-            // Update ancestor path for cycle tracking
-            let mut next_path = completed_path.clone();
-            next_path.push(target.clone());
-            frontier.ancestor_paths.insert(target.clone(), next_path);
+            // Union ancestors for target across converging incoming paths
+            let mut target_ancestors = frontier
+                .ancestor_sets
+                .get(&target)
+                .cloned()
+                .unwrap_or_default();
+            target_ancestors.extend(completed_ancestors.clone());
+            target_ancestors.insert(target.clone());
+            frontier.ancestor_sets.insert(target.clone(), target_ancestors);
+
+            // Update ancestor path if not yet tracked
+            if !frontier.ancestor_paths.contains_key(&target) {
+                let mut next_path = completed_path.clone();
+                next_path.push(target.clone());
+                frontier.ancestor_paths.insert(target.clone(), next_path);
+            }
 
             // Compute remaining unsatisfied dependencies
             let mut unsatisfied: HashSet<String> = succ
@@ -288,17 +328,26 @@ impl LazyGraphEngine {
 
         newly_ready.extend(unblocked_pending);
 
+        // Deduplicate ready candidates and ignore any already in active frontier
+        let mut final_newly_ready = Vec::new();
+        let mut seen = HashSet::new();
+        for ready in newly_ready {
+            if !frontier.active_frontier.contains(&ready) && seen.insert(ready.clone()) {
+                final_newly_ready.push(ready);
+            }
+        }
+
         // Invariant: Memory Boundedness check
-        let candidate_active_size = frontier.active_frontier.len() + newly_ready.len();
+        let candidate_active_size = frontier.active_frontier.len() + final_newly_ready.len();
         if candidate_active_size > frontier.max_frontier_size {
             return Err(LazyGraphError::FrontierCapacityExceeded {
                 current: frontier.active_frontier.len(),
-                attempted: newly_ready.len(),
+                attempted: final_newly_ready.len(),
                 limit: frontier.max_frontier_size,
             });
         }
 
-        for ready in newly_ready {
+        for ready in final_newly_ready {
             frontier.active_frontier.insert(ready);
         }
 

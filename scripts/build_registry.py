@@ -87,7 +87,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Execution", "lego_slug": "L01-execution", "sub_slug": "S05-unlimited-lazy-graph",
         "ownership": "execution-engine", "execution_model": "in-process", "runtime_host": "H03",
         "state_ownership": "lazy-graph-frontier", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.execution.graph.expand_frontier.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1", "port.runtime.budget.allocate.v1"]
     },
@@ -96,7 +96,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Execution", "lego_slug": "L01-execution", "sub_slug": "S06-compatibility-oracle",
         "ownership": "execution-engine", "execution_model": "tooling", "runtime_host": "H07",
         "state_ownership": "golden-differential-corpus", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.execution.oracle.verify.v1"],
         "required_ports": ["port.execution.run.workflow.v1"]
     },
@@ -115,9 +115,9 @@ SUBLEGOS_DATA = [
         "id": "L02.S02", "lego": "L02", "sub": "S02", "name": "Session lifecycle",
         "lego_name": "Security", "lego_slug": "L02-security", "sub_slug": "S02-session-lifecycle",
         "ownership": "security-kernel", "execution_model": "stateful-component", "runtime_host": "H02",
-        "state_ownership": "active-sessions-store", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.security.session.create.v1", "port.security.session.revoke.v1"],
+        "state_ownership": "session-state-cache", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.security.session.create.v1", "port.security.session.validate.v1", "port.security.session.revoke.v1"],
         "required_ports": ["port.security.context.validate.v1"]
     },
     {
@@ -151,18 +151,18 @@ SUBLEGOS_DATA = [
         "id": "L02.S06", "lego": "L02", "sub": "S06", "name": "Machine identity",
         "lego_name": "Security", "lego_slug": "L02-security", "sub_slug": "S06-machine-identity",
         "ownership": "security-kernel", "execution_model": "stateful-component", "runtime_host": "H02",
-        "state_ownership": "machine-api-keys", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.security.machine.authenticate.v1"],
+        "state_ownership": "machine-identity-keystore", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.security.machine.token.v1", "port.security.machine.authenticate.v1"],
         "required_ports": ["port.security.context.create.v1"]
     },
     {
         "id": "L02.S07", "lego": "L02", "sub": "S07", "name": "Password/MFA recovery",
         "lego_name": "Security", "lego_slug": "L02-security", "sub_slug": "S07-password-mfa-recovery",
         "ownership": "security-kernel", "execution_model": "stateful-component", "runtime_host": "H02",
-        "state_ownership": "mfa-tokens-lockout", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.security.mfa.verify.v1"],
+        "state_ownership": "credential-recovery-tokens", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.security.recovery.initiate.v1", "port.security.mfa.verify.v1"],
         "required_ports": ["port.security.authz.authorize.v1"]
     },
 
@@ -199,7 +199,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Ingress", "lego_slug": "L03-ingress", "sub_slug": "S04-admission-backpressure",
         "ownership": "ingress-gateway", "execution_model": "in-process", "runtime_host": "H01",
         "state_ownership": "rate-limit-buckets", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.ingress.admission.filter.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -246,7 +246,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Node Ecosystem", "lego_slug": "L04-node-ecosystem", "sub_slug": "S02-trust-quarantine-locality",
         "ownership": "node-ecosystem", "execution_model": "in-process", "runtime_host": "H04",
         "state_ownership": "node-trust-tiers", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.node.trust.evaluate.v1"],
         "required_ports": ["port.security.authz.authorize.v1"]
     },
@@ -273,7 +273,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Node Ecosystem", "lego_slug": "L04-node-ecosystem", "sub_slug": "S05-community-custom-nodes",
         "ownership": "node-ecosystem", "execution_model": "worker-capability", "runtime_host": "H07",
         "state_ownership": "custom-node-tarballs", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.node.custom.load.v1"],
         "required_ports": ["port.node.trust.evaluate.v1", "port.node.compat.invoke_js.v1"]
     },
@@ -282,7 +282,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Node Ecosystem", "lego_slug": "L04-node-ecosystem", "sub_slug": "S06-code-polyglot-runtime",
         "ownership": "node-ecosystem", "execution_model": "worker-capability", "runtime_host": "H04",
         "state_ownership": "polyglot-isolated-sandbox", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "status": "TESTED",
         "provided_ports": ["port.node.polyglot.execute.v1"],
         "required_ports": ["port.runtime.budget.allocate.v1"]
     },

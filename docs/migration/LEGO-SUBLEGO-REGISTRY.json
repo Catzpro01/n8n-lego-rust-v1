@@ -324,14 +324,15 @@
           "canonical_path": "lego/L02-security/S02-session-lifecycle",
           "execution_model": "stateful-component",
           "runtime_host": "H02",
-          "state_ownership": "active-sessions-store",
+          "state_ownership": "session-state-cache",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L02-security/S02-session-lifecycle/CONTRACT.md",
           "ports": {
             "provided": [
               "port.security.session.create.v1",
+              "port.security.session.validate.v1",
               "port.security.session.revoke.v1"
             ],
             "required": [
@@ -416,13 +417,14 @@
           "canonical_path": "lego/L02-security/S06-machine-identity",
           "execution_model": "stateful-component",
           "runtime_host": "H02",
-          "state_ownership": "machine-api-keys",
+          "state_ownership": "machine-identity-keystore",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L02-security/S06-machine-identity/CONTRACT.md",
           "ports": {
             "provided": [
+              "port.security.machine.token.v1",
               "port.security.machine.authenticate.v1"
             ],
             "required": [
@@ -438,13 +440,14 @@
           "canonical_path": "lego/L02-security/S07-password-mfa-recovery",
           "execution_model": "stateful-component",
           "runtime_host": "H02",
-          "state_ownership": "mfa-tokens-lockout",
+          "state_ownership": "credential-recovery-tokens",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L02-security/S07-password-mfa-recovery/CONTRACT.md",
           "ports": {
             "provided": [
+              "port.security.recovery.initiate.v1",
               "port.security.mfa.verify.v1"
             ],
             "required": [

@@ -9,6 +9,12 @@
       "transport": "contract-defined"
     },
     {
+      "port_id": "port.security.session.validate.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
       "port_id": "port.security.session.revoke.v1",
       "category": "PublicContract",
       "schema_version": "1.0.0",

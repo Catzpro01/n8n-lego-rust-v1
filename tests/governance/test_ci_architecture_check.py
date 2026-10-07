@@ -168,7 +168,8 @@ LOCAL != REMOTE
             self.assertTrue(any("does not contain explicit 'REMOTE MAIN' citation" in e for e in res.errors))
         finally:
             if os.path.isfile(backup):
-                shutil.move(backup, real_report)
+                shutil.copyfile(backup, real_report)
+                os.remove(backup)
 
     def test_negative_check_11_divergent_remote_main_citation_fails(self):
         """Simulate report.md citing a wrong/divergent REMOTE MAIN SHA."""
@@ -184,7 +185,8 @@ LOCAL != REMOTE
             self.assertTrue(any("does not match actual origin/main SHA" in e for e in res.errors))
         finally:
             if os.path.isfile(backup):
-                shutil.move(backup, real_report)
+                shutil.copyfile(backup, real_report)
+                os.remove(backup)
 
     def test_negative_check_11_ancestor_remote_main_citation_rejected(self):
         """Simulate report.md citing an ancestor commit instead of current origin/main.
@@ -207,7 +209,8 @@ LOCAL != REMOTE
             self.assertTrue(any("does not match actual origin/main sha" in e.lower() for e in res.errors))
         finally:
             if os.path.isfile(backup):
-                shutil.move(backup, real_report)
+                shutil.copyfile(backup, real_report)
+                os.remove(backup)
 
     def test_check_11_historical_remote_main_citation_passes(self):
         """Verify that historical remote main citations with valid git ledger presence pass when accompanied by exact active REMOTE MAIN."""
@@ -226,7 +229,8 @@ LOCAL != REMOTE
             self.assertTrue(res.passed, f"Expected PASS with valid historical and exact active citations, errors: {res.errors}")
         finally:
             if os.path.isfile(backup):
-                shutil.move(backup, real_report)
+                shutil.copyfile(backup, real_report)
+                os.remove(backup)
 
     def test_negative_check_11_nonexistent_historical_citation_fails(self):
         """Simulate report.md citing a non-existent commit as HISTORICAL REMOTE MAIN."""
@@ -245,7 +249,8 @@ LOCAL != REMOTE
             self.assertTrue(any("not found in git ledger" in e.lower() for e in res.errors))
         finally:
             if os.path.isfile(backup):
-                shutil.move(backup, real_report)
+                shutil.copyfile(backup, real_report)
+                os.remove(backup)
 
     def test_negative_check_11_multiple_active_remote_main_with_stale_fails(self):
         """Verify that if multiple active REMOTE MAIN citations exist and one is stale/ancestor, Check 11 strictly fails."""
@@ -265,7 +270,8 @@ LOCAL != REMOTE
             self.assertTrue(any("remote provenance mismatch" in e.lower() for e in res.errors))
         finally:
             if os.path.isfile(backup):
-                shutil.move(backup, real_report)
+                shutil.copyfile(backup, real_report)
+                os.remove(backup)
 
 
 if __name__ == "__main__":
