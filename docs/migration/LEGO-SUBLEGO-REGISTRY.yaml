@@ -210,7 +210,7 @@ legos:
         state_ownership: lazy-graph-frontier
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L01-execution/S05-unlimited-lazy-graph/CONTRACT.md
         ports:
           provided:
@@ -229,7 +229,7 @@ legos:
         state_ownership: golden-differential-corpus
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L01-execution/S06-compatibility-oracle/CONTRACT.md
         ports:
           provided:

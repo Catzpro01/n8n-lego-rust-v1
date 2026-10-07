@@ -10,7 +10,7 @@
 - **State Ownership**: `golden-differential-corpus`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `CONTRACTED`
+- **Status**: `TESTED`
 
 ---
 

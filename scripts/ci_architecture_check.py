@@ -466,9 +466,9 @@ class CIArchitectureEnforcer:
         # 3. Exact taxonomy distribution enforcement
         expected_counts = {
             "CERTIFIED": 0,
-            "TESTED": 40,
+            "TESTED": 42,
             "IMPLEMENTED": 0,
-            "CONTRACTED": 35,
+            "CONTRACTED": 33,
             "DESIGNED": 8,
         }
 
@@ -480,7 +480,7 @@ class CIArchitectureEnforcer:
         # 4. Verify priority Sub-LEGOs are exactly the ones marked TESTED
         priority_tested_ids = {
             "L00.S01", "L00.S02", "L00.S03", "L00.S04",
-            "L01.S01", "L01.S02", "L01.S03", "L01.S04",
+            "L01.S01", "L01.S02", "L01.S03", "L01.S04", "L01.S05", "L01.S06",
             "L02.S01", "L02.S03", "L02.S04", "L02.S05",
             "L03.S01", "L03.S02", "L03.S03", "L03.S04",
             "L04.S01", "L04.S02", "L04.S03", "L04.S04",
