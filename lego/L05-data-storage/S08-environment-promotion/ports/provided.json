@@ -13,6 +13,12 @@
       "category": "PublicContract",
       "schema_version": "1.0.0",
       "transport": "contract-defined"
+    },
+    {
+      "port_id": "port.storage.environment.promote.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
     }
   ]
 }

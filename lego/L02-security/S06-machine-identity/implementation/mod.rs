@@ -152,6 +152,10 @@ impl MachineIdentityKeystoreService {
         tenant: &str,
         ttl_ms: Option<u64>,
     ) -> Result<(String, MachineToken), String> {
+        if let Some(0) = ttl_ms {
+            return Err("Token TTL must be greater than zero (fail-closed)".to_string());
+        }
+
         let machines = self.machines.read().unwrap();
         let machine = machines
             .get(machine_id)
@@ -202,6 +206,9 @@ impl MachineIdentityKeystoreService {
         if token_raw.trim().is_empty() {
             return Err("token cannot be empty (fail-closed)".to_string());
         }
+        if tenant.trim().is_empty() {
+            return Err("tenant cannot be empty (fail-closed)".to_string());
+        }
 
         let token_hash = Self::hash_secret(token_raw);
         let now = current_epoch_ms.unwrap_or_else(Self::current_time_ms);
@@ -247,6 +254,16 @@ impl MachineIdentityKeystoreService {
         secret: &str,
         tenant: &str,
     ) -> Result<MachineAuthResult, String> {
+        if machine_id.trim().is_empty() {
+            return Err("machine_id cannot be empty (fail-closed)".to_string());
+        }
+        if secret.trim().is_empty() {
+            return Err("secret cannot be empty (fail-closed)".to_string());
+        }
+        if tenant.trim().is_empty() {
+            return Err("tenant cannot be empty (fail-closed)".to_string());
+        }
+
         let machines = self.machines.read().unwrap();
         let machine = machines
             .get(machine_id)
@@ -271,12 +288,27 @@ impl MachineIdentityKeystoreService {
         })
     }
 
-    /// Revoke an issued token
+    /// Revoke an issued token by token ID
     pub fn revoke_token(&self, token_id: &str) -> Result<(), String> {
         let mut tokens = self.tokens.write().unwrap();
         let token = tokens
             .get_mut(token_id)
             .ok_or_else(|| "Token not found".to_string())?;
+        token.is_revoked = true;
+        Ok(())
+    }
+
+    /// Revoke an issued token directly by raw bearer token value
+    pub fn revoke_token_by_raw(&self, token_raw: &str) -> Result<(), String> {
+        if token_raw.trim().is_empty() {
+            return Err("token cannot be empty (fail-closed)".to_string());
+        }
+        let token_hash = Self::hash_secret(token_raw);
+        let mut tokens = self.tokens.write().unwrap();
+        let token = tokens
+            .values_mut()
+            .find(|t| t.token_hash == token_hash)
+            .ok_or_else(|| "Token not recognized".to_string())?;
         token.is_revoked = true;
         Ok(())
     }
@@ -289,6 +321,15 @@ impl MachineIdentityKeystoreService {
             .ok_or_else(|| "Machine identity not found".to_string())?;
         machine.is_active = false;
         Ok(())
+    }
+
+    /// Prune revoked and expired tokens from authoritative `machine-identity-keystore`
+    pub fn cleanup_expired_tokens(&self, current_epoch_ms: Option<u64>) -> usize {
+        let now = current_epoch_ms.unwrap_or_else(Self::current_time_ms);
+        let mut tokens = self.tokens.write().unwrap();
+        let before_len = tokens.len();
+        tokens.retain(|_, t| !t.is_revoked && now < t.expires_at_ms);
+        before_len.saturating_sub(tokens.len())
     }
 
     /// Dispatcher for port `port.security.machine.token.v1`

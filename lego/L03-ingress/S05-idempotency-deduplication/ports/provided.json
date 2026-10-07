@@ -7,6 +7,12 @@
       "category": "PublicContract",
       "schema_version": "1.0.0",
       "transport": "contract-defined"
+    },
+    {
+      "port_id": "port.ingress.idempotency.dedupe.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
     }
   ]
 }

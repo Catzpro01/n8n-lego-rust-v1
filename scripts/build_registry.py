@@ -208,8 +208,8 @@ SUBLEGOS_DATA = [
         "lego_name": "Ingress", "lego_slug": "L03-ingress", "sub_slug": "S05-idempotency-deduplication",
         "ownership": "ingress-gateway", "execution_model": "stateful-component", "runtime_host": "H01",
         "state_ownership": "dedup-hash-cache", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.ingress.dedup.check.v1"],
+        "status": "TESTED",
+        "provided_ports": ["port.ingress.dedup.check.v1", "port.ingress.idempotency.dedupe.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
     {
@@ -217,8 +217,8 @@ SUBLEGOS_DATA = [
         "lego_name": "Ingress", "lego_slug": "L03-ingress", "sub_slug": "S06-response-plans-streaming",
         "ownership": "ingress-gateway", "execution_model": "in-process", "runtime_host": "H01",
         "state_ownership": "pending-response-waiters", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.ingress.response.stream.v1"],
+        "status": "TESTED",
+        "provided_ports": ["port.ingress.response.stream.v1", "port.ingress.response.plan.v1"],
         "required_ports": ["port.storage.binary.stream.v1"]
     },
     {
@@ -226,8 +226,8 @@ SUBLEGOS_DATA = [
         "lego_name": "Ingress", "lego_slug": "L03-ingress", "sub_slug": "S07-startup-reconciliation",
         "ownership": "ingress-gateway", "execution_model": "control-component", "runtime_host": "H02",
         "state_ownership": "reconciliation-markers", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.ingress.reconcile.execute.v1"],
+        "status": "TESTED",
+        "provided_ports": ["port.ingress.reconcile.execute.v1", "port.ingress.reconciliation.sync.v1"],
         "required_ports": ["port.ingress.activation.list.v1", "port.storage.persistence.load.v1"]
     },
 
@@ -291,8 +291,8 @@ SUBLEGOS_DATA = [
         "lego_name": "Node Ecosystem", "lego_slug": "L04-node-ecosystem", "sub_slug": "S07-browser-scraper-hybrid",
         "ownership": "node-ecosystem", "execution_model": "worker-capability", "runtime_host": "H04",
         "state_ownership": "browser-session-pool", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.node.browser.render.v1"],
+        "status": "TESTED",
+        "provided_ports": ["port.node.browser.render.v1", "port.node.browser.hybrid.v1"],
         "required_ports": ["port.runtime.budget.allocate.v1"]
     },
     {
@@ -346,8 +346,8 @@ SUBLEGOS_DATA = [
         "id": "L05.S05", "lego": "L05", "sub": "S05", "name": "Retention/compaction",
         "lego_name": "Data and Storage", "lego_slug": "L05-data-storage", "sub_slug": "S05-retention-compaction",
         "ownership": "data-persistence", "execution_model": "control-component", "runtime_host": "H05",
-        "state_ownership": "compaction-tombstones", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "state_ownership": "retention-policy-index", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
         "provided_ports": ["port.storage.retention.compact.v1"],
         "required_ports": ["port.storage.persistence.load.v1", "port.storage.wal.read.v1"]
     },
@@ -355,27 +355,27 @@ SUBLEGOS_DATA = [
         "id": "L05.S06", "lego": "L05", "sub": "S06", "name": "Snapshot/backup/restore",
         "lego_name": "Data and Storage", "lego_slug": "L05-data-storage", "sub_slug": "S06-snapshot-backup-restore",
         "ownership": "data-persistence", "execution_model": "control-component", "runtime_host": "H05",
-        "state_ownership": "backup-archives", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.storage.backup.create.v1", "port.storage.backup.restore.v1"],
+        "state_ownership": "backup-snapshot-metadata", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.storage.backup.create.v1", "port.storage.backup.restore.v1", "port.storage.backup.snapshot.v1"],
         "required_ports": ["port.storage.persistence.load.v1"]
     },
     {
         "id": "L05.S07", "lego": "L05", "sub": "S07", "name": "Disaster recovery",
         "lego_name": "Data and Storage", "lego_slug": "L05-data-storage", "sub_slug": "S07-disaster-recovery",
         "ownership": "data-persistence", "execution_model": "control-component", "runtime_host": "H05",
-        "state_ownership": "dr-replica-offsets", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.storage.dr.sync.v1"],
+        "state_ownership": "dr-replication-state", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.storage.dr.sync.v1", "port.storage.dr.replicate.v1"],
         "required_ports": ["port.storage.backup.restore.v1"]
     },
     {
         "id": "L05.S08", "lego": "L05", "sub": "S08", "name": "Environment promotion",
         "lego_name": "Data and Storage", "lego_slug": "L05-data-storage", "sub_slug": "S08-environment-promotion",
         "ownership": "data-persistence", "execution_model": "in-process", "runtime_host": "H05",
-        "state_ownership": "promotion-bundle-cache", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.storage.promotion.export.v1", "port.storage.promotion.import.v1"],
+        "state_ownership": "promotion-manifest-store", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.storage.promotion.export.v1", "port.storage.promotion.import.v1", "port.storage.environment.promote.v1"],
         "required_ports": ["port.storage.persistence.load.v1", "port.security.credential.release.v1"]
     },
 
@@ -792,18 +792,18 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 45, f"Expected 45 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["TESTED"] == 53, f"Expected 53 TESTED, got {status_counts['TESTED']}"
     assert status_counts["IMPLEMENTED"] == 0, f"Expected 0 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
-    assert status_counts["CONTRACTED"] == 30, f"Expected 30 CONTRACTED, got {status_counts['CONTRACTED']}"
+    assert status_counts["CONTRACTED"] == 22, f"Expected 22 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
     priority_tested = {
         'L00.S01', 'L00.S02', 'L00.S03', 'L00.S04',
         'L01.S01', 'L01.S02', 'L01.S03', 'L01.S04', 'L01.S05', 'L01.S06',
         'L02.S01', 'L02.S02', 'L02.S03', 'L02.S04', 'L02.S05', 'L02.S06', 'L02.S07',
-        'L03.S01', 'L03.S02', 'L03.S03', 'L03.S04',
-        'L04.S01', 'L04.S02', 'L04.S03', 'L04.S04', 'L04.S05', 'L04.S06', 'L04.S08',
-        'L05.S01', 'L05.S02', 'L05.S03', 'L05.S04',
+        'L03.S01', 'L03.S02', 'L03.S03', 'L03.S04', 'L03.S05', 'L03.S06', 'L03.S07',
+        'L04.S01', 'L04.S02', 'L04.S03', 'L04.S04', 'L04.S05', 'L04.S06', 'L04.S07', 'L04.S08',
+        'L05.S01', 'L05.S02', 'L05.S03', 'L05.S04', 'L05.S05', 'L05.S06', 'L05.S07', 'L05.S08',
         'L06.S01', 'L06.S02', 'L06.S03', 'L06.S04', 'L06.S05',
         'L07.S01', 'L07.S02', 'L07.S03',
         'L09.S01', 'L09.S02', 'L09.S03', 'L09.S05',

@@ -563,11 +563,12 @@
           "state_ownership": "dedup-hash-cache",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L03-ingress/S05-idempotency-deduplication/CONTRACT.md",
           "ports": {
             "provided": [
-              "port.ingress.dedup.check.v1"
+              "port.ingress.dedup.check.v1",
+              "port.ingress.idempotency.dedupe.v1"
             ],
             "required": [
               "port.runtime.contract.envelope.v1"
@@ -585,11 +586,12 @@
           "state_ownership": "pending-response-waiters",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L03-ingress/S06-response-plans-streaming/CONTRACT.md",
           "ports": {
             "provided": [
-              "port.ingress.response.stream.v1"
+              "port.ingress.response.stream.v1",
+              "port.ingress.response.plan.v1"
             ],
             "required": [
               "port.storage.binary.stream.v1"
@@ -607,11 +609,12 @@
           "state_ownership": "reconciliation-markers",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L03-ingress/S07-startup-reconciliation/CONTRACT.md",
           "ports": {
             "provided": [
-              "port.ingress.reconcile.execute.v1"
+              "port.ingress.reconcile.execute.v1",
+              "port.ingress.reconciliation.sync.v1"
             ],
             "required": [
               "port.ingress.activation.list.v1",
@@ -772,11 +775,12 @@
           "state_ownership": "browser-session-pool",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L04-node-ecosystem/S07-browser-scraper-hybrid/CONTRACT.md",
           "ports": {
             "provided": [
-              "port.node.browser.render.v1"
+              "port.node.browser.render.v1",
+              "port.node.browser.hybrid.v1"
             ],
             "required": [
               "port.runtime.budget.allocate.v1"
@@ -910,10 +914,10 @@
           "canonical_path": "lego/L05-data-storage/S05-retention-compaction",
           "execution_model": "control-component",
           "runtime_host": "H05",
-          "state_ownership": "compaction-tombstones",
+          "state_ownership": "retention-policy-index",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L05-data-storage/S05-retention-compaction/CONTRACT.md",
           "ports": {
             "provided": [
@@ -933,15 +937,16 @@
           "canonical_path": "lego/L05-data-storage/S06-snapshot-backup-restore",
           "execution_model": "control-component",
           "runtime_host": "H05",
-          "state_ownership": "backup-archives",
+          "state_ownership": "backup-snapshot-metadata",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L05-data-storage/S06-snapshot-backup-restore/CONTRACT.md",
           "ports": {
             "provided": [
               "port.storage.backup.create.v1",
-              "port.storage.backup.restore.v1"
+              "port.storage.backup.restore.v1",
+              "port.storage.backup.snapshot.v1"
             ],
             "required": [
               "port.storage.persistence.load.v1"
@@ -956,14 +961,15 @@
           "canonical_path": "lego/L05-data-storage/S07-disaster-recovery",
           "execution_model": "control-component",
           "runtime_host": "H05",
-          "state_ownership": "dr-replica-offsets",
+          "state_ownership": "dr-replication-state",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L05-data-storage/S07-disaster-recovery/CONTRACT.md",
           "ports": {
             "provided": [
-              "port.storage.dr.sync.v1"
+              "port.storage.dr.sync.v1",
+              "port.storage.dr.replicate.v1"
             ],
             "required": [
               "port.storage.backup.restore.v1"
@@ -978,15 +984,16 @@
           "canonical_path": "lego/L05-data-storage/S08-environment-promotion",
           "execution_model": "in-process",
           "runtime_host": "H05",
-          "state_ownership": "promotion-bundle-cache",
+          "state_ownership": "promotion-manifest-store",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "CONTRACTED",
+          "status": "TESTED",
           "contract_path": "lego/L05-data-storage/S08-environment-promotion/CONTRACT.md",
           "ports": {
             "provided": [
               "port.storage.promotion.export.v1",
-              "port.storage.promotion.import.v1"
+              "port.storage.promotion.import.v1",
+              "port.storage.environment.promote.v1"
             ],
             "required": [
               "port.storage.persistence.load.v1",

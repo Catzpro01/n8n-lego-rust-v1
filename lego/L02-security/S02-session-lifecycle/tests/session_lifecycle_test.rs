@@ -169,4 +169,34 @@ mod tests {
         // 4. Validate after revoke should fail
         assert!(service.handle_port_session_validate(&validate_payload).is_err());
     }
+
+    #[test]
+    fn test_session_create_fail_closed_zero_ttl() {
+        let service = SessionLifecycleService::default();
+        let res = service.create_session("user_alice", "tenant_prod", Some(0), None);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("fail-closed"));
+    }
+
+    #[test]
+    fn test_session_validate_fail_closed_empty_tenant() {
+        let service = SessionLifecycleService::default();
+        let session = service.create_session("user_alice", "tenant_prod", None, None).unwrap();
+        let res = service.validate_session(&session.session_id, "  ", None);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("fail-closed"));
+    }
+
+    #[test]
+    fn test_session_cleanup_expired_sessions() {
+        let service = SessionLifecycleService::new(100);
+        let s1 = service.create_session("user_1", "tenant_prod", Some(100), None).unwrap();
+        let s2 = service.create_session("user_2", "tenant_prod", Some(10_000), None).unwrap();
+        let _ = service.revoke_session(&s2.session_id).unwrap();
+
+        // Simulate time advancing 200ms
+        let future_time = s1.created_at_ms + 200;
+        let cleaned = service.cleanup_expired_sessions(Some(future_time));
+        assert_eq!(cleaned, 2); // Both s1 (expired) and s2 (revoked) pruned
+    }
 }

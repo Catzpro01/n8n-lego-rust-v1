@@ -186,4 +186,70 @@ mod tests {
         let auth_key_resp = service.handle_port_machine_authenticate(&auth_key_payload).unwrap();
         assert_eq!(auth_key_resp["machine_id"], "m-port");
     }
+
+    #[test]
+    fn test_machine_issue_token_fail_closed_zero_ttl() {
+        let service = MachineIdentityKeystoreService::new();
+        service
+            .register_machine("m-0", "Machine", "tenant_corp", MachineKind::Worker, "sec", vec![])
+            .unwrap();
+
+        let res = service.issue_machine_token("m-0", "sec", "tenant_corp", Some(0));
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("fail-closed"));
+    }
+
+    #[test]
+    fn test_machine_authenticate_token_fail_closed_empty_tenant() {
+        let service = MachineIdentityKeystoreService::new();
+        service
+            .register_machine("m-1", "Machine", "tenant_corp", MachineKind::Worker, "sec", vec![])
+            .unwrap();
+
+        let (token, _) = service.issue_machine_token("m-1", "sec", "tenant_corp", None).unwrap();
+        let res = service.authenticate_token(&token, "   ", None);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("fail-closed"));
+    }
+
+    #[test]
+    fn test_machine_authenticate_api_key_fail_closed_empty() {
+        let service = MachineIdentityKeystoreService::new();
+        assert!(service.authenticate_api_key("", "sec", "tenant_corp").is_err());
+        assert!(service.authenticate_api_key("m-1", "", "tenant_corp").is_err());
+        assert!(service.authenticate_api_key("m-1", "sec", "").is_err());
+    }
+
+    #[test]
+    fn test_machine_revoke_token_by_raw() {
+        let service = MachineIdentityKeystoreService::new();
+        service
+            .register_machine("m-rev", "Machine", "tenant_corp", MachineKind::Worker, "sec", vec![])
+            .unwrap();
+
+        let (token, _) = service.issue_machine_token("m-rev", "sec", "tenant_corp", None).unwrap();
+        assert!(service.authenticate_token(&token, "tenant_corp", None).is_ok());
+
+        service.revoke_token_by_raw(&token).expect("Revoke by raw should succeed");
+        let res = service.authenticate_token(&token, "tenant_corp", None);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("revoked"));
+    }
+
+    #[test]
+    fn test_machine_cleanup_expired_tokens() {
+        let service = MachineIdentityKeystoreService::new();
+        service
+            .register_machine("m-clean", "Machine", "tenant_corp", MachineKind::Worker, "sec", vec![])
+            .unwrap();
+
+        let (_tok1, meta1) = service.issue_machine_token("m-clean", "sec", "tenant_corp", Some(100)).unwrap();
+        let (_tok2, meta2) = service.issue_machine_token("m-clean", "sec", "tenant_corp", Some(10_000)).unwrap();
+
+        service.revoke_token(&meta2.token_id).unwrap();
+
+        let future = meta1.expires_at_ms + 100;
+        let cleaned = service.cleanup_expired_tokens(Some(future));
+        assert_eq!(cleaned, 2);
+    }
 }

@@ -141,4 +141,41 @@ mod tests {
         // 3. Port MFA verify repeat should fail
         assert!(service.handle_port_mfa_verify(&verify_payload).is_err());
     }
+
+    #[test]
+    fn test_recovery_initiate_fail_closed_zero_ttl() {
+        let service = CredentialRecoveryService::default();
+        let res = service.initiate_recovery("user_test", "tenant_prod", RecoveryChannel::Email, Some(0));
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("fail-closed"));
+    }
+
+    #[test]
+    fn test_recovery_verify_fail_closed_empty_tenant() {
+        let service = CredentialRecoveryService::default();
+        let (token_id, code, _) = service
+            .initiate_recovery("user_test", "tenant_prod", RecoveryChannel::Email, None)
+            .unwrap();
+        let res = service.verify_recovery_challenge(&token_id, &code, "   ", None);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("fail-closed"));
+    }
+
+    #[test]
+    fn test_recovery_cleanup_expired_tokens() {
+        let service = CredentialRecoveryService::default();
+        let (_tok1, _code1, meta1) = service
+            .initiate_recovery("user_clean", "tenant_prod", RecoveryChannel::Email, Some(100))
+            .unwrap();
+        let (tok2, code2, _meta2) = service
+            .initiate_recovery("user_clean", "tenant_prod", RecoveryChannel::Email, Some(10_000))
+            .unwrap();
+
+        // Consume tok2
+        let _ = service.verify_recovery_challenge(&tok2, &code2, "tenant_prod", None).unwrap();
+
+        let future = meta1.expires_at_ms + 100;
+        let cleaned = service.cleanup_expired_tokens(Some(future));
+        assert_eq!(cleaned, 2); // tok1 (expired) and tok2 (consumed)
+    }
 }

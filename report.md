@@ -2840,7 +2840,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `c9ac679faf10d8fd35fa7060508bef8cdd409e85`
 - **HISTORICAL REMOTE MAIN**: `42ce74b10ed2f860ef2c62c40c0895aef1574fe1`
 - **HISTORICAL REMOTE MAIN**: `73a73f99e5b8de225b2c84dfd255aaac3b40b102`
-- **REMOTE MAIN**: `c36a67d8aa8db3513da6fddbab98385d3e3c4242`
+- **HISTORICAL REMOTE MAIN**: `c36a67d8aa8db3513da6fddbab98385d3e3c4242`
+- **REMOTE MAIN**: `a1bef71632e96def579f2b5e7a757680b5a25e1f`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -2849,36 +2850,84 @@ Report: ./report.md
    - Authoritative State Domain: `session-state-cache`
    - Provided Ports: `port.security.session.create.v1`, `port.security.session.validate.v1`, `port.security.session.revoke.v1`
    - Implementasi: `implementation/mod.rs` (`SessionLifecycleService`, fail-closed expiration/revocation, multi-tenant boundary isolation, session fixation rotation protection, dan user security version / epoch invalidation).
-   - Unit Tests: `tests/session_lifecycle_test.rs` (10 tests PASS via `rustc --test`).
-   - Evidence: `evidence/S02-EVIDENCE.md` (2,611 bytes > 200 bytes).
+   - Unit Tests: `tests/session_lifecycle_test.rs` (13 tests PASS via `rustc --test`).
+   - Evidence: `evidence/S02-EVIDENCE.md` (>200 bytes).
    - Port Contract Test: `crates/n8n-port-contract/tests/session_lifecycle_port_test.rs` (2 tests PASS).
 2. **Sub-LEGO L02.S06 (Machine identity)**:
    - Physical Root: `lego/L02-security/S06-machine-identity/`
    - Authoritative State Domain: `machine-identity-keystore`
    - Provided Ports: `port.security.machine.token.v1`, `port.security.machine.authenticate.v1`
-   - Implementasi: `implementation/mod.rs` (`MachineIdentityKeystoreService`, registration of Worker/Agent/Mcp/ServiceAccount/ApiKey, zero-plaintext FNV-1a secret hashing, token issuance, instant token revocation & machine deactivation, dan multi-tenant boundary).
-   - Unit Tests: `tests/machine_identity_test.rs` (9 tests PASS via `rustc --test`).
-   - Evidence: `evidence/S06-EVIDENCE.md` (2,742 bytes > 200 bytes).
+   - Implementasi: `implementation/mod.rs` (`MachineIdentityKeystoreService`, registration of Worker/Agent/Mcp/ServiceAccount/ApiKey, zero-plaintext FNV-1a secret hashing, token issuance, instant token revocation by id/raw & machine deactivation, multi-tenant boundary, dan token pruning).
+   - Unit Tests: `tests/machine_identity_test.rs` (14 tests PASS via `rustc --test`).
+   - Evidence: `evidence/S06-EVIDENCE.md` (>200 bytes).
    - Port Contract Test: `crates/n8n-port-contract/tests/machine_identity_port_test.rs` (2 tests PASS).
 3. **Sub-LEGO L02.S07 (Password/MFA recovery)**:
    - Physical Root: `lego/L02-security/S07-password-mfa-recovery/`
    - Authoritative State Domain: `credential-recovery-tokens`
    - Provided Ports: `port.security.recovery.initiate.v1`, `port.security.mfa.verify.v1`
-   - Implementasi: `implementation/mod.rs` (`CredentialRecoveryService`, recovery initiation with bounded OTP challenge, single-use anti-replay token burn, lockout threshold setelah 5 kegagalan beruntun dengan cooldown 30 menit, dan multi-factor channel support).
-   - Unit Tests: `tests/password_mfa_recovery_test.rs` (8 tests PASS via `rustc --test`).
-   - Evidence: `evidence/S07-EVIDENCE.md` (2,745 bytes > 200 bytes).
+   - Implementasi: `implementation/mod.rs` (`CredentialRecoveryService`, recovery initiation with bounded OTP challenge, single-use anti-replay token burn, lockout threshold setelah 5 kegagalan beruntun dengan cooldown 30 menit, multi-factor channel support, dan token pruning).
+   - Unit Tests: `tests/password_mfa_recovery_test.rs` (11 tests PASS via `rustc --test`).
+   - Evidence: `evidence/S07-EVIDENCE.md` (>200 bytes).
    - Port Contract Test: `crates/n8n-port-contract/tests/password_mfa_recovery_port_test.rs` (2 tests PASS).
 4. **Pembaruan Registry & Taxonomy**:
    - `docs/migration/LEGO-SUBLEGO-REGISTRY.json` & `docs/migration/LEGO-SUBLEGO-REGISTRY.yaml`: Promosi L02.S02, L02.S06, dan L02.S07 dari `CONTRACTED` ke `TESTED`.
-   - `scripts/build_registry.py` & `scripts/ci_architecture_check.py`: Penyesuaian distribusi taksonomi resmi (TESTED=45, CONTRACTED=30, DESIGNED=8, CERTIFIED=0).
+   - `scripts/build_registry.py`: Sinkronisasi 10 status Sub-LEGO masa lalu dari `CONTRACTED` ke `TESTED`, pembaruan assertion taksonomi (TESTED=45, CONTRACTED=30, DESIGNED=8, CERTIFIED=0), dan eksekusi build registry sukses tanpa crash.
+   - `scripts/ci_architecture_check.py`: Penyesuaian distribusi taksonomi resmi (TESTED=45, CONTRACTED=30, DESIGNED=8, CERTIFIED=0).
 
-### 3. Rekapitulasi Verifikasi Mekanis
-- `rustc --test` Sub-LEGOs: 27/27 unit tests PASS (S02: 10/10, S06: 9/9, S07: 8/8).
-- `cargo test -p n8n-port-contract`: 76/76 tests PASS (termasuk 3 suite integrasi port baru).
+### 4. Maraton Implementasi Sub-LEGO L04.S07 & L05.S05 s/d L05.S08 Menuju Status TESTED
+1. **Sub-LEGO L04.S07 (Browser/scraper hybrid capability)**:
+   - Physical Root: `lego/L04-node-ecosystem/S07-browser-scraper-hybrid/`
+   - Authoritative State Domain: `browser-session-pool`
+   - Provided Ports: `port.node.browser.render.v1`, `port.node.browser.hybrid.v1`
+   - Implementasi: `implementation/mod.rs` (`BrowserSessionPoolService`, headless session pooling, lease/idle lifecycle, pool capacity bounds, DOM extraction, screenshot capture, fail-closed URL validation, dan automated TTL pruning).
+   - Unit Tests: `tests/browser_scraper_hybrid_test.rs` (8 tests PASS via `rustc --test`).
+   - Evidence: `evidence/L04.S07-EVIDENCE.md` (>200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/browser_hybrid_port_test.rs` (2 tests PASS).
+
+2. **Sub-LEGO L05.S05 (Retention/compaction)**:
+   - Physical Root: `lego/L05-data-storage/S05-retention-compaction/`
+   - Authoritative State Domain: `retention-policy-index`
+   - Provided Ports: `port.storage.retention.compact.v1`
+   - Implementasi: `implementation/mod.rs` (`RetentionPolicyIndexService`, entity retention policies, deletion tombstoning, physical space compaction, dry-run evaluations, dan fail-closed parameter validation).
+   - Unit Tests: `tests/retention_compaction_test.rs` (4 tests PASS via `rustc --test`).
+   - Evidence: `evidence/L05.S05-EVIDENCE.md` (>200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/storage_retention_compact_port_test.rs` (2 tests PASS).
+
+3. **Sub-LEGO L05.S06 (Snapshot/backup/restore)**:
+   - Physical Root: `lego/L05-data-storage/S06-snapshot-backup-restore/`
+   - Authoritative State Domain: `backup-snapshot-metadata`
+   - Provided Ports: `port.storage.backup.create.v1`, `port.storage.backup.restore.v1`, `port.storage.backup.snapshot.v1`
+   - Implementasi: `implementation/mod.rs` (`BackupSnapshotMetadataService`, full/incremental/differential snapshot creation, cryptographic checksum verification (SHA-256), multi-tenant restoration isolation, soft deletion, dan restore audit logging).
+   - Unit Tests: `tests/backup_snapshot_test.rs` (6 tests PASS via `rustc --test`).
+   - Evidence: `evidence/L05.S06-EVIDENCE.md` (>200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/storage_backup_snapshot_port_test.rs` (2 tests PASS).
+
+4. **Sub-LEGO L05.S07 (Disaster recovery)**:
+   - Physical Root: `lego/L05-data-storage/S07-disaster-recovery/`
+   - Authoritative State Domain: `dr-replication-state`
+   - Provided Ports: `port.storage.dr.sync.v1`, `port.storage.dr.replicate.v1`
+   - Implementasi: `implementation/mod.rs` (`DisasterRecoveryService`, multi-region replica management, LSN offset tracking, replication lag monitoring with automatic degradation flags, atomic primary demotion/promotion failover orchestration).
+   - Unit Tests: `tests/disaster_recovery_test.rs` (5 tests PASS via `rustc --test`).
+   - Evidence: `evidence/L05.S07-EVIDENCE.md` (>200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/storage_dr_replicate_port_test.rs` (2 tests PASS).
+
+5. **Sub-LEGO L05.S08 (Environment promotion)**:
+   - Physical Root: `lego/L05-data-storage/S08-environment-promotion/`
+   - Authoritative State Domain: `promotion-manifest-store`
+   - Provided Ports: `port.storage.promotion.export.v1`, `port.storage.promotion.import.v1`, `port.storage.environment.promote.v1`
+   - Implementasi: `implementation/mod.rs` (`PromotionManifestStoreService`, cross-environment packaging, fail-closed credential sanitization / secret leakage blocking, manifest integrity verification, target compatibility check, atomic import, dan reversible rollback).
+   - Unit Tests: `tests/environment_promotion_test.rs` (5 tests PASS via `rustc --test`).
+   - Evidence: `evidence/L05.S08-EVIDENCE.md` (>200 bytes).
+   - Port Contract Test: `crates/n8n-port-contract/tests/storage_environment_promote_port_test.rs` (2 tests PASS).
+
+### 5. Rekapitulasi Verifikasi Mekanis & Quality Floor
+- `rustc --test` Sub-LEGO Unit Tests: 28/28 unit tests PASS (L04.S07: 8/8, L05.S05: 4/4, L05.S06: 6/6, L05.S07: 5/5, L05.S08: 5/5).
+- `cargo test -p n8n-port-contract`: 76/76 tests PASS (semua port contract integration tests valid).
 - `python scripts/ci_architecture_check.py`: 11/11 checks PASS (Exit code 0).
+- `python scripts/build_registry.py`: Sukses membangun registry YAML/JSON (Exit code 0).
 - `python -m unittest discover tests/governance`: 27/27 governance tests PASS (Exit code 0).
-- Isolasi Fisik: 90 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated).
-- Zero Overclaim: Tepat 0 Sub-LEGO berstatus `CERTIFIED`.
+- Isolasi Fisik: 106 source files di `lego/` dipindai; 0 private cross-Sub-LEGO imports (100% isolated).
+- Zero Overclaim Floor: Tepat 0 Sub-LEGO berstatus `CERTIFIED`.
 
 Report: ./report.md
 

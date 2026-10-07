@@ -141,6 +141,9 @@ impl CredentialRecoveryService {
         if tenant.trim().is_empty() {
             return Err("Tenant cannot be empty (fail-closed)".to_string());
         }
+        if let Some(0) = custom_ttl_ms {
+            return Err("Recovery token TTL must be greater than zero (fail-closed)".to_string());
+        }
 
         let now = Self::current_time_ms();
         if self.is_locked_out(principal, tenant, now) {
@@ -188,6 +191,9 @@ impl CredentialRecoveryService {
         }
         if code.trim().is_empty() {
             return Err("code cannot be empty (fail-closed)".to_string());
+        }
+        if tenant.trim().is_empty() {
+            return Err("tenant cannot be empty (fail-closed)".to_string());
         }
 
         let now = current_epoch_ms.unwrap_or_else(Self::current_time_ms);
@@ -269,6 +275,15 @@ impl CredentialRecoveryService {
             entry.failed_count = 0;
             entry.locked_until_ms = None;
         }
+    }
+
+    /// Prune consumed and expired recovery tokens from authoritative `credential-recovery-tokens`
+    pub fn cleanup_expired_tokens(&self, current_epoch_ms: Option<u64>) -> usize {
+        let now = current_epoch_ms.unwrap_or_else(Self::current_time_ms);
+        let mut tokens = self.tokens.write().unwrap();
+        let before_len = tokens.len();
+        tokens.retain(|_, t| !t.consumed && now < t.expires_at_ms);
+        before_len.saturating_sub(tokens.len())
     }
 
     /// Dispatcher for port `port.security.recovery.initiate.v1`

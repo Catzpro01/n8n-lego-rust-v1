@@ -10,12 +10,17 @@
 - **State Ownership**: `browser-session-pool`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `CONTRACTED`
+- **Status**: `TESTED`
 
 ---
 
 ## 2. Provided Ports
 ### `port.node.browser.render.v1`
+- **Category**: Public Contract
+- **Transport**: contract-defined
+- **Status**: Active
+
+### `port.node.browser.hybrid.v1`
 - **Category**: Public Contract
 - **Transport**: contract-defined
 - **Status**: Active
@@ -32,3 +37,5 @@
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
 3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`browser-session-pool`).
 4. Model eksekusi mematuhi batasan runtime host `H04` (Worker Host).
+5. Fail-closed security: Invocations without valid authority scope, tenant, or with invalid targets are rejected.
+6. Pool capacity bounds and TTL expiration are strictly enforced without memory leakage.

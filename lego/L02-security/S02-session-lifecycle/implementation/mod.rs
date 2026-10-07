@@ -114,6 +114,9 @@ impl SessionLifecycleService {
         if tenant.trim().is_empty() {
             return Err("Tenant cannot be empty (fail-closed)".to_string());
         }
+        if let Some(0) = custom_ttl_ms {
+            return Err("Custom TTL must be greater than zero (fail-closed)".to_string());
+        }
 
         let now = Self::current_time_ms();
         let ttl = custom_ttl_ms.unwrap_or(self.default_ttl_ms);
@@ -151,6 +154,9 @@ impl SessionLifecycleService {
     ) -> Result<SessionState, String> {
         if session_id.trim().is_empty() {
             return Err("Session ID cannot be empty (fail-closed)".to_string());
+        }
+        if tenant.trim().is_empty() {
+            return Err("Tenant cannot be empty (fail-closed)".to_string());
         }
 
         let now = current_epoch_ms.unwrap_or_else(Self::current_time_ms);
@@ -197,6 +203,15 @@ impl SessionLifecycleService {
         tenant: &str,
     ) -> Result<SessionState, String> {
         let old_session = self.validate_session(old_session_id, tenant, None)?;
+        let now = Self::current_time_ms();
+        if old_session.expires_at_ms <= now {
+            return Err("Cannot rotate expired session".to_string());
+        }
+        let remaining_ttl = old_session.expires_at_ms - now;
+        if remaining_ttl == 0 {
+            return Err("Cannot rotate session with zero remaining TTL".to_string());
+        }
+
         // Revoke the old session
         self.revoke_session(old_session_id)?;
 
@@ -204,7 +219,7 @@ impl SessionLifecycleService {
         self.create_session(
             &old_session.principal_id,
             &old_session.tenant_id,
-            Some(old_session.expires_at_ms.saturating_sub(Self::current_time_ms())),
+            Some(remaining_ttl),
             Some(old_session.metadata),
         )
     }
@@ -215,6 +230,15 @@ impl SessionLifecycleService {
         let next_ver = vers.get(principal).copied().unwrap_or(1) + 1;
         vers.insert(principal.to_string(), next_ver);
         next_ver
+    }
+
+    /// Prune revoked and expired sessions from authoritative `session-state-cache`
+    pub fn cleanup_expired_sessions(&self, current_epoch_ms: Option<u64>) -> usize {
+        let now = current_epoch_ms.unwrap_or_else(Self::current_time_ms);
+        let mut store = self.sessions.write().unwrap();
+        let before_len = store.len();
+        store.retain(|_, s| s.status != SessionStatus::Revoked && now < s.expires_at_ms);
+        before_len.saturating_sub(store.len())
     }
 
     /// Dispatcher for port `port.security.session.create.v1`
