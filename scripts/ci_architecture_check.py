@@ -466,9 +466,9 @@ class CIArchitectureEnforcer:
         # 3. Exact taxonomy distribution enforcement
         expected_counts = {
             "CERTIFIED": 0,
-            "TESTED": 53,
+            "TESTED": 64,
             "IMPLEMENTED": 0,
-            "CONTRACTED": 22,
+            "CONTRACTED": 11,
             "DESIGNED": 8,
         }
 
@@ -487,8 +487,9 @@ class CIArchitectureEnforcer:
             "L04.S05", "L04.S06", "L04.S07", "L04.S08",
             "L05.S01", "L05.S02", "L05.S03", "L05.S04",
             "L05.S05", "L05.S06", "L05.S07", "L05.S08",
-            "L06.S01", "L06.S02", "L06.S03", "L06.S04", "L06.S05",
-            "L07.S01", "L07.S02", "L07.S03",
+            "L06.S01", "L06.S02", "L06.S03", "L06.S04", "L06.S05", "L06.S06", "L06.S07",
+            "L07.S01", "L07.S02", "L07.S03", "L07.S04", "L07.S05", "L07.S06", "L07.S07",
+            "L08.S01", "L08.S02", "L08.S03", "L08.S04", "L08.S05",
             "L09.S01", "L09.S02", "L09.S03", "L09.S05",
             "L10.S02"
         }

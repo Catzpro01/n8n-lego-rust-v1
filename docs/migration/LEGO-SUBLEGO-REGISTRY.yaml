@@ -925,13 +925,14 @@ legos:
         canonical_path: lego/L06-realtime-observability/S06-resource-pressure-metrics
         execution_model: in-process
         runtime_host: H02
-        state_ownership: pressure-gauge-counters
+        state_ownership: pressure-telemetry-sampler
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L06-realtime-observability/S06-resource-pressure-metrics/CONTRACT.md
         ports:
           provided:
+          - port.observability.metrics.pressure.v1
           - port.observability.pressure.poll.v1
           required:
           - port.runtime.budget.allocate.v1
@@ -943,10 +944,10 @@ legos:
         canonical_path: lego/L06-realtime-observability/S07-audit-bounded-retention
         execution_model: stateful-component
         runtime_host: H02
-        state_ownership: immutable-audit-records
+        state_ownership: audit-retention-ledger
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L06-realtime-observability/S07-audit-bounded-retention/CONTRACT.md
         ports:
           provided:
@@ -1022,10 +1023,10 @@ legos:
         canonical_path: lego/L07-scale-worker-fabric/S04-worker-lifecycle
         execution_model: control-component
         runtime_host: H02
-        state_ownership: worker-heartbeats-map
+        state_ownership: worker-heartbeat-state
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L07-scale-worker-fabric/S04-worker-lifecycle/CONTRACT.md
         ports:
           provided:
@@ -1042,13 +1043,14 @@ legos:
         canonical_path: lego/L07-scale-worker-fabric/S05-worker-recovery-failover
         execution_model: control-component
         runtime_host: H02
-        state_ownership: stale-lease-reclaimers
+        state_ownership: failover-election-state
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L07-scale-worker-fabric/S05-worker-recovery-failover/CONTRACT.md
         ports:
           provided:
+          - port.scale.worker.failover.v1
           - port.scale.failover.reclaim.v1
           required:
           - port.scale.queue.ack.v1
@@ -1061,13 +1063,14 @@ legos:
         canonical_path: lego/L07-scale-worker-fabric/S06-ha-control-plane
         execution_model: control-component
         runtime_host: H02
-        state_ownership: leader-epoch-lock
+        state_ownership: cluster-control-lease
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L07-scale-worker-fabric/S06-ha-control-plane/CONTRACT.md
         ports:
           provided:
+          - port.scale.ha.election.v1
           - port.scale.ha.leader_query.v1
           required:
           - port.runtime.contract.envelope.v1
@@ -1079,13 +1082,14 @@ legos:
         canonical_path: lego/L07-scale-worker-fabric/S07-ingress-runtime-efficiency
         execution_model: in-process
         runtime_host: H01
-        state_ownership: zero-copy-pool
+        state_ownership: backpressure-tuning-state
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L07-scale-worker-fabric/S07-ingress-runtime-efficiency/CONTRACT.md
         ports:
           provided:
+          - port.scale.runtime.tune.v1
           - port.scale.efficiency.buffer_pool.v1
           required:
           - port.runtime.contract.envelope.v1
@@ -1101,13 +1105,14 @@ legos:
         canonical_path: lego/L08-agent-mcp/S01-agent-state-machine
         execution_model: stateful-component
         runtime_host: H06
-        state_ownership: agent-execution-tree
+        state_ownership: agent-session-state-machine
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L08-agent-mcp/S01-agent-state-machine/CONTRACT.md
         ports:
           provided:
+          - port.agent.session.execute.v1
           - port.agent.engine.run.v1
           required:
           - port.agent.tool.invoke.v1
@@ -1121,10 +1126,10 @@ legos:
         canonical_path: lego/L08-agent-mcp/S02-tool-registry
         execution_model: in-process
         runtime_host: H06
-        state_ownership: agent-tool-manifests
+        state_ownership: mcp-tool-catalog
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L08-agent-mcp/S02-tool-registry/CONTRACT.md
         ports:
           provided:
@@ -1140,13 +1145,14 @@ legos:
         canonical_path: lego/L08-agent-mcp/S03-workflow-as-tool
         execution_model: in-process
         runtime_host: H06
-        state_ownership: workflow-tool-bridges
+        state_ownership: workflow-tool-manifests
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L08-agent-mcp/S03-workflow-as-tool/CONTRACT.md
         ports:
           provided:
+          - port.agent.workflow.tool.v1
           - port.agent.wf_tool.bridge.v1
           required:
           - port.execution.run.workflow.v1
@@ -1159,13 +1165,14 @@ legos:
         canonical_path: lego/L08-agent-mcp/S04-human-approval-policy
         execution_model: stateful-component
         runtime_host: H06
-        state_ownership: pending-human-approvals
+        state_ownership: human-approval-inbox
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L08-agent-mcp/S04-human-approval-policy/CONTRACT.md
         ports:
           provided:
+          - port.agent.policy.approve.v1
           - port.agent.approval.request.v1
           - port.agent.approval.submit.v1
           required:
@@ -1178,13 +1185,14 @@ legos:
         canonical_path: lego/L08-agent-mcp/S05-ai-provider-routing
         execution_model: remote-adapter
         runtime_host: H06
-        state_ownership: llm-provider-routes
+        state_ownership: provider-routing-table
         contract_version: 1.0.0
         compatibility_policy: semver-additive
-        status: CONTRACTED
+        status: TESTED
         contract_path: lego/L08-agent-mcp/S05-ai-provider-routing/CONTRACT.md
         ports:
           provided:
+          - port.agent.provider.route.v1
           - port.agent.provider.chat.v1
           required:
           - port.security.credential.release.v1

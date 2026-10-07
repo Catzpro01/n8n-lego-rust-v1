@@ -7,14 +7,19 @@
 - **Ownership Team**: `observability`
 - **Execution Model**: `in-process`
 - **Runtime Host**: `H02` (Control Host)
-- **State Ownership**: `pressure-gauge-counters`
+- **State Ownership**: `pressure-telemetry-sampler`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `CONTRACTED`
+- **Status**: `TESTED`
 
 ---
 
 ## 2. Provided Ports
+### `port.observability.metrics.pressure.v1`
+- **Category**: Public Contract
+- **Transport**: contract-defined
+- **Status**: Active
+
 ### `port.observability.pressure.poll.v1`
 - **Category**: Public Contract
 - **Transport**: contract-defined
@@ -30,5 +35,5 @@
 ## 4. Invariants & Rules
 1. Komunikasi antar Sub-LEGO hanya diizinkan melalui public contract / ports (`port.*`).
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
-3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`pressure-gauge-counters`).
+3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`pressure-telemetry-sampler`).
 4. Model eksekusi mematuhi batasan runtime host `H02` (Control Host).

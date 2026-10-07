@@ -7,14 +7,19 @@
 - **Ownership Team**: `agent-runtime`
 - **Execution Model**: `stateful-component`
 - **Runtime Host**: `H06` (Agent Host)
-- **State Ownership**: `agent-execution-tree`
+- **State Ownership**: `agent-session-state-machine`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `CONTRACTED`
+- **Status**: `TESTED`
 
 ---
 
 ## 2. Provided Ports
+### `port.agent.session.execute.v1`
+- **Category**: Public Contract
+- **Transport**: contract-defined
+- **Status**: Active
+
 ### `port.agent.engine.run.v1`
 - **Category**: Public Contract
 - **Transport**: contract-defined
@@ -32,5 +37,6 @@
 ## 4. Invariants & Rules
 1. Komunikasi antar Sub-LEGO hanya diizinkan melalui public contract / ports (`port.*`).
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
-3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`agent-execution-tree`).
+3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`agent-session-state-machine`).
 4. Model eksekusi mematuhi batasan runtime host `H06` (Agent Host).
+5. Transisi status session dievaluasi fail-closed terhadap state machine transition graph.

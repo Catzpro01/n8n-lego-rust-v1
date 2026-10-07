@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "provided_ports": [
     {
+      "port_id": "port.agent.policy.approve.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
       "port_id": "port.agent.approval.request.v1",
       "category": "PublicContract",
       "schema_version": "1.0.0",

@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "provided_ports": [
     {
+      "port_id": "port.scale.worker.failover.v1",
+      "category": "PublicContract",
+      "schema_version": "1.0.0",
+      "transport": "contract-defined"
+    },
+    {
       "port_id": "port.scale.failover.reclaim.v1",
       "category": "PublicContract",
       "schema_version": "1.0.0",

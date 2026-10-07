@@ -2844,7 +2844,8 @@ Report: ./report.md
 - **HISTORICAL REMOTE MAIN**: `a1bef71632e96def579f2b5e7a757680b5a25e1f`
 - **HISTORICAL REMOTE MAIN**: `0452764ff7d8b8724aff9a2861a213cc0a4715ad`
 - **HISTORICAL REMOTE MAIN**: `d1c750f2c3a5626d04aad39c63f94fd03e19e765`
-- **REMOTE MAIN**: `eafb15af956d2fd220da2e9ef98e7f8fc1a83109`
+- **HISTORICAL REMOTE MAIN**: `eafb15af956d2fd220da2e9ef98e7f8fc1a83109`
+- **REMOTE MAIN**: `8b860ab6e70f8479e160985fd3e109fce75e1aca`
 - **Remote Synchronization**: Origin remote branch `origin/main` diverifikasi secara eksak melalui `git rev-parse origin/main`.
 
 ### 2. Ringkasan Implementasi Sub-LEGO L02.S02, L02.S06 & L02.S07
@@ -3035,5 +3036,85 @@ Report: ./report.md
 - **Port Contract Tests**: 77 integration tests PASS (`cargo test -p n8n-port-contract`).
 - **Architecture & Governance Audit**: 11/11 PASS (`python scripts/ci_architecture_check.py`).
 - **Governance Unit Tests**: 27/27 PASS (`python -m unittest discover -s tests/governance`).
+
+Report: ./report.md
+
+
+---
+
+## Marathon Implementation Report: Sub-LEGO L06.S06, L06.S07, L07.S04, L07.S05, L07.S06, L07.S07 menuju status TESTED
+
+### 1. Cakupan Implementasi Sub-LEGO
+1. **L06.S06 — Resource pressure and queue metrics**:
+   - Direktori: `lego/L06-realtime-observability/S06-resource-pressure-metrics/`
+   - State Ownership: `pressure-telemetry-sampler`
+   - Ports: `port.observability.metrics.pressure.v1`, `port.observability.pressure.poll.v1`
+   - Runtime Host: `H02` (Control Host)
+   - Invariant: Evaluasi weighted composite score (CPU, Memory, Queue Depth), transisi level Normal -> Warning -> Critical, adaptive throttling guidance, dan bounded history buffer.
+   - Files: `implementation/mod.rs`, `tests/resource_pressure_metrics_test.rs`, `evidence/L06-S06-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+2. **L06.S07 — Audit and bounded retention**:
+   - Direktori: `lego/L06-realtime-observability/S07-audit-bounded-retention/`
+   - State Ownership: `audit-retention-ledger`
+   - Ports: `port.observability.audit.record.v1`, `port.observability.audit.query.v1`
+   - Runtime Host: `H02` (Control Host)
+   - Invariant: Append-only ledger dengan sequence ID monotonik, isolasi query boundary multi-tenant, dan dual bounded retention (kapasitas FIFO dan TTL time-based pruning).
+   - Files: `implementation/mod.rs`, `tests/audit_bounded_retention_test.rs`, `evidence/L06-S07-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+3. **L07.S04 — Worker lifecycle**:
+   - Direktori: `lego/L07-scale-worker-fabric/S04-worker-lifecycle/`
+   - State Ownership: `worker-heartbeat-state`
+   - Ports: `port.scale.worker.register.v1`, `port.scale.worker.heartbeat.v1`, `port.scale.worker.drain.v1`
+   - Runtime Host: `H02` (Control Host)
+   - Invariant: Registry node eksekusi, tracking slot kapasitas dan liveness timestamp, 2-stage graceful drain workflow (`Active` -> `Draining` -> `Drained`), dan deteksi stale node failover.
+   - Files: `implementation/mod.rs`, `tests/worker_lifecycle_test.rs`, `evidence/L07-S04-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+4. **L07.S05 — Worker recovery and failover**:
+   - Direktori: `lego/L07-scale-worker-fabric/S05-worker-recovery-failover/`
+   - State Ownership: `failover-election-state`
+   - Ports: `port.scale.worker.failover.v1`, `port.scale.failover.reclaim.v1`
+   - Runtime Host: `H02` (Control Host)
+   - Invariant: Orphan lease tracking upon worker death, fencing token preservation, deterministic reassignment ke healthy workers, pencegahan double completion.
+   - Files: `implementation/mod.rs`, `tests/worker_recovery_failover_test.rs`, `evidence/L07-S05-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+5. **L07.S06 — HA control plane**:
+   - Direktori: `lego/L07-scale-worker-fabric/S06-ha-control-plane/`
+   - State Ownership: `cluster-control-lease`
+   - Ports: `port.scale.ha.election.v1`, `port.scale.ha.leader_query.v1`
+   - Runtime Host: `H02` (Control Host)
+   - Invariant: Distributed leader lease dengan monotonic epoch counter fencing, split-brain rejection saat lease aktif dipegang node lain, voluntary step-down, dan perpanjangan lease aman.
+   - Files: `implementation/mod.rs`, `tests/ha_control_plane_test.rs`, `evidence/L07-S06-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+6. **L07.S07 — Ingress/runtime efficiency**:
+   - Direktori: `lego/L07-scale-worker-fabric/S07-ingress-runtime-efficiency/`
+   - State Ownership: `backpressure-tuning-state`
+   - Ports: `port.scale.runtime.tune.v1`, `port.scale.efficiency.buffer_pool.v1`
+   - Runtime Host: `H01` (Gateway Host)
+   - Invariant: Pre-allocated recycled 64KB byte buffer pool (zero-copy), adaptive concurrency throttling berbasis exponential moving average latency ingress, dan scaling naik adaptif saat latency sehat.
+   - Files: `implementation/mod.rs`, `tests/ingress_runtime_efficiency_test.rs`, `evidence/L07-S07-EVIDENCE.md`, `CONTRACT.md`, `ports/provided.json`.
+
+### 2. Pengujian Port Contract Integration (`crates/n8n-port-contract`)
+Menambahkan 6 suite pengujian integrasi port contract (happy-path & security boundary rejection):
+- `tests/resource_pressure_port_test.rs`: 2 passed.
+- `tests/audit_retention_port_test.rs`: 2 passed.
+- `tests/worker_lifecycle_port_test.rs`: 2 passed.
+- `tests/worker_failover_port_test.rs`: 2 passed.
+- `tests/ha_control_plane_port_test.rs`: 2 passed.
+- `tests/runtime_efficiency_port_test.rs`: 2 passed.
+Total suite pengujian port contract kini: 52 suites (89 individual tests), 100% PASS.
+
+### 3. Registry & Tata Kelola Status
+- Diperbarui: `scripts/build_registry.py`, `docs/migration/LEGO-SUBLEGO-REGISTRY.yaml`, `docs/migration/LEGO-SUBLEGO-REGISTRY.json`.
+- Distribusi Ladder:
+  - `TESTED`: 64 Sub-LEGOs (+6 dipromosikan: L06.S06, L06.S07, L07.S04, L07.S05, L07.S06, L07.S07)
+  - `CONTRACTED`: 11 Sub-LEGOs
+  - `DESIGNED`: 8 Sub-LEGOs (L11 Future Platform)
+  - `IMPLEMENTED`: 0
+  - `CERTIFIED`: 0 (zero overclaim, quality floor dipertahankan ketat)
+
+### 4. Hasil Verifikasi Mekanis
+- `cargo test -p n8n-port-contract`: 52 suites, 89 tests PASS (exit code 0).
+- `python scripts/ci_architecture_check.py`: 11/11 check PASS (exit code 0).
+- `python -m unittest discover tests/governance`: 27 tests PASS (exit code 0).
 
 Report: ./report.md

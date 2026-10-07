@@ -7,14 +7,19 @@
 - **Ownership Team**: `agent-runtime`
 - **Execution Model**: `remote-adapter`
 - **Runtime Host**: `H06` (Agent Host)
-- **State Ownership**: `llm-provider-routes`
+- **State Ownership**: `provider-routing-table`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `CONTRACTED`
+- **Status**: `TESTED`
 
 ---
 
 ## 2. Provided Ports
+### `port.agent.provider.route.v1`
+- **Category**: Public Contract
+- **Transport**: contract-defined
+- **Status**: Active
+
 ### `port.agent.provider.chat.v1`
 - **Category**: Public Contract
 - **Transport**: contract-defined
@@ -31,5 +36,6 @@
 ## 4. Invariants & Rules
 1. Komunikasi antar Sub-LEGO hanya diizinkan melalui public contract / ports (`port.*`).
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
-3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`llm-provider-routes`).
+3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`provider-routing-table`).
 4. Model eksekusi mematuhi batasan runtime host `H06` (Agent Host).
+5. Route resolution mendukung failover otomatis ke secondary provider jika primary mengalami kegagalan/unhealthy; jika seluruh provider tidak tersedia, eksekusi gagal tertutup (fail-closed).

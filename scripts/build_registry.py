@@ -429,17 +429,17 @@ SUBLEGOS_DATA = [
         "id": "L06.S06", "lego": "L06", "sub": "S06", "name": "Resource pressure and queue metrics",
         "lego_name": "Realtime and Observability", "lego_slug": "L06-realtime-observability", "sub_slug": "S06-resource-pressure-metrics",
         "ownership": "observability", "execution_model": "in-process", "runtime_host": "H02",
-        "state_ownership": "pressure-gauge-counters", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.observability.pressure.poll.v1"],
+        "state_ownership": "pressure-telemetry-sampler", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.observability.metrics.pressure.v1", "port.observability.pressure.poll.v1"],
         "required_ports": ["port.runtime.budget.allocate.v1"]
     },
     {
         "id": "L06.S07", "lego": "L06", "sub": "S07", "name": "Audit and bounded retention",
         "lego_name": "Realtime and Observability", "lego_slug": "L06-realtime-observability", "sub_slug": "S07-audit-bounded-retention",
         "ownership": "observability", "execution_model": "stateful-component", "runtime_host": "H02",
-        "state_ownership": "immutable-audit-records", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "state_ownership": "audit-retention-ledger", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
         "provided_ports": ["port.observability.audit.record.v1", "port.observability.audit.query.v1"],
         "required_ports": ["port.security.context.validate.v1"]
     },
@@ -476,8 +476,8 @@ SUBLEGOS_DATA = [
         "id": "L07.S04", "lego": "L07", "sub": "S04", "name": "Worker lifecycle",
         "lego_name": "Scale and Worker Fabric", "lego_slug": "L07-scale-worker-fabric", "sub_slug": "S04-worker-lifecycle",
         "ownership": "fabric-scale", "execution_model": "control-component", "runtime_host": "H02",
-        "state_ownership": "worker-heartbeats-map", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "state_ownership": "worker-heartbeat-state", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
         "provided_ports": ["port.scale.worker.register.v1", "port.scale.worker.heartbeat.v1", "port.scale.worker.drain.v1"],
         "required_ports": ["port.runtime.lifecycle.probe.v1"]
     },
@@ -485,27 +485,27 @@ SUBLEGOS_DATA = [
         "id": "L07.S05", "lego": "L07", "sub": "S05", "name": "Worker recovery and failover",
         "lego_name": "Scale and Worker Fabric", "lego_slug": "L07-scale-worker-fabric", "sub_slug": "S05-worker-recovery-failover",
         "ownership": "fabric-scale", "execution_model": "control-component", "runtime_host": "H02",
-        "state_ownership": "stale-lease-reclaimers", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.scale.failover.reclaim.v1"],
+        "state_ownership": "failover-election-state", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.scale.worker.failover.v1", "port.scale.failover.reclaim.v1"],
         "required_ports": ["port.scale.queue.ack.v1", "port.scale.worker.heartbeat.v1"]
     },
     {
         "id": "L07.S06", "lego": "L07", "sub": "S06", "name": "HA control plane",
         "lego_name": "Scale and Worker Fabric", "lego_slug": "L07-scale-worker-fabric", "sub_slug": "S06-ha-control-plane",
         "ownership": "fabric-scale", "execution_model": "control-component", "runtime_host": "H02",
-        "state_ownership": "leader-epoch-lock", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.scale.ha.leader_query.v1"],
+        "state_ownership": "cluster-control-lease", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.scale.ha.election.v1", "port.scale.ha.leader_query.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
     {
         "id": "L07.S07", "lego": "L07", "sub": "S07", "name": "Ingress/runtime efficiency",
         "lego_name": "Scale and Worker Fabric", "lego_slug": "L07-scale-worker-fabric", "sub_slug": "S07-ingress-runtime-efficiency",
         "ownership": "fabric-scale", "execution_model": "in-process", "runtime_host": "H01",
-        "state_ownership": "zero-copy-pool", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.scale.efficiency.buffer_pool.v1"],
+        "state_ownership": "backpressure-tuning-state", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.scale.runtime.tune.v1", "port.scale.efficiency.buffer_pool.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
 
@@ -514,17 +514,17 @@ SUBLEGOS_DATA = [
         "id": "L08.S01", "lego": "L08", "sub": "S01", "name": "Agent state machine",
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S01-agent-state-machine",
         "ownership": "agent-runtime", "execution_model": "stateful-component", "runtime_host": "H06",
-        "state_ownership": "agent-execution-tree", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.agent.engine.run.v1"],
+        "state_ownership": "agent-session-state-machine", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.agent.session.execute.v1", "port.agent.engine.run.v1"],
         "required_ports": ["port.agent.tool.invoke.v1", "port.agent.provider.chat.v1", "port.agent.memory.retrieve.v1"]
     },
     {
         "id": "L08.S02", "lego": "L08", "sub": "S02", "name": "Tool registry",
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S02-tool-registry",
         "ownership": "agent-runtime", "execution_model": "in-process", "runtime_host": "H06",
-        "state_ownership": "agent-tool-manifests", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
+        "state_ownership": "mcp-tool-catalog", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
         "provided_ports": ["port.agent.tool.register.v1", "port.agent.tool.invoke.v1"],
         "required_ports": ["port.security.authz.authorize.v1"]
     },
@@ -532,27 +532,27 @@ SUBLEGOS_DATA = [
         "id": "L08.S03", "lego": "L08", "sub": "S03", "name": "Workflow-as-tool",
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S03-workflow-as-tool",
         "ownership": "agent-runtime", "execution_model": "in-process", "runtime_host": "H06",
-        "state_ownership": "workflow-tool-bridges", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.agent.wf_tool.bridge.v1"],
+        "state_ownership": "workflow-tool-manifests", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.agent.workflow.tool.v1", "port.agent.wf_tool.bridge.v1"],
         "required_ports": ["port.execution.run.workflow.v1", "port.agent.tool.register.v1"]
     },
     {
         "id": "L08.S04", "lego": "L08", "sub": "S04", "name": "Human approval and policy boundary",
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S04-human-approval-policy",
         "ownership": "agent-runtime", "execution_model": "stateful-component", "runtime_host": "H06",
-        "state_ownership": "pending-human-approvals", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.agent.approval.request.v1", "port.agent.approval.submit.v1"],
+        "state_ownership": "human-approval-inbox", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.agent.policy.approve.v1", "port.agent.approval.request.v1", "port.agent.approval.submit.v1"],
         "required_ports": ["port.security.authz.authorize.v1"]
     },
     {
         "id": "L08.S05", "lego": "L08", "sub": "S05", "name": "AI provider routing",
         "lego_name": "Agent and MCP", "lego_slug": "L08-agent-mcp", "sub_slug": "S05-ai-provider-routing",
         "ownership": "agent-runtime", "execution_model": "remote-adapter", "runtime_host": "H06",
-        "state_ownership": "llm-provider-routes", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "CONTRACTED",
-        "provided_ports": ["port.agent.provider.chat.v1"],
+        "state_ownership": "provider-routing-table", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
+        "status": "TESTED",
+        "provided_ports": ["port.agent.provider.route.v1", "port.agent.provider.chat.v1"],
         "required_ports": ["port.security.credential.release.v1", "port.agent.budget.enforce.v1"]
     },
     {
@@ -792,9 +792,9 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 53, f"Expected 53 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["TESTED"] == 64, f"Expected 64 TESTED, got {status_counts['TESTED']}"
     assert status_counts["IMPLEMENTED"] == 0, f"Expected 0 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
-    assert status_counts["CONTRACTED"] == 22, f"Expected 22 CONTRACTED, got {status_counts['CONTRACTED']}"
+    assert status_counts["CONTRACTED"] == 11, f"Expected 11 CONTRACTED, got {status_counts['CONTRACTED']}"
     assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
 
     priority_tested = {
@@ -804,8 +804,9 @@ def main():
         'L03.S01', 'L03.S02', 'L03.S03', 'L03.S04', 'L03.S05', 'L03.S06', 'L03.S07',
         'L04.S01', 'L04.S02', 'L04.S03', 'L04.S04', 'L04.S05', 'L04.S06', 'L04.S07', 'L04.S08',
         'L05.S01', 'L05.S02', 'L05.S03', 'L05.S04', 'L05.S05', 'L05.S06', 'L05.S07', 'L05.S08',
-        'L06.S01', 'L06.S02', 'L06.S03', 'L06.S04', 'L06.S05',
-        'L07.S01', 'L07.S02', 'L07.S03',
+        'L06.S01', 'L06.S02', 'L06.S03', 'L06.S04', 'L06.S05', 'L06.S06', 'L06.S07',
+        'L07.S01', 'L07.S02', 'L07.S03', 'L07.S04', 'L07.S05', 'L07.S06', 'L07.S07',
+        'L08.S01', 'L08.S02', 'L08.S03', 'L08.S04', 'L08.S05',
         'L09.S01', 'L09.S02', 'L09.S03', 'L09.S05',
         'L10.S02'
     }
