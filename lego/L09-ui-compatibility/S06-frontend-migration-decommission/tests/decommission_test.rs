@@ -71,4 +71,15 @@ mod tests {
         let err = service.update_progress("m-inv", 150, 1000).unwrap_err();
         assert_eq!(err, DecommissionError::InvalidTrafficPercent(150));
     }
+
+    #[test]
+    fn test_direct_100_percent_shift_from_planned_transitions_to_decommissioned() {
+        let service = FrontendDecommissionService::new();
+        service.register_milestone(create_sample_milestone("m-direct")).unwrap();
+
+        // Direct 100% shift from Planned status
+        let updated = service.update_progress("m-direct", 100, 2000).unwrap();
+        assert_eq!(updated.status, DecommissionStatus::Decommissioned);
+        assert_eq!(updated.traffic_shifted_percent, 100);
+    }
 }

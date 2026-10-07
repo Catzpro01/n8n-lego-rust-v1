@@ -175,4 +175,92 @@ mod tests {
         assert!(markers.iter().any(|m| matches!(m.action, ReconciliationAction::EvictZombieEndpoint { .. })));
         assert!(markers.iter().any(|m| matches!(m.action, ReconciliationAction::RegisterMissingEndpoint { .. })));
     }
+
+    #[test]
+    fn test_reconciliation_multi_tenant_route_isolation() {
+        let service = StartupReconciliationService::new();
+
+        // Tenant A and Tenant B both have /webhook/hook, but different workflows
+        let persisted = vec![
+            PersistedTriggerEntry {
+                trigger_id: "t_a_1".to_string(),
+                workflow_id: "wf_a_1".to_string(),
+                tenant_id: "tenant_A".to_string(),
+                trigger_type: "webhook".to_string(),
+                is_active: true,
+                path_or_pattern: "/webhook/hook".to_string(),
+            },
+            PersistedTriggerEntry {
+                trigger_id: "t_b_1".to_string(),
+                workflow_id: "wf_b_1".to_string(),
+                tenant_id: "tenant_B".to_string(),
+                trigger_type: "webhook".to_string(),
+                is_active: true,
+                path_or_pattern: "/webhook/hook".to_string(),
+            },
+        ];
+
+        let live = vec![
+            LiveEndpointEntry {
+                endpoint_id: "ep_a_1".to_string(),
+                workflow_id: "wf_a_1".to_string(),
+                tenant_id: "tenant_A".to_string(),
+                path: "/webhook/hook".to_string(),
+            },
+            LiveEndpointEntry {
+                endpoint_id: "ep_b_1".to_string(),
+                workflow_id: "wf_b_1".to_string(),
+                tenant_id: "tenant_B".to_string(),
+                path: "/webhook/hook".to_string(),
+            },
+        ];
+
+        let (report, actions) = service.reconcile_endpoints(&persisted, &live, 1000).unwrap();
+        assert_eq!(report.synchronized_count, 2);
+        assert_eq!(report.orphaned_count, 0);
+        assert_eq!(report.zombie_count, 0);
+        assert_eq!(report.markers_generated.len(), 0);
+        assert_eq!(actions.len(), 2);
+        assert!(actions.iter().all(|a| matches!(a, ReconciliationAction::NoopSynchronized { .. })));
+    }
+
+    #[test]
+    fn test_reconciliation_multi_pass_idempotency() {
+        let service = StartupReconciliationService::new();
+
+        // Pass 1: Missing endpoint for persisted trigger
+        let persisted = vec![PersistedTriggerEntry {
+            trigger_id: "trig_sync".to_string(),
+            workflow_id: "wf_sync".to_string(),
+            tenant_id: "tenant_idemp".to_string(),
+            trigger_type: "webhook".to_string(),
+            is_active: true,
+            path_or_pattern: "/webhook/sync".to_string(),
+        }];
+        let live_initial = vec![];
+
+        let (report1, actions1) = service.reconcile_endpoints(&persisted, &live_initial, 1000).unwrap();
+        assert_eq!(report1.orphaned_count, 1);
+        assert_eq!(actions1.len(), 1);
+
+        // Mark marker as applied
+        let marker_id = &report1.markers_generated[0];
+        service.update_marker_status(marker_id, MarkerStatus::Applied, None).unwrap();
+
+        // Pass 2: Now live endpoints have the registered endpoint
+        let live_updated = vec![LiveEndpointEntry {
+            endpoint_id: "ep_sync".to_string(),
+            workflow_id: "wf_sync".to_string(),
+            tenant_id: "tenant_idemp".to_string(),
+            path: "/webhook/sync".to_string(),
+        }];
+
+        let (report2, actions2) = service.reconcile_endpoints(&persisted, &live_updated, 2000).unwrap();
+        assert_eq!(report2.synchronized_count, 1);
+        assert_eq!(report2.orphaned_count, 0);
+        assert_eq!(report2.zombie_count, 0);
+        assert_eq!(report2.markers_generated.len(), 0);
+        assert_eq!(actions2.len(), 1);
+        assert!(matches!(actions2[0], ReconciliationAction::NoopSynchronized { .. }));
+    }
 }

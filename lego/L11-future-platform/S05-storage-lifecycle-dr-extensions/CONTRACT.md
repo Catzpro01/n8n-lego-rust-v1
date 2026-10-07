@@ -10,7 +10,7 @@
 - **State Ownership**: `cold-archive-tiers`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `DESIGNED (Architecture Blueprint Only - Implementation Pending)`
+- **Status**: `TESTED`
 
 ---
 
@@ -23,7 +23,7 @@
 ---
 
 ## 3. Required Ports
-- `port.storage.backup.create.v1` (Provider: `L05.S06`)
+- `port.storage.backup.create.v1` (Provider: `L05.S05`)
 
 ---
 
@@ -32,3 +32,4 @@
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
 3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`cold-archive-tiers`).
 4. Model eksekusi mematuhi batasan runtime host `H05` (Data Host).
+5. Mandatory WAL rule: kegagalan inisialisasi WAL atau direktori wajib fail-closed tanpa silent in-memory fallback.

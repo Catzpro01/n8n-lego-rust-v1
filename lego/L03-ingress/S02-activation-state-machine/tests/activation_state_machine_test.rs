@@ -228,4 +228,70 @@ mod tests {
         assert_eq!(arr.len(), 1);
         assert_eq!(arr[0]["trigger_id"], "trig_port_1");
     }
+
+    #[test]
+    fn test_activation_invalid_state_transition_fails_closed() {
+        let service = ActivationStateMachineService::new();
+
+        // 1. Activate
+        service
+            .toggle(ActivationToggleRequest {
+                workflow_id: "wf_inv".to_string(),
+                trigger_id: "trig_inv".to_string(),
+                tenant_id: "tenant_inv".to_string(),
+                trigger_type: "webhook".to_string(),
+                target_state: true,
+            })
+            .unwrap();
+
+        // 2. Mark as Failed
+        service
+            .mark_failed("tenant_inv", "wf_inv", "trig_inv", "Out of memory error")
+            .unwrap();
+
+        // 3. Attempt direct reactivation from Failed to Active without recovery -> should fail
+        let direct_activate_res = service.toggle(ActivationToggleRequest {
+            workflow_id: "wf_inv".to_string(),
+            trigger_id: "trig_inv".to_string(),
+            tenant_id: "tenant_inv".to_string(),
+            trigger_type: "webhook".to_string(),
+            target_state: true,
+        });
+
+        assert!(direct_activate_res.is_err());
+        assert!(direct_activate_res.unwrap_err().contains("Invalid state transition"));
+    }
+
+    #[test]
+    fn test_activation_multithreaded_concurrent_toggles() {
+        use std::sync::Arc;
+        use std::thread;
+
+        let service = Arc::new(ActivationStateMachineService::new());
+        let mut handles = Vec::new();
+
+        for i in 0..8 {
+            let s = Arc::clone(&service);
+            handles.push(thread::spawn(move || {
+                for iter in 0..20 {
+                    let req = ActivationToggleRequest {
+                        workflow_id: format!("wf_thread_{i}"),
+                        trigger_id: format!("trig_thread_{i}_{iter}"),
+                        tenant_id: format!("tenant_c_{i}"),
+                        trigger_type: "schedule".to_string(),
+                        target_state: true,
+                    };
+                    let res = s.toggle(req).expect("Toggle should succeed concurrently");
+                    assert!(res.success);
+                }
+            }));
+        }
+
+        for h in handles {
+            h.join().expect("Thread should not panic");
+        }
+
+        let all_triggers = service.list_triggers(ActivationListQuery::default()).unwrap();
+        assert_eq!(all_triggers.len(), 160);
+    }
 }

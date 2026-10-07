@@ -10,7 +10,7 @@
 - **State Ownership**: `mesh-worker-leases`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `DESIGNED (Architecture Blueprint Only - Implementation Pending)`
+- **Status**: `TESTED`
 
 ---
 
@@ -23,7 +23,7 @@
 ---
 
 ## 3. Required Ports
-- `port.scale.worker.register.v1` (Provider: `L07.S04`)
+- `port.scale.worker.register.v1` (Provider: `L07.S02`)
 
 ---
 

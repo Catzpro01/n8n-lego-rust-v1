@@ -94,3 +94,5 @@ docs/architecture.md
 # Local Archive of loose files
 _archive/
 .playwright-mcp/
+.agents/teamwork/
+

@@ -27,4 +27,6 @@
   - `test_disabled_slot_fail_closed`: PASSED
   - `test_tenant_boundary_enforcement`: PASSED
   - `test_port_trigger_dispatch_handler`: PASSED
+  - `test_slot_deregistration_and_filtering`: PASSED
+  - `test_concurrent_multithreaded_slot_dispatches`: PASSED
   - `crates/n8n-port-contract/tests/trigger_dispatch_port_test.rs`: PASSED (Roundtrip, Trigger Dispatch, Security Context Scopes)

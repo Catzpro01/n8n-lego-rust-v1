@@ -248,4 +248,83 @@ mod tests {
         assert_eq!(resp["authorized"], true);
         assert_eq!(resp["expired"], false);
     }
+
+    #[test]
+    fn test_security_context_tenant_mismatch_denied() {
+        let service = SecurityContextService::new();
+        let ctx = service
+            .create_context("alice", PrincipalKind::User, "tenant_corp", vec!["read".into()], None, None, None, None)
+            .unwrap();
+
+        // Validate matching tenant -> ok
+        let res_ok = service.validate_context_scoped(&ctx, None, 1000, None, Some("tenant_corp"));
+        assert!(res_ok.valid);
+
+        // Validate mismatching tenant -> fail closed
+        let res_mismatch = service.validate_context_scoped(&ctx, None, 1000, None, Some("tenant_other"));
+        assert!(!res_mismatch.valid);
+        assert!(res_mismatch.error.unwrap().contains("tenant mismatch"));
+    }
+
+    #[test]
+    fn test_security_context_empty_required_scope_denied() {
+        let service = SecurityContextService::new();
+        let ctx = service
+            .create_context("bob", PrincipalKind::User, "tenant_corp", vec!["*".into()], None, None, None, None)
+            .unwrap();
+
+        assert!(!ctx.has_authority(""));
+        assert!(!ctx.has_authority("   "));
+    }
+
+    #[test]
+    fn test_security_context_scope_sanitization() {
+        let service = SecurityContextService::new();
+        let ctx = service
+            .create_context(
+                "charlie",
+                PrincipalKind::User,
+                "tenant_corp",
+                vec!["   ".into(), "port.read".into(), "".into()],
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap();
+
+        assert_eq!(ctx.authority_scope, vec!["port.read".to_string()]);
+    }
+
+    #[test]
+    fn test_security_context_port_validate_tenant_mismatch() {
+        let service = SecurityContextService::new();
+        let ctx_val = json!({
+            "principal": "svc_test",
+            "principal_kind": "service_account",
+            "tenant": "tenant_alpha",
+            "authority_scope": ["port.execution.run.workflow.v1"],
+            "audience": "n8n-kernel",
+            "correlation_id": "corr-111",
+            "deadline_epoch_ms": null,
+            "resource_budget": {
+                "max_memory_bytes": 67108864,
+                "max_execution_time_ms": 30000,
+                "max_cpu_shares": 100,
+                "max_stream_bytes": 16777216
+            }
+        });
+
+        let payload = json!({
+            "security_context": ctx_val,
+            "expected_tenant": "tenant_beta"
+        });
+
+        let resp = service
+            .handle_port_context_validate(&payload)
+            .expect("Port validate dispatch should succeed");
+
+        assert_eq!(resp["valid"], false);
+        assert!(resp["error"].as_str().unwrap().contains("tenant mismatch"));
+    }
 }

@@ -123,9 +123,13 @@ impl SessionLifecycleService {
         let expires_at = now.saturating_add(ttl);
         let session_id = self.generate_session_id(principal);
 
+        let tenant_key = format!("{tenant}::{principal}");
         let sec_ver = {
             let vers = self.user_security_versions.read().unwrap();
-            *vers.get(principal).unwrap_or(&1)
+            vers.get(&tenant_key)
+                .or_else(|| vers.get(principal))
+                .copied()
+                .unwrap_or(1)
         };
 
         let session = SessionState {
@@ -165,9 +169,13 @@ impl SessionLifecycleService {
             .get_mut(session_id)
             .ok_or_else(|| "Session not found".to_string())?;
 
+        let tenant_key = format!("{}::{}", session.tenant_id, session.principal_id);
         let user_ver = {
             let vers = self.user_security_versions.read().unwrap();
-            *vers.get(&session.principal_id).unwrap_or(&1)
+            vers.get(&tenant_key)
+                .or_else(|| vers.get(&session.principal_id))
+                .copied()
+                .unwrap_or(1)
         };
 
         if let Err(e) = session.is_valid(now, tenant, user_ver) {
@@ -183,6 +191,15 @@ impl SessionLifecycleService {
 
     /// Revoke an active session deterministically
     pub fn revoke_session(&self, session_id: &str) -> Result<SessionState, String> {
+        self.revoke_session_scoped(session_id, None)
+    }
+
+    /// Revoke an active session with optional tenant boundary enforcement
+    pub fn revoke_session_scoped(
+        &self,
+        session_id: &str,
+        caller_tenant: Option<&str>,
+    ) -> Result<SessionState, String> {
         if session_id.trim().is_empty() {
             return Err("Session ID cannot be empty (fail-closed)".to_string());
         }
@@ -191,6 +208,16 @@ impl SessionLifecycleService {
         let session = store
             .get_mut(session_id)
             .ok_or_else(|| "Session not found".to_string())?;
+
+        if let Some(c_tenant) = caller_tenant {
+            let t_trimmed = c_tenant.trim();
+            if !t_trimmed.is_empty() && t_trimmed != session.tenant_id {
+                return Err(format!(
+                    "Tenant boundary mismatch: caller tenant '{t_trimmed}' cannot revoke session of tenant '{}'",
+                    session.tenant_id
+                ));
+            }
+        }
 
         session.status = SessionStatus::Revoked;
         Ok(session.clone())
@@ -212,8 +239,8 @@ impl SessionLifecycleService {
             return Err("Cannot rotate session with zero remaining TTL".to_string());
         }
 
-        // Revoke the old session
-        self.revoke_session(old_session_id)?;
+        // Revoke the old session within tenant boundary
+        self.revoke_session_scoped(old_session_id, Some(tenant))?;
 
         // Issue new session with refreshed token and preserved metadata
         self.create_session(
@@ -226,9 +253,18 @@ impl SessionLifecycleService {
 
     /// Invalidate all active sessions for a principal by bumping security epoch
     pub fn bump_principal_security_version(&self, principal: &str) -> u32 {
+        self.bump_principal_security_version_scoped(principal, None)
+    }
+
+    /// Invalidate active sessions with optional tenant scope
+    pub fn bump_principal_security_version_scoped(&self, principal: &str, tenant: Option<&str>) -> u32 {
+        let key = match tenant {
+            Some(t) if !t.trim().is_empty() => format!("{t}::{principal}"),
+            _ => principal.to_string(),
+        };
         let mut vers = self.user_security_versions.write().unwrap();
-        let next_ver = vers.get(principal).copied().unwrap_or(1) + 1;
-        vers.insert(principal.to_string(), next_ver);
+        let next_ver = vers.get(&key).copied().unwrap_or(1) + 1;
+        vers.insert(key, next_ver);
         next_ver
     }
 
@@ -294,7 +330,9 @@ impl SessionLifecycleService {
             .and_then(|v| v.as_str())
             .ok_or_else(|| "Missing required 'session_id'".to_string())?;
 
-        let session = self.revoke_session(session_id)?;
+        let caller_tenant = payload.get("tenant").and_then(|v| v.as_str());
+
+        let session = self.revoke_session_scoped(session_id, caller_tenant)?;
         serde_json::to_value(session).map_err(|e| format!("Serialization error: {e}"))
     }
 }

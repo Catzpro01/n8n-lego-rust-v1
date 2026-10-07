@@ -64,4 +64,31 @@ mod tests {
         let err = service.evaluate_gates("   ", vec![], 1000).unwrap_err();
         assert_eq!(err, CertificationError::EmptyVersion);
     }
+
+    #[test]
+    fn test_skipped_gate_fails_closed() {
+        let service = ReleaseCertificationService::new();
+        let gates = vec![
+            QualityGateResult {
+                gate_name: "UnitTestsGate".to_string(),
+                status: GateStatus::Passed,
+                duration_ms: 1000,
+                details: "Pass".to_string(),
+            },
+            QualityGateResult {
+                gate_name: "StressLoadGate".to_string(),
+                status: GateStatus::Skipped,
+                duration_ms: 0,
+                details: "Skipped due to time limits".to_string(),
+            },
+        ];
+
+        let err = service.evaluate_gates("1.0.0-rc3", gates, 1000).unwrap_err();
+        assert!(matches!(err, CertificationError::GateFailed(_)));
+
+        let report = service.get_report("1.0.0-rc3").unwrap();
+        assert!(!report.all_passed);
+        assert_eq!(report.passed_gates, 1);
+        assert_eq!(report.total_gates, 2);
+    }
 }

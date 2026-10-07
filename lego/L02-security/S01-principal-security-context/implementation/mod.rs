@@ -85,13 +85,17 @@ pub struct SecurityContextData {
 
 impl SecurityContextData {
     pub fn has_authority(&self, required_scope: &str) -> bool {
+        let req = required_scope.trim();
+        if req.is_empty() {
+            return false;
+        }
         self.authority_scope.iter().any(|scope| {
-            if scope == "*" || scope == required_scope {
+            if scope == "*" || scope == req {
                 return true;
             }
             if scope.ends_with(".*") {
                 let prefix = &scope[..scope.len() - 1]; // keep trailing dot
-                return required_scope.starts_with(prefix);
+                return req.starts_with(prefix);
             }
             false
         })
@@ -114,6 +118,7 @@ pub enum SecurityContextError {
     ContextExpired { deadline_ms: u64, current_ms: u64 },
     InsufficientAuthority { required_scope: String },
     InvalidAudience { expected: String, actual: String },
+    TenantMismatch { expected: String, actual: String },
     InvalidPayload(String),
 }
 
@@ -130,6 +135,9 @@ impl fmt::Display for SecurityContextError {
             }
             Self::InvalidAudience { expected, actual } => {
                 write!(f, "Security context audience mismatch: expected '{expected}', found '{actual}'")
+            }
+            Self::TenantMismatch { expected, actual } => {
+                write!(f, "Security context tenant mismatch: expected '{expected}', found '{actual}'")
             }
             Self::InvalidPayload(s) => write!(f, "Invalid security context payload: {s}"),
         }
@@ -192,11 +200,17 @@ impl SecurityContextService {
         let aud = audience.unwrap_or("n8n-kernel").to_string();
         let resource_budget = budget.unwrap_or_default();
 
+        let sanitized_scopes: Vec<String> = authority_scope
+            .into_iter()
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect();
+
         Ok(SecurityContextData {
             principal: principal_trimmed.to_string(),
             principal_kind,
             tenant: tenant_trimmed.to_string(),
-            authority_scope,
+            authority_scope: sanitized_scopes,
             audience: aud,
             correlation_id: corr_id,
             deadline_epoch_ms,
@@ -211,6 +225,18 @@ impl SecurityContextService {
         required_scope: Option<&str>,
         current_epoch_ms: u64,
         expected_audience: Option<&str>,
+    ) -> SecurityValidationResult {
+        self.validate_context_scoped(context, required_scope, current_epoch_ms, expected_audience, None)
+    }
+
+    /// Validates a SecurityContextData against constraints with explicit tenant boundary verification
+    pub fn validate_context_scoped(
+        &self,
+        context: &SecurityContextData,
+        required_scope: Option<&str>,
+        current_epoch_ms: u64,
+        expected_audience: Option<&str>,
+        expected_tenant: Option<&str>,
     ) -> SecurityValidationResult {
         if context.principal.trim().is_empty() {
             return SecurityValidationResult {
@@ -228,6 +254,24 @@ impl SecurityContextService {
                 expired: false,
                 error: Some(SecurityContextError::MissingTenant.to_string()),
             };
+        }
+
+        if let Some(exp_tenant) = expected_tenant {
+            let exp_trimmed = exp_tenant.trim();
+            if !exp_trimmed.is_empty() && exp_trimmed != context.tenant {
+                return SecurityValidationResult {
+                    valid: false,
+                    authorized: false,
+                    expired: false,
+                    error: Some(
+                        SecurityContextError::TenantMismatch {
+                            expected: exp_trimmed.to_string(),
+                            actual: context.tenant.clone(),
+                        }
+                        .to_string(),
+                    ),
+                };
+            }
         }
 
         if context.is_expired(current_epoch_ms) {
@@ -357,8 +401,9 @@ impl SecurityContextService {
                     .as_millis() as u64
             });
         let audience = payload.get("expected_audience").and_then(|v| v.as_str());
+        let expected_tenant = payload.get("expected_tenant").and_then(|v| v.as_str());
 
-        let res = self.validate_context(&ctx, required_scope, current_time, audience);
+        let res = self.validate_context_scoped(&ctx, required_scope, current_time, audience, expected_tenant);
         serde_json::to_value(res).map_err(|e| format!("Serialization error: {e}"))
     }
 }

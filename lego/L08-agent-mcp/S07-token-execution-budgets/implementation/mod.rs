@@ -121,6 +121,16 @@ impl TokenBudgetService {
             last_updated_ms: 0,
         });
 
+        if usage.executed_steps >= alloc.max_steps {
+            return Ok(BudgetCheckResult {
+                allowed: false,
+                remaining_tokens: alloc.max_total_tokens.saturating_sub(usage.consumed_total_tokens),
+                remaining_steps: 0,
+                remaining_cost_usd: (alloc.max_cost_usd - usage.consumed_cost_usd).max(0.0),
+                warning_issued: true,
+            });
+        }
+
         let next_tokens = usage.consumed_total_tokens + additional_tokens;
         if next_tokens > alloc.max_total_tokens {
             return Ok(BudgetCheckResult {
@@ -143,8 +153,17 @@ impl TokenBudgetService {
             });
         }
 
-        let warning = (next_tokens as f64 / alloc.max_total_tokens as f64) >= self.warning_threshold_ratio
-            || (next_cost / alloc.max_cost_usd) >= self.warning_threshold_ratio;
+        let token_ratio = if alloc.max_total_tokens > 0 {
+            next_tokens as f64 / alloc.max_total_tokens as f64
+        } else {
+            1.0
+        };
+        let cost_ratio = if alloc.max_cost_usd > 0.0 {
+            next_cost / alloc.max_cost_usd
+        } else {
+            0.0
+        };
+        let warning = token_ratio >= self.warning_threshold_ratio || cost_ratio >= self.warning_threshold_ratio;
 
         Ok(BudgetCheckResult {
             allowed: true,
@@ -176,12 +195,17 @@ impl TokenBudgetService {
             let alloc_map = self.allocations.read().unwrap();
             let alloc = alloc_map.get(eid).unwrap();
             let usage_map = self.usages.read().unwrap();
-            let (consumed_tokens, consumed_cost) = match usage_map.get(eid) {
-                Some(u) => (u.consumed_total_tokens, u.consumed_cost_usd),
-                None => (0, 0.0),
+            let (consumed_tokens, consumed_cost, executed_steps) = match usage_map.get(eid) {
+                Some(u) => (u.consumed_total_tokens, u.consumed_cost_usd, u.executed_steps),
+                None => (0, 0.0, 0),
             };
 
-            if consumed_tokens + total_additional > alloc.max_total_tokens {
+            if executed_steps >= alloc.max_steps {
+                return Err(BudgetError::StepLimitExceeded {
+                    limit: alloc.max_steps,
+                    current: executed_steps + step_increment,
+                });
+            } else if consumed_tokens + total_additional > alloc.max_total_tokens {
                 return Err(BudgetError::TokenLimitExceeded {
                     limit: alloc.max_total_tokens,
                     attempted: consumed_tokens + total_additional,

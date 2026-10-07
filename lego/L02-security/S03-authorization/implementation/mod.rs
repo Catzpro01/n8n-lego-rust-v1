@@ -166,13 +166,17 @@ impl AuthzPolicyCacheService {
     }
 
     /// Adds a tenant-specific or global policy to the cache
-    pub fn register_policy(&self, policy: AuthzPolicy) {
-        let tenant = policy.tenant_id.clone();
+    pub fn register_policy(&self, policy: AuthzPolicy) -> bool {
+        if policy.id.trim().is_empty() || policy.tenant_id.trim().is_empty() {
+            return false;
+        }
+        let tenant = policy.tenant_id.trim().to_string();
         {
             let mut lock = self.policies.write().expect("Lock poisoned");
             lock.entry(tenant.clone()).or_default().push(policy);
         }
         self.invalidate_cache_for_tenant(&tenant);
+        true
     }
 
     /// Clears decision cache for a specific tenant or globally
@@ -209,6 +213,17 @@ impl AuthzPolicyCacheService {
                 authorized: false,
                 decision: AuthzDecision::Deny,
                 reason: "Principal or tenant identifier is empty".to_string(),
+                matched_policy_id: None,
+                cache_hit: false,
+            };
+        }
+
+        // Invariant 1b: Fail-closed on empty action or resource
+        if action.trim().is_empty() || resource.trim().is_empty() {
+            return AuthzEvaluationResult {
+                authorized: false,
+                decision: AuthzDecision::Deny,
+                reason: "Action or resource identifier is empty (fail-closed)".to_string(),
                 matched_policy_id: None,
                 cache_hit: false,
             };
@@ -334,11 +349,17 @@ impl AuthzPolicyCacheService {
             .get("principal")
             .and_then(|v| v.as_str())
             .ok_or_else(|| "Missing required 'principal'".to_string())?;
+        if principal.trim().is_empty() {
+            return Err("Missing or empty 'principal'".to_string());
+        }
 
         let tenant = payload
             .get("tenant")
             .and_then(|v| v.as_str())
             .ok_or_else(|| "Missing required 'tenant'".to_string())?;
+        if tenant.trim().is_empty() {
+            return Err("Missing or empty 'tenant'".to_string());
+        }
 
         let roles: Vec<String> = payload
             .get("roles")
@@ -354,6 +375,9 @@ impl AuthzPolicyCacheService {
             .get("action")
             .and_then(|v| v.as_str())
             .ok_or_else(|| "Missing required 'action'".to_string())?;
+        if action.trim().is_empty() {
+            return Err("Missing or empty 'action'".to_string());
+        }
 
         let resource = payload
             .get("resource")

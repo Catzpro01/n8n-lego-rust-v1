@@ -180,6 +180,16 @@ impl McpInteroperabilityService {
                 tool_name: request.tool_name.clone(),
             })?;
 
+        // Enforce execution timeout against server configuration
+        {
+            let srv_map = self.servers.read().unwrap();
+            if let Some(config) = srv_map.get(sid) {
+                if config.timeout_ms > 0 && duration_ms > config.timeout_ms {
+                    return Err(McpError::Timeout(duration_ms));
+                }
+            }
+        }
+
         let res_value = serde_json::json!({
             "status": "success",
             "tool": tool.name,

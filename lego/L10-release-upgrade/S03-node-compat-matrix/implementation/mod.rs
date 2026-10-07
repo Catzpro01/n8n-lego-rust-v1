@@ -76,6 +76,23 @@ impl NodeCompatMatrixService {
         Ok(())
     }
 
+    fn parse_version_tuple(ver: &str) -> Vec<u64> {
+        ver.trim()
+            .trim_start_matches('v')
+            .split('.')
+            .filter_map(|part| {
+                let num_str: String = part.chars().take_while(|c| c.is_ascii_digit()).collect();
+                num_str.parse::<u64>().ok()
+            })
+            .collect()
+    }
+
+    fn compare_versions(a: &str, b: &str) -> std::cmp::Ordering {
+        let t_a = Self::parse_version_tuple(a);
+        let t_b = Self::parse_version_tuple(b);
+        t_a.cmp(&t_b)
+    }
+
     /// Evaluates compatibility of a node against target runtime
     pub fn evaluate_compatibility(
         &self,
@@ -102,7 +119,7 @@ impl NodeCompatMatrixService {
             });
         }
 
-        if target_ver < rule.min_runtime_version.as_str() {
+        if Self::compare_versions(target_ver, &rule.min_runtime_version) == std::cmp::Ordering::Less {
             return Ok(CompatEvaluationResult {
                 node_type: nt.to_string(),
                 verdict: CompatibilityVerdict::IncompatibleBreakingChanges,
@@ -115,7 +132,7 @@ impl NodeCompatMatrixService {
         }
 
         if let Some(max_ver) = &rule.max_runtime_version {
-            if target_ver > max_ver.as_str() {
+            if Self::compare_versions(target_ver, max_ver) == std::cmp::Ordering::Greater {
                 return Ok(CompatEvaluationResult {
                     node_type: nt.to_string(),
                     verdict: CompatibilityVerdict::CompatibleWithDeprecations,

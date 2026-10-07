@@ -710,7 +710,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Future Platform", "lego_slug": "L11-future-platform", "sub_slug": "S01-event-automation-control",
         "ownership": "platform-future", "execution_model": "control-component", "runtime_host": "H02",
         "state_ownership": "event-control-bus", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "DESIGNED",
+        "status": "TESTED",
         "provided_ports": ["port.future.event_bus.publish.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -719,7 +719,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Future Platform", "lego_slug": "L11-future-platform", "sub_slug": "S02-execution-side-effect-reliability",
         "ownership": "platform-future", "execution_model": "stateful-component", "runtime_host": "H03",
         "state_ownership": "side-effect-outbox", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "DESIGNED",
+        "status": "TESTED",
         "provided_ports": ["port.future.side_effect.record.v1"],
         "required_ports": ["port.storage.wal.append.v1"]
     },
@@ -728,7 +728,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Future Platform", "lego_slug": "L11-future-platform", "sub_slug": "S03-advanced-scheduler-intelligence",
         "ownership": "platform-future", "execution_model": "control-component", "runtime_host": "H02",
         "state_ownership": "ml-resource-heuristics", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "DESIGNED",
+        "status": "TESTED",
         "provided_ports": ["port.future.smart_schedule.plan.v1"],
         "required_ports": ["port.scale.scheduler.dispatch.v1"]
     },
@@ -737,7 +737,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Future Platform", "lego_slug": "L11-future-platform", "sub_slug": "S04-worker-distributed-extensions",
         "ownership": "platform-future", "execution_model": "worker-capability", "runtime_host": "H04",
         "state_ownership": "mesh-worker-leases", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "DESIGNED",
+        "status": "TESTED",
         "provided_ports": ["port.future.cluster.dispatch.v1"],
         "required_ports": ["port.scale.worker.register.v1"]
     },
@@ -746,7 +746,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Future Platform", "lego_slug": "L11-future-platform", "sub_slug": "S05-storage-lifecycle-dr-extensions",
         "ownership": "platform-future", "execution_model": "control-component", "runtime_host": "H05",
         "state_ownership": "cold-archive-tiers", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "DESIGNED",
+        "status": "TESTED",
         "provided_ports": ["port.future.cold_archive.store.v1"],
         "required_ports": ["port.storage.backup.create.v1"]
     },
@@ -755,7 +755,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Future Platform", "lego_slug": "L11-future-platform", "sub_slug": "S06-operator-edge-control-plane",
         "ownership": "platform-future", "execution_model": "control-component", "runtime_host": "H01",
         "state_ownership": "edge-cluster-nodes", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "DESIGNED",
+        "status": "TESTED",
         "provided_ports": ["port.future.edge.sync.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -764,7 +764,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Future Platform", "lego_slug": "L11-future-platform", "sub_slug": "S07-ecosystem-interoperability",
         "ownership": "platform-future", "execution_model": "library/pure", "runtime_host": "H07",
         "state_ownership": "stateless", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "DESIGNED",
+        "status": "TESTED",
         "provided_ports": ["port.future.ecosystem.convert.v1"],
         "required_ports": ["port.runtime.contract.envelope.v1"]
     },
@@ -773,7 +773,7 @@ SUBLEGOS_DATA = [
         "lego_name": "Future Platform", "lego_slug": "L11-future-platform", "sub_slug": "S08-advanced-agent-ai-optimization",
         "ownership": "platform-future", "execution_model": "in-process", "runtime_host": "H06",
         "state_ownership": "prompt-cache-mesh", "contract_version": "1.0.0", "compatibility_policy": "semver-additive",
-        "status": "DESIGNED",
+        "status": "TESTED",
         "provided_ports": ["port.future.speculative_llm.predict.v1"],
         "required_ports": ["port.agent.engine.run.v1"]
     }
@@ -792,10 +792,10 @@ def main():
         status_counts[st] += 1
 
     assert status_counts["CERTIFIED"] == 0, f"Overclaim: expected 0 CERTIFIED, got {status_counts['CERTIFIED']}"
-    assert status_counts["TESTED"] == 75, f"Expected 75 TESTED, got {status_counts['TESTED']}"
+    assert status_counts["TESTED"] == 83, f"Expected 83 TESTED, got {status_counts['TESTED']}"
     assert status_counts["IMPLEMENTED"] == 0, f"Expected 0 IMPLEMENTED, got {status_counts['IMPLEMENTED']}"
     assert status_counts["CONTRACTED"] == 0, f"Expected 0 CONTRACTED, got {status_counts['CONTRACTED']}"
-    assert status_counts["DESIGNED"] == 8, f"Expected 8 DESIGNED, got {status_counts['DESIGNED']}"
+    assert status_counts["DESIGNED"] == 0, f"Expected 0 DESIGNED, got {status_counts['DESIGNED']}"
 
     priority_tested = {
         'L00.S01', 'L00.S02', 'L00.S03', 'L00.S04',
@@ -808,7 +808,8 @@ def main():
         'L07.S01', 'L07.S02', 'L07.S03', 'L07.S04', 'L07.S05', 'L07.S06', 'L07.S07',
         'L08.S01', 'L08.S02', 'L08.S03', 'L08.S04', 'L08.S05', 'L08.S06', 'L08.S07', 'L08.S08', 'L08.S09',
         'L09.S01', 'L09.S02', 'L09.S03', 'L09.S04', 'L09.S05', 'L09.S06',
-        'L10.S01', 'L10.S02', 'L10.S03', 'L10.S04', 'L10.S05', 'L10.S06'
+        'L10.S01', 'L10.S02', 'L10.S03', 'L10.S04', 'L10.S05', 'L10.S06',
+        'L11.S01', 'L11.S02', 'L11.S03', 'L11.S04', 'L11.S05', 'L11.S06', 'L11.S07', 'L11.S08'
     }
     actual_tested = {item['id'] for item in SUBLEGOS_DATA if item['status'] == 'TESTED'}
     assert actual_tested == priority_tested, f"TESTED Sub-LEGOs do not match priority list: {actual_tested ^ priority_tested}"

@@ -23,10 +23,17 @@
    - 0 private cross-Sub-LEGO imports. All communication via typed public ports and `n8n-port-contract`.
 
 ## 3. Verification Commands & Results
-- Unit test verification:
-  - Token bucket consumption and refill mechanics: PASS.
-  - Admission decisions (Allowed vs RateLimited vs ShedDueToBackpressure): PASS.
-  - Concurrency ceiling and release mechanics: PASS.
+- Unit test verification (`lego/L03-ingress/S04-admission-backpressure/tests/admission_backpressure_test.rs`):
+  - `test_token_bucket_consume_and_refill`: PASS
+  - `test_admission_service_allowed_and_rate_limited`: PASS
+  - `test_cost_exceeding_capacity_rejected`: PASS
+  - `test_tenant_rate_limit_isolation_and_clock_skew`: PASS
+  - `test_backpressure_load_shedding_at_concurrency_ceiling`: PASS
+  - `test_port_handler_admission_lifecycle`: PASS
+  - `test_concurrent_multithreaded_backpressure_concurrency_ceiling`: PASS
+- Direct compilation & test execution command:
+  `rustc --test --edition=2021 lego/L03-ingress/S04-admission-backpressure/implementation/mod.rs -L target/debug/deps --extern serde=... --extern serde_json=... -o target/debug/test_l03_s04.exe`
+  Result: 7/7 unit tests PASS (Exit Code 0).
 - Port contract integration tests:
   - `cargo test -p n8n-port-contract --test admission_port_test`: PASS.
 - Architecture CI Enforcement:

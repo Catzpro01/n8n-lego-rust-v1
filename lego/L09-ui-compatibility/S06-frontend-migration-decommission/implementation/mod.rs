@@ -108,7 +108,7 @@ impl FrontendDecommissionService {
         m.traffic_shifted_percent = traffic_shifted;
         m.last_audited_ms = now_ms;
 
-        if traffic_shifted == 100 && m.status == DecommissionStatus::InFlight {
+        if traffic_shifted == 100 && (m.status == DecommissionStatus::InFlight || m.status == DecommissionStatus::Planned) {
             m.status = DecommissionStatus::Decommissioned;
         } else if traffic_shifted > 0 && m.status == DecommissionStatus::Planned {
             m.status = DecommissionStatus::InFlight;

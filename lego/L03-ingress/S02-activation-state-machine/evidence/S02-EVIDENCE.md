@@ -27,4 +27,6 @@
   - `test_activation_state_transitions_and_failure`: PASSED
   - `test_activation_list_filtering`: PASSED
   - `test_activation_port_dispatchers`: PASSED
+  - `test_activation_invalid_state_transition_fails_closed`: PASSED
+  - `test_activation_multithreaded_concurrent_toggles`: PASSED
   - `crates/n8n-port-contract/tests/activation_port_test.rs`: PASSED (Roundtrip, Activation Toggle & List, Security Scopes)

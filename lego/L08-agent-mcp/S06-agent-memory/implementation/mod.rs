@@ -60,6 +60,7 @@ pub enum MemoryError {
 pub struct AgentMemoryStore {
     // session_id -> list of chunks ordered by insertion
     chunks: Arc<RwLock<HashMap<String, Vec<MemoryChunk>>>>,
+    counters: Arc<RwLock<HashMap<String, u64>>>,
     session_max_tokens: usize,
 }
 
@@ -73,6 +74,7 @@ impl AgentMemoryStore {
     pub fn new(session_max_tokens: usize) -> Self {
         Self {
             chunks: Arc::new(RwLock::new(HashMap::new())),
+            counters: Arc::new(RwLock::new(HashMap::new())),
             session_max_tokens,
         }
     }
@@ -133,8 +135,15 @@ impl AgentMemoryStore {
             }
         }
 
+        let seq = {
+            let mut c_map = self.counters.write().unwrap();
+            let c = c_map.entry(sid.to_string()).or_insert(0);
+            *c += 1;
+            *c
+        };
+
         let chunk = MemoryChunk {
-            chunk_id: format!("chunk-{}-{}", sid, session_chunks.len() + 1),
+            chunk_id: format!("chunk-{}-{}", sid, seq),
             session_id: sid.to_string(),
             role,
             content: cnt.to_string(),
@@ -242,6 +251,8 @@ impl AgentMemoryStore {
 
         let mut map = self.chunks.write().unwrap();
         let removed = map.remove(sid).map(|c| c.len()).unwrap_or(0);
+        let mut c_map = self.counters.write().unwrap();
+        c_map.remove(sid);
         Ok(removed)
     }
 }

@@ -10,7 +10,7 @@
 - **State Ownership**: `edge-cluster-nodes`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `DESIGNED (Architecture Blueprint Only - Implementation Pending)`
+- **Status**: `TESTED`
 
 ---
 
@@ -32,3 +32,4 @@
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
 3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`edge-cluster-nodes`).
 4. Model eksekusi mematuhi batasan runtime host `H01` (Gateway Host).
+5. Privileged operator actions wajib diautentikasi dan diverifikasi dengan scope `operator.admin`.

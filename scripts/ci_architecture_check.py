@@ -466,10 +466,10 @@ class CIArchitectureEnforcer:
         # 3. Exact taxonomy distribution enforcement
         expected_counts = {
             "CERTIFIED": 0,
-            "TESTED": 75,
+            "TESTED": 83,
             "IMPLEMENTED": 0,
             "CONTRACTED": 0,
-            "DESIGNED": 8,
+            "DESIGNED": 0,
         }
 
         for st, expected in expected_counts.items():
@@ -491,7 +491,8 @@ class CIArchitectureEnforcer:
             "L07.S01", "L07.S02", "L07.S03", "L07.S04", "L07.S05", "L07.S06", "L07.S07",
             "L08.S01", "L08.S02", "L08.S03", "L08.S04", "L08.S05", "L08.S06", "L08.S07", "L08.S08", "L08.S09",
             "L09.S01", "L09.S02", "L09.S03", "L09.S04", "L09.S05", "L09.S06",
-            "L10.S01", "L10.S02", "L10.S03", "L10.S04", "L10.S05", "L10.S06"
+            "L10.S01", "L10.S02", "L10.S03", "L10.S04", "L10.S05", "L10.S06",
+            "L11.S01", "L11.S02", "L11.S03", "L11.S04", "L11.S05", "L11.S06", "L11.S07", "L11.S08"
         }
         actual_tested_ids = {s_id for s_id, s_data in self.sublegos.items() if s_data.get("status") == "TESTED"}
 
@@ -503,11 +504,10 @@ class CIArchitectureEnforcer:
         if unexpected_tested:
             res.error(f"Unexpected Sub-LEGO(s) marked TESTED (not in priority list): {sorted(unexpected_tested)}")
 
-        # 5. Verify 8 DESIGNED Sub-LEGOs belong to L11 Future Platform
-        expected_designed_ids = {f"L11.S0{i}" for i in range(1, 9)}
+        # 5. Verify 0 Sub-LEGOs in DESIGNED status
         actual_designed_ids = {s_id for s_id, s_data in self.sublegos.items() if s_data.get("status") == "DESIGNED"}
-        if actual_designed_ids != expected_designed_ids:
-            res.error(f"DESIGNED status mismatch: expected L11.S01-L11.S08, found {sorted(actual_designed_ids)}")
+        if actual_designed_ids:
+            res.error(f"DESIGNED status mismatch: expected 0 DESIGNED, found {sorted(actual_designed_ids)}")
 
         # Log details if passed
         if res.passed:

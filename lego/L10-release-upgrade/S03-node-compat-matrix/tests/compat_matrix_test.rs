@@ -87,4 +87,28 @@ mod tests {
         let err = service.evaluate_compatibility(&req).unwrap_err();
         assert_eq!(err, CompatMatrixError::RuleNotFound("unknown.node".to_string()));
     }
+
+    #[test]
+    fn test_numeric_semver_ordering_handles_multidigit_versions() {
+        let service = NodeCompatMatrixService::new();
+        let rule = NodeCompatRule {
+            node_type: "n8n-nodes-base.multiDigit".to_string(),
+            min_runtime_version: "1.2.0".to_string(),
+            max_runtime_version: Some("1.9.0".to_string()),
+            supported_versions: vec![1],
+            breaking_changes_notes: vec![],
+        };
+        service.register_rule(rule).unwrap();
+
+        // 1.10.0 is numerically greater than 1.9.0 (exceeds max_runtime_version),
+        // whereas string comparison would incorrectly judge "1.10.0" < "1.2.0".
+        let req = CompatEvaluationRequest {
+            node_type: "n8n-nodes-base.multiDigit".to_string(),
+            node_version: 1,
+            target_runtime_version: "1.10.0".to_string(),
+        };
+
+        let result = service.evaluate_compatibility(&req).unwrap();
+        assert_eq!(result.verdict, CompatibilityVerdict::CompatibleWithDeprecations);
+    }
 }

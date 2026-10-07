@@ -108,4 +108,22 @@ mod tests {
         let err = service.call_tool(call_req, 10).unwrap_err();
         assert!(matches!(err, McpError::ServerNotConnected(_)));
     }
+
+    #[test]
+    fn test_call_tool_timeout_enforcement() {
+        let service = McpInteroperabilityService::new();
+        let mut config = create_test_config("mcp-timeout");
+        config.timeout_ms = 500;
+        service.connect_server(config, None, 1000).unwrap();
+
+        let call_req = McpToolCallRequest {
+            server_id: "mcp-timeout".to_string(),
+            tool_name: "query_database".to_string(),
+            arguments: serde_json::json!({}),
+        };
+
+        // Duration 600ms exceeds 500ms timeout
+        let err = service.call_tool(call_req, 600).unwrap_err();
+        assert_eq!(err, McpError::Timeout(600));
+    }
 }

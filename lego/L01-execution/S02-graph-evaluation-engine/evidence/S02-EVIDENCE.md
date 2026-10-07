@@ -38,4 +38,6 @@
   - `test_self_loop_cycle_detection`: PASSED
   - `test_deterministic_topological_sort_multi_roots`: PASSED
   - `test_ghost_nodes_and_minimal_deserialization`: PASSED
+  - `test_disconnected_multiple_components_evaluation`: PASSED
+  - `test_terminal_status_absolute_immutability`: PASSED
   - `crates/n8n-port-contract/tests/graph_evaluation_port_test.rs`: 3/3 tests PASSED (Roundtrip, Security, Wait/Resume)

@@ -91,4 +91,70 @@ mod tests {
         let err_msg = res.unwrap_err().to_string();
         assert!(err_msg.contains("exceeds maximum bucket capacity"));
     }
+
+    #[test]
+    fn test_tenant_rate_limit_isolation_and_clock_skew() {
+        let service = AdmissionService::new(10);
+        service.set_tenant_config("tenant_exhausted", BucketConfig { max_capacity: 5, refill_tokens_per_sec: 1 });
+        service.set_tenant_config("tenant_fresh", BucketConfig { max_capacity: 5, refill_tokens_per_sec: 1 });
+
+        // Exhaust tenant_exhausted
+        let d1 = service.acquire_admission("tenant_exhausted", 5, 1000).unwrap();
+        assert!(matches!(d1, AdmissionDecision::Allowed { .. }));
+
+        let d2 = service.acquire_admission("tenant_exhausted", 1, 1000).unwrap();
+        assert!(matches!(d2, AdmissionDecision::RateLimited { .. }));
+
+        // Tenant fresh must still be allowed independently
+        let d3 = service.acquire_admission("tenant_fresh", 5, 1000).unwrap();
+        assert!(matches!(d3, AdmissionDecision::Allowed { .. }));
+
+        // Clock skew / past timestamp: now_ms < last_refill_ms
+        let mut bucket = RateLimitBucket::new(10, 5, 2000);
+        bucket.refill(1500); // timestamp in the past
+        assert_eq!(bucket.last_refill_ms, 2000);
+        assert_eq!(bucket.available_tokens, 10.0);
+    }
+
+    #[test]
+    fn test_concurrent_multithreaded_backpressure_concurrency_ceiling() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+        use std::thread;
+
+        let max_inflight = 4;
+        let service = Arc::new(AdmissionService::new(max_inflight));
+        let allowed_count = Arc::new(AtomicUsize::new(0));
+        let shed_count = Arc::new(AtomicUsize::new(0));
+
+        let mut handles = Vec::new();
+        for i in 0..16 {
+            let s = Arc::clone(&service);
+            let allowed = Arc::clone(&allowed_count);
+            let shed = Arc::clone(&shed_count);
+            handles.push(thread::spawn(move || {
+                let res = s.acquire_admission(&format!("tenant_{i}"), 1, 1000).unwrap();
+                match res {
+                    AdmissionDecision::Allowed { .. } => {
+                        allowed.fetch_add(1, Ordering::SeqCst);
+                    }
+                    AdmissionDecision::ShedDueToBackpressure { .. } => {
+                        shed.fetch_add(1, Ordering::SeqCst);
+                    }
+                    _ => {}
+                }
+            }));
+        }
+
+        for h in handles {
+            h.join().unwrap();
+        }
+
+        let total_allowed = allowed_count.load(Ordering::SeqCst);
+        let total_shed = shed_count.load(Ordering::SeqCst);
+
+        assert!(total_allowed <= max_inflight);
+        assert_eq!(total_allowed + total_shed, 16);
+        assert_eq!(service.current_inflight(), total_allowed);
+    }
 }

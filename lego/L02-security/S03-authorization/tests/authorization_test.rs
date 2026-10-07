@@ -241,4 +241,62 @@ mod tests {
         assert_eq!(resp["authorized"], false);
         assert_eq!(resp["decision"], "deny");
     }
+
+    #[test]
+    fn test_authorization_fail_closed_empty_action_or_resource() {
+        let service = AuthzPolicyCacheService::default();
+
+        // Empty action -> denied
+        let res1 = service.authorize("alice", "tenant_a", &["global:admin".into()], "", "workflow/1", None);
+        assert!(!res1.authorized);
+        assert_eq!(res1.decision, AuthzDecision::Deny);
+
+        // Whitespace action -> denied
+        let res2 = service.authorize("alice", "tenant_a", &["global:admin".into()], "   ", "workflow/1", None);
+        assert!(!res2.authorized);
+        assert_eq!(res2.decision, AuthzDecision::Deny);
+
+        // Empty resource -> denied
+        let res3 = service.authorize("alice", "tenant_a", &["global:admin".into()], "workflow:read", "", None);
+        assert!(!res3.authorized);
+        assert_eq!(res3.decision, AuthzDecision::Deny);
+    }
+
+    #[test]
+    fn test_authorization_invalid_policy_registration_rejected() {
+        let service = AuthzPolicyCacheService::default();
+
+        let bad_policy = AuthzPolicy {
+            id: "".to_string(),
+            tenant_id: "tenant_corp".to_string(),
+            name: "Bad Policy".to_string(),
+            applicable_roles: vec!["admin".to_string()],
+            allowed_actions: vec!["*".to_string()],
+            resource_pattern: "*".to_string(),
+        };
+        assert!(!service.register_policy(bad_policy));
+
+        let bad_tenant_policy = AuthzPolicy {
+            id: "p1".to_string(),
+            tenant_id: "   ".to_string(),
+            name: "Bad Tenant".to_string(),
+            applicable_roles: vec!["admin".to_string()],
+            allowed_actions: vec!["*".to_string()],
+            resource_pattern: "*".to_string(),
+        };
+        assert!(!service.register_policy(bad_tenant_policy));
+    }
+
+    #[test]
+    fn test_authorization_port_dispatcher_empty_fields_rejected() {
+        let service = AuthzPolicyCacheService::default();
+
+        let empty_action_payload = json!({
+            "principal": "user_frank",
+            "tenant": "tenant_test",
+            "roles": ["global:admin"],
+            "action": "   "
+        });
+        assert!(service.handle_port_authorize(&empty_action_payload).is_err());
+    }
 }

@@ -331,4 +331,92 @@ mod tests {
 
         assert!(err.contains("Missing required 'child_workflow_id'"));
     }
+
+    #[test]
+    fn test_nested_multi_level_invocation_hierarchy() {
+        let engine = SubworkflowEngine::new(5);
+
+        // Register echo handler for level 1 and level 2
+        engine.register_handler(
+            "wf_level_1",
+            Arc::new(|_id, data| Ok(data.to_vec())),
+        );
+        engine.register_handler(
+            "wf_level_2",
+            Arc::new(|_id, data| Ok(data.to_vec())),
+        );
+
+        // 1. Invoke Level 1 from root
+        let res1 = engine.invoke(
+            "exec_root",
+            "wf_root",
+            "CallLevel1Node",
+            "wf_level_1",
+            vec![json!({"msg": "hello from root"})],
+            HashMap::new(),
+            InputMappingMode::PassThrough,
+            vec!["wf_root".to_string()],
+            false,
+        ).unwrap();
+        assert_eq!(res1.depth, 2);
+        assert_eq!(res1.call_chain, vec!["wf_root", "wf_level_1"]);
+
+        // 2. Invoke Level 2 from level 1
+        let res2 = engine.invoke(
+            &res1.child_execution_id,
+            "wf_level_1",
+            "CallLevel2Node",
+            "wf_level_2",
+            vec![json!({"msg": "hello from level 1"})],
+            HashMap::new(),
+            InputMappingMode::PassThrough,
+            res1.call_chain.clone(),
+            false,
+        ).unwrap();
+        assert_eq!(res2.depth, 3);
+        assert_eq!(res2.call_chain, vec!["wf_root", "wf_level_1", "wf_level_2"]);
+
+        // Verify hierarchy queries
+        let root_children = engine.get_children_of("exec_root");
+        assert_eq!(root_children.len(), 1);
+        assert_eq!(root_children[0].child_workflow_id, "wf_level_1");
+
+        let l1_children = engine.get_children_of(&res1.child_execution_id);
+        assert_eq!(l1_children.len(), 1);
+        assert_eq!(l1_children[0].child_workflow_id, "wf_level_2");
+    }
+
+    #[test]
+    fn test_wrap_key_mapping_mode_complex_objects() {
+        let engine = SubworkflowEngine::new(5);
+        engine.register_handler(
+            "wf_wrapper",
+            Arc::new(|_id, data| Ok(data.to_vec())),
+        );
+
+        let input = vec![
+            json!({"id": 1, "name": "Alice"}),
+            json!({"id": 2, "name": "Bob"}),
+        ];
+        let mut params = HashMap::new();
+        params.insert("region".to_string(), json!("eu-west-1"));
+
+        let res = engine.invoke(
+            "exec_p",
+            "wf_p",
+            "WrapNode",
+            "wf_wrapper",
+            input,
+            params,
+            InputMappingMode::WrapKey("records".to_string()),
+            vec!["wf_p".to_string()],
+            false,
+        ).unwrap();
+
+        assert_eq!(res.output_data.len(), 1);
+        let wrapped = &res.output_data[0];
+        assert_eq!(wrapped["region"], "eu-west-1");
+        assert!(wrapped["records"].is_array());
+        assert_eq!(wrapped["records"].as_array().unwrap().len(), 2);
+    }
 }

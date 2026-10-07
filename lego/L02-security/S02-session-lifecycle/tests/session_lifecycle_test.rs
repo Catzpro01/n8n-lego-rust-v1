@@ -199,4 +199,57 @@ mod tests {
         let cleaned = service.cleanup_expired_sessions(Some(future_time));
         assert_eq!(cleaned, 2); // Both s1 (expired) and s2 (revoked) pruned
     }
+
+    #[test]
+    fn test_session_scoped_revoke_tenant_mismatch_denied() {
+        let service = SessionLifecycleService::default();
+        let s = service.create_session("alice", "tenant_alpha", None, None).unwrap();
+
+        // Attempt revoke from tenant_beta -> denied
+        let err = service.revoke_session_scoped(&s.session_id, Some("tenant_beta")).unwrap_err();
+        assert!(err.contains("Tenant boundary mismatch"));
+
+        // Attempt revoke from tenant_alpha -> succeeds
+        let ok = service.revoke_session_scoped(&s.session_id, Some("tenant_alpha"));
+        assert!(ok.is_ok());
+    }
+
+    #[test]
+    fn test_session_scoped_security_version_bump() {
+        let service = SessionLifecycleService::default();
+        let s = service.create_session("bob", "tenant_alpha", None, None).unwrap();
+
+        // Bump security version for bob in tenant_beta -> does not invalidate bob in tenant_alpha
+        let _ = service.bump_principal_security_version_scoped("bob", Some("tenant_beta"));
+
+        // Session for bob in tenant_alpha should still be valid
+        let val = service.validate_session(&s.session_id, "tenant_alpha", None);
+        assert!(val.is_ok());
+
+        // Bump security version for bob in tenant_alpha -> invalidates session
+        let _ = service.bump_principal_security_version_scoped("bob", Some("tenant_alpha"));
+        let err = service.validate_session(&s.session_id, "tenant_alpha", None);
+        assert!(err.is_err());
+        assert!(err.unwrap_err().contains("security version"));
+    }
+
+    #[test]
+    fn test_session_port_revoke_with_tenant() {
+        let service = SessionLifecycleService::default();
+        let s = service.create_session("charlie", "tenant_saas", None, None).unwrap();
+
+        // Port revoke with wrong tenant -> error
+        let bad_payload = json!({
+            "session_id": s.session_id,
+            "tenant": "tenant_intruder"
+        });
+        assert!(service.handle_port_session_revoke(&bad_payload).is_err());
+
+        // Port revoke with correct tenant -> ok
+        let ok_payload = json!({
+            "session_id": s.session_id,
+            "tenant": "tenant_saas"
+        });
+        assert!(service.handle_port_session_revoke(&ok_payload).is_ok());
+    }
 }

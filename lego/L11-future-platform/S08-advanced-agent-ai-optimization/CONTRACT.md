@@ -10,7 +10,7 @@
 - **State Ownership**: `prompt-cache-mesh`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `DESIGNED (Architecture Blueprint Only - Implementation Pending)`
+- **Status**: `TESTED`
 
 ---
 
@@ -32,3 +32,4 @@
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
 3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`prompt-cache-mesh`).
 4. Model eksekusi mematuhi batasan runtime host `H06` (Agent Host).
+5. Proteksi float non-finite/NaN dan tool call explosion limits wajib fail-closed.

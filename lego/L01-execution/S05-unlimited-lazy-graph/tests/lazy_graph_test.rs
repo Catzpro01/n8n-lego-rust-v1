@@ -386,5 +386,46 @@ mod tests {
 
         assert_eq!(res.active_frontier, vec!["Next"]);
     }
+
+    #[test]
+    fn test_lazy_frontier_multi_step_wave_progression() {
+        let engine = LazyGraphEngine::new(10);
+        let init = engine
+            .create_frontier("exec_wave", vec!["N1".to_string()], None)
+            .unwrap();
+        assert_eq!(init.step_count, 0);
+
+        // Step 1: N1 -> N2
+        let w1 = engine.expand_frontier(
+            &init.frontier_id,
+            "N1",
+            vec![SuccessorSpec { target_node_id: "N2".to_string(), required_dependencies: vec!["N1".to_string()] }],
+        ).unwrap();
+        assert_eq!(w1.step_count, 1);
+        assert_eq!(w1.active_frontier, vec!["N2"]);
+
+        // Step 2: N2 -> N3
+        let w2 = engine.expand_frontier(
+            &init.frontier_id,
+            "N2",
+            vec![SuccessorSpec { target_node_id: "N3".to_string(), required_dependencies: vec!["N2".to_string()] }],
+        ).unwrap();
+        assert_eq!(w2.step_count, 2);
+        assert_eq!(w2.active_frontier, vec!["N3"]);
+
+        // Step 3: N3 complete without successors -> terminal
+        let w3 = engine.expand_frontier(&init.frontier_id, "N3", Vec::new()).unwrap();
+        assert_eq!(w3.step_count, 3);
+        assert!(w3.active_frontier.is_empty());
+        assert_eq!(w3.completed_nodes.len(), 3);
+    }
+
+    #[test]
+    fn test_lazy_frontier_unknown_action_dispatcher_rejection() {
+        let engine = LazyGraphEngine::new(10);
+        let payload = json!({ "action": "teleport", "frontier_id": "f_none" });
+        let err = engine.handle_port_expand_frontier(&payload).unwrap_err();
+        assert!(err.contains("Unsupported action 'teleport'"));
+    }
 }
 

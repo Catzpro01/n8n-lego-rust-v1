@@ -74,7 +74,7 @@ impl ReleaseCertificationService {
         let total_gates = gates.len();
         let passed_gates = gates.iter().filter(|g| g.status == GateStatus::Passed).count();
         let failed_gates = gates.iter().filter(|g| g.status == GateStatus::Failed).count();
-        let all_passed = total_gates > 0 && failed_gates == 0;
+        let all_passed = total_gates > 0 && passed_gates == total_gates && failed_gates == 0;
 
         let report = ReleaseCertificationReport {
             candidate_version: ver.to_string(),
@@ -90,9 +90,10 @@ impl ReleaseCertificationService {
         map.insert(ver.to_string(), report.clone());
 
         if !all_passed {
+            let non_passed = total_gates.saturating_sub(passed_gates);
             Err(CertificationError::GateFailed(format!(
-                "{} of {} gates failed for release {}",
-                failed_gates, total_gates, ver
+                "{} of {} gates failed or incomplete (passed: {}, failed: {}) for release {}",
+                non_passed, total_gates, passed_gates, failed_gates, ver
             )))
         } else {
             Ok(report)

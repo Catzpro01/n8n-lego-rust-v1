@@ -1841,7 +1841,7 @@
           "state_ownership": "event-control-bus",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "DESIGNED",
+          "status": "TESTED",
           "contract_path": "lego/L11-future-platform/S01-event-automation-control/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1863,7 +1863,7 @@
           "state_ownership": "side-effect-outbox",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "DESIGNED",
+          "status": "TESTED",
           "contract_path": "lego/L11-future-platform/S02-execution-side-effect-reliability/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1885,7 +1885,7 @@
           "state_ownership": "ml-resource-heuristics",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "DESIGNED",
+          "status": "TESTED",
           "contract_path": "lego/L11-future-platform/S03-advanced-scheduler-intelligence/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1907,7 +1907,7 @@
           "state_ownership": "mesh-worker-leases",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "DESIGNED",
+          "status": "TESTED",
           "contract_path": "lego/L11-future-platform/S04-worker-distributed-extensions/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1929,7 +1929,7 @@
           "state_ownership": "cold-archive-tiers",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "DESIGNED",
+          "status": "TESTED",
           "contract_path": "lego/L11-future-platform/S05-storage-lifecycle-dr-extensions/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1951,7 +1951,7 @@
           "state_ownership": "edge-cluster-nodes",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "DESIGNED",
+          "status": "TESTED",
           "contract_path": "lego/L11-future-platform/S06-operator-edge-control-plane/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1973,7 +1973,7 @@
           "state_ownership": "stateless",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "DESIGNED",
+          "status": "TESTED",
           "contract_path": "lego/L11-future-platform/S07-ecosystem-interoperability/CONTRACT.md",
           "ports": {
             "provided": [
@@ -1995,7 +1995,7 @@
           "state_ownership": "prompt-cache-mesh",
           "contract_version": "1.0.0",
           "compatibility_policy": "semver-additive",
-          "status": "DESIGNED",
+          "status": "TESTED",
           "contract_path": "lego/L11-future-platform/S08-advanced-agent-ai-optimization/CONTRACT.md",
           "ports": {
             "provided": [

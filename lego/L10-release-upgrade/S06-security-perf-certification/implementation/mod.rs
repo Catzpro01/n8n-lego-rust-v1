@@ -107,8 +107,11 @@ impl SecurityPerfCertificationService {
             return Err(SecurityPerfError::CriticalVulnerability(msg));
         }
 
-        // 2. Check p99 latency threshold
-        if benchmark.p99_latency_ms > self.max_allowed_p99_ms {
+        // 2. Check p99 latency threshold with NaN / negative fail-closed guard
+        if benchmark.p99_latency_ms.is_nan()
+            || benchmark.p99_latency_ms < 0.0
+            || benchmark.p99_latency_ms > self.max_allowed_p99_ms
+        {
             let record = SecurityPerfAuditRecord {
                 audit_id: aid.to_string(),
                 release_version: ver.to_string(),

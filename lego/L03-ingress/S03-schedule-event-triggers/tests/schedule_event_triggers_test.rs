@@ -226,4 +226,108 @@ mod tests {
         assert_eq!(out["target_port"], "port.execution.run.workflow.v1");
         assert_eq!(out["payload_for_execution"]["data"]["cron_tick"], 42);
     }
+
+    #[test]
+    fn test_slot_deregistration_and_filtering() {
+        let service = TriggerSlotManagerService::new();
+
+        service
+            .register_slot(
+                "slot-d1",
+                "tenant-alpha",
+                "wf-1",
+                TriggerType::Schedule,
+                Some("*/5 * * * *"),
+                None,
+                None,
+            )
+            .unwrap();
+
+        service
+            .register_slot(
+                "slot-d2",
+                "tenant-alpha",
+                "wf-2",
+                TriggerType::Manual,
+                None,
+                None,
+                None,
+            )
+            .unwrap();
+
+        service
+            .register_slot(
+                "slot-d3",
+                "tenant-beta",
+                "wf-3",
+                TriggerType::Schedule,
+                Some("0 0 * * *"),
+                None,
+                None,
+            )
+            .unwrap();
+
+        // Filter tenant alpha slots
+        let alpha_slots = service.list_slots("tenant-alpha", None);
+        assert_eq!(alpha_slots.len(), 2);
+
+        // Filter tenant alpha schedule slots only
+        let alpha_sched = service.list_slots("tenant-alpha", Some(TriggerType::Schedule));
+        assert_eq!(alpha_sched.len(), 1);
+        assert_eq!(alpha_sched[0].slot_id, "slot-d1");
+
+        // Attempt deregister with wrong tenant fails closed
+        let err_dereg = service.deregister_slot("slot-d1", "tenant-attacker");
+        assert!(err_dereg.is_err());
+
+        // Deregister with matching tenant succeeds
+        let dereg_ok = service.deregister_slot("slot-d1", "tenant-alpha");
+        assert!(dereg_ok.is_ok());
+
+        assert!(service.get_slot("slot-d1").is_none());
+        assert_eq!(service.list_slots("tenant-alpha", None).len(), 1);
+    }
+
+    #[test]
+    fn test_concurrent_multithreaded_slot_dispatches() {
+        use std::sync::Arc;
+        use std::thread;
+
+        let service = Arc::new(TriggerSlotManagerService::new());
+        service
+            .register_slot(
+                "slot-concurrent",
+                "tenant-multi",
+                "wf-concurrent",
+                TriggerType::Event,
+                None,
+                None,
+                Some(serde_json::json!({ "event_name": "webhook.event" })),
+            )
+            .unwrap();
+
+        let mut handles = Vec::new();
+        for t_idx in 0..5 {
+            let s = Arc::clone(&service);
+            handles.push(thread::spawn(move || {
+                for i in 0..10 {
+                    let res = s.dispatch(
+                        "slot-concurrent",
+                        "tenant-multi",
+                        serde_json::json!({ "worker": t_idx, "seq": i }),
+                        Some("worker-thread"),
+                    );
+                    assert!(res.is_ok());
+                }
+            }));
+        }
+
+        for h in handles {
+            h.join().expect("Worker thread panicked");
+        }
+
+        let slot = service.get_slot("slot-concurrent").expect("Slot should exist");
+        assert_eq!(slot.dispatch_count, 50);
+        assert!(slot.last_dispatched_at_ms.is_some());
+    }
 }

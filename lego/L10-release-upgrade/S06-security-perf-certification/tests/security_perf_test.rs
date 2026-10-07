@@ -74,4 +74,19 @@ mod tests {
         let err = service.evaluate_audit("", "1.0", create_passing_benchmark(), vec![], 1000);
         assert_eq!(err.unwrap_err(), SecurityPerfError::EmptyIdentifier);
     }
+
+    #[test]
+    fn test_nan_latency_fails_closed() {
+        let service = SecurityPerfCertificationService::new(50.0);
+        let mut bench = create_passing_benchmark();
+        bench.p99_latency_ms = f64::NAN;
+
+        let err = service
+            .evaluate_audit("audit-nan", "1.0.0", bench, vec![], 1000)
+            .unwrap_err();
+
+        assert!(matches!(err, SecurityPerfError::LatencyExceeded { .. }));
+        let record = service.get_audit("audit-nan").unwrap();
+        assert!(!record.passed);
+    }
 }

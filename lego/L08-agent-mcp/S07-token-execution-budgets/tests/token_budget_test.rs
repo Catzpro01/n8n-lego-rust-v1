@@ -99,4 +99,19 @@ mod tests {
         let check = service.check_budget("tenant-reset", 1000, 0.01).unwrap();
         assert_eq!(check.remaining_tokens, 14_000);
     }
+
+    #[test]
+    fn test_check_budget_disallowed_when_steps_exhausted() {
+        let service = TokenBudgetService::new(0.8);
+        service.set_allocation(create_sample_alloc("tenant-step-check")).unwrap();
+
+        // Max steps is 25 in sample allocation. Consume all 25 steps.
+        service.enforce_and_consume("tenant-step-check", 100, 100, 0.01, 25, 1000).unwrap();
+
+        // Query check_budget: must evaluate allowed = false with remaining_steps = 0
+        let check = service.check_budget("tenant-step-check", 10, 0.001).unwrap();
+        assert!(!check.allowed);
+        assert_eq!(check.remaining_steps, 0);
+        assert!(check.warning_issued);
+    }
 }

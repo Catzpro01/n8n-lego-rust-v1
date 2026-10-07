@@ -166,4 +166,31 @@ mod tests {
         let summary_after = store.get_summary("sess-sum").unwrap();
         assert_eq!(summary_after.total_chunks, 0);
     }
+
+    #[test]
+    fn test_monotonic_chunk_id_unique_after_eviction() {
+        // Capacity for ~5 tokens (approx 20 chars total)
+        let store = AgentMemoryStore::new(6);
+        let c1 = store
+            .store_chunk("sess-seq", MemoryRole::User, "Msg1", HashMap::new(), 10)
+            .unwrap();
+        let c2 = store
+            .store_chunk("sess-seq", MemoryRole::User, "Msg2", HashMap::new(), 20)
+            .unwrap();
+        let c3 = store
+            .store_chunk("sess-seq", MemoryRole::User, "Msg3", HashMap::new(), 30)
+            .unwrap();
+
+        // Adding c4 causes eviction of c1
+        let c4 = store
+            .store_chunk("sess-seq", MemoryRole::User, "Msg4", HashMap::new(), 40)
+            .unwrap();
+
+        assert_eq!(c1.chunk_id, "chunk-sess-seq-1");
+        assert_eq!(c2.chunk_id, "chunk-sess-seq-2");
+        assert_eq!(c3.chunk_id, "chunk-sess-seq-3");
+        assert_eq!(c4.chunk_id, "chunk-sess-seq-4");
+        // Verify c4 chunk_id did not collide with c3
+        assert_ne!(c4.chunk_id, c3.chunk_id);
+    }
 }

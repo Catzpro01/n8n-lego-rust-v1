@@ -32,4 +32,6 @@
   - `test_subworkflow_port_dispatcher_success`: PASSED
   - `test_subworkflow_port_dispatcher_error_cycle`: PASSED
   - `test_subworkflow_port_dispatcher_missing_child_wf`: PASSED
+  - `test_nested_multi_level_invocation_hierarchy`: PASSED
+  - `test_wrap_key_mapping_mode_complex_objects`: PASSED
   - `crates/n8n-port-contract/tests/subworkflow_port_test.rs`: PASSED (Roundtrip, Security Boundary, Recursion Guards)

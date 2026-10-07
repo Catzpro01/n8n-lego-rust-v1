@@ -386,4 +386,57 @@ mod tests {
         assert_eq!(result.terminal_nodes, vec!["ValidNode"]);
         assert!(result.orphan_nodes.is_empty());
     }
+
+    #[test]
+    fn test_disconnected_multiple_components_evaluation() {
+        let engine = GraphEvaluationEngine::new();
+
+        // Two completely disconnected DAG subgraphs: A -> B and X -> Y
+        let graph = GraphDefinition {
+            workflow_id: "wf_disconnected".to_string(),
+            nodes: vec![
+                GraphNode { id: "1".to_string(), name: "NodeA".to_string(), node_type: "manual".to_string() },
+                GraphNode { id: "2".to_string(), name: "NodeB".to_string(), node_type: "action".to_string() },
+                GraphNode { id: "3".to_string(), name: "NodeX".to_string(), node_type: "manual".to_string() },
+                GraphNode { id: "4".to_string(), name: "NodeY".to_string(), node_type: "action".to_string() },
+            ],
+            edges: vec![
+                GraphEdge { source: "NodeA".to_string(), target: "NodeB".to_string(), connection_type: None },
+                GraphEdge { source: "NodeX".to_string(), target: "NodeY".to_string(), connection_type: None },
+            ],
+        };
+
+        let result = engine.evaluate(&graph).expect("Should evaluate disconnected DAGs");
+        assert!(result.is_dag);
+        assert_eq!(result.root_triggers, vec!["NodeA", "NodeX"]);
+        assert_eq!(result.terminal_nodes, vec!["NodeB", "NodeY"]);
+        assert_eq!(result.topological_order.len(), 4);
+
+        let order = &result.topological_order;
+        let pos_a = order.iter().position(|x| x == "NodeA").unwrap();
+        let pos_b = order.iter().position(|x| x == "NodeB").unwrap();
+        let pos_x = order.iter().position(|x| x == "NodeX").unwrap();
+        let pos_y = order.iter().position(|x| x == "NodeY").unwrap();
+
+        assert!(pos_a < pos_b);
+        assert!(pos_x < pos_y);
+    }
+
+    #[test]
+    fn test_terminal_status_absolute_immutability() {
+        let engine = GraphEvaluationEngine::new();
+        let exec_id = "exec_immutable";
+
+        // 1. Failed state is terminal
+        engine.init_node_status(exec_id, "node_fail");
+        engine.transition_node_status(exec_id, "node_fail", NodeExecutionStatus::Failed).unwrap();
+        let err1 = engine.transition_node_status(exec_id, "node_fail", NodeExecutionStatus::Running);
+        assert!(matches!(err1, Err(StateTransitionError::TerminalImmutable { .. })));
+
+        // 2. Skipped state is terminal
+        engine.init_node_status(exec_id, "node_skip");
+        engine.transition_node_status(exec_id, "node_skip", NodeExecutionStatus::Skipped).unwrap();
+        let err2 = engine.transition_node_status(exec_id, "node_skip", NodeExecutionStatus::Running);
+        assert!(matches!(err2, Err(StateTransitionError::TerminalImmutable { .. })));
+    }
 }

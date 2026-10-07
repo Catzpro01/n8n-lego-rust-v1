@@ -10,7 +10,7 @@
 - **State Ownership**: `side-effect-outbox`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `DESIGNED (Architecture Blueprint Only - Implementation Pending)`
+- **Status**: `TESTED`
 
 ---
 
@@ -23,7 +23,7 @@
 ---
 
 ## 3. Required Ports
-- `port.storage.wal.append.v1` (Provider: `L05.S02`)
+- `port.storage.wal.append.v1` (Provider: `L05.S01`)
 
 ---
 
