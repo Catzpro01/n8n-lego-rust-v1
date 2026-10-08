@@ -10,7 +10,7 @@
 - **State Ownership**: `conversation-history-chunks`
 - **Contract Version**: `1.0.0`
 - **Compatibility Policy**: `semver-additive`
-- **Status**: `CONTRACTED`
+- **Status**: `TESTED`
 
 ---
 
@@ -28,7 +28,7 @@
 ---
 
 ## 3. Required Ports
-- `port.runtime.contract.envelope.v1` (Provider: `L00.S01`)
+- `port.runtime.contract.envelope.v1` (Provider: `L00.S01`, H02 Control Host)
 
 ---
 
@@ -37,3 +37,6 @@
 2. Private cross-Sub-LEGO import di dalam folder `lego/` dilarang keras.
 3. State ownership eksklusif berada di bawah kendali Sub-LEGO ini (`conversation-history-chunks`).
 4. Model eksekusi mematuhi batasan runtime host `H06` (Agent Host).
+5. Fail-closed multi-tenant dan multi-scope boundary isolation.
+6. Generation fencing dan stale write rejection pada pembaruan riwayat.
+7. Bounded retention, deterministic eviction melindungi System prompt, dan redaksi otomatis kredensial sensitif.

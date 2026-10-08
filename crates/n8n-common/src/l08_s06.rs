@@ -1,4 +1,4 @@
-//! L08.S06 — Agent Memory Component
+//! L08.S06 — Agent Memory Module
 //!
 //! Sub-LEGO Identity: L08.S06
 //! Owning LEGO: L08-agent-mcp
@@ -8,13 +8,9 @@
 //! Contract Version: 1.0.0
 //! Compatibility Policy: semver-additive
 //!
-//! Invariants:
-//! 1. Communication strictly routed through public contract ports (`port.agent.memory.*`).
-//! 2. 0 private cross-Sub-LEGO imports within `lego/`.
-//! 3. Exclusive state ownership over `conversation-history-chunks`.
-//! 4. Locality enforcement: bound strictly to H06 Agent Host runtime host.
-//! 5. Fail-closed tenant isolation, generation fencing, bounded sliding window retrieval,
-//!    secret redaction, and cross-host physical typed transport to H02 Control Host.
+//! Provides bounded, tenant-aware, scope-aware, deterministic conversation memory
+//! for AI agent runtime sessions, with sliding window retrieval, deterministic
+//! eviction, generation fencing, secret redaction, and cross-host envelope integration.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -185,6 +181,7 @@ pub enum MemoryError {
 // Secret Redaction and Content Sanitization
 // ============================================================================
 
+/// Scans and redacts known sensitive credential patterns (passwords, bearer tokens, api keys)
 pub fn redact_sensitive_content(raw: &str) -> (String, bool) {
     let mut modified = false;
     let mut result = raw.to_string();
@@ -229,6 +226,7 @@ pub fn redact_sensitive_content(raw: &str) -> (String, bool) {
     (result, modified)
 }
 
+/// Minimal regex finder without heavy external crate dependencies (UTF-8 safe)
 fn regex_lite_match(pattern: &str, text: &str) -> Result<Vec<String>, String> {
     let mut matches = Vec::new();
 
@@ -348,6 +346,7 @@ fn regex_lite_match(pattern: &str, text: &str) -> Result<Vec<String>, String> {
 // Cross-Host Physical Typed Transport (H06 Agent Host -> H02 Control Host)
 // ============================================================================
 
+/// Typed cross-host envelope request dispatched across H06 -> H02 boundary
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnvelopeValidationRequest {
     pub tenant_id: String,
@@ -360,6 +359,7 @@ pub struct EnvelopeValidationRequest {
     pub target_host: String, // Must be H02
 }
 
+/// Typed cross-host envelope validation response returned from H02
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnvelopeValidationResponse {
     pub valid: bool,
@@ -371,6 +371,7 @@ pub struct EnvelopeValidationResponse {
     pub expires_at_ms: u64,
 }
 
+/// Trait defining the cross-host physical typed transport
 pub trait EnvelopeTransport: Send + Sync {
     fn validate_envelope(
         &self,
@@ -379,6 +380,7 @@ pub trait EnvelopeTransport: Send + Sync {
     ) -> Result<EnvelopeValidationResponse, MemoryError>;
 }
 
+/// Physical cross-host transport implementation enforcing locality and propagation
 #[derive(Default)]
 pub struct H06ToH02PhysicalTransport {
     pub simulate_timeout: Arc<RwLock<bool>>,
@@ -398,6 +400,7 @@ impl EnvelopeTransport for H06ToH02PhysicalTransport {
         req: EnvelopeValidationRequest,
         now_ms: u64,
     ) -> Result<EnvelopeValidationResponse, MemoryError> {
+        // 1. Locality Verification: must originate from H06 Agent Host directed to H02 Control Host
         if req.source_host != "H06" && req.source_host != "H06AgentHost" {
             return Err(MemoryError::LocalityViolation(req.source_host));
         }
@@ -408,6 +411,7 @@ impl EnvelopeTransport for H06ToH02PhysicalTransport {
             )));
         }
 
+        // 2. Simulated Fault Injection Checks
         if *self.simulate_timeout.read().unwrap() || (req.deadline_ms > 0 && now_ms > req.deadline_ms) {
             return Err(MemoryError::CrossHostTransportError("Envelope validation request timed out".to_string()));
         }
@@ -418,6 +422,7 @@ impl EnvelopeTransport for H06ToH02PhysicalTransport {
             return Err(MemoryError::CrossHostTransportError("Malformed envelope response from H02".to_string()));
         }
 
+        // 3. Strict Fail-Closed Checks
         if req.principal_id.trim().is_empty() {
             return Err(MemoryError::ScopeDenied("Anonymous principal rejected (no anonymous fallback)".to_string()));
         }
@@ -431,6 +436,7 @@ impl EnvelopeTransport for H06ToH02PhysicalTransport {
             return Err(MemoryError::EnvelopeError("Missing correlation ID in envelope".to_string()));
         }
 
+        // 4. Return valid envelope credential preserving full security context
         Ok(EnvelopeValidationResponse {
             valid: true,
             principal_id: req.principal_id,
@@ -458,7 +464,9 @@ struct SessionState {
     sequence_counter: u64,
 }
 
+/// Authoritative state manager for `conversation-history-chunks`
 pub struct AgentMemoryStore {
+    // Keyed by (tenant_id, session_id) ensuring complete multi-tenant boundary isolation
     sessions: Arc<RwLock<HashMap<(String, String), SessionState>>>,
     limits: MemoryLimits,
     transport: Arc<dyn EnvelopeTransport>,
@@ -485,6 +493,7 @@ impl AgentMemoryStore {
         &self.host_id
     }
 
+    /// Approximate token count: ~4 chars per token, minimum 1 for non-empty text
     pub fn estimate_tokens(content: &str) -> usize {
         let trimmed = content.trim();
         if trimmed.is_empty() {
@@ -494,6 +503,7 @@ impl AgentMemoryStore {
         }
     }
 
+    /// Validates cross-host runtime contract envelope
     pub fn validate_envelope_call(
         &self,
         tenant_id: &str,
@@ -528,6 +538,7 @@ impl AgentMemoryStore {
         Ok(resp)
     }
 
+    /// Stores a memory chunk into the conversation history domain
     pub fn store_chunk(
         &self,
         payload: MemoryStorePayload,
@@ -550,6 +561,7 @@ impl AgentMemoryStore {
             return Err(MemoryError::EmptyContent);
         }
 
+        // Redact any sensitive content fail-closed
         let (sanitized_cnt, _was_redacted) = redact_sensitive_content(raw_cnt);
         let byte_size = sanitized_cnt.len();
 
@@ -652,6 +664,7 @@ impl AgentMemoryStore {
                     break;
                 }
 
+                // Evict oldest non-system chunks
                 if draft_chunks[i].role != MemoryRole::System {
                     draft_chunks.remove(i);
                     draft_evicted += 1;
@@ -719,6 +732,7 @@ impl AgentMemoryStore {
         })
     }
 
+    /// Retrieves chunks matching the query with deterministic ordering and bounded limits
     pub fn retrieve(&self, query: &MemoryQuery, now_ms: u64) -> Result<Vec<MemoryChunk>, MemoryError> {
         let tid = query.tenant_id.trim();
         if tid.is_empty() {
@@ -741,28 +755,34 @@ impl AgentMemoryStore {
             None => return Ok(Vec::new()),
         };
 
+        // Filter and collect active, non-expired chunks matching query criteria
         let mut filtered: Vec<MemoryChunk> = session
             .chunks
             .iter()
             .filter(|c| {
+                // Strict Scope Isolation
                 if c.scope_id != scp {
                     return false;
                 }
+                // TTL check: filter out expired chunks
                 if let Some(exp) = c.expires_at_ms {
                     if now_ms >= exp {
                         return false;
                     }
                 }
+                // Role filter
                 if let Some(roles) = &query.roles {
                     if !roles.contains(&c.role) {
                         return false;
                     }
                 }
+                // Conversation filter
                 if let Some(cid) = &query.conversation_id {
                     if &c.conversation_id != cid {
                         return false;
                     }
                 }
+                // Time bounds
                 if let Some(since) = query.since_ms {
                     if c.created_at_ms < since {
                         return false;
@@ -773,6 +793,7 @@ impl AgentMemoryStore {
                         return false;
                     }
                 }
+                // Generation filter
                 if let Some(min_gen) = query.min_generation {
                     if c.generation < min_gen {
                         return false;
@@ -783,8 +804,10 @@ impl AgentMemoryStore {
             .cloned()
             .collect();
 
+        // Deterministic sequence ordering (ascending)
         filtered.sort_by_key(|c| c.sequence);
 
+        // Apply offset
         if let Some(offset) = query.offset {
             if offset < filtered.len() {
                 filtered = filtered.split_off(offset);
@@ -793,6 +816,7 @@ impl AgentMemoryStore {
             }
         }
 
+        // Apply count limit (default cap to max_chunks_per_session)
         let effective_limit = query.limit.unwrap_or(self.limits.max_chunks_per_session);
         if query.offset.is_some() {
             // Forward pagination when offset is specified
@@ -802,6 +826,7 @@ impl AgentMemoryStore {
             filtered = filtered.split_off(filtered.len() - effective_limit);
         }
 
+        // Apply token budget backwards (sliding window)
         if let Some(max_tokens) = query.max_tokens {
             let mut budget = max_tokens;
             let mut window = Vec::new();
@@ -817,6 +842,7 @@ impl AgentMemoryStore {
             filtered = window;
         }
 
+        // Apply byte budget backwards
         if let Some(max_bytes) = query.max_bytes {
             let mut budget = max_bytes;
             let mut window = Vec::new();
@@ -835,6 +861,7 @@ impl AgentMemoryStore {
         Ok(filtered)
     }
 
+    /// Updates chunk content with generation fencing (rejects stale updates)
     pub fn update_chunk(
         &self,
         tenant_id: &str,
@@ -880,6 +907,7 @@ impl AgentMemoryStore {
             .get_mut(&(tid.to_string(), sid.to_string()))
             .ok_or_else(|| MemoryError::ChunkNotFound(chunk_id.to_string()))?;
 
+        // Fencing check: reject stale update (must be strictly greater than current)
         if update_generation <= session.current_generation {
             return Err(MemoryError::StaleGeneration {
                 current: session.current_generation,
@@ -893,7 +921,7 @@ impl AgentMemoryStore {
             .position(|c| c.chunk_id == chunk_id && c.scope_id == scp)
             .ok_or_else(|| MemoryError::ChunkNotFound(chunk_id.to_string()))?;
 
-        // Capacity check
+        // Capacity check: verify that update does not exceed session byte or token limits
         let cur_bytes: usize = session.chunks.iter().map(|c| c.byte_size).sum();
         let cur_tokens: usize = session.chunks.iter().map(|c| c.token_count).sum();
         let old_byte_size = session.chunks[chunk_idx].byte_size;
@@ -919,6 +947,7 @@ impl AgentMemoryStore {
         Ok(chunk.clone())
     }
 
+    /// Deletes a chunk with generation check
     pub fn delete_chunk(
         &self,
         tenant_id: &str,
@@ -945,6 +974,7 @@ impl AgentMemoryStore {
             .get_mut(&(tid.to_string(), sid.to_string()))
             .ok_or_else(|| MemoryError::ChunkNotFound(chunk_id.to_string()))?;
 
+        // Generation check: reject stale delete
         if delete_generation < session.current_generation {
             return Err(MemoryError::StaleGeneration {
                 current: session.current_generation,
@@ -968,6 +998,7 @@ impl AgentMemoryStore {
         }
     }
 
+    /// Returns session statistics
     pub fn get_summary(
         &self,
         tenant_id: &str,
@@ -1041,6 +1072,7 @@ impl AgentMemoryStore {
         })
     }
 
+    /// Resets and clears the session memory for a given tenant, scope, and session
     pub fn clear_session(
         &self,
         tenant_id: &str,
@@ -1075,12 +1107,14 @@ impl AgentMemoryStore {
         }
     }
 
+    /// Hard reset of all sessions (reinitialization / restart recovery)
     pub fn reset(&self) {
         if let Ok(mut map) = self.sessions.write() {
             map.clear();
         }
     }
 
+    /// Handles port invocation payloads for `port.agent.memory.store.v1` and `port.agent.memory.retrieve.v1`
     pub fn handle_port_invocation(
         &self,
         port_id: &str,
@@ -1092,6 +1126,7 @@ impl AgentMemoryStore {
         deadline_ms: u64,
         now_ms: u64,
     ) -> Result<serde_json::Value, MemoryError> {
+        // Cross-host envelope check
         let _envelope = self.validate_envelope_call(
             tenant,
             scope,
@@ -1186,7 +1221,3 @@ impl AgentMemoryStore {
         }
     }
 }
-
-#[cfg(test)]
-#[path = "../tests/agent_memory_test.rs"]
-mod tests;

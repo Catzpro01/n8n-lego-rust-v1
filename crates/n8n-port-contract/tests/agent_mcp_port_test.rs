@@ -5,6 +5,7 @@ use n8n_port_contract::{
     PortResponse, PortStatus, PortTelemetry, RuntimeHostId, SecurityContext, SubLegoId,
 };
 use serde_json::json;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 // ============================================================================
@@ -778,6 +779,221 @@ async fn test_agent_memory_store_and_retrieve_port_lifecycle() {
 
     let res_ret = adapter.invoke(inv_ret).await;
     assert_eq!(res_ret.status, PortStatus::Success);
+}
+
+#[tokio::test]
+async fn test_agent_memory_port_tenant_isolation() {
+    let adapter = InProcessAdapter::new();
+    let store_port = PortId::new("port.agent.memory.store.v1");
+    let retrieve_port = PortId::new("port.agent.memory.retrieve.v1");
+
+    use std::sync::Mutex;
+    let memory_db: Arc<Mutex<HashMap<(String, String), Vec<serde_json::Value>>>> =
+        Arc::new(Mutex::new(HashMap::new()));
+
+    let db_store = memory_db.clone();
+    let store_handler = Arc::new(move |inv: PortInvocation| {
+        let db = db_store.clone();
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            let tid = inv.security_context.tenant.clone();
+            if let PortPayload::Json(val) = inv.payload {
+                let sid = val.get("session_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                let mut guard = db.lock().unwrap();
+                guard.entry((tid, sid.clone())).or_default().push(val);
+                PortResponse::success(
+                    inv.invocation_id,
+                    PortPayload::Json(json!({ "session_id": sid, "stored": true })),
+                    PortTelemetry::new(trace_id),
+                )
+            } else {
+                PortResponse::error(
+                    inv.invocation_id,
+                    PortStatus::ClientError,
+                    n8n_port_contract::PortErrorDetail::new(PortErrorCode::BadRequest, "Payload error", false),
+                    PortTelemetry::new(trace_id),
+                )
+            }
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    let db_ret = memory_db.clone();
+    let retrieve_handler = Arc::new(move |inv: PortInvocation| {
+        let db = db_ret.clone();
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            let tid = inv.security_context.tenant.clone();
+            if let PortPayload::Json(val) = inv.payload {
+                let sid = val.get("session_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                let guard = db.lock().unwrap();
+                let chunks = guard.get(&(tid, sid)).cloned().unwrap_or_default();
+                PortResponse::success(
+                    inv.invocation_id,
+                    PortPayload::Json(json!({ "chunks": chunks, "count": chunks.len() })),
+                    PortTelemetry::new(trace_id),
+                )
+            } else {
+                PortResponse::error(
+                    inv.invocation_id,
+                    PortStatus::ClientError,
+                    n8n_port_contract::PortErrorDetail::new(PortErrorCode::BadRequest, "Payload error", false),
+                    PortTelemetry::new(trace_id),
+                )
+            }
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(store_port.clone(), store_handler).await;
+    adapter.register_handler(retrieve_port.clone(), retrieve_handler).await;
+
+    // Tenant Alpha stores data
+    let sec_ctx_a = SecurityContext::builder("agent-host", "tenant-alpha")
+        .authority_scope(vec![
+            "port.agent.memory.store.v1".to_string(),
+            "port.agent.memory.retrieve.v1".to_string(),
+        ])
+        .build();
+
+    let inv_store_a = PortInvocation::new(
+        SubLegoId::new("L08.S01"),
+        SubLegoId::new("L08.S06"),
+        store_port.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H06AgentHost,
+        sec_ctx_a,
+        PortPayload::Json(json!({ "session_id": "sess-isolated", "content": "secret-alpha-content" })),
+    );
+    let res_store = adapter.invoke(inv_store_a).await;
+    assert_eq!(res_store.status, PortStatus::Success);
+
+    // Tenant Beta tries to retrieve same session_id
+    let sec_ctx_b = SecurityContext::builder("agent-host", "tenant-beta")
+        .authority_scope(vec!["port.agent.memory.retrieve.v1".to_string()])
+        .build();
+
+    let inv_ret_b = PortInvocation::new(
+        SubLegoId::new("L08.S01"),
+        SubLegoId::new("L08.S06"),
+        retrieve_port,
+        ContractVersion::V1,
+        RuntimeHostId::H06AgentHost,
+        sec_ctx_b,
+        PortPayload::Json(json!({ "session_id": "sess-isolated" })),
+    );
+    let res_ret_b = adapter.invoke(inv_ret_b).await;
+    assert_eq!(res_ret_b.status, PortStatus::Success);
+    if let PortPayload::Json(data) = res_ret_b.payload {
+        assert_eq!(data["count"], 0);
+        assert_eq!(data["chunks"].as_array().unwrap().len(), 0);
+    }
+}
+
+#[tokio::test]
+async fn test_agent_memory_port_stale_generation_rejection() {
+    let adapter = InProcessAdapter::new();
+    let store_port = PortId::new("port.agent.memory.store.v1");
+
+    use std::sync::atomic::{AtomicU64, Ordering};
+    let current_gen = Arc::new(AtomicU64::new(5));
+
+    let gen_clone = current_gen.clone();
+    let store_handler = Arc::new(move |inv: PortInvocation| {
+        let gen = gen_clone.clone();
+        Box::pin(async move {
+            let trace_id = inv.security_context.correlation_id.clone();
+            if let PortPayload::Json(val) = inv.payload {
+                let req_gen = val.get("generation").and_then(|v| v.as_u64()).unwrap_or(0);
+                let cur = gen.load(Ordering::SeqCst);
+                if req_gen < cur {
+                    PortResponse::error(
+                        inv.invocation_id,
+                        PortStatus::ClientError,
+                        n8n_port_contract::PortErrorDetail::new(
+                            PortErrorCode::Conflict,
+                            format!("Stale generation rejected: current {}, attempted {}", cur, req_gen),
+                            false,
+                        ),
+                        PortTelemetry::new(trace_id),
+                    )
+                } else {
+                    gen.store(req_gen, Ordering::SeqCst);
+                    PortResponse::success(
+                        inv.invocation_id,
+                        PortPayload::Json(json!({ "stored": true, "generation": req_gen })),
+                        PortTelemetry::new(trace_id),
+                    )
+                }
+            } else {
+                PortResponse::error(
+                    inv.invocation_id,
+                    PortStatus::ClientError,
+                    n8n_port_contract::PortErrorDetail::new(PortErrorCode::BadRequest, "Payload error", false),
+                    PortTelemetry::new(trace_id),
+                )
+            }
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(store_port.clone(), store_handler).await;
+
+    let sec_ctx = SecurityContext::builder("agent-host", "tenant-alpha")
+        .authority_scope(vec!["port.agent.memory.store.v1".to_string()])
+        .build();
+
+    // Invocation with generation 3 while current is 5 -> Rejected with Conflict
+    let inv = PortInvocation::new(
+        SubLegoId::new("L08.S01"),
+        SubLegoId::new("L08.S06"),
+        store_port,
+        ContractVersion::V1,
+        RuntimeHostId::H06AgentHost,
+        sec_ctx,
+        PortPayload::Json(json!({
+            "session_id": "sess-gen",
+            "content": "stale content",
+            "generation": 3
+        })),
+    );
+
+    let res = adapter.invoke(inv).await;
+    assert_eq!(res.status, PortStatus::ClientError);
+    assert_eq!(res.error.unwrap().code, PortErrorCode::Conflict);
+}
+
+#[tokio::test]
+async fn test_agent_memory_port_security_denied_without_scope() {
+    let adapter = InProcessAdapter::new();
+    let store_port = PortId::new("port.agent.memory.store.v1");
+
+    let dummy_handler = Arc::new(|inv: PortInvocation| {
+        Box::pin(async move {
+            PortResponse::success(
+                inv.invocation_id,
+                PortPayload::Json(json!({ "stored": true })),
+                PortTelemetry::new(inv.security_context.correlation_id),
+            )
+        }) as std::pin::Pin<Box<dyn std::future::Future<Output = PortResponse> + Send>>
+    });
+
+    adapter.register_handler(store_port.clone(), dummy_handler).await;
+
+    // Caller lacks required scope "port.agent.memory.store.v1"
+    let bad_sec_ctx = SecurityContext::builder("unauthorized-agent", "tenant-unauth")
+        .authority_scope(vec!["unrelated.scope.read.v1".to_string()])
+        .build();
+
+    let inv = PortInvocation::new(
+        SubLegoId::new("L08.S01"),
+        SubLegoId::new("L08.S06"),
+        store_port,
+        ContractVersion::V1,
+        RuntimeHostId::H06AgentHost,
+        bad_sec_ctx,
+        PortPayload::Json(json!({ "session_id": "sess-unauth", "content": "msg" })),
+    );
+
+    let res = adapter.invoke(inv).await;
+    assert_eq!(res.status, PortStatus::SecurityDenied);
 }
 
 // ============================================================================

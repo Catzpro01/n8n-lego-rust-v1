@@ -8,9 +8,16 @@ pub mod expression_contract;
 pub mod ingress_contract;
 pub mod ingress_modes;
 pub mod innovation;
+pub mod l08_s06;
 pub mod recovery;
 pub mod schedule;
 pub mod webhook;
+pub use l08_s06::{
+    redact_sensitive_content, AgentMemoryStore, EnvelopeTransport, EnvelopeValidationRequest,
+    EnvelopeValidationResponse, H06ToH02PhysicalTransport, MemoryChunk, MemoryError,
+    MemoryLimits, MemoryQuery, MemoryRole, MemoryStorePayload, MemoryStoreResult,
+    MemorySummary,
+};
 pub use activation::{
     ActivateOutcome, ActivationRegistry, ActivationTransitionError, DeactivateOutcome,
     DeactivationKind, PendingUpdate, ReconcilePlan,

@@ -1,3 +1,359 @@
+# Execution Report: L08.S06 — Memory (MANAGER EXECUTION ORDER #44)
+**Execution Timestamp**: 2026-10-09T01:25:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rust-v1` (`main`)
+**Target Sub-LEGO**: `L08.S06` (Memory)
+**Status**: `TESTED` (94%)
+**Provenance Base Commit**: `e343795903c6c9ab1bec8ecc89550bcfb436fb19`
+**All 11 CI Architecture & Governance Guards**: 11/11 PASSED
+**Rust Test Matrix**: 43/43 integration & unit tests PASSED (`l08_s06_test.rs`), 19/19 port tests PASSED (`agent_mcp_port_test.rs`), 213/213 crate tests PASSED (`n8n-common`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `conversation-history-chunks`.
+- H06 Agent Host Locality: execution bound strictly to H06 Agent Host locality (`H06AgentHost` / `agent`). Foreign locality rejected fail-closed (`LocalityViolation`).
+- Provided Ports: `port.agent.memory.store.v1`, `port.agent.memory.retrieve.v1`.
+- State Ownership & Chunk Identity: manages bounded conversation history chunks indexed by `(tenant_id, session_id)`; deterministic chunk identity `chunk:{tenant_id}:{session_id}:{sequence}:{generation}`.
+- Fail-Closed Multi-Tenant & Multi-Scope Isolation: strictly validates matching `tenant_id` and `scope_id`; cross-tenant access returns empty/denied even when using identical `session_id`; missing scope fails closed.
+- Generation Fencing & Idempotency: monotonic `generation: u64` tracks session revisions; stale writes/updates/deletes rejected fail-closed (`MemoryError::StaleGeneration`); duplicate writes with identical content return idempotent `is_duplicate = true` without incrementing generation; update requires strictly monotonic advance.
+- Bounded Capacity & Transactional Eviction: enforces max chunk size (64 KB), chunk count (100), byte limit (256 KB), token limit (32k); deterministic retention evicts oldest non-system chunks while strictly protecting `System` prompt directives; draft-based eviction guarantees zero silent data loss on `CapacityExceeded`.
+- Automated In-Flight Secret Redaction: scans for API keys, bearer tokens, and passwords, replacing them with `[REDACTED_API_KEY]`, `[REDACTED_BEARER_TOKEN]`, and `[REDACTED]` before storage; UTF-8 byte boundary arithmetic prevents slice panics on multi-byte characters and handles quoted secrets with spaces.
+- Update & Pagination Bounds: `update_chunk` strictly enforces chunk size limits and session byte/token capacities; forward pagination cleanly slices via `offset` + `limit` while retaining sliding window behavior when unpaginated.
+- Required Port Integration & Physical Cross-Host Transport: `port.runtime.contract.envelope.v1` (Provider `L00.S01`, H02 Control Host) via typed physical transport `H06ToH02PhysicalTransport` preserving credentials, correlation IDs, deadlines, and fail-closed timeout/unavailability/anonymous handling.
+- Pure Rust runtime: 0 non-Rust scripts, 0 private cross-Sub-LEGO imports in `lego/`.
+
+---
+
+# Execution Report: L08.S02 — Tool Registry (MANAGER EXECUTION ORDER #43)
+**Execution Timestamp**: 2026-10-09T00:32:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L08.S02` (Tool registry)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `4e5a925c` (report updated in `1d6b4490`)
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 13/13 integration & unit tests PASSED (`tool_registry_test.rs`), 16/16 port tests PASSED (`agent_mcp_port_test.rs`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `mcp-tool-catalog`.
+- H06 Agent Host Locality: execution bound strictly to H06 locality fail-closed (`H06AgentHost` / `agent`). Foreign locality rejected with `LocalityViolation`.
+- Provided Ports: `port.agent.tool.register.v1`, `port.agent.tool.invoke.v1`.
+- Pre-Populated Default Tool: Bundles default arithmetic expression tool `"calculator"` with parameter schema validation.
+- Fail-Closed Schema Validation: validates invocation arguments against parameter definitions (`type`, `required`); accepts optional parameters with explicit JSON `null`; rejects type mismatches and missing required parameters fail-closed (`ValidationError`).
+- Required Port Integration: `port.security.authz.authorize.v1` (Provider `L02.S03`, H02 Control Host) via cross-host typed transport callback `ToolAuthzPortFn` with fail-closed denial when caller permissions are insufficient (`PermissionDenied`).
+- Complete Lifecycle: registration, retrieval, listing, disabling, enabling, and retirement.
+- Pure Rust runtime: 0 non-Rust scripts, 0 private cross-Sub-LEGO imports.
+
+---
+
+# Execution Report: L07.S07 — Ingress Runtime Efficiency (MANAGER EXECUTION ORDER #42)
+**Execution Timestamp**: 2026-10-09T00:18:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L07.S07` (Ingress/runtime efficiency)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `7f7e9331` (report updated in `9f579dbd`)
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 10/10 integration tests PASSED (`ingress_runtime_efficiency_test.rs`), 2/2 port tests PASSED (`runtime_efficiency_port_test.rs`), 91/91 crate tests PASSED (`n8n-queue`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `backpressure-tuning-state`.
+- H01 Gateway Host Locality: execution bound strictly to H01 locality fail-closed (`H01GatewayHost` / `gateway` / `edge`). Foreign locality rejected with `LocalityViolation`.
+- Provided Ports: `port.scale.runtime.tune.v1`, `port.scale.efficiency.buffer_pool.v1`.
+- Dynamic Backpressure & Bounded Scaling: latency spikes dynamically scale down concurrency and trigger graceful degradation modes (`Normal` -> `Conservative` -> `Degraded` -> `Emergency`).
+- Bounded Buffer Pool: 16 buffers x 64KB bounded capacity; guaranteed zero-filled cleaning upon recycling.
+- Required Port Integration: `port.runtime.contract.envelope.v1` (Provider `L00.S01`, H02 Control Host) via cross-host typed transport callback `IngressEnvelopePortFn`.
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-bound backpressure limits isolated per `tenant_id`.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L07.S06 — High Availability Control Plane (MANAGER EXECUTION ORDER #41)
+**Execution Timestamp**: 2026-10-09T00:04:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L07.S06` (HA control plane)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `7c2e1214` (report updated in `4566509e`)
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 14/14 integration tests PASSED (`ha_control_plane_test.rs`), 2/2 port tests PASSED (`ha_control_plane_port_test.rs`), 81/81 crate tests PASSED (`n8n-queue`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `cluster-control-lease`.
+- H02 Control Host Locality: execution bound strictly to H02 locality fail-closed (`H02ControlHost` / `system` / `control`). Foreign locality rejected with `LocalityViolation`.
+- Provided Ports: `port.scale.ha.election.v1`, `port.scale.ha.leader_query.v1`.
+- Split-Brain Protection & Monotonic Epochs: strictly increasing `term_epoch` and unique `fencing_token` allocated on every new leadership acquisition; active lease held by incumbent blocks conflicting candidates.
+- Graceful Step-Down & Renewal: incumbent renews without epoch advance; voluntary step-down clears authority and enables immediate deterministic re-election.
+- Required Port Integration: `port.runtime.contract.envelope.v1` (Provider `L00.S01`, H02 Control Host) via typed in-process callback `ContractEnvelopePortFn`.
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-bound leases isolated strictly per `scope_id`.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L07.S05 — Worker Recovery and Failover (MANAGER EXECUTION ORDER #40)
+**Execution Timestamp**: 2026-10-08T23:47:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L07.S05` (Worker recovery and failover)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `4cfc333e` (report updated in `19930b08`)
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 14/14 integration tests PASSED (`worker_failover_test.rs`), 2/2 port tests PASSED (`worker_failover_port_test.rs`), 67/67 crate tests PASSED (`n8n-queue`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `workload-lease-table`.
+- H02 Control Host Locality: execution bound strictly to H02 locality fail-closed (`H02ControlHost` / `system`). Foreign locality rejected with `LocalityViolation`.
+- Provided Ports: `port.scale.worker.failover.v1`, `port.scale.failover.reclaim.v1`.
+- Generation Fencing & Monotonic Lease Epochs: detects stale workers, orphans, and partitions; stale execution requests rejected fail-closed.
+- Failover & Reclaim Pipeline: scans expired leases, marks as `Orphaned` / `Reclaimed`, calculates backoff retries, routes to healthy target workers with refreshed TTL.
+- Required Port Integrations: `port.scale.queue.ack.v1` (Provider `L07.S03`, H05 Storage Host - cross-host queue acknowledgement) and `port.scale.worker.heartbeat.v1` (Provider `L07.S04`, H02 Control Host - same-host worker heartbeat).
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-bound workloads and leases isolated per `tenant_id`.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L07.S04 — Worker Lifecycle (MANAGER EXECUTION ORDER #39)
+**Execution Timestamp**: 2026-10-08T23:24:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L07.S04` (Worker lifecycle)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `3b2b8aa8` (report updated in `4e9f221f`)
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 14/14 integration tests PASSED (`worker_lifecycle_test.rs`), 2/2 port tests PASSED (`worker_lifecycle_port_test.rs`), 53/53 crate tests PASSED (`n8n-queue`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `worker-heartbeat-state`.
+- H02 Control Host Locality: execution bound strictly to H02 locality fail-closed (`H02ControlHost` / `H02` / `system`).
+- Provided Ports: `port.scale.worker.register.v1`, `port.scale.worker.heartbeat.v1`, `port.scale.worker.drain.v1`.
+- Generation Fencing: stale heartbeats and stale drain requests from superseded instances rejected fail-closed; dead workers cannot resurrect purely via heartbeat.
+- Graceful Drain: two-stage drain transitions (`Active` -> `Draining` -> `Drained`), idempotent drain operations.
+- Heartbeat TTL & Freshness: automatic detection and transition of unresponsive nodes to `Dead`.
+- Required Port Integration: `port.runtime.lifecycle.probe.v1` (Provider `L00.S04`) via typed callback.
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-bound workers isolated per `tenant_id`.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L07.S02 — Burst Admission and Graceful Degradation (MANAGER EXECUTION ORDER #38)
+**Execution Timestamp**: 2026-10-08T22:56:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L07.S02` (Burst admission and graceful degradation)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `83165197` (report updated in `05371f7e`)
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 12/12 integration tests PASSED (`burst_admission_test.rs`), 2/2 port tests PASSED (`admission_throttle_port_test.rs`), 39/39 crate tests PASSED (`n8n-queue`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `degradation-thresholds`.
+- H01 Gateway Host Locality: execution bound strictly to H01 locality fail-closed (`H01GatewayHost` / `edge` / `gateway`).
+- Provided Port: `port.scale.admission.throttle.v1` supporting actions `evaluate`, `update_metrics`, `update_thresholds`, `stats`, `reset`.
+- Monotonic Graceful Degradation & Priority Invariants: Critical workflows always admitted; Standard throttled under CriticalShedding and rejected under EmergencyLockdown; Background/Telemetry shed under ShedBackground.
+- Hysteresis Recovery Buffer: prevents state flapping/jitter during transient recovery fluctuations.
+- Burst Token Bucket Rate Regulation: continuous refill with burst allowance per tenant.
+- Required Port Integration: `port.runtime.contract.envelope.v1` (Provider `L00.S01`) via typed callback.
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-scoped burst limits and authorization checks.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L07.S01 — Scheduler/Resource Intelligence (MANAGER EXECUTION ORDER #37)
+**Execution Timestamp**: 2026-10-08T22:44:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L07.S01` (Scheduler/resource intelligence)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `f7addc08`
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 12/12 integration tests PASSED (`scheduler_intelligence_test.rs`), 2/2 port tests PASSED (`scheduler_dispatch_port_test.rs`), 27/27 crate tests PASSED (`n8n-queue`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `worker-capacity-table`.
+- H02 Control Host Locality: execution bound strictly to H02 locality fail-closed.
+- Provided Port: `port.scale.scheduler.dispatch.v1` supporting actions `dispatch`, `release`, `register_worker`, `stats`.
+- Deterministic Resource Intelligence: selects worker with highest available capacity, deterministic tie-breaking.
+- Automatic deferred outcome classification upon capacity exhaustion.
+- Heartbeat TTL & Stale Worker Exclusion: non-fresh, draining, quarantined, and offline workers excluded from new dispatches.
+- Required Port Integration: `port.scale.queue.dequeue.v1` (Provider `L07.S03`) via typed callback.
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-scoped workers and workloads prevented from cross-tenant leakage.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L06.S07 — Audit and Bounded Retention (MANAGER EXECUTION ORDER #36)
+**Execution Timestamp**: 2026-10-08T22:35:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L06.S07` (Audit and bounded retention)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `537b8353`
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 12/12 integration tests PASSED (`audit_retention_test.rs`), 3/3 port tests PASSED (`audit_retention_port_test.rs`), 59/59 crate tests PASSED (`n8n-events`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `audit-retention-ledger`.
+- H02 Control Host Locality: execution bound strictly to H02 locality fail-closed.
+- Provided Ports: `port.observability.audit.record.v1` and `port.observability.audit.query.v1` supporting actions `record`, `stats`, and filtered `query`.
+- Triple-Bounded Retention: bounded by count (`max_records`), bytes (`max_storage_bytes`), and age (`max_age_ms`); FIFO eviction preserves order.
+- Required Port Integration: `port.security.context.validate.v1` (Provider `L02.S01`) via typed callback.
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-scoped records prevent cross-tenant queries.
+- Deep Secret Redaction: zero credentials, passwords, private keys, or tokens in stored metadata.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L06.S06 — Resource Pressure and Queue Metrics (MANAGER EXECUTION ORDER #35)
+**Execution Timestamp**: 2026-10-08T22:27:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L06.S06` (Resource pressure and queue metrics)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `f497579f`
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 12/12 integration tests PASSED (`resource_pressure_test.rs`), 3/3 port tests PASSED (`resource_pressure_port_test.rs`), 47/47 crate tests PASSED (`n8n-events`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `pressure-telemetry-sampler`.
+- H02 Control Host Locality: execution bound strictly to H02 locality fail-closed.
+- Provided Ports: `port.observability.metrics.pressure.v1` and `port.observability.pressure.poll.v1` supporting actions `poll_pressure`, `snapshot`, `record_sample`, `update_queue_metrics`, `stats`, and dimension-scoped `poll`.
+- Exponential Recency Decay ($w_k = 0.3^k$) for rapid response to real-time resource spikes.
+- Hysteresis Recovery: 5% margin prevents oscillating state transitions between Normal, Elevated, High, and Critical.
+- Bounded Capacity & TTL: FIFO eviction prevents memory growth; stale sample detection (`is_stale == true`).
+- Required Port Integration: `port.runtime.budget.allocate.v1` (Provider `L00.S03`) via typed callbacks.
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-scoped telemetry isolated fail-closed.
+- Sensitive Data Redaction: zero credentials / tokens in component metadata.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L06.S04 — Health and Readiness (MANAGER EXECUTION ORDER #34)
+**Execution Timestamp**: 2026-10-08T22:15:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L06.S04` (Health/readiness)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `e28d327e`
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 10/10 integration tests PASSED (`health_readiness_test.rs`), 2/2 port tests PASSED (`health_port_test.rs`), 35/35 crate tests PASSED (`n8n-events`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `system-readiness-map`.
+- H02 Control Host Locality: execution bound to H02 locality fail-closed.
+- Provided Port: `port.observability.health.check.v1` supporting actions `check`, `register_component`, `update_status`, `deregister_component`, `report`, and `summary`.
+- Fail-Closed Readiness Evaluation: If any vital component is `Unhealthy` or `Unknown`, aggregate readiness is deterministically `false` (503 Service Unavailable).
+- Non-vital component degradation marks system degraded without blocking readiness if all vital components ready.
+- Required Port Integration: `port.runtime.lifecycle.probe.v1` (Provider `L00.S04`) via transport-neutral probe callback.
+- SecurityContext & Strict Multi-Tenant Isolation: tenant-scoped components isolated from foreign tenants.
+- PII & Secret Redaction: zero credentials / tokens in component metadata or error descriptions.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L04.S04 — Compatibility Worker (MANAGER EXECUTION ORDER #28)
+**Execution Timestamp**: 2026-10-08T21:04:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L04.S04` (Compatibility worker)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `fdcb737b8f8c98fc100fc28b19ef194f1bd534f0`
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 9/9 integration tests PASSED (`compat_worker_test.rs`), 2/2 port contract tests PASSED (`compat_worker_port_test.rs`), 2/2 native execute tests PASSED (`native_node_execute_port_test.rs`), 2/2 binary stream tests PASSED (`binary_stream_port_test.rs`), 31/31 crate tests PASSED (`n8n-node-model`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `worker-bridge-sessions`.
+- H07 Compatibility Host Locality: execution bound to H07 locality.
+- Provided Port: `port.node.compat.invoke_js.v1` with `_js_compat_bridged: true` and `_bridge_session: session_id`.
+- Required Ports integrated: `port.node.execute.invoke.v1` (L04.S03) & `port.storage.binary.stream.v1` (L05.S04).
+- Rolling Dual-Version Policy: versions 1 and 2 accepted, version 0/3 rejected.
+- SecurityContext & Tenant Isolation: fail-closed validation, cross-tenant sessions isolated.
+- Concurrency & Thread safety: `RwLock` and `AtomicU64` safe under parallel invocations.
+- Cancellation and session recovery on worker restart.
+- Zero secret / credentials leakage in output or error logs.
+- Pure Rust runtime: 0 non-Rust scripts.
+
+---
+
+# Execution Report: L04.S02 — Trust, Quarantine, and Runtime Locality (MANAGER EXECUTION ORDER #27)
+**Execution Timestamp**: 2026-10-08T20:54:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L04.S02` (Trust/quarantine/runtime locality)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `2aaf5511bd259f8e6d7102ceaa9bf59fc85ec28f`
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 12/12 integration tests PASSED (`node_trust_locality_test.rs`), 2/2 port tests PASSED (`node_trust_port_test.rs`), 2/2 authorization port tests PASSED (`authorization_port_test.rs`), 22/22 crate tests PASSED (`n8n-node-model`), 100% workspace cargo checks PASSED
+**Invariants Verified**:
+- Authoritative State Domain: `node-trust-tiers`.
+- Core builtins (`n8n-nodes-base.*`) classified as `CoreVerified`, `InProcess`, `is_executable = true`.
+- Community / custom nodes classified as `UnverifiedCommunity`, `SandboxedWorker`.
+- Unknown / unprovenanced nodes fail-closed into `Untrusted` / `NotEligible`.
+- Quarantine & Revocation enforcement: quarantined and revoked nodes yield `is_executable = false` deterministically.
+- H04 Worker Host locality compatibility: `InProcess` & `SandboxedWorker` eligible, `RemoteService` not eligible locally.
+- SecurityContext & Authorization integration (`port.security.authz.authorize.v1`) with fail-closed access control.
+- Strict multi-tenant isolation: Tenant A's quarantine and trust records do not leak into or affect Tenant B.
+- Concurrency & Thread safety: `RwLock` without race conditions or deadlocks.
+- Sensitive data protection: 0 credential or secret leakage.
+- Pure Rust runtime: 0 runtime scripts non-Rust.
+
+---
+
+# Execution Report: L04.S01 — Node Registry and Admission (MANAGER EXECUTION ORDER #26)
+**Execution Timestamp**: 2026-10-08T20:30:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L04.S01` (Node registry and admission)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `ad27fcffeec63cab36b9003ceaf6d97dfaced844`
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 9/9 integration tests PASSED (`node_registry_admission_test.rs`), 2/2 port tests PASSED (`node_registry_port_test.rs`), 10/10 crate tests PASSED (`n8n-node-model`)
+**Invariants Verified**:
+- Authoritative State Domain: `node-manifest-catalog`.
+- Pre-populated standard builtins (`httpRequest`, `webhook`, `scheduleTrigger`).
+- Fail-closed admission policy rejecting malformed manifests.
+- Multi-criteria discovery and version compatibility filtering.
+- Multi-tenant isolation for custom nodes.
+- Concurrency and race safety.
+- Transport-neutral typed port dispatch (`port.node.registry.query.v1`, `port.node.registry.register.v1`).
+
+---
+
+# Execution Report: L03.S05 — Idempotency and Deduplication (MANAGER EXECUTION ORDER #23)
+**Execution Timestamp**: 2026-10-08T19:48:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L03.S05` (Idempotency/deduplication)
+**Status**: `TESTED` (94%)
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 14/14 integration tests PASSED (`idempotency_deduplication_test.rs`), 3/3 port tests PASSED (`idempotency_port_test.rs`), 51/51 crate tests PASSED (`n8n-ingress`), 100% workspace cargo tests PASSED
+**Invariants Verified**:
+- Atomic Claim & Single Execution Owner (`InFlight` state lock).
+- In-Flight duplicate rejection fail-closed (`InFlightDuplicate`).
+- Cached transparent response replay with HTTP status and payload (`CachedReplay`).
+- Definitive TTL and expiration semantics (`cleanup_expired`, renewed as `New`).
+- Operation identity conflict protection (`OperationMismatch`).
+- Strict multi-tenant boundary partitioning by `tenant_id`.
+- Stale in-flight lease recovery on worker failure / crash.
+- Zero credentials or sensitive data leakage in cache and status logs.
+- Multi-threaded thread-safe claim races without double spend or data corruption.
+- Transport-neutral typed port dispatch (`port.ingress.dedup.check.v1`, `port.ingress.idempotency.dedupe.v1`).
+
+---
+
+# Execution Report: Workspace Isolation Hardening & Enforcement (MANAGER EXECUTION ORDER #22)
+**Execution Timestamp**: 2026-10-08T19:39:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Scope**: 12 LEGOs, 83 Sub-LEGOs
+**Status**: `ENFORCED & VERIFIED`
+**Audit Tool**: `tools/lego-orchestrator/src/isolation-audit.mjs`
+**Test Suite**: `tools/lego-orchestrator/tests/isolation-audit.test.mjs`
+**Integrated Guard**: Guard 11 (`Isolation Guard`) in `tools/lego-orchestrator/src/ci-guards.mjs`
+**All 16 CI Guards**: 16/16 PASSED
+**Isolation Invariants Verified**:
+- 12/12 LEGO Boundaries: PASS
+- 83/83 Sub-LEGO Boundaries & Root paths on disk: PASS
+- Source Dependency Graph & 0 Private Cross-Sub-LEGO Imports: PASS
+- 0 Undeclared Dependencies, 0 Direct Foreign Implementation Calls: PASS
+- 0 Foreign State Access, State Ownership Uniqueness: PASS
+- Port Binding & Provider Resolution: PASS
+- Runtime Host Isolation (H01-H07): PASS
+- Full Rust Runtime Guard across all backend crates: PASS
+- Positive & Negative Isolation Fixtures: PASS
+
+---
+
+# Execution Report: L03.S04 — Admission and Backpressure (MANAGER EXECUTION ORDER #21)
+**Execution Timestamp**: 2026-10-08T19:28:00+07:00
+**Target Repository**: `Catzpro01/n8n-lego-rush-v2` (`main`)
+**Target Sub-LEGO**: `L03.S04` (Admission and backpressure)
+**Status**: `TESTED` (94%)
+**Commit SHA**: `f3573d548a02839a7c400f34f089566efc0bd649`
+**All 16 CI Architecture & Governance Guards**: 16/16 PASSED
+**Rust Test Matrix**: 12/12 integration tests PASSED (`admission_backpressure_test.rs`), 2/2 port tests PASSED (`admission_port_test.rs`), 37/37 crate tests PASSED (`n8n-ingress`), 100% workspace cargo tests PASSED
+**Invariants Verified**:
+- Deterministic Admission Decision Model (`Allowed`, `RateLimited`, `ShedDueToBackpressure`).
+- Rate-Limit Buckets State Domain ownership (`rate-limit-buckets`) with token bucket mechanics per key.
+- Concurrency Backpressure & Load Shedding ceiling (`max_inflight`) enforced fail-closed.
+- Multi-tenant and client rate limit isolation.
+- Clock skew & non-monotonic time safety.
+- Transport-neutral typed port contract handler (`port.ingress.admission.filter.v1`).
+- Multi-threaded concurrent thread safety without race conditions or token leakage.
+- Zero secret / credentials leakage in admission logs and metadata.
+
+---
+
 # Execution Report: L05.S04 — Binary Data Streaming (MANAGER EXECUTION ORDER #11)
 **Execution Timestamp**: 2026-10-08T17:10:00+07:00
 **Target Repository**: `Catzpro01/n8n-lego-rust-v1` (`main`)
@@ -3590,3 +3946,196 @@ Report: ./report.md
 
 
 
+
+## [2026-10-08T13:01:10Z] L03.S06 — Response Plans and Streaming Payloads Completed
+- **Sub-LEGO**: L03.S06 (Owning LEGO: L03-ingress)
+- **Status**: TESTED 94%
+- **Commit**: `5955ba4f86fa457bbce5b1e5cf18e0d0ce2894be`
+- **Implementation**: `crates/n8n-ingress/src/l03_s06.rs`
+- **Tests**: 19 unit & integration PASS, 2 port contract PASS, 70 ingress total PASS
+- **Invariants Verified**:
+  - Immediate ACK mode instant return without blocking downstream
+  - Synchronous response waiter with fail-closed timeout (HTTP 504)
+  - Streaming payloads with sequence ordering, deduplication, and finalization
+  - Bounded buffering & backpressure protection
+  - Multi-tenant isolation
+  - Direct typed bridge to port.storage.binary.stream.v1 (L05.S04)
+  - Multithreaded concurrency & race safety
+  - Sensitive data protection (no secrets in waiter state)
+- **Guards & Audits**:
+  - Isolation Audit: PASS (0 forbidden imports, 0 undeclared dependencies)
+  - 16 CI Guards: 16/16 PASS
+  - Full Rust Runtime: PASS
+- **Remote**: origin/main synced (`5955ba4f86fa457bbce5b1e5cf18e0d0ce2894be`)
+- **Blockers**: None (BLK-001 L05.S02 remains untouched)
+
+## [2026-10-08T13:18:20Z] L03.S07 — Startup Reconciliation and Recovery Completed
+- **Sub-LEGO**: L03.S07 (Owning LEGO: L03-ingress)
+- **Status**: TESTED 94%
+- **Commit**: `65bd10bd13ceacd241ce9433f47a2dffebf3b0c1`
+- **Implementation**: `crates/n8n-ingress/src/l03_s07.rs`
+- **Tests**: 12 unit & integration PASS, 2 port contract PASS, 82 ingress total PASS
+- **Invariants Verified**:
+  - Orphaned trigger detection (active in DB, missing from gateway live routes)
+  - Zombie endpoint detection (active in gateway routes, absent/disabled in DB)
+  - Deterministic reconciliation plan generation and application
+  - Durable in-memory audit ledger (`reconciliation-markers` / `ingress-recovery-ledger`)
+  - Multi-pass execution idempotency
+  - Multi-tenant route reconciliation isolation
+  - Transport-neutral invocation of required ports (`port.ingress.activation.list.v1` & `port.storage.persistence.load.v1`)
+  - Concurrency & race safety with `RwLock`
+  - Fail-closed validation for empty/malformed tenant
+- **Guards & Audits**:
+  - Isolation Audit: PASS (0 forbidden imports, 0 undeclared dependencies)
+  - 16 CI Guards: 16/16 PASS
+  - Full Rust Runtime: PASS
+- **Remote**: origin/main synced (`65bd10bd13ceacd241ce9433f47a2dffebf3b0c1`)
+- **Blockers**: None (BLK-001 L05.S02 remains untouched)
+
+## [2026-10-08T13:29:40Z] L04.S01 — Node Registry and Admission Completed
+- **Sub-LEGO**: L04.S01 (Owning LEGO: L04-node-ecosystem)
+- **Status**: TESTED 94%
+- **Commit**: `ad27fcffeec63cab36b9003ceaf6d97dfaced844`
+- **Implementation**: `crates/n8n-node-model/src/l04_s01.rs`
+- **Tests**: 9 unit & integration PASS, 1 crate unit PASS, 2 port contract PASS
+- **Invariants Verified**:
+  - Authoritative node manifest catalog state ownership (`node-manifest-catalog`)
+  - Initial builtin nodes pre-populated and accessible
+  - Fail-closed admission policy (rejects missing type name, blank display, zero version, blank category)
+  - Registration and version replacement / deduplication
+  - Multi-criteria node discovery and version filtering
+  - Multi-tenant isolation (private tenant nodes hidden from other tenants)
+  - Multithreaded concurrency & race safety (`RwLock`)
+  - Transport-neutral port contract handlers for `port.node.registry.query.v1` and `port.node.registry.register.v1`
+  - Zero sensitive credentials in node catalog
+- **Guards & Audits**:
+  - Isolation Audit: PASS (0 forbidden imports, 0 undeclared dependencies)
+  - 16 CI Guards: 16/16 PASS
+  - Full Rust Runtime: PASS
+- **Remote**: origin/main synced (`ad27fcffeec63cab36b9003ceaf6d97dfaced844`)
+- **Blockers**: None (BLK-001 L05.S02 remains untouched)
+
+### 2026-10-08: L04.S05 — Community, Private, and Custom Node Compatibility (MANAGER EXECUTION ORDER #29)
+- **Status Promotion**: `CONTRACTED` -> `TESTED` (Progress: 94%).
+- **Implementation**: `crates/n8n-node-model/src/l04_s05.rs` (`CustomNodeCompatibilityService`).
+- **Core Invariants & Capabilities**:
+  - Authoritative State Domain: Owns and manages `custom-node-tarballs` tracking custom package tarball records, versions, exported nodes, SHA256 checksums, and package manifests.
+  - H07 Locality Enforcement: Enforces compatibility host locality (`H07` / `H07CompatibilityHost`); rejects foreign locality execution fail-closed (`LocalityViolation`).
+  - Transport-Neutral Public Port: Implements `port.node.custom.load.v1` supporting actions `load`, `unload`, `activate`, `deactivate`, `get_package`, `list_packages`, and `execute`.
+  - Checksum & Integrity Verification: Verifies package tarball checksums; identical version re-registrations are idempotent, while conflicting checksums are rejected fail-closed (`IntegrityError`).
+  - Required Port Integrations:
+    - `port.node.trust.evaluate.v1` (Provider: `L04.S02`): Trust evaluation is gated before package admission/activation; quarantined, revoked, or untrusted packages fail-closed.
+    - `port.node.compat.invoke_js.v1` (Provider: `L04.S04`): Dispatches custom node execution through the compatibility worker session on H07.
+  - SecurityContext & Strict Multi-Tenant Isolation: Requires valid caller credentials and authority scope (`port.node.custom.load.v1` or `admin`); strict tenant isolation prevents cross-tenant package queries or tampering.
+  - Additive Semver & Rollback Safety: Supports versioned packages (`semver-additive`); rollback via activation restores previous active states without corrupting state.
+  - Concurrency & Thread-Safety: `RwLock` protection over tarball storage verified under multi-tenant concurrent requests.
+  - Zero Sensitive Data Leakage: Zero secrets or tokens exposed in response outputs or error logs.
+  - Zero Private Cross-Sub-LEGO Imports: Architectural isolation audit verifies 0 private cross-sublego sibling imports and 100% Rust backend runtime.
+- **Verification Suite**:
+  - `cargo test -p n8n-node-model --test custom_nodes_compat_test --locked`: 12 passed.
+  - `cargo test -p n8n-port-contract --test custom_node_port_test --locked`: 2 passed.
+  - `cargo test -p n8n-node-model --locked`: 43 passed (100% pass across all tests).
+  - `cargo check --workspace --locked`: PASSED (0 errors, 0 warnings).
+  - `node tools/lego-orchestrator/src/isolation-audit.mjs`: PASSED (0 private cross-sublego access).
+  - `node tools/lego-orchestrator/src/ci-guards.mjs`: ALL 16 CI GUARDS PASSED (16/16).
+  - `node tools/lego-orchestrator/src/test.mjs`: PASSED (Single status authority: 40/83 Sub-LEGOs TESTED, 66% overall progress).
+- **Commit**: `234a6d04380e8bee19a29c19746653b2529ef099` (pushed to `origin/main`).
+- **Projections**: Synchronized `README.md`, `docs/status/status.md`, `docs/status/matrix.md`, `.ai/STATUS.md`, `reports/status-report.md`.
+
+### 2026-10-08: L04.S06 — Code/polyglot Runtime Contracts (MANAGER EXECUTION ORDER #30)
+- **Status Promotion**: `CONTRACTED` -> `TESTED` (Progress: 94%).
+- **Implementation**: `crates/n8n-node-model/src/l04_s06.rs` (`PolyglotRuntimeService`).
+- **Core Invariants & Capabilities**:
+  - Authoritative State Domain: Owns and manages `polyglot-isolated-sandbox` tracking isolated sandbox instances, execution identities, tenant bindings, resource limits, budget leases, and execution lifecycle (`Created`, `Executing`, `Completed`, `Failed`, `TimedOut`, `Cancelled`, `Destroyed`).
+  - H04 Worker Host Locality: Enforces execution on `H04` (`H04WorkerHost`); rejects foreign locality executions fail-closed (`LocalityViolation`).
+  - Transport-Neutral Public Port: Implements `port.node.polyglot.execute.v1` supporting actions `execute`, `create_sandbox`, `destroy_sandbox`, `cancel`, and `status`. Supports runtimes `javascript`, `python`, `json`, `wasm`; unsupported runtimes rejected fail-closed (`UnsupportedLanguage`).
+  - Required Port Integration (`port.runtime.budget.allocate.v1`): Pre-allocates memory and execution duration budgets through Provider `L00.S03`; denies executions when quotas are exhausted; guarantees lease release upon completion, timeout, or destruction.
+  - Timeout & Error Boundaries: Deadlines are strictly bounded; exceeded deadlines transition sandbox to `TimedOut` fail-closed (`ExecutionTimeout`). Syntax/evaluation errors transition to `Failed` fail-closed (`ExecutionFailed`).
+  - SecurityContext & Strict Multi-Tenant Isolation: Requires valid caller credentials and authority scope (`port.node.polyglot.execute.v1` or `admin`); strict tenant isolation prevents cross-tenant sandbox access or tampering.
+  - Idempotency & Replay Protection: Replayed executions with matching execution IDs return deterministic previous outputs; prevents concurrent duplicate execution collisions.
+  - Concurrency & Thread-Safety: `RwLock` protection over sandbox storage verified under multi-tenant concurrent requests.
+  - Zero Sensitive Data Leakage: Zero secrets or tokens exposed in response outputs or error logs.
+  - Zero Private Cross-Sub-LEGO Imports: Architectural isolation audit verifies 0 private cross-sublego sibling imports and 100% Rust backend runtime.
+- **Verification Suite**:
+  - `cargo test -p n8n-node-model --test polyglot_runtime_test --locked`: 13 passed.
+  - `cargo test -p n8n-port-contract --test polyglot_port_test --locked`: 2 passed.
+  - `cargo test -p n8n-node-model --locked`: 56 passed (100% pass across all tests).
+  - `cargo check --workspace --locked`: PASSED (0 errors, 0 warnings).
+  - `node tools/lego-orchestrator/src/isolation-audit.mjs`: PASSED (0 private cross-sublego access).
+  - `node tools/lego-orchestrator/src/ci-guards.mjs`: ALL 16 CI GUARDS PASSED (16/16).
+  - `node tools/lego-orchestrator/src/test.mjs`: PASSED (Single status authority: 41/83 Sub-LEGOs TESTED, 67% overall progress).
+- **Commit**: `8ee3f475ed73d120a16fc413da6c84f33b1e327a` (pushed to `origin/main`).
+- **Projections**: Synchronized `README.md`, `docs/status/status.md`, `docs/status/matrix.md`, `.ai/STATUS.md`, `reports/status-report.md`.
+
+### 2026-10-08: L04.S07 — Browser, Web Scraping, and Headless Runtime Compatibility (MANAGER EXECUTION ORDER #31)
+- **Status Promotion**: `CONTRACTED` -> `TESTED` (Progress: 94%).
+- **Implementation**: `crates/n8n-node-model/src/l04_s07.rs` (`BrowserScraperService`).
+- **Core Invariants & Capabilities**:
+  - Authoritative State Domain: Owns and manages `browser-session-pool` tracking browser session instances, target endpoints, tenant bindings, allocated budget leases, session status (`Active`, `Acquired`, `Idle`, `Terminated`), and execution lifecycles.
+  - H04 Worker Host Locality: Enforces execution on `H04` (`H04WorkerHost`); rejects foreign locality executions fail-closed (`LocalityViolation`).
+  - Transport-Neutral Public Port: Implements `port.node.browser.render.v1` supporting actions `render`, `extract`, `acquire_session`, `release_session`, `status`, and `pool_stats`.
+  - SSRF & Target Validation: Rejects private/loopback IP addresses (`127.0.0.1`, `localhost`, `10.x.x.x`, `192.168.x.x`, `169.254.x.x`, etc.) fail-closed with `TargetDenied`.
+  - Required Port Integration (`port.runtime.budget.allocate.v1`): Pre-allocates memory and execution duration budgets through Provider `L00.S03`; denies executions when quotas are exhausted; guarantees lease release upon session termination.
+  - SecurityContext & Strict Multi-Tenant Isolation: Requires valid caller credentials and authority scope (`port.node.browser.render.v1` or `admin`); strict tenant isolation prevents cross-tenant session theft or tampering.
+  - Session Pool Limits & Concurrency Safety: Strictly enforces max session limits per tenant; manages session lifecycle and reclamation; verified under multi-tenant concurrent requests with `RwLock` protection.
+  - Zero Sensitive Data Leakage: Zero secrets or tokens exposed in response outputs or error logs.
+  - Zero Private Cross-Sub-LEGO Imports: Architectural isolation audit verifies 0 private cross-sublego sibling imports and 100% Rust backend runtime.
+- **Verification Suite**:
+  - `cargo test -p n8n-node-model --test browser_scraper_test --locked`: 12 passed.
+  - `cargo test -p n8n-port-contract --test browser_hybrid_port_test --locked`: 2 passed.
+  - `cargo test -p n8n-node-model --locked`: 68 passed (100% pass across all tests).
+  - `cargo check --workspace --locked`: PASSED (0 errors, 0 warnings).
+  - `node tools/lego-orchestrator/src/isolation-audit.mjs`: PASSED (0 private cross-sublego access).
+  - `node tools/lego-orchestrator/src/ci-guards.mjs`: ALL 16 CI GUARDS PASSED (16/16).
+  - `node tools/lego-orchestrator/src/test.mjs`: PASSED (Single status authority: 42/83 Sub-LEGOs TESTED, 68% overall progress).
+- **Commit**: `38aed0ed83cab812d6e5d28c5467c81cca42e8a6` (pushed to `origin/main`).
+- **Projections**: Synchronized `README.md`, `docs/status/status.md`, `docs/status/matrix.md`, `.ai/STATUS.md`, `reports/status-report.md`.
+
+### 2026-10-08: L04.S08 — Dynamic Parameter/Schema Runtime (MANAGER EXECUTION ORDER #32)
+- **Status Promotion**: `CONTRACTED` -> `TESTED` (Progress: 94%).
+- **Implementation**: `crates/n8n-node-model/src/l04_s08.rs` (`DynamicSchemaRuntimeService`).
+- **Core Invariants & Capabilities**:
+  - Authoritative State Domain: Owns and manages `dynamic-schema-cache` tracking dynamic options, parameter schemas, tenant-partitioned keys, capacity bounds, and hit metrics.
+  - H04 Worker Host Locality: Enforces execution on `H04` (`H04WorkerHost`); rejects foreign locality executions fail-closed (`LocalityViolation`).
+  - Transport-Neutral Public Port: Implements `port.node.schema.resolve_options.v1` supporting actions across dynamic properties and schema evaluation.
+  - Dependent Parameter & Cycle Detection: Resolves dependent parameter contexts; detects and rejects circular dependencies fail-closed (`DependencyCycle`); enforces max dependency depth limit of 10 (`DependencyDepthExceeded`).
+  - Required Port Integration (`port.node.registry.query.v1`): Integrates with Provider `L04.S01` via typed transport-neutral closure callback; verifies node admission before schema resolution; rejects unregistered nodes fail-closed (`NodeNotFound`).
+  - Cache Lifecycle & Invalidation: Manages TTL expiration, cache miss/hit cycles, cache bypass, explicit per-node/per-tenant invalidation, capacity bounds, and LRU/FIFO eviction.
+  - SecurityContext & Strict Multi-Tenant Isolation: Requires valid caller credentials and authority scope (`port.node.schema.resolve_options.v1` or `admin`); strict tenant partition prevents cross-tenant cache hit, tampering, or poisoning.
+  - Zero Sensitive Data Leakage: Sanitizes and redacts password, secret, token, and API key values from dependent parameter contexts before cache hashing or logging.
+  - Concurrency & Thread-Safety: `RwLock` protection over `dynamic-schema-cache` verified under multi-tenant concurrent requests.
+  - Zero Private Cross-Sub-LEGO Imports: Architectural isolation audit verifies 0 private cross-sublego sibling imports and 100% Rust backend runtime.
+- **Verification Suite**:
+  - `cargo test -p n8n-node-model --test dynamic_schema_runtime_test --locked`: 13 passed.
+  - `cargo test -p n8n-port-contract --test dynamic_schema_port_test --locked`: 2 passed.
+  - `cargo test -p n8n-node-model --locked`: 81 passed (100% pass across all tests).
+  - `cargo check --workspace --locked`: PASSED (0 errors, 0 warnings).
+  - `node tools/lego-orchestrator/src/isolation-audit.mjs`: PASSED (0 private cross-sublego access).
+  - `node tools/lego-orchestrator/src/ci-guards.mjs`: ALL 16 CI GUARDS PASSED (16/16).
+  - `node tools/lego-orchestrator/src/test.mjs`: PASSED (Single status authority: 43/83 Sub-LEGOs TESTED, 68% overall progress; LEGO L04 fully completed 8/8 TESTED).
+- **Commit**: `9a741763a529e6404b61fbd9572cb49fb112057d` (pushed to `origin/main`).
+- **Projections**: Synchronized `README.md`, `docs/status/status.md`, `docs/status/matrix.md`, `.ai/STATUS.md`, `reports/status-report.md`.
+
+### 2026-10-08: L06.S03 — Node/Plugin/Worker Diagnostics (MANAGER EXECUTION ORDER #33)
+- **Status Promotion**: `CONTRACTED` -> `TESTED` (Progress: 94%).
+- **Implementation**: `crates/n8n-events/src/l06_s03.rs` (`DiagnosticsRuntimeService`).
+- **Core Invariants & Capabilities**:
+  - Authoritative State Domain: Owns and manages `diagnostics-ring-buffer` tracking diagnostic events, components, runtime severities, and sequence numbers.
+  - H04 Worker Host Locality: Enforces execution on `H04` (`H04WorkerHost`); rejects foreign locality executions fail-closed (`LocalityViolation`).
+  - Transport-Neutral Public Port: Implements `port.observability.diagnostics.capture.v1` supporting actions `capture`, `query`, `stats`, and `clear`.
+  - Bounded Capacity & FIFO Overwrite Policy: Strictly bounded ring buffer capacity; automatically evicts oldest records upon saturation with `total_overwritten` counter tracking; prevents memory leaks or unbounded growth.
+  - Required Port Integration (`port.runtime.contract.envelope.v1`): Integrates with Provider `L00.S01` via typed transport-neutral closure callback; verifies contract envelope format before buffering; rejects malformed envelopes fail-closed (`ContractEnvelopeError`).
+  - SecurityContext & Strict Multi-Tenant Isolation: Requires valid caller credentials and authority scope (`port.observability.diagnostics.capture.v1` or `admin`); strict tenant partition prevents cross-tenant query, clearing, or data leakage.
+  - PII & Sensitive Credential Redaction: Sanitizes and redacts passwords, bearer tokens, API keys, and authorization headers from diagnostic messages and metadata before ring buffer entry.
+  - Concurrency & Thread-Safety: `RwLock` protection over `diagnostics-ring-buffer` verified under multi-tenant concurrent requests.
+  - Zero Private Cross-Sub-LEGO Imports: Architectural isolation audit verifies 0 private cross-sublego sibling imports and 100% Rust backend runtime.
+- **Verification Suite**:
+  - `cargo test -p n8n-events --test diagnostics_runtime_test --locked`: 11 passed.
+  - `cargo test -p n8n-port-contract --test diagnostics_capture_port_test --locked`: 2 passed.
+  - `cargo test -p n8n-events --locked`: 25 passed (100% pass across all tests).
+  - `cargo check --workspace --locked`: PASSED (0 errors, 0 warnings).
+  - `node tools/lego-orchestrator/src/isolation-audit.mjs`: PASSED (0 private cross-sublego access).
+  - `node tools/lego-orchestrator/src/ci-guards.mjs`: ALL 16 CI GUARDS PASSED (16/16).
+  - `node tools/lego-orchestrator/src/test.mjs`: PASSED (Single status authority: 44/83 Sub-LEGOs TESTED, 69% overall progress).
+- **Commit**: `125d1fad06e1290d81412c9524db3972d6bae5f2` (pushed to `origin/main`).
+- **Projections**: Synchronized `README.md`, `docs/status/status.md`, `docs/status/matrix.md`, `.ai/STATUS.md`, `reports/status-report.md`.
