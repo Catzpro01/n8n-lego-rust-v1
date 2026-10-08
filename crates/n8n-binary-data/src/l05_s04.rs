@@ -1,28 +1,15 @@
-//! Implementation of L05.S04 Binary data and streaming
-//!
-//! Sub-LEGO Identity: L05.S04
-//! Authoritative State Domain: `blob-filesystem-chunks`
-//! Runtime Host: H05 (Data Host)
-//! Execution Model: stateful-component
-//! Invariants:
-//! - Multi-tenant isolation: binary streams and chunk stores strictly scoped per tenant.
-//! - Chunked streaming: supports streaming large binary files without in-memory buffering explosions.
-//! - Content verification: validates total size and SHA-256 / FNV checksums upon stream finalization.
-//! - State boundary: manages state strictly within `blob-filesystem-chunks`.
-//! - Typed port contract: provides `port.storage.binary.stream.v1`.
-//! - 0 private cross-Sub-LEGO imports: isolated boundary.
+//! L05.S04 Binary Data Streaming Module
+//! Provides chunked streaming, lifecycle state machine, checksum integrity, and resource limit enforcement.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::RwLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-/// Default resource boundaries
 pub const DEFAULT_MAX_CHUNK_SIZE: usize = 5 * 1024 * 1024; // 5 MB max per chunk
 pub const DEFAULT_MAX_STREAM_SIZE: usize = 100 * 1024 * 1024; // 100 MB max per stream
 pub const DEFAULT_CHUNK_SIZE: usize = 64 * 1024; // 64 KB default chunk size
 
-/// Stream lifecycle status
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum StreamStatus {
@@ -43,7 +30,6 @@ impl std::fmt::Display for StreamStatus {
     }
 }
 
-/// Single binary chunk in `blob-filesystem-chunks`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BinaryChunk {
     pub chunk_index: usize,
@@ -52,7 +38,6 @@ pub struct BinaryChunk {
     pub checksum: String,
 }
 
-/// Metadata and state for a binary stream session
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BinaryStreamSession {
     pub stream_id: String,
@@ -70,7 +55,6 @@ pub struct BinaryStreamSession {
     pub abort_reason: Option<String>,
 }
 
-/// Error types occurring during binary stream operations
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BinaryStreamError {
@@ -127,7 +111,8 @@ impl std::fmt::Display for BinaryStreamError {
     }
 }
 
-/// Manager service for authoritative domain `blob-filesystem-chunks`
+impl std::error::Error for BinaryStreamError {}
+
 pub struct BinaryDataStreamingService {
     streams: RwLock<HashMap<String, BinaryStreamSession>>,
     max_chunk_size: usize,
@@ -141,7 +126,6 @@ impl Default for BinaryDataStreamingService {
 }
 
 impl BinaryDataStreamingService {
-    /// Creates a new streaming service with default limits
     pub fn new() -> Self {
         Self {
             streams: RwLock::new(HashMap::new()),
@@ -150,7 +134,6 @@ impl BinaryDataStreamingService {
         }
     }
 
-    /// Creates a streaming service with custom resource bounds
     pub fn with_limits(max_chunk_size: usize, max_stream_size: usize) -> Self {
         Self {
             streams: RwLock::new(HashMap::new()),
@@ -159,7 +142,6 @@ impl BinaryDataStreamingService {
         }
     }
 
-    /// Pure Rust FNV-1a checksum calculation
     pub fn compute_fnv1a(bytes: &[u8]) -> String {
         let mut hash: u64 = 0xcbf29ce484222325;
         for b in bytes {
@@ -169,91 +151,13 @@ impl BinaryDataStreamingService {
         format!("fnv1a:{:016x}", hash)
     }
 
-    /// Pure Rust SHA-256 implementation (self-contained, no external runtime crate required)
     pub fn compute_sha256(bytes: &[u8]) -> String {
-        const K: [u32; 64] = [
-            0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-            0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-            0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-            0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-            0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-            0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-            0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
-        ];
-
-        let mut h: [u32; 8] = [
-            0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-            0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
-        ];
-
-        let bit_len = (bytes.len() as u64).wrapping_mul(8);
-        let mut msg = bytes.to_vec();
-        msg.push(0x80);
-        while (msg.len() % 64) != 56 {
-            msg.push(0);
-        }
-        msg.extend_from_slice(&bit_len.to_be_bytes());
-
-        for chunk in msg.chunks_exact(64) {
-            let mut w = [0u32; 64];
-            for (i, part) in chunk.chunks_exact(4).enumerate() {
-                w[i] = u32::from_be_bytes([part[0], part[1], part[2], part[3]]);
-            }
-            for i in 16..64 {
-                let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
-                let s1 = w[i - 2].rotate_right(17) ^ w[i - 2].rotate_right(19) ^ (w[i - 2] >> 10);
-                w[i] = w[i - 16].wrapping_add(s0).wrapping_add(w[i - 7]).wrapping_add(s1);
-            }
-
-            let mut a = h[0];
-            let mut b = h[1];
-            let mut c = h[2];
-            let mut d = h[3];
-            let mut e = h[4];
-            let mut f = h[5];
-            let mut g = h[6];
-            let mut h_val = h[7];
-
-            for i in 0..64 {
-                let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
-                let ch = (e & f) ^ ((!e) & g);
-                let temp1 = h_val
-                    .wrapping_add(s1)
-                    .wrapping_add(ch)
-                    .wrapping_add(K[i])
-                    .wrapping_add(w[i]);
-                let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
-                let maj = (a & b) ^ (a & c) ^ (b & c);
-                let temp2 = s0.wrapping_add(maj);
-
-                h_val = g;
-                g = f;
-                f = e;
-                e = d.wrapping_add(temp1);
-                d = c;
-                c = b;
-                b = a;
-                a = temp1.wrapping_add(temp2);
-            }
-
-            h[0] = h[0].wrapping_add(a);
-            h[1] = h[1].wrapping_add(b);
-            h[2] = h[2].wrapping_add(c);
-            h[3] = h[3].wrapping_add(d);
-            h[4] = h[4].wrapping_add(e);
-            h[5] = h[5].wrapping_add(f);
-            h[6] = h[6].wrapping_add(g);
-            h[7] = h[7].wrapping_add(h_val);
-        }
-
-        format!(
-            "{:08x}{:08x}{:08x}{:08x}{:08x}{:08x}{:08x}{:08x}",
-            h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7]
-        )
+        use sha2::{Digest, Sha256};
+        let mut hasher = Sha256::new();
+        hasher.update(bytes);
+        format!("{:x}", hasher.finalize())
     }
 
-    /// Partitions an arbitrary byte slice into sequential chunks of exact maximum chunk size
     pub fn split_into_chunks(data: &[u8], chunk_size: usize) -> Vec<Vec<u8>> {
         if data.is_empty() {
             return Vec::new();
@@ -261,7 +165,6 @@ impl BinaryDataStreamingService {
         data.chunks(chunk_size).map(|c| c.to_vec()).collect()
     }
 
-    /// Initializes a new binary stream session
     pub fn init_stream(
         &self,
         stream_id: &str,
@@ -302,7 +205,6 @@ impl BinaryDataStreamingService {
         Ok(session)
     }
 
-    /// Appends a chunk to an unfinalized binary stream with strict ordering and resource bounds checks
     pub fn append_chunk(
         &self,
         tenant_id: &str,
@@ -315,7 +217,6 @@ impl BinaryDataStreamingService {
             .get_mut(stream_id)
             .ok_or_else(|| BinaryStreamError::StreamNotFound(stream_id.to_string()))?;
 
-        // 1. Tenant boundary enforcement
         if session.tenant_id != tenant_id {
             return Err(BinaryStreamError::TenantMismatch {
                 expected: session.tenant_id.clone(),
@@ -323,7 +224,6 @@ impl BinaryDataStreamingService {
             });
         }
 
-        // 2. Lifecycle status validation
         match session.status {
             StreamStatus::Open => {}
             StreamStatus::Finalized => {
@@ -337,7 +237,6 @@ impl BinaryDataStreamingService {
             }
         }
 
-        // 3. Resource boundary check: max chunk size
         let chunk_size = data.len();
         if chunk_size > self.max_chunk_size {
             return Err(BinaryStreamError::ChunkSizeExceeded {
@@ -346,7 +245,6 @@ impl BinaryDataStreamingService {
             });
         }
 
-        // 4. Resource boundary check: max total stream size
         let new_total = session.total_bytes + chunk_size;
         if new_total > self.max_stream_size {
             return Err(BinaryStreamError::StreamSizeExceeded {
@@ -355,12 +253,10 @@ impl BinaryDataStreamingService {
             });
         }
 
-        // 5. Duplicate chunk check (received before)
         if chunk_index < session.chunks.len() {
             return Err(BinaryStreamError::DuplicateChunk { chunk_index });
         }
 
-        // 6. Out-of-order chunk sequence check (gap in index)
         if chunk_index > session.chunks.len() {
             return Err(BinaryStreamError::InvalidChunkSequence {
                 expected: session.chunks.len(),
@@ -368,9 +264,7 @@ impl BinaryDataStreamingService {
             });
         }
 
-        // Compute chunk checksum for integrity
         let chunk_checksum = Self::compute_fnv1a(&data);
-
         session.total_bytes = new_total;
         session.chunks.push(BinaryChunk {
             chunk_index,
@@ -382,7 +276,6 @@ impl BinaryDataStreamingService {
         Ok(session.total_bytes)
     }
 
-    /// Finalizes the stream and seals checksums (FNV-1a & SHA-256)
     pub fn finalize_stream(
         &self,
         tenant_id: &str,
@@ -393,7 +286,6 @@ impl BinaryDataStreamingService {
             .get_mut(stream_id)
             .ok_or_else(|| BinaryStreamError::StreamNotFound(stream_id.to_string()))?;
 
-        // 1. Tenant boundary enforcement
         if session.tenant_id != tenant_id {
             return Err(BinaryStreamError::TenantMismatch {
                 expected: session.tenant_id.clone(),
@@ -401,7 +293,6 @@ impl BinaryDataStreamingService {
             });
         }
 
-        // 2. Lifecycle status validation
         match session.status {
             StreamStatus::Open => {}
             StreamStatus::Finalized => {
@@ -415,7 +306,6 @@ impl BinaryDataStreamingService {
             }
         }
 
-        // Aggregate bytes for checksum & corruption check
         let mut full_bytes = Vec::with_capacity(session.total_bytes);
         for chunk in &session.chunks {
             if chunk.chunk_bytes.len() != chunk.chunk_size {
@@ -445,7 +335,6 @@ impl BinaryDataStreamingService {
         Ok(session.clone())
     }
 
-    /// Reads chunk from a stream with bounds and tenant validation
     pub fn read_chunk(
         &self,
         tenant_id: &str,
@@ -473,7 +362,6 @@ impl BinaryDataStreamingService {
             .get(chunk_index)
             .ok_or_else(|| BinaryStreamError::InvalidRequest(format!("Chunk index {chunk_index} out of bounds")))?;
 
-        // Corruption check on read
         if chunk.chunk_bytes.len() != chunk.chunk_size {
             return Err(BinaryStreamError::CorruptChunk {
                 chunk_index,
@@ -485,7 +373,6 @@ impl BinaryDataStreamingService {
         Ok(chunk.chunk_bytes.clone())
     }
 
-    /// Reassembles and reads the complete byte payload from a finalized stream, verifying end-to-end checksum
     pub fn read_all_bytes(
         &self,
         tenant_id: &str,
@@ -516,7 +403,6 @@ impl BinaryDataStreamingService {
             reconstructed.extend_from_slice(&chunk.chunk_bytes);
         }
 
-        // Verify checksum integrity
         let computed_sha = Self::compute_sha256(&reconstructed);
         if let Some(ref expected_sha) = session.sha256_checksum {
             if &computed_sha != expected_sha {
@@ -530,7 +416,6 @@ impl BinaryDataStreamingService {
         Ok(reconstructed)
     }
 
-    /// Aborts an active stream session, preventing further mutations and marking failure reason
     pub fn abort_stream(
         &self,
         tenant_id: &str,
@@ -555,11 +440,9 @@ impl BinaryDataStreamingService {
 
         session.status = StreamStatus::Aborted;
         session.abort_reason = Some(reason.to_string());
-
         Ok(session.clone())
     }
 
-    /// Closes a stream session
     pub fn close_stream(
         &self,
         tenant_id: &str,
@@ -581,7 +464,6 @@ impl BinaryDataStreamingService {
         Ok(session.clone())
     }
 
-    /// Retrieves session metadata
     pub fn get_stream_metadata(
         &self,
         tenant_id: &str,
@@ -602,7 +484,6 @@ impl BinaryDataStreamingService {
         Ok(session.clone())
     }
 
-    /// Validates runtime contract envelope context `port.runtime.contract.envelope.v1`
     pub fn validate_envelope(
         envelope: &serde_json::Value,
         expected_tenant: &str,
@@ -636,7 +517,6 @@ impl BinaryDataStreamingService {
         Ok(())
     }
 
-    /// Dispatcher for port `port.storage.binary.stream.v1`
     pub fn handle_port_stream(
         &self,
         payload: &serde_json::Value,
@@ -656,7 +536,6 @@ impl BinaryDataStreamingService {
             .and_then(|v| v.as_str())
             .ok_or_else(|| "Missing required 'stream_id'".to_string())?;
 
-        // Optional envelope validation if supplied
         if let Some(envelope) = payload.get("envelope") {
             Self::validate_envelope(envelope, tenant_id).map_err(|e| e.to_string())?;
         }
@@ -737,7 +616,3 @@ impl BinaryDataStreamingService {
         }
     }
 }
-
-#[cfg(test)]
-#[path = "../tests/binary_streaming_test.rs"]
-mod tests;

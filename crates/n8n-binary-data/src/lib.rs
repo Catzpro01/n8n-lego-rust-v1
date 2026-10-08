@@ -1,6 +1,11 @@
+pub mod l05_s04;
 pub mod manager;
 pub mod types;
 
+pub use l05_s04::{
+    BinaryChunk, BinaryDataStreamingService, BinaryStreamError, BinaryStreamSession, StreamStatus,
+    DEFAULT_CHUNK_SIZE, DEFAULT_MAX_CHUNK_SIZE, DEFAULT_MAX_STREAM_SIZE,
+};
 pub use manager::{BinaryDataManager, StorageConfig};
 pub use types::{
     format_file_size, infer_file_type, BinaryData, BINARY_ENCODING, BINARY_IN_JSON_PROPERTY,
@@ -109,5 +114,39 @@ mod tests {
 
         let deserialized: BinaryData = serde_json::from_str(&json_str).unwrap();
         assert_eq!(item, deserialized);
+    }
+
+    #[test]
+    fn test_streaming_service_roundtrip_and_chunk_split() {
+        let service = BinaryDataStreamingService::new();
+        let stream_id = "test-stream-crate-1";
+        let tenant_id = "tenant-unit";
+
+        service
+            .init_stream(stream_id, tenant_id, "data.log", "text/plain")
+            .expect("Init stream succeeds");
+
+        let payload = b"Hello from crates/n8n-binary-data streaming module!";
+        let chunks = BinaryDataStreamingService::split_into_chunks(payload, 16);
+        assert_eq!(chunks.len(), 4);
+
+        for (idx, chk) in chunks.into_iter().enumerate() {
+            service
+                .append_chunk(tenant_id, stream_id, idx, chk)
+                .expect("Append succeeds");
+        }
+
+        let finalized = service
+            .finalize_stream(tenant_id, stream_id)
+            .expect("Finalize succeeds");
+
+        assert_eq!(finalized.total_bytes, payload.len());
+        assert_eq!(finalized.status, StreamStatus::Finalized);
+
+        let reconstructed = service
+            .read_all_bytes(tenant_id, stream_id)
+            .expect("Read all bytes succeeds");
+
+        assert_eq!(reconstructed, payload);
     }
 }
