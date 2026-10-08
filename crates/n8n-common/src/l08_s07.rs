@@ -1,4 +1,4 @@
-//! L08.S07 — Token/execution budgets
+//! L08.S07 — Token/Execution Budgets Component
 //!
 //! Sub-LEGO Identity: L08.S07
 //! Owning LEGO: L08-agent-mcp
@@ -8,13 +8,11 @@
 //! Contract Version: 1.0.0
 //! Compatibility Policy: semver-additive
 //!
-//! Invariants:
-//! 1. Communication strictly routed through public contract ports (`port.agent.budget.*`).
-//! 2. 0 private cross-Sub-LEGO imports within `lego/`.
-//! 3. Exclusive state ownership over `token-consumption-counters`.
-//! 4. Locality enforcement: bound strictly to H06 Agent Host runtime host.
-//! 5. Fail-closed tenant isolation, generation fencing, bounded reservations,
-//!    secret redaction, and cross-host physical typed transport to H02 Control Host.
+//! Provides bounded, tenant-aware, scope-aware, generation-safe budget controller
+//! and enforcement for autonomous agent runtime sessions.
+//! Manages token consumption counters, execution step budgets, rate limiting,
+//! reservation leases, and fail-closed budget enforcement with physical cross-host
+//! allocation transport to L00.S03 (H02 Control Host).
 
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, VecDeque};
@@ -245,6 +243,7 @@ impl BudgetSessionState {
         }
     }
 
+    /// Sum of tokens currently held in active reservations
     pub fn reserved_tokens_total(&self) -> u64 {
         self.active_reservations
             .values()
@@ -253,6 +252,7 @@ impl BudgetSessionState {
             .fold(0u64, |acc, v| acc.saturating_add(v))
     }
 
+    /// Sum of duration ms currently held in active reservations
     pub fn reserved_duration_total(&self) -> u64 {
         self.active_reservations
             .values()
@@ -261,6 +261,7 @@ impl BudgetSessionState {
             .fold(0u64, |acc, v| acc.saturating_add(v))
     }
 
+    /// Sum of operations currently held in active reservations
     pub fn reserved_operations_total(&self) -> u32 {
         self.active_reservations
             .values()
@@ -269,6 +270,7 @@ impl BudgetSessionState {
             .fold(0u32, |acc, v| acc.saturating_add(v))
     }
 
+    /// Unreserved remaining tokens
     pub fn remaining_unreserved_tokens(&self) -> u64 {
         let max_total = self.limits.tokens.max_total_tokens;
         let consumed = self.consumed.tokens.total_tokens;
@@ -276,6 +278,7 @@ impl BudgetSessionState {
         max_total.saturating_sub(consumed.saturating_add(reserved))
     }
 
+    /// Unreserved remaining execution duration ms
     pub fn remaining_unreserved_duration(&self) -> u64 {
         let max_dur = self.limits.execution_time.max_duration_ms;
         let consumed = self.consumed.duration_ms;
@@ -283,6 +286,7 @@ impl BudgetSessionState {
         max_dur.saturating_sub(consumed.saturating_add(reserved))
     }
 
+    /// Unreserved remaining operations
     pub fn remaining_unreserved_operations(&self) -> u32 {
         let max_ops = self.limits.operations.max_operations;
         let consumed = self.consumed.operations;
@@ -295,6 +299,7 @@ impl BudgetSessionState {
 // Controller Configuration & Errors
 // ============================================================================
 
+/// Guardrail bounds for the budget controller
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BudgetControllerLimits {
     pub max_active_reservations_per_session: usize,
@@ -316,6 +321,7 @@ impl Default for BudgetControllerLimits {
     }
 }
 
+/// Typed errors for budget management & enforcement
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum BudgetError {
     #[error("Empty tenant ID provided")]
@@ -376,6 +382,7 @@ pub enum BudgetError {
 // Provider: L00.S03 (Control Host H02)
 // ============================================================================
 
+/// Typed allocation request across H06 -> H02 physical boundary
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AllocationRequest {
     pub tenant_id: String,
@@ -387,10 +394,11 @@ pub struct AllocationRequest {
     pub correlation_id: String,
     pub deadline_ms: u64,
     pub generation: u64,
-    pub source_host: String,
-    pub target_host: String,
+    pub source_host: String, // Must be H06 / H06AgentHost
+    pub target_host: String, // Must be H02 / H02ControlHost
 }
 
+/// Typed allocation response returned from H02
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AllocationResponse {
     pub valid: bool,
@@ -402,6 +410,7 @@ pub struct AllocationResponse {
     pub correlation_id: String,
 }
 
+/// Physical cross-host transport interface
 pub trait AllocationTransport: Send + Sync {
     fn request_allocation(
         &self,
@@ -410,6 +419,7 @@ pub trait AllocationTransport: Send + Sync {
     ) -> Result<AllocationResponse, BudgetError>;
 }
 
+/// Implementation of cross-host transport to H02 Control Host
 #[derive(Default)]
 pub struct H06ToH02AllocationTransport {
     pub simulate_timeout: Arc<RwLock<bool>>,
@@ -435,6 +445,7 @@ impl AllocationTransport for H06ToH02AllocationTransport {
         req: AllocationRequest,
         now_ms: u64,
     ) -> Result<AllocationResponse, BudgetError> {
+        // 1. Locality Verification: must originate from H06 directed to H02
         if req.source_host != "H06" && req.source_host != "H06AgentHost" {
             return Err(BudgetError::LocalityViolation(req.source_host));
         }
@@ -445,6 +456,7 @@ impl AllocationTransport for H06ToH02AllocationTransport {
             )));
         }
 
+        // 2. Fault Injection Checks
         if *self.simulate_timeout.read().unwrap()
             || (req.deadline_ms > 0 && now_ms > req.deadline_ms)
         {
@@ -463,6 +475,7 @@ impl AllocationTransport for H06ToH02AllocationTransport {
             ));
         }
 
+        // 3. Fail-Closed Validation
         if req.principal_id.trim().is_empty() {
             return Err(BudgetError::ScopeDenied(
                 "Anonymous principal rejected for budget allocation".to_string(),
@@ -475,6 +488,7 @@ impl AllocationTransport for H06ToH02AllocationTransport {
             return Err(BudgetError::EmptyScopeId);
         }
 
+        // 4. Issue typed allocation lease
         let ratio = *self.grant_ratio.read().unwrap();
         let allocated_tokens = ((req.requested_tokens as f64) * ratio).round() as u64;
         let allocated_duration_ms = ((req.requested_duration_ms as f64) * ratio).round() as u64;
@@ -491,7 +505,7 @@ impl AllocationTransport for H06ToH02AllocationTransport {
             allocated_tokens,
             allocated_duration_ms,
             allocated_operations: allocated_ops,
-            expires_at_ms: now_ms + 300_000,
+            expires_at_ms: now_ms + 300_000, // 5 min default lease
             correlation_id: req.correlation_id,
         })
     }
@@ -687,7 +701,7 @@ pub struct BudgetSummary {
 pub struct TokenBudgetEnforcer {
     controller_limits: BudgetControllerLimits,
     sessions: Arc<RwLock<HashMap<(String, String), BudgetSessionState>>>,
-    idempotency_records: Arc<RwLock<VecDeque<(String, u64)>>>,
+    idempotency_records: Arc<RwLock<VecDeque<(String, u64)>>>, // (key, now_ms)
     transport: Arc<dyn AllocationTransport>,
 }
 
@@ -713,6 +727,7 @@ impl TokenBudgetEnforcer {
         }
     }
 
+    /// Registers or updates a session budget specification
     pub fn register_session(
         &self,
         tenant_id: &str,
@@ -749,6 +764,7 @@ impl TokenBudgetEnforcer {
 
         let mut map = self.sessions.write().map_err(|e| BudgetError::LockError(e.to_string()))?;
 
+        // Capacity guard: max total sessions
         let key = (t_id.to_string(), sess_id.to_string());
         if !map.contains_key(&key) && map.len() >= self.controller_limits.max_total_sessions {
             return Err(BudgetError::CapacityExceeded {
@@ -756,6 +772,7 @@ impl TokenBudgetEnforcer {
             });
         }
 
+        // Capacity guard: max sessions per tenant
         if !map.contains_key(&key) {
             let tenant_count = map.keys().filter(|(t, _)| t == t_id).count();
             if tenant_count >= self.controller_limits.max_sessions_per_tenant {
@@ -796,6 +813,7 @@ impl TokenBudgetEnforcer {
         Ok(())
     }
 
+    /// Invokes the required port `port.runtime.budget.allocate.v1` via cross-host physical transport
     pub fn allocate_from_provider(
         &self,
         tenant_id: &str,
@@ -837,6 +855,7 @@ impl TokenBudgetEnforcer {
 
         let res = self.transport.request_allocation(req, now_ms)?;
 
+        // Attach allocation lease ID to session state
         let mut map = self.sessions.write().map_err(|e| BudgetError::LockError(e.to_string()))?;
         if let Some(sess) = map.get_mut(&key) {
             sess.allocation_lease_id = Some(res.lease_id.clone());
@@ -845,6 +864,7 @@ impl TokenBudgetEnforcer {
         Ok(res.lease_id)
     }
 
+    /// Checks if proposed budget consumption is within limits
     pub fn check_budget(
         &self,
         req: &BudgetCheckRequest,
@@ -868,6 +888,7 @@ impl TokenBudgetEnforcer {
         let map = self.sessions.read().map_err(|e| BudgetError::LockError(e.to_string()))?;
         let sess = map.get(&key).ok_or_else(|| BudgetError::SessionNotFound(sess_id.to_string()))?;
 
+        // Scope validation
         if sess.scope_id != s_id {
             return Err(BudgetError::ScopeMismatch {
                 expected: sess.scope_id.clone(),
@@ -875,6 +896,7 @@ impl TokenBudgetEnforcer {
             });
         }
 
+        // Generation fencing check
         if let Some(req_gen) = req.generation {
             if req_gen < sess.generation {
                 return Err(BudgetError::StaleGeneration {
@@ -884,6 +906,7 @@ impl TokenBudgetEnforcer {
             }
         }
 
+        // Deadline check
         if let Some(deadline) = sess.limits.execution_time.deadline_epoch_ms {
             if now_ms >= deadline {
                 return Ok(BudgetCheckResult {
@@ -934,6 +957,7 @@ impl TokenBudgetEnforcer {
             ));
         }
 
+        // Warning threshold ratio evaluation
         let token_ratio = (sess.consumed.tokens.total_tokens as f64)
             / (sess.limits.tokens.max_total_tokens.max(1) as f64);
         let warning_issued = token_ratio >= self.controller_limits.warning_threshold_ratio || !allowed;
@@ -957,6 +981,7 @@ impl TokenBudgetEnforcer {
         })
     }
 
+    /// Establishes a local bounded reservation before execution
     pub fn reserve_budget(
         &self,
         req: ReserveBudgetRequest,
@@ -987,6 +1012,7 @@ impl TokenBudgetEnforcer {
             });
         }
 
+        // Generation check
         if let Some(req_gen) = req.generation {
             if req_gen < sess.generation {
                 return Err(BudgetError::StaleGeneration {
@@ -996,6 +1022,7 @@ impl TokenBudgetEnforcer {
             }
         }
 
+        // Deadline check
         if let Some(deadline) = sess.limits.execution_time.deadline_epoch_ms {
             if now_ms >= deadline {
                 return Err(BudgetError::ExecutionTimeout {
@@ -1005,12 +1032,14 @@ impl TokenBudgetEnforcer {
             }
         }
 
+        // Clean up expired reservations first
         sess.active_reservations.retain(|_, r| r.status != ReservationStatus::Active || now_ms < r.expires_at_ms);
 
         let reservation_id = req.reservation_id.clone().unwrap_or_else(|| {
             format!("res:{}:{}:{}:{}", t_id, sess_id, sess.active_reservations.len() + 1, now_ms)
         });
 
+        // Duplicate reservation idempotency check
         if let Some(existing) = sess.active_reservations.get(&reservation_id) {
             if existing.status == ReservationStatus::Active {
                 return Ok(ReserveBudgetResult {
@@ -1026,6 +1055,7 @@ impl TokenBudgetEnforcer {
             }
         }
 
+        // Bounded active reservations count per session
         if sess.active_reservations.len() >= self.controller_limits.max_active_reservations_per_session {
             return Err(BudgetError::CapacityExceeded {
                 reason: format!(
@@ -1035,6 +1065,7 @@ impl TokenBudgetEnforcer {
             });
         }
 
+        // Per-request limit validation
         if req.tokens > sess.limits.tokens.max_per_request_tokens {
             return Err(BudgetError::TokenLimitExceeded {
                 limit: sess.limits.tokens.max_per_request_tokens,
@@ -1048,6 +1079,7 @@ impl TokenBudgetEnforcer {
             });
         }
 
+        // Capacity check against remaining unreserved budget
         let unreserved_tokens = sess.remaining_unreserved_tokens();
         if req.tokens > unreserved_tokens {
             return Err(BudgetError::BudgetExhausted(format!(
@@ -1075,6 +1107,7 @@ impl TokenBudgetEnforcer {
         let ttl = if req.ttl_ms == 0 { 60_000 } else { req.ttl_ms };
         let expires_at = now_ms + ttl;
 
+        // Sanitize metadata
         let mut clean_meta = HashMap::new();
         if let Some(m) = req.metadata {
             for (k, v) in m {
@@ -1114,6 +1147,7 @@ impl TokenBudgetEnforcer {
         })
     }
 
+    /// Records actual consumption against an active reservation or directly
     pub fn consume_budget(
         &self,
         req: ConsumeBudgetRequest,
@@ -1133,6 +1167,7 @@ impl TokenBudgetEnforcer {
             return Err(BudgetError::EmptySessionId);
         }
 
+        // Idempotency validation
         if let Some(ref ikey) = req.idempotency_key {
             let full_key = format!("{}:{}:{}:{}", t_id, sess_id, ikey, req.generation.unwrap_or(0));
             let mut idemp = self.idempotency_records.write().map_err(|e| BudgetError::LockError(e.to_string()))?;
@@ -1151,6 +1186,7 @@ impl TokenBudgetEnforcer {
                 });
             }
 
+            // Register idempotency key with bounded capacity FIFO eviction
             if idemp.len() >= self.controller_limits.max_idempotency_records {
                 idemp.pop_front();
             }
@@ -1168,6 +1204,7 @@ impl TokenBudgetEnforcer {
             });
         }
 
+        // Generation check
         if let Some(req_gen) = req.generation {
             if req_gen < sess.generation {
                 return Err(BudgetError::StaleGeneration {
@@ -1179,6 +1216,7 @@ impl TokenBudgetEnforcer {
 
         let attempt_total_tokens = req.prompt_tokens.saturating_add(req.completion_tokens);
 
+        // Reconcile against reservation if provided
         if let Some(ref res_id) = req.reservation_id {
             let reservation = sess.active_reservations.get_mut(res_id)
                 .ok_or_else(|| BudgetError::ReservationNotFound(res_id.clone()))?;
@@ -1190,9 +1228,11 @@ impl TokenBudgetEnforcer {
                 )));
             }
 
+            // Reconcile and transition reservation
             reservation.status = ReservationStatus::Reconciled;
         }
 
+        // Check hard limits
         let new_total_tokens = sess.consumed.tokens.total_tokens.saturating_add(attempt_total_tokens);
         if new_total_tokens > sess.limits.tokens.max_total_tokens {
             return Err(BudgetError::TokenLimitExceeded {
@@ -1225,6 +1265,7 @@ impl TokenBudgetEnforcer {
             });
         }
 
+        // Apply consumption
         sess.consumed.tokens.prompt_tokens = sess.consumed.tokens.prompt_tokens.saturating_add(req.prompt_tokens);
         sess.consumed.tokens.completion_tokens = sess.consumed.tokens.completion_tokens.saturating_add(req.completion_tokens);
         sess.consumed.tokens.total_tokens = new_total_tokens;
@@ -1247,6 +1288,7 @@ impl TokenBudgetEnforcer {
         })
     }
 
+    /// Releases an unused reservation or reconciles partial usage
     pub fn release_budget(
         &self,
         req: ReleaseBudgetRequest,
@@ -1281,6 +1323,7 @@ impl TokenBudgetEnforcer {
             });
         }
 
+        // Generation check
         if let Some(req_gen) = req.generation {
             if req_gen < sess.generation {
                 return Err(BudgetError::StaleGeneration {
@@ -1303,6 +1346,7 @@ impl TokenBudgetEnforcer {
         let reserved_tok = reservation.reserved_tokens;
         let reserved_dur = reservation.reserved_duration_ms;
 
+        // If actual consumption occurred during the release
         if let Some(actual_tok) = req.actual_consumed_tokens {
             sess.consumed.tokens.total_tokens = sess.consumed.tokens.total_tokens.saturating_add(actual_tok);
         }
@@ -1325,6 +1369,7 @@ impl TokenBudgetEnforcer {
         })
     }
 
+    /// Queries the current session budget summary
     pub fn get_summary(
         &self,
         tenant_id: &str,
@@ -1372,6 +1417,7 @@ impl TokenBudgetEnforcer {
         })
     }
 
+    /// Resets session counters while advancing generation
     pub fn reset_session(
         &self,
         tenant_id: &str,
@@ -1406,6 +1452,7 @@ impl TokenBudgetEnforcer {
         Ok(())
     }
 
+    /// Purges all expired reservations across all sessions
     pub fn cleanup_expired_reservations(&self, now_ms: u64) -> usize {
         let mut count = 0;
         if let Ok(mut map) = self.sessions.write() {
@@ -1424,6 +1471,7 @@ impl TokenBudgetEnforcer {
         count
     }
 
+    /// Handles incoming port invocations for `port.agent.budget.enforce.v1`
     pub fn handle_port_enforce(
         &self,
         port_name: &str,
@@ -1745,7 +1793,3 @@ impl TokenBudgetService {
         })
     }
 }
-
-#[cfg(test)]
-#[path = "../tests/token_budget_test.rs"]
-mod tests;

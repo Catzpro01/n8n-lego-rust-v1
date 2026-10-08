@@ -9,6 +9,7 @@ pub mod ingress_contract;
 pub mod ingress_modes;
 pub mod innovation;
 pub mod l08_s06;
+pub mod l08_s07;
 pub mod recovery;
 pub mod schedule;
 pub mod webhook;
@@ -17,6 +18,15 @@ pub use l08_s06::{
     EnvelopeValidationResponse, H06ToH02PhysicalTransport, MemoryChunk, MemoryError,
     MemoryLimits, MemoryQuery, MemoryRole, MemoryStorePayload, MemoryStoreResult,
     MemorySummary,
+};
+pub use l08_s07::{
+    redact_sensitive_text, AllocationRequest, AllocationResponse, AllocationTransport,
+    BudgetClass, BudgetCheckRequest, BudgetCheckResult, BudgetConsumed, BudgetControllerLimits,
+    BudgetError as BudgetEnforceError, BudgetLimits, BudgetReservation, BudgetSessionState,
+    BudgetSummary, ConsumeBudgetRequest, ConsumeBudgetResult, EnforcementMode,
+    EnforcementOutcome, ExecutionTimeLimits, H06ToH02AllocationTransport, OperationLimits,
+    ReleaseBudgetRequest, ReleaseBudgetResult, ReservationStatus, ReserveBudgetRequest,
+    ReserveBudgetResult, TokenBudgetEnforcer, TokenBudgetLimits, TokenUsage,
 };
 pub use activation::{
     ActivateOutcome, ActivationRegistry, ActivationTransitionError, DeactivateOutcome,
