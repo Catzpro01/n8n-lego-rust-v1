@@ -512,4 +512,198 @@ mod tests {
         let err2 = service.handle_port_stream(&missing_corr_env).unwrap_err();
         assert!(err2.contains("Missing or empty 'correlation_id' in envelope"));
     }
+
+    #[test]
+    fn test_stream_already_exists_rejection() {
+        let service = BinaryDataStreamingService::new();
+        service
+            .init_stream("stream-unique-1", "tenant-alpha", "file.dat", "application/octet-stream")
+            .expect("First init succeeds");
+
+        let err = service
+            .init_stream("stream-unique-1", "tenant-beta", "evil.dat", "application/octet-stream")
+            .unwrap_err();
+
+        assert_eq!(
+            err,
+            BinaryStreamError::StreamAlreadyExists("stream-unique-1".to_string())
+        );
+    }
+
+    #[test]
+    fn test_corrupt_chunk_detection_and_checksum_verification() {
+        let service = BinaryDataStreamingService::new();
+        service
+            .init_stream("stream-corrupt", "tenant-alpha", "file.dat", "application/octet-stream")
+            .expect("Init succeeds");
+
+        service
+            .append_chunk("tenant-alpha", "stream-corrupt", 0, b"original-bytes".to_vec())
+            .expect("Append chunk 0 succeeds");
+
+        // Manually corrupt chunk bytes in storage to simulate bit flip
+        {
+            let mut streams = service.streams.write().unwrap();
+            let session = streams.get_mut("stream-corrupt").unwrap();
+            session.chunks[0].chunk_bytes = b"tampered-bytes".to_vec();
+        }
+
+        // read_chunk must detect and reject corrupt chunk
+        let read_err = service
+            .read_chunk("tenant-alpha", "stream-corrupt", 0)
+            .unwrap_err();
+        assert!(matches!(read_err, BinaryStreamError::IntegrityChecksumMismatch { .. }));
+
+        // finalize_stream must detect and reject corrupt chunk
+        let fin_err = service
+            .finalize_stream("tenant-alpha", "stream-corrupt")
+            .unwrap_err();
+        assert!(matches!(fin_err, BinaryStreamError::IntegrityChecksumMismatch { .. }));
+    }
+
+    #[test]
+    fn test_append_chunk_with_expected_checksum_verification() {
+        let service = BinaryDataStreamingService::new();
+        service
+            .init_stream("stream-chk-verify", "tenant-alpha", "file.dat", "application/octet-stream")
+            .expect("Init succeeds");
+
+        let data = b"verified chunk data".to_vec();
+        let expected_fnv = BinaryDataStreamingService::compute_fnv1a(&data);
+
+        // Append with matching checksum succeeds
+        service
+            .append_chunk_with_checksum(
+                "tenant-alpha",
+                "stream-chk-verify",
+                0,
+                data.clone(),
+                Some(&expected_fnv),
+            )
+            .expect("Append with matching checksum succeeds");
+
+        // Append with mismatched checksum fails
+        let err = service
+            .append_chunk_with_checksum(
+                "tenant-alpha",
+                "stream-chk-verify",
+                1,
+                b"next chunk".to_vec(),
+                Some("fnv1a:badchecksum1234"),
+            )
+            .unwrap_err();
+        assert!(matches!(err, BinaryStreamError::IntegrityChecksumMismatch { .. }));
+    }
+
+    #[test]
+    fn test_closed_stream_rejects_subsequent_reads_and_aborts() {
+        let service = BinaryDataStreamingService::new();
+        service
+            .init_stream("stream-close-guard", "tenant-alpha", "file.dat", "application/octet-stream")
+            .expect("Init succeeds");
+
+        service
+            .append_chunk("tenant-alpha", "stream-close-guard", 0, b"some bytes".to_vec())
+            .expect("Append succeeds");
+
+        service
+            .finalize_stream("tenant-alpha", "stream-close-guard")
+            .expect("Finalize succeeds");
+
+        service
+            .close_stream("tenant-alpha", "stream-close-guard")
+            .expect("Close succeeds");
+
+        // Reading chunk from closed stream fails
+        let read_chunk_err = service
+            .read_chunk("tenant-alpha", "stream-close-guard", 0)
+            .unwrap_err();
+        assert_eq!(read_chunk_err, BinaryStreamError::StreamClosed("stream-close-guard".to_string()));
+
+        // Reading all bytes from closed stream fails
+        let read_all_err = service
+            .read_all_bytes("tenant-alpha", "stream-close-guard")
+            .unwrap_err();
+        assert_eq!(read_all_err, BinaryStreamError::StreamClosed("stream-close-guard".to_string()));
+
+        // Aborting closed stream fails
+        let abort_err = service
+            .abort_stream("tenant-alpha", "stream-close-guard", "Late abort")
+            .unwrap_err();
+        assert_eq!(abort_err, BinaryStreamError::StreamClosed("stream-close-guard".to_string()));
+    }
+
+    #[test]
+    fn test_aborted_stream_cannot_be_closed() {
+        let service = BinaryDataStreamingService::new();
+        service
+            .init_stream("stream-abort-close", "tenant-alpha", "file.dat", "application/octet-stream")
+            .expect("Init succeeds");
+
+        service
+            .abort_stream("tenant-alpha", "stream-abort-close", "Network error")
+            .expect("Abort succeeds");
+
+        let close_err = service
+            .close_stream("tenant-alpha", "stream-abort-close")
+            .unwrap_err();
+        assert_eq!(close_err, BinaryStreamError::StreamAborted("stream-abort-close".to_string()));
+    }
+
+    #[test]
+    fn test_arbitrary_binary_non_utf8_roundtrip() {
+        let service = BinaryDataStreamingService::new();
+        // Arbitrary binary bytes that are NOT valid UTF-8 (e.g. magic bytes of JPEG, PNG, gzip, random)
+        let non_utf8_bytes: Vec<u8> = vec![0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x80, 0x90, 0xA0];
+
+        // 1. Port Init
+        service
+            .handle_port_stream(&json!({
+                "action": "init",
+                "stream_id": "stream-binary-raw",
+                "tenant_id": "tenant-media",
+                "file_name": "image.jpg",
+                "mime_type": "image/jpeg"
+            }))
+            .expect("Init succeeds");
+
+        // 2. Port Append via raw byte array
+        service
+            .handle_port_stream(&json!({
+                "action": "append",
+                "stream_id": "stream-binary-raw",
+                "tenant_id": "tenant-media",
+                "chunk_index": 0,
+                "bytes": non_utf8_bytes
+            }))
+            .expect("Append succeeds");
+
+        // 3. Port Finalize
+        service
+            .handle_port_stream(&json!({
+                "action": "finalize",
+                "stream_id": "stream-binary-raw",
+                "tenant_id": "tenant-media"
+            }))
+            .expect("Finalize succeeds");
+
+        // 4. Port Read All - must preserve exact byte array without UTF-8 corruption
+        let read_res = service
+            .handle_port_stream(&json!({
+                "action": "read_all",
+                "stream_id": "stream-binary-raw",
+                "tenant_id": "tenant-media"
+            }))
+            .expect("Read all succeeds");
+
+        let returned_bytes: Vec<u8> = read_res["bytes"]
+            .as_array()
+            .expect("Must return bytes array")
+            .iter()
+            .map(|b| b.as_u64().unwrap() as u8)
+            .collect();
+
+        assert_eq!(returned_bytes, vec![0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x80, 0x90, 0xA0]);
+        assert!(read_res["base64"].is_string());
+    }
 }

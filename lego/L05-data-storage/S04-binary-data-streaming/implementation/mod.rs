@@ -75,6 +75,7 @@ pub struct BinaryStreamSession {
 #[serde(rename_all = "snake_case")]
 pub enum BinaryStreamError {
     StreamNotFound(String),
+    StreamAlreadyExists(String),
     StreamAlreadyFinalized(String),
     StreamAborted(String),
     StreamClosed(String),
@@ -95,6 +96,7 @@ impl std::fmt::Display for BinaryStreamError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::StreamNotFound(id) => write!(f, "Binary stream not found: {id}"),
+            Self::StreamAlreadyExists(id) => write!(f, "Binary stream already exists: {id}"),
             Self::StreamAlreadyFinalized(id) => write!(f, "Binary stream is already finalized: {id}"),
             Self::StreamAborted(id) => write!(f, "Binary stream is aborted: {id}"),
             Self::StreamClosed(id) => write!(f, "Binary stream is closed: {id}"),
@@ -276,6 +278,11 @@ impl BinaryDataStreamingService {
             return Err(BinaryStreamError::InvalidRequest("tenant_id cannot be empty".to_string()));
         }
 
+        let mut streams = self.streams.write().map_err(|_| BinaryStreamError::LockPoisoned)?;
+        if streams.contains_key(stream_id) {
+            return Err(BinaryStreamError::StreamAlreadyExists(stream_id.to_string()));
+        }
+
         let now_ms = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_millis() as u64)
@@ -297,7 +304,6 @@ impl BinaryDataStreamingService {
             abort_reason: None,
         };
 
-        let mut streams = self.streams.write().map_err(|_| BinaryStreamError::LockPoisoned)?;
         streams.insert(stream_id.to_string(), session.clone());
         Ok(session)
     }
@@ -309,6 +315,18 @@ impl BinaryDataStreamingService {
         stream_id: &str,
         chunk_index: usize,
         data: Vec<u8>,
+    ) -> Result<usize, BinaryStreamError> {
+        self.append_chunk_with_checksum(tenant_id, stream_id, chunk_index, data, None)
+    }
+
+    /// Appends a chunk with optional caller checksum verification
+    pub fn append_chunk_with_checksum(
+        &self,
+        tenant_id: &str,
+        stream_id: &str,
+        chunk_index: usize,
+        data: Vec<u8>,
+        expected_checksum: Option<&str>,
     ) -> Result<usize, BinaryStreamError> {
         let mut streams = self.streams.write().map_err(|_| BinaryStreamError::LockPoisoned)?;
         let session = streams
@@ -370,6 +388,16 @@ impl BinaryDataStreamingService {
 
         // Compute chunk checksum for integrity
         let chunk_checksum = Self::compute_fnv1a(&data);
+        if let Some(expected) = expected_checksum {
+            let matches_fnv = expected == chunk_checksum || expected == chunk_checksum.trim_start_matches("fnv1a:");
+            let matches_sha = expected == Self::compute_sha256(&data);
+            if !matches_fnv && !matches_sha {
+                return Err(BinaryStreamError::IntegrityChecksumMismatch {
+                    expected: expected.to_string(),
+                    actual: chunk_checksum,
+                });
+            }
+        }
 
         session.total_bytes = new_total;
         session.chunks.push(BinaryChunk {
@@ -425,6 +453,13 @@ impl BinaryDataStreamingService {
                     actual: chunk.chunk_bytes.len(),
                 });
             }
+            let actual_checksum = Self::compute_fnv1a(&chunk.chunk_bytes);
+            if actual_checksum != chunk.checksum {
+                return Err(BinaryStreamError::IntegrityChecksumMismatch {
+                    expected: chunk.checksum.clone(),
+                    actual: actual_checksum,
+                });
+            }
             full_bytes.extend_from_slice(&chunk.chunk_bytes);
         }
 
@@ -467,6 +502,9 @@ impl BinaryDataStreamingService {
         if session.status == StreamStatus::Aborted {
             return Err(BinaryStreamError::StreamAborted(stream_id.to_string()));
         }
+        if session.status == StreamStatus::Closed {
+            return Err(BinaryStreamError::StreamClosed(stream_id.to_string()));
+        }
 
         let chunk = session
             .chunks
@@ -479,6 +517,14 @@ impl BinaryDataStreamingService {
                 chunk_index,
                 expected: chunk.chunk_size,
                 actual: chunk.chunk_bytes.len(),
+            });
+        }
+
+        let actual_checksum = Self::compute_fnv1a(&chunk.chunk_bytes);
+        if actual_checksum != chunk.checksum {
+            return Err(BinaryStreamError::IntegrityChecksumMismatch {
+                expected: chunk.checksum.clone(),
+                actual: actual_checksum,
             });
         }
 
@@ -505,6 +551,9 @@ impl BinaryDataStreamingService {
 
         if session.status == StreamStatus::Aborted {
             return Err(BinaryStreamError::StreamAborted(stream_id.to_string()));
+        }
+        if session.status == StreamStatus::Closed {
+            return Err(BinaryStreamError::StreamClosed(stream_id.to_string()));
         }
 
         if !session.is_finalized {
@@ -549,6 +598,10 @@ impl BinaryDataStreamingService {
             });
         }
 
+        if session.status == StreamStatus::Closed {
+            return Err(BinaryStreamError::StreamClosed(stream_id.to_string()));
+        }
+
         if session.is_finalized {
             return Err(BinaryStreamError::StreamAlreadyFinalized(stream_id.to_string()));
         }
@@ -575,6 +628,10 @@ impl BinaryDataStreamingService {
                 expected: session.tenant_id.clone(),
                 actual: tenant_id.to_string(),
             });
+        }
+
+        if session.status == StreamStatus::Aborted {
+            return Err(BinaryStreamError::StreamAborted(stream_id.to_string()));
         }
 
         session.status = StreamStatus::Closed;
@@ -674,15 +731,25 @@ impl BinaryDataStreamingService {
                     .and_then(|v| v.as_u64())
                     .ok_or_else(|| "Missing required 'chunk_index'".to_string())? as usize;
 
-                let bytes = if let Some(data_str) = payload.get("data").and_then(|v| v.as_str()) {
-                    data_str.as_bytes().to_vec()
+                let bytes = if let Some(b64) = payload.get("base64").and_then(|v| v.as_str()) {
+                    base64_decode(b64).map_err(|e| format!("Invalid base64 payload: {e}"))?
                 } else if let Some(bytes_arr) = payload.get("bytes").and_then(|v| v.as_array()) {
                     bytes_arr.iter().filter_map(|b| b.as_u64().map(|n| n as u8)).collect()
+                } else if let Some(data_str) = payload.get("data").and_then(|v| v.as_str()) {
+                    if payload.get("encoding").and_then(|v| v.as_str()) == Some("base64") {
+                        base64_decode(data_str).map_err(|e| format!("Invalid base64 payload: {e}"))?
+                    } else {
+                        data_str.as_bytes().to_vec()
+                    }
                 } else {
-                    return Err("Missing required 'data' or 'bytes'".to_string());
+                    return Err("Missing required 'data', 'bytes', or 'base64'".to_string());
                 };
 
-                let total_bytes = self.append_chunk(tenant_id, stream_id, chunk_index, bytes).map_err(|e| e.to_string())?;
+                let expected_checksum = payload.get("checksum").and_then(|v| v.as_str());
+                let total_bytes = self
+                    .append_chunk_with_checksum(tenant_id, stream_id, chunk_index, bytes, expected_checksum)
+                    .map_err(|e| e.to_string())?;
+
                 Ok(serde_json::json!({
                     "success": true,
                     "stream_id": stream_id,
@@ -701,24 +768,36 @@ impl BinaryDataStreamingService {
                     .ok_or_else(|| "Missing required 'chunk_index'".to_string())? as usize;
 
                 let bytes = self.read_chunk(tenant_id, stream_id, chunk_index).map_err(|e| e.to_string())?;
-                let data_str = String::from_utf8_lossy(&bytes).to_string();
-                Ok(serde_json::json!({
+                let byte_size = bytes.len();
+                let b64 = base64_encode(&bytes);
+                let mut resp = serde_json::json!({
                     "success": true,
                     "stream_id": stream_id,
                     "chunk_index": chunk_index,
-                    "data": data_str,
-                    "byte_size": bytes.len(),
-                }))
+                    "byte_size": byte_size,
+                    "base64": b64,
+                    "bytes": bytes,
+                });
+                if let Ok(data_str) = std::str::from_utf8(&resp["bytes"].as_array().unwrap().iter().map(|b| b.as_u64().unwrap() as u8).collect::<Vec<u8>>()) {
+                    resp["data"] = serde_json::Value::String(data_str.to_string());
+                }
+                Ok(resp)
             }
             "read_all" => {
                 let bytes = self.read_all_bytes(tenant_id, stream_id).map_err(|e| e.to_string())?;
-                let data_str = String::from_utf8_lossy(&bytes).to_string();
-                Ok(serde_json::json!({
+                let total_bytes = bytes.len();
+                let b64 = base64_encode(&bytes);
+                let mut resp = serde_json::json!({
                     "success": true,
                     "stream_id": stream_id,
-                    "data": data_str,
-                    "total_bytes": bytes.len(),
-                }))
+                    "total_bytes": total_bytes,
+                    "base64": b64,
+                    "bytes": bytes,
+                });
+                if let Ok(data_str) = std::str::from_utf8(&resp["bytes"].as_array().unwrap().iter().map(|b| b.as_u64().unwrap() as u8).collect::<Vec<u8>>()) {
+                    resp["data"] = serde_json::Value::String(data_str.to_string());
+                }
+                Ok(resp)
             }
             "abort" => {
                 let reason = payload.get("reason").and_then(|v| v.as_str()).unwrap_or("Aborted by client");
@@ -736,6 +815,66 @@ impl BinaryDataStreamingService {
             unknown => Err(format!("Unknown stream action: {unknown}")),
         }
     }
+}
+
+fn base64_encode(input: &[u8]) -> String {
+    const CHARSET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity((input.len() + 2) / 3 * 4);
+    for chunk in input.chunks(3) {
+        let b0 = chunk[0];
+        let b1 = if chunk.len() > 1 { chunk[1] } else { 0 };
+        let b2 = if chunk.len() > 2 { chunk[2] } else { 0 };
+
+        out.push(CHARSET[(b0 >> 2) as usize] as char);
+        out.push(CHARSET[(((b0 & 0x03) << 4) | (b1 >> 4)) as usize] as char);
+        if chunk.len() > 1 {
+            out.push(CHARSET[(((b1 & 0x0F) << 2) | (b2 >> 6)) as usize] as char);
+        } else {
+            out.push('=');
+        }
+        if chunk.len() > 2 {
+            out.push(CHARSET[(b2 & 0x3F) as usize] as char);
+        } else {
+            out.push('=');
+        }
+    }
+    out
+}
+
+fn base64_decode(input: &str) -> Result<Vec<u8>, String> {
+    let clean: String = input.chars().filter(|c| !c.is_whitespace()).collect();
+    if clean.is_empty() {
+        return Ok(Vec::new());
+    }
+    if clean.len() % 4 != 0 {
+        return Err("Invalid base64 length".to_string());
+    }
+    let decode_val = |c: u8| -> Result<u8, String> {
+        match c {
+            b'A'..=b'Z' => Ok(c - b'A'),
+            b'a'..=b'z' => Ok(c - b'a' + 26),
+            b'0'..=b'9' => Ok(c - b'0' + 52),
+            b'+' => Ok(62),
+            b'/' => Ok(63),
+            _ => Err(format!("Invalid base64 character: {}", c as char)),
+        }
+    };
+    let bytes = clean.as_bytes();
+    let mut out = Vec::with_capacity(clean.len() / 4 * 3);
+    for i in (0..bytes.len()).step_by(4) {
+        let b0 = decode_val(bytes[i])?;
+        let b1 = decode_val(bytes[i + 1])?;
+        out.push((b0 << 2) | (b1 >> 4));
+        if bytes[i + 2] != b'=' {
+            let b2 = decode_val(bytes[i + 2])?;
+            out.push(((b1 & 0x0F) << 4) | (b2 >> 2));
+            if bytes[i + 3] != b'=' {
+                let b3 = decode_val(bytes[i + 3])?;
+                out.push(((b2 & 0x03) << 6) | b3);
+            }
+        }
+    }
+    Ok(out)
 }
 
 #[cfg(test)]

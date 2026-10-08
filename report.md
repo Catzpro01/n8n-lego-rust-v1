@@ -1,17 +1,17 @@
 # Execution Report: L05.S04 — Binary Data Streaming (MANAGER EXECUTION ORDER #11)
-**Execution Timestamp**: 2026-10-08T16:45:00+07:00
+**Execution Timestamp**: 2026-10-08T17:10:00+07:00
 **Target Repository**: `Catzpro01/n8n-lego-rust-v1` (`main`)
 **Target Sub-LEGO**: `L05.S04` (Binary data and streaming)
 **Status**: `TESTED` (94%)
 **Provenance Base Commit**: `e343795903c6c9ab1bec8ecc89550bcfb436fb19`
 **All 11 CI Architecture & Governance Guards**: 11/11 PASSED
-**Rust Test Matrix**: 14/14 unit tests PASSED (`binary_streaming_test.rs`), 6/6 port tests PASSED (`binary_stream_port_test.rs`), 7/7 crate tests PASSED (`n8n-binary-data`)
+**Rust Test Matrix**: 20/20 unit/integration tests PASSED (`binary_streaming_test.rs`), 7/7 port tests PASSED (`binary_stream_port_test.rs`), 26/26 crate tests PASSED (`n8n-binary-data`)
 **Correlation IDs**:
 - Correlation ID: `corr-l05-s04-binary-stream-1791452653`
 - Webhook Event ID: `wh-l05-s04-1791452653`
 - Runner ID: `runner-l05-s04-1791452653`
 - Job ID: `job-l05-s04-1791452653`
-- Invariants: Stream Lifecycle (`Open`, `Finalized`, `Aborted`, `Closed`), Exact 64KB Chunking, Duplicate & Out-of-Order Rejection, Dual Checksum (FNV-1a & SHA-256), Resource Bounds (5MB chunk, 100MB stream), Multi-Tenant Isolation, Envelope Context Validation.
+- Invariants: Stream Lifecycle (`Open`, `Finalized`, `Aborted`, `Closed`), Exact 64KB Chunking, Duplicate & Out-of-Order Rejection, Dual Checksum (FNV-1a & SHA-256), Chunk Checksum Verification, Collision Rejection (`StreamAlreadyExists`), Lossless Non-UTF8 & Base64 Binary Streaming, Resource Bounds (5MB chunk, 100MB stream), Multi-Tenant Isolation, Envelope Context Validation.
 
 ---
 

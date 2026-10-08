@@ -62,6 +62,14 @@ fn create_engine_handler(engine: Arc<Mutex<MockStreamEngine>>) -> Arc<dyn Fn(Por
 
                 match action {
                     "init" | "open" => {
+                        if eng.streams.contains_key(stream_id) {
+                            return PortResponse::error(
+                                inv.invocation_id,
+                                PortStatus::ClientError,
+                                PortErrorDetail::new(PortErrorCode::Conflict, "Stream already exists", false),
+                                PortTelemetry::new(trace_id),
+                            );
+                        }
                         let state = StreamState {
                             tenant_id: payload_tenant.to_string(),
                             status: "open".to_string(),
@@ -678,4 +686,51 @@ async fn test_binary_stream_port_resource_limit_exceeded() {
     assert_eq!(oversize_resp.status, PortStatus::ClientError);
     let err = oversize_resp.error.expect("Expected error detail");
     assert_eq!(err.code, PortErrorCode::BadRequest);
+}
+
+#[tokio::test]
+async fn test_binary_stream_port_duplicate_stream_id_conflict() {
+    let adapter = InProcessAdapter::new();
+    let stream_port = PortId::new("port.storage.binary.stream.v1");
+    let engine = Arc::new(Mutex::new(MockStreamEngine::new(1024, 1024)));
+
+    adapter.register_handler(stream_port.clone(), create_engine_handler(engine)).await;
+
+    let sec_ctx = SecurityContext::builder("uploader", "tenant_alpha")
+        .authority_scope(vec!["port.storage.binary.stream.v1".to_string()])
+        .build();
+
+    // First init succeeds
+    let first_resp = adapter.invoke(PortInvocation::new(
+        SubLegoId::new("L04.S03"),
+        SubLegoId::new("L05.S04"),
+        stream_port.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H05DataHost,
+        sec_ctx.clone(),
+        PortPayload::Json(json!({
+            "action": "init",
+            "stream_id": "stream-conflict-test",
+            "tenant_id": "tenant_alpha"
+        })),
+    )).await;
+    assert!(first_resp.is_success());
+
+    // Second init with same stream_id must fail closed with Conflict
+    let dupe_resp = adapter.invoke(PortInvocation::new(
+        SubLegoId::new("L04.S03"),
+        SubLegoId::new("L05.S04"),
+        stream_port.clone(),
+        ContractVersion::V1,
+        RuntimeHostId::H05DataHost,
+        sec_ctx,
+        PortPayload::Json(json!({
+            "action": "init",
+            "stream_id": "stream-conflict-test",
+            "tenant_id": "tenant_alpha"
+        })),
+    )).await;
+    assert_eq!(dupe_resp.status, PortStatus::ClientError);
+    let err = dupe_resp.error.expect("Expected error detail");
+    assert_eq!(err.code, PortErrorCode::Conflict);
 }
