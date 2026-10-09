@@ -579,12 +579,11 @@ fn test_security_context_validate_null_and_non_object_payload_fail_closed() {
     let err_arr = service.handle_port_context_validate(&json!([1, 2, 3])).unwrap_err();
     assert!(err_arr.contains("not an object"));
 
-    // Null security_context inside payload
-    let resp_inner_null = service
+    // Explicit Null security_context inside payload rejected fail-closed
+    let err_inner_null = service
         .handle_port_context_validate(&json!({ "security_context": null }))
-        .expect("Should evaluate outer payload");
-    assert_eq!(resp_inner_null["valid"], false);
-    assert_eq!(resp_inner_null["error"].as_str().unwrap(), SecurityContextError::MissingPrincipal.to_string());
+        .unwrap_err();
+    assert!(err_inner_null.contains("not an object"));
 }
 
 #[test]
@@ -608,3 +607,42 @@ fn test_security_context_principal_struct_and_blocker_constants() {
     assert_eq!(BLOCKER_TRUST_ANCHOR, "BLK-L02-S01-TRUST-ANCHOR");
     assert_eq!(BLOCKER_PHYSICAL_TRANSPORT, "BLK-L02-S01-PHYSICAL-TRANSPORT");
 }
+
+#[test]
+fn test_security_context_whitespace_padded_scopes_and_boundaries() {
+    let service = SecurityContextService::new();
+
+    // Context with whitespace in authority scopes
+    let ctx = SecurityContextData::new_unverified(
+        "alice",
+        "tenant_corp",
+        vec!["  *  ".to_string(), "  port.execution.*  ".to_string()],
+    );
+
+    assert!(ctx.has_authority("port.execution.run.workflow.v1"));
+    assert!(ctx.has_authority("port.other.scope.v1"));
+
+    // Empty expected tenant fails closed as mismatch against non-empty tenant
+    let res_empty_tenant = service.validate_context_scoped(
+        &ctx,
+        None,
+        1_000,
+        None,
+        Some("   "),
+    );
+    assert!(!res_empty_tenant.valid);
+    assert!(res_empty_tenant.error.unwrap().contains("tenant mismatch"));
+
+    // Whitespace padded audience matches trimmed expected audience
+    let res_aud = service.validate_context_scoped(
+        &ctx,
+        None,
+        1_000,
+        Some("  n8n-kernel  "),
+        Some("tenant_corp"),
+    );
+    // Still fails closed due to trust anchor, but audience did NOT fail
+    assert!(!res_aud.valid);
+    assert!(res_aud.error.unwrap().contains(BLOCKER_TRUST_ANCHOR));
+}
+

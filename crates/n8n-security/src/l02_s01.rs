@@ -131,11 +131,12 @@ impl SecurityContextData {
             return false;
         }
         self.authority_scope.iter().any(|scope| {
-            if scope == "*" || scope == req {
+            let s = scope.trim();
+            if s == "*" || s == req {
                 return true;
             }
-            if scope.ends_with(".*") {
-                let prefix = &scope[..scope.len() - 1]; // keep trailing dot
+            if s.ends_with(".*") {
+                let prefix = &s[..s.len() - 1]; // keep trailing dot
                 return req.starts_with(prefix);
             }
             false
@@ -316,7 +317,7 @@ impl SecurityContextService {
 
         if let Some(exp_tenant) = expected_tenant {
             let exp_trimmed = exp_tenant.trim();
-            if !exp_trimmed.is_empty() && exp_trimmed != context.tenant {
+            if exp_trimmed != context.tenant.trim() {
                 return SecurityValidationResult {
                     valid: false,
                     authorized: false,
@@ -349,14 +350,16 @@ impl SecurityContextService {
         }
 
         if let Some(expected_aud) = expected_audience {
-            if context.audience != expected_aud && context.audience != "*" {
+            let exp_aud_trimmed = expected_aud.trim();
+            let ctx_aud_trimmed = context.audience.trim();
+            if ctx_aud_trimmed != exp_aud_trimmed && ctx_aud_trimmed != "*" {
                 return SecurityValidationResult {
                     valid: false,
                     authorized: false,
                     expired: false,
                     error: Some(
                         SecurityContextError::InvalidAudience {
-                            expected: expected_aud.to_string(),
+                            expected: exp_aud_trimmed.to_string(),
                             actual: context.audience.clone(),
                         }
                         .to_string(),
@@ -485,10 +488,10 @@ impl SecurityContextService {
         &self,
         payload: &serde_json::Value,
     ) -> Result<serde_json::Value, String> {
-        let ctx_val = payload
-            .get("security_context")
-            .filter(|v| !v.is_null())
-            .unwrap_or(payload);
+        let ctx_val = match payload.get("security_context") {
+            Some(v) => v,
+            None => payload,
+        };
 
         if !ctx_val.is_object() {
             return Err("Missing security_context in payload or payload is not an object".to_string());

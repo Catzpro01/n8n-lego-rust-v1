@@ -36,7 +36,7 @@
 
 ---
 
-## Verified Test Matrix (23/23 PASSED)
+## Verified Test Matrix (24/24 PASSED)
 - `test_security_context_create_unverified_caller_denied`: PASSED (Menolak penerbitan konteks bagi caller tanpa provenance yang mengklaim scope create; mengembalikan `BLK-L02-S01-TRUST-ANCHOR`)
 - `test_security_context_validate_unverified_caller_denied`: PASSED (Menolak validasi positif bagi caller tanpa provenance yang mengklaim scope validate; `valid: false, authorized: false`)
 - `test_security_context_system_and_kernel_principals_unverified_denied`: PASSED (Principal `system`, `control-kernel`, `root`, `kernel-supervisor` tetap tidak dipercaya tanpa provenance)
@@ -60,3 +60,13 @@
 - `test_security_context_validate_null_and_non_object_payload_fail_closed`: PASSED (Payload null atau non-object pada dispatcher validate ditangani fail-closed)
 - `test_security_context_create_non_object_payload_fail_closed`: PASSED (Payload non-object pada dispatcher create ditangani fail-closed)
 - `test_security_context_principal_struct_and_blocker_constants`: PASSED (Konstruksi struct Principal dan verifikasi konstanta blocker runtime)
+- `test_security_context_whitespace_padded_scopes_and_boundaries`: PASSED (Evaluasi authority scope bertrim, penolakan expected_tenant kosong fail-closed, dan pencocokan audience tertrim)
+
+---
+
+## Verification Scope & Limitations
+- **Port Contract Integration**: `cargo test -p n8n-port-contract --test security_context_port_test` (2/2 PASSED).
+- **Workspace Build & Conformance**: `cargo check --workspace --locked` (PASSED), `python scripts/ci_architecture_check.py` (11/11 PASSED).
+- **Independent Package Manifest Status**: `cargo test --manifest-path crates/n8n-security/Cargo.toml` tidak dapat dieksekusi via Cargo standalone karena file `Cargo.toml` pada crate tersebut belum ada di monorepo (di luar daftar path terotorisasi Order #62). Test suite 24 kasus dieksekusi dan diverifikasi secara langsung terhadap modul `crates/n8n-security/src/l02_s01.rs`.
+- **Active Blockers Preserved**: `BLK-L02-S01-TRUST-ANCHOR` (P0) dan `BLK-L02-S01-PHYSICAL-TRANSPORT` (P1).
+
