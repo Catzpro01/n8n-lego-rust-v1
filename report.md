@@ -610,4 +610,27 @@ Clean architecture monorepo `Catzpro01/n8n-lego-rush-v2` successfully verified, 
 +  - `python scripts/ci_architecture_check.py`: 11/11 PASSED (Exit code 0).
 +- **Projections**: Synchronized `README.md`, `docs/status/status.md`, `docs/status/matrix.md`, `.ai/STATUS.md`, `reports/status-report.md`.
 
-
+### 2026-10-09: L02.S01 — Principal and Security Context (MANAGER EXECUTION ORDER #63 — RECONCILE, VERIFY, AND PUBLISH ORDER #62)
+- **Status Classification**: `TESTED` (0 CERTIFIED quality floor strictly preserved; production BLOCKED).
+- **Remediation & Reconciliation Target**: Reconcile Git state, enforce authorized file boundary, independently verify test commands, and publish `L02.S01`.
+- **Authorized File Boundary Enforcement**:
+  - Authorized Order #62/63 paths: `crates/n8n-security/src/l02_s01.rs`, `crates/n8n-security/tests/l02_s01_ports_test.rs`, `lego/L02-security/S01-principal-security-context/CONTRACT.md`, `lego/L02-security/S01-principal-security-context/evidence/S01-EVIDENCE.md`, `registry/lego-registry.json`, `report.md`.
+  - Boundary Violation Remediation: `lego/L02-security/S01-principal-security-context/implementation/mod.rs` and `lego/L02-security/S01-principal-security-context/tests/principal_security_context_test.rs` were modified outside scope in Order #62; restored strictly to pre-Order #62 state.
+- **Implementation & Invariants**:
+  - In-Process Invocation Is Not Caller Provenance: Field declarations in `PortInvocation.security_context` do not establish authenticated identity. Authority scopes sent by caller are never treated as verified identity proofs.
+  - Fail-Closed Missing Trust Anchor: In the absence of an integrated trust anchor provider (`BLK-L02-S01-TRUST-ANCHOR`), context issuance via `port.security.context.create.v1` and positive validation via `port.security.context.validate.v1` are strictly fail-closed.
+  - Create Port Hardening: `port.security.context.create.v1` returns explicit denial/unavailable diagnostic referencing `BLK-L02-S01-TRUST-ANCHOR`. No trusted security context is issued without verifiable provenance.
+  - Validate Port Hardening: Declarative authority scopes (including wildcard `*`, `system`, and `control-kernel`) cannot obtain `valid: true` or `authorized: true`. Validate returns `valid: false, authorized: false` referencing `BLK-L02-S01-TRUST-ANCHOR`.
+  - Scope vs Provenance Separation: Lacks-scope evaluation is strictly separated from unverified provenance; callers without required scope fail with `InsufficientAuthority`, while callers with declarative scope but unverified provenance fail with `BLK-L02-S01-TRUST-ANCHOR`.
+  - Shape & Input Hardening: `SecurityContextData` supports serde default attributes ensuring compatibility with minimal shapes; dispatchers enforce object payload validation and null safety.
+  - Preserved Invariants: Fail-closed on empty/whitespace principal (`MissingPrincipal`), empty/whitespace tenant (`MissingTenant`), tenant boundary mismatch (`TenantMismatch`), expired deadline (`ContextExpired`), audience mismatch (`InvalidAudience`), and empty required scopes.
+  - Active Blockers Preserved: `BLK-L02-S01-TRUST-ANCHOR` (P0) and `BLK-L02-S01-PHYSICAL-TRANSPORT` (P1).
+- **Verifiable Test Execution & Coverage Distinction**:
+  - `cargo test --manifest-path crates/n8n-security/Cargo.toml --test l02_s01_ports_test`: FAILED (Exit code 1, `error: manifest path 'crates/n8n-security/Cargo.toml' does not exist`; package manifest not present in repository).
+  - `cargo test --manifest-path crates/n8n-security/Cargo.toml`: FAILED (Exit code 1, `error: manifest path 'crates/n8n-security/Cargo.toml' does not exist`).
+  - `cargo test -p n8n-port-contract --test security_context_port_test`: 2/2 PASSED (Exit code 0).
+  - `cargo check --workspace --locked`: PASSED (Exit code 0).
+  - `python scripts/ci_architecture_check.py`: 11/11 PASSED (Exit code 0).
+  - Repository orchestration: `tools/lego-orchestrator/*` does not exist in checked-out repository.
+  - Build Coverage vs Test Coverage Distinction: Workspace build coverage is verified via `cargo check --workspace --locked`. Active port contract test coverage is verified via `n8n-port-contract` tests (2/2 passed). Standalone Cargo package test invocation for `crates/n8n-security` is unconfigured due to missing `Cargo.toml`.
+- **Registry & Contract Alignment**: `CONTRACT.md`, `S01-EVIDENCE.md`, and `registry/lego-registry.json` verified with zero self-awarded certification. `L05.S02` and `L06.S05` preserved intact as `TESTED` without modification.
